@@ -1,0 +1,28 @@
+19:33:19 turn 1/8: sending
+19:35:16 turn 1: ttft=1961ms total=111067ms nodes=26562 katex=415 heap=151.8MB stream fps=38.2 p95=83.4 busy=74.8% virt=0
+19:35:20 turn 1: idle scroll fps=59.9 p95=16.8 loafBlock=0ms
+19:35:20 chat url https://chatgpt.com/g/<id>-test/c/<id>
+19:35:20 turn 2/8: sending
+19:37:16 turn 2: ttft=2094ms total=108963ms nodes=53064 katex=809 heap=164.9MB stream fps=16.7 p95=200 busy=94.3% virt=0
+19:37:23 turn 2: idle scroll fps=59.9 p95=16.8 loafBlock=0ms
+19:37:23 turn 3/8: sending
+19:39:01 turn 3: ttft=3259ms total=90735ms nodes=78453 katex=1078 heap=174.9MB stream fps=12.2 p95=283.3 busy=96.6% virt=0
+19:39:09 turn 3: idle scroll fps=59.3 p95=16.8 loafBlock=0ms
+19:39:09 turn 4/8: sending
+19:40:54 turn 4: ttft=12656ms total=97492ms nodes=97686 katex=1336 heap=193.1MB stream fps=15.2 p95=333.4 busy=90% virt=0
+19:41:04 turn 4: idle scroll fps=52.6 p95=33.3 loafBlock=0ms
+19:41:04 turn 5/8: sending
+19:42:52 turn 5: ttft=9085ms total=100012ms nodes=123473 katex=1610 heap=205.1MB stream fps=13.1 p95=416.7 busy=92% virt=0
+19:43:03 turn 5: idle scroll fps=47.4 p95=33.4 loafBlock=0ms
+19:43:30 turn 5: reload allTurns=10183ms math=17330ms loafBlock=8242.7ms
+19:43:30 turn 6/8: sending
+19:44:55 turn 6: ttft=7256ms total=75177ms nodes=89748 katex=1046 heap=165.1MB stream fps=13.7 p95=300 busy=95.6% virt=0
+19:45:08 turn 6: idle scroll fps=38.5 p95=33.3 loafBlock=3277ms
+19:45:08 turn 7/8: sending
+19:46:25 turn 7: ttft=1053ms total=67690ms nodes=107298 katex=1275 heap=175.5MB stream fps=9.8 p95=366.7 busy=101.3% virt=0
+19:46:35 turn 7: idle scroll fps=49.1 p95=33.4 loafBlock=0ms
+19:46:35 turn 8/8: sending
+19:48:24 turn 8: ttft=16775ms total=100215ms nodes=101724 katex=1278 heap=171.2MB stream fps=29.9 p95=183.3 busy=69.9% virt=0
+19:48:34 turn 8: idle scroll fps=49.1 p95=33.4 loafBlock=0ms
+19:48:55 turn 8: reload allTurns=8965ms math=16609ms loafBlock=8256.4ms
+19:48:55 done ~/Dev/chatgpt-turbo/lab/harness/results/baseline-en-2026-10-30

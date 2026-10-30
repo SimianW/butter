@@ -7,3 +7,4 @@ lab/harness/recordings/
 lab/harness/logs/
 lab/harness/scratch/
 notes/bundle-hooks.md
+__pycache__/

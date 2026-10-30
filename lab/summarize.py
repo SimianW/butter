@@ -100,7 +100,7 @@ def live_baseline():
             continue
         s, dom, rl = d['stream'], d['dom'], d.get('reload') or {}
         rows.append({
-            'turn': d['turn'], 'ttft_ms': d['ttftMs'], 'answer_s': round(d['totalMs'] / 1000, 1),
+            'run': os.path.basename(os.path.dirname(f)), 'turn': d['turn'], 'ttft_ms': d['ttftMs'], 'answer_s': round(d['totalMs'] / 1000, 1),
             'fps': s['fps'], 'frame_p95_ms': r1(s['p95']), 'frame_max_ms': r1(s['max']), 'jank_pct': s['jankPct'],
             'blocked_s': round(s['loafBlockMs'] / 1000, 1), 'longest_freeze_ms': s['loafMaxMs'],
             'key_max_ms': s['keyMax'], 'busy_pct': s['mainThreadBusyPct'],

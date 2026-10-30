@@ -1,9 +1,9 @@
 // Baseline run: chat N turns in the "Test" project and record rendering/jank metrics per turn.
-// Usage: node baseline.mjs <outDir> [chatUrl-to-resume]
+// Usage: PROJECT=<project url> [PROMPTS=./prompts-en.mjs] [MAX_TURNS=n] node baseline.mjs <outDir> [chatUrl-to-resume]
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
-import prompts from './prompts-baseline.mjs';
+const prompts = (await import(process.env.PROMPTS ?? './prompts-baseline.mjs')).default;   // PROMPTS=./prompts-en.mjs for the English chat
 
 const OUT = path.resolve(process.argv[2] ?? `results/baseline-${new Date().toISOString().slice(0, 10)}`);
 const RESUME_URL = process.argv[3];

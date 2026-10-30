@@ -4,7 +4,14 @@ Chrome extension (MV3) that keeps long, math-heavy chatgpt.com conversations smo
 answer streams in. In a 9-turn math chat it cuts main-thread blocking during an answer from 75.6 s
 to 6.3 s (12×) and the p95 frame time from 300 ms to 33 ms.
 
-中文测试报告：[docs/REPORT.md](docs/REPORT.md)
+![Side by side while a long answer streams: ChatGPT without the extension (left) and with ChatGPT Turbo (right)](docs/media/demo-en.gif)
+
+Full 75-second video with captions: [docs/media/demo-en.mp4](docs/media/demo-en.mp4). Both sides
+play back the same recorded ChatGPT answer in the same 9-turn math chat and get identical keyboard
+and mouse-wheel input. During this answer the page without the extension was frozen for 75.8 s in
+total, with ChatGPT Turbo for 8.0 s.
+
+中文测试报告和中文演示视频：[docs/REPORT.md](docs/REPORT.md)
 
 ## Install (Windows, macOS, Linux)
 

@@ -40,9 +40,13 @@ the lab browser with exactly those unpacked extensions (`EXT=` empty = no extens
 | `scenarios.mjs` | Reload, scroll the whole chat, idle typing. |
 | `qa.mjs` | Screenshots at fixed anchors, wide-block widths, find-in-page, select-all, scroll jumps after reload. |
 | `analyze-trace.py` | Main-thread time by category, forced-layout stacks and hottest JS functions from a trace. |
+| `demo.mjs` | Screen-records one replayed answer with a fixed human-like input script (type, scroll, type) for the demo video. Run once without and once with the extension. |
 | `convcheck.mjs` | Lists the user turns the server has for `CHAT`, to confirm replays never reached it. |
 | `sb-config.mjs` | Applies Speed Booster Toolkit settings in the lab browser and reports the `num_turns` it requested. |
 | `run-matrix.sh`, `run-sb*.sh` | Batches used for the report. |
+
+`python3 lab/make-demo.py` edits the two `demo.mjs` recordings into the side-by-side video with
+captions (`dist/demo/chatgpt-turbo-demo.mp4` and a GIF excerpt).
 
 Raw output goes to `harness/results/` and stays local (screenshots show the account; JSON holds
 chat ids). `python3 lab/summarize.py` writes the tables in [`../results/`](../results).
