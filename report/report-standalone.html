@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChatGPT Turbo · 优化结果</title>
+<style>
+.r {
+  --surface: var(--card, #fcfcfb); --ink: var(--foreground, #0b0b0b); --ink-2: var(--muted-foreground, #52514e);
+  --muted: #898781; --grid: #e1e0d9; --axis: #c3c2b7; --line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --accent: #2a78d6; --base: #6b6a65; --other: #c3c2b7; --bad: #d03b3b; --good: #006300;
+  color: var(--ink); font: 14px/1.55 system-ui, -apple-system, "Segoe UI", "Noto Sans CJK SC", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .r { --grid: #2c2c2a; --axis: #383835; --accent: #3987e5; --base: #a3a29b; --other: #4a4945; --bad: #e66767; --good: #0ca30c; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.r h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+.r p { margin: 0 0 8px; }
+.note { color: var(--ink-2); font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius, 12px); padding: 16px; margin-bottom: 12px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.kpi .label { color: var(--ink-2); font-size: 13px; }
+.kpi .value { font-size: 26px; font-weight: 600; margin: 2px 0; }
+.kpi .delta { color: var(--ink-2); font-size: 12px; }
+ul { margin: 4px 0 0; padding-left: 20px; } li { margin: 4px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { color: var(--ink-2); font-weight: 500; }
+tr.ours td { font-weight: 600; }
+.tw { overflow-x: auto; }
+svg { display: block; width: 100%; }
+svg text { fill: var(--ink-2); font-size: 12px; }
+svg text.v { fill: var(--ink); font-variant-numeric: tabular-nums; }
+.tip { position: fixed; pointer-events: none; display: none; background: var(--popover, #fff); color: var(--popover-foreground, #111); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); z-index: 9; }
+.tip b { font-variant-numeric: tabular-nums; }
+.ok { color: var(--good); } .no { color: var(--bad); }
+</style>
+</head>
+<body style="background:#f9f9f7;padding:24px;max-width:900px;margin:0 auto">
+<div class="r">
+  <p class="note">同一个 9 轮数学长对话（约 9 万个 DOM 节点），回放同一段录制好的第 10 轮回答，回答生成期间一边滚动一边打字。每种配置都在刚启动的浏览器里测。</p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card">
+    <h2>回答生成期间，主线程被卡住的总时间</h2>
+    <p class="note">越短越好。122 秒的回答里，浏览器有多少秒处于"卡住、没法响应你"的状态（Long Animation Frames 的阻塞时间）。</p>
+    <svg id="bars"></svg>
+  </div>
+
+  <div class="card">
+    <h2>全部指标</h2>
+    <div class="tw"><table id="t1"></table></div>
+    <p class="note" style="margin-top:8px">所有配置最终渲染出的回答文本完全一致（SHA-256 前缀 <code>043dc8afaf8d</code>）。原样 ChatGPT 在两个前端版本上共测了 11 次，阻塞时间都在 73.3–78.8 秒之间。</p>
+  </div>
+
+  <div class="card">
+    <h2>为什么会卡</h2>
+    <ul>
+      <li><b>ChatGPT 每一帧都在重新渲染回答。</b>服务器每秒只推 1–2 次数据，但它的"流式平滑器"把文字拆碎，每帧（60 次/秒）发布一次，每次都让 React 重渲染 Markdown 和公式、浏览器重算样式。</li>
+      <li><b>整个对话被包在一个 CSS 尺寸容器里。</b>这让 Chrome 每次布局时都要连带重算容器里所有元素的样式。一轮数学回答就有 2 万个节点，页面上 4–5 轮就是 9 万个。</li>
+      <li><b>ChatGPT 自己的代码还会强制同步布局。</b>回合虚拟化器、贴底滚动和一个遥测采样器每次更新都读几何信息，每次都触发一次完整的样式加布局。</li>
+      <li><b>现有扩展对不上这个问题。</b>它们隐藏、删掉或少加载旧消息，但 ChatGPT 已经会卸载旧回合，真正重的是正在生成的那一轮。Speed Booster 只加载 1 条消息时页面节点少了 3/4，生成期间依然卡住 98 秒；它的书签、导航、搜索模块还会在每次 DOM 变化后扫描页面，默认设置下反而更卡。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>ChatGPT Turbo 做了什么</h2>
+    <ul>
+      <li><b>平滑器节流到 250ms 一次</b>：只拦截那一个回调，文字照样流式出现，每次多一小段。</li>
+      <li><b>去掉对话外层的尺寸容器</b>（保留负责侧边面板的外层应用容器）：收益最大的一条。</li>
+      <li><b>屏幕外的回合和段落跳过渲染</b>（<code>content-visibility</code>），但只在它们真实渲染过一次之后，所以滚动不会跳。</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>其他场景（没有回答在生成时）</h2>
+    <div class="tw"><table id="t2"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>正确性检查</h2>
+    <div class="tw"><table id="t3"></table></div>
+    <p class="note" style="margin-top:8px">激进版（所有改动都不加限制）阻塞时间只有 2.1 秒，但会让宽表格变宽 181px，刷新后往上滚动时内容最多跳 282px，所以没有采用。</p>
+  </div>
+
+  <div class="card note">
+    <b>测试条件</b>：Linux 台式机，Chromium 156 跑在没有 GPU 的虚拟显示器上，绝对数值比普通笔记本差，看倍数。回放拦截了 <code>/backend-api/f/conversation</code>，不发到 OpenAI；录制的回答用的是 Test 项目里的真实第 9 轮。
+  </div>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const D = {"rows": [{"name": "ChatGPT 原样", "kind": "base", "n": 1, "blocked": 75.6, "p95": 299.9, "fps": 15.2, "freeze": 2082, "keyMax": 3521, "keyP95": 277, "busy": 87, "style": 65.5, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（默认）", "kind": "oss", "n": 4, "blocked": 121.5, "p95": 1358.3, "fps": 5.0, "freeze": 9263, "keyMax": 9401, "keyP95": 4441, "busy": 95.5, "style": 87.1, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（只加载 1 条）", "kind": "oss", "n": 2, "blocked": 98.3, "p95": 600.0, "fps": 11.6, "freeze": 3493, "keyMax": 4476, "keyP95": 1942, "busy": 88.6, "style": 77.5, "sha": "043dc8afaf8d"}, {"name": "CJ-tpub Long Chat Optimizer", "kind": "oss", "n": 1, "blocked": 105.1, "p95": 199.9, "fps": 4.6, "freeze": 27047, "keyMax": 17434, "keyP95": 1110, "busy": 97.6, "style": 86.5, "sha": "043dc8afaf8d"}, {"name": "GPT Delagger", "kind": "oss", "n": 1, "blocked": 106.7, "p95": 2016.6, "fps": 3.3, "freeze": 2754, "keyMax": 3089, "keyP95": 2982, "busy": 97.7, "style": 88.2, "sha": "043dc8afaf8d"}, {"name": "LightSession Pro", "kind": "oss", "n": 1, "blocked": 75.3, "p95": 300, "fps": 15.1, "freeze": 2079, "keyMax": 3539, "keyP95": 289, "busy": 86.8, "style": 64.4, "sha": "043dc8afaf8d"}, {"name": "In-Memory Trimmer", "kind": "oss", "n": 1, "blocked": 76.0, "p95": 283.4, "fps": 14.8, "freeze": 2032, "keyMax": 3460, "keyP95": 316, "busy": 87.4, "style": 65.8, "sha": "043dc8afaf8d"}, {"name": "Turbo 激进版（不采用）", "kind": "rej", "n": 2, "blocked": 2.1, "p95": 16.8, "fps": 55.3, "freeze": 369, "keyMax": 360, "keyP95": 148, "busy": 36.8, "style": 8.8, "sha": "043dc8afaf8d"}, {"name": "ChatGPT Turbo（最终版）", "kind": "ours", "n": 2, "blocked": 6.3, "p95": 33.3, "fps": 52.1, "freeze": 595, "keyMax": 787, "keyP95": 182, "busy": 42.4, "style": 13.8, "sha": "043dc8afaf8d"}], "scenarios": {"baseline": {"reloadBlocked": 7244, "reloadMax": 2857, "scrollMax": 3566, "scrollBlocked": 7098, "scrollWall": 50695, "typeP95": 31, "typeMax": 279}, "turbo-v5": {"reloadBlocked": 3694, "reloadMax": 1140, "scrollMax": 708, "scrollBlocked": 2664, "scrollWall": 38460, "typeP95": 23, "typeMax": 256}}, "qa": {"baseline": {"jumps": 0, "worst": 0, "find": true, "sel": 22586, "wideMax": 963}, "turbo-v5": {"jumps": 0, "worst": 1, "find": true, "sel": 22586, "wideMax": 973}, "aggressive": {"jumps": 31, "worst": 282, "find": true, "sel": 22586, "wideMax": 1144}}};
+const R = D.rows, S = D.scenarios, Q = D.qa;
+const base = R.find(r => r.kind === 'base'), ours = R.find(r => r.kind === 'ours');
+const css = v => getComputedStyle(document.querySelector('.r')).getPropertyValue(v).trim();
+const x = (a, b) => (a / b).toFixed(a / b >= 10 ? 0 : 1) + '×';
+const sec = ms => (ms / 1000).toFixed(1) + ' 秒';
+
+const kpis = [
+  ['主线程卡住', ours.blocked + ' 秒', `原来 ${base.blocked} 秒 · 少 ${x(base.blocked, ours.blocked)}`],
+  ['滚动帧间隔 p95', ours.p95 + ' ms', `原来 ${base.p95} ms · 快 ${x(base.p95, ours.p95)}`],
+  ['最慢一次按键', sec(ours.keyMax), `原来 ${sec(base.keyMax)} · 快 ${x(base.keyMax, ours.keyMax)}`],
+  ['滚动整段对话最长一帧', sec(S['turbo-v5'].scrollMax), `原来 ${sec(S.baseline.scrollMax)} · 快 ${x(S.baseline.scrollMax, S['turbo-v5'].scrollMax)}`],
+];
+const kb = document.getElementById('kpis');
+for (const [l, v, d] of kpis) { const c = document.createElement('div'); c.className = 'card kpi';
+  for (const [cls, t] of [['label', l], ['value', v], ['delta', d]]) { const e = document.createElement('div'); e.className = cls; e.textContent = t; c.append(e); } kb.append(c); }
+
+// Ranked horizontal bars; our extension in the accent hue, ChatGPT as-is darker gray, the rest light gray.
+const tip = document.getElementById('tip');
+function bars() {
+  const svg = document.getElementById('bars'); svg.textContent = '';
+  const NS = 'http://www.w3.org/2000/svg', el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); p.append(e); return e; };
+  const rows = [...R].sort((a, b) => b.blocked - a.blocked);
+  const W = svg.clientWidth || 700, lw = Math.min(210, W * 0.36), rw = 56, row = 30, H = rows.length * row + 8;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const max = Math.max(...rows.map(r => r.blocked)), sc = v => (W - lw - rw) * v / max;
+  el('line', { x1: lw, x2: lw, y1: 0, y2: H - 4, stroke: css('--axis') }, svg);
+  rows.forEach((r, i) => {
+    const y = 4 + i * row, h = 16, w = Math.max(2, sc(r.blocked));
+    const t = el('text', { x: lw - 8, y: y + 12, 'text-anchor': 'end' }, svg); t.textContent = r.name;
+    el('path', { d: `M${lw} ${y}H${lw + w - 4}Q${lw + w} ${y} ${lw + w} ${y + 4}V${y + h - 4}Q${lw + w} ${y + h} ${lw + w - 4} ${y + h}H${lw}Z`,
+      fill: css(r.kind === 'ours' ? '--accent' : r.kind === 'base' ? '--base' : '--other') }, svg);
+    const v = el('text', { x: lw + w + 6, y: y + 12, class: 'v' }, svg); v.textContent = r.blocked + ' 秒';
+    const hit = el('rect', { x: 0, y: y - 6, width: W, height: row, fill: 'transparent' }, svg);
+    hit.addEventListener('pointermove', ev => {
+      tip.textContent = ''; const add = (s, b) => { const d = document.createElement('div'); if (b) { const e = document.createElement('b'); e.textContent = b; d.append(e, ' '); } d.append(s); tip.append(d); };
+      add(r.name); add('主线程卡住', r.blocked + ' 秒'); add('帧间隔 p95', r.p95 + ' ms'); add('最慢按键', sec(r.keyMax)); add('最长卡顿', sec(r.freeze));
+      tip.style.display = 'block'; tip.style.left = Math.min(ev.clientX + 12, innerWidth - tip.offsetWidth - 8) + 'px'; tip.style.top = ev.clientY + 12 + 'px';
+    });
+    hit.addEventListener('pointerleave', () => tip.style.display = 'none');
+  });
+}
+bars(); addEventListener('resize', bars);
+
+function table(id, head, body, oursRow) {
+  const t = document.getElementById(id), hr = t.createTHead().insertRow();
+  for (const h of head) { const th = document.createElement('th'); th.textContent = h; hr.append(th); }
+  const tb = t.createTBody(); body.forEach((r, i) => { const tr = tb.insertRow(); if (i === oursRow) tr.className = 'ours'; for (const c of r) tr.insertCell().textContent = c; });
+}
+const order = ['base', 'oss', 'rej', 'ours'];
+const T = [...R].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
+table('t1', ['配置', '卡住 秒', '帧 p95 ms', 'FPS', '最长卡顿 ms', '最慢按键 ms', '按键 p95 ms', '主线程占用 %', '样式重算 %'],
+  T.map(r => [r.name, r.blocked, r.p95, r.fps, r.freeze.toLocaleString('en-US'), r.keyMax.toLocaleString('en-US'), r.keyP95.toLocaleString('en-US'), r.busy, r.style]), T.indexOf(ours));
+const b = S.baseline, o = S['turbo-v5'];
+table('t2', ['场景', 'ChatGPT 原样', 'Turbo', '倍数'], [
+  ['重新打开对话：主线程卡住', sec(b.reloadBlocked), sec(o.reloadBlocked), x(b.reloadBlocked, o.reloadBlocked)],
+  ['重新打开对话：最长一帧', sec(b.reloadMax), sec(o.reloadMax), x(b.reloadMax, o.reloadMax)],
+  ['滚动整段对话：最长一帧', sec(b.scrollMax), sec(o.scrollMax), x(b.scrollMax, o.scrollMax)],
+  ['滚动整段对话：主线程卡住', sec(b.scrollBlocked), sec(o.scrollBlocked), x(b.scrollBlocked, o.scrollBlocked)],
+  ['空闲时打字：按键 p95', b.typeP95 + ' ms', o.typeP95 + ' ms', '持平'],
+]);
+const yes = v => v ? '正常' : '失败';
+table('t3', ['检查', 'ChatGPT 原样', 'Turbo', '激进版'], [
+  ['回答文本（SHA）', '043dc8afaf8d', '一致', '一致'],
+  ['页内查找屏幕外文字', yes(Q.baseline.find), yes(Q['turbo-v5'].find), yes(Q.aggressive.find)],
+  ['全选复制（字符数）', Q.baseline.sel.toLocaleString('en-US'), Q['turbo-v5'].sel.toLocaleString('en-US'), Q.aggressive.sel.toLocaleString('en-US')],
+  ['刷新后往上滚，跳动 >20px 的步数', `${Q.baseline.jumps} / 40`, `${Q['turbo-v5'].jumps} / 40`, `${Q.aggressive.jumps} / 40（最大 ${Q.aggressive.worst}px）`],
+  ['最宽表格宽度', Q.baseline.wideMax + 'px', Q['turbo-v5'].wideMax + 'px', Q.aggressive.wideMax + 'px'],
+  ['同位置截图', '—', '内容一致（差异只在侧边栏新对话和 1px 偏移）', '—'],
+]);
+</script>
+</body>
+</html>

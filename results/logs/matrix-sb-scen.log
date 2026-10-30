@@ -1,0 +1,14 @@
+18:42:14 [cmp-baseline] rep 1: reload ready=11060ms blocked=8316ms maxFrame=3159 | scroll fps=50.4 p95=33.3 max=2550 blocked=7740ms (45994ms) | typing keyP95=30 keyMax=276
+18:43:30 [cmp-baseline] rep 2: reload ready=15461ms blocked=7304ms maxFrame=2784 | scroll fps=47.3 p95=33.4 max=2450 blocked=4800ms (48985ms) | typing keyP95=31 keyMax=281
+18:44:34 [cmp-turbo] rep 1: reload ready=7454ms blocked=4595ms maxFrame=1487 | scroll fps=54.5 p95=16.8 max=750 blocked=3095ms (39756ms) | typing keyP95=29 keyMax=165
+18:45:34 [cmp-turbo] rep 2: reload ready=8304ms blocked=4541ms maxFrame=1488 | scroll fps=54.7 p95=16.8 max=700 blocked=2812ms (39509ms) | typing keyP95=22 keyMax=263
+"turns": 5
+"modal": "none"
+
+18:47:30 [cmp-sb-default] rep 1: reload ready=17720ms blocked=7095ms maxFrame=2731 | scroll fps=49.6 p95=33.4 max=1550 blocked=1547ms (47758ms) | typing keyP95=169 keyMax=1970
+18:48:58 [cmp-sb-default] rep 2: reload ready=15148ms blocked=7464ms maxFrame=2713 | scroll fps=42.6 p95=33.4 max=2450 blocked=8389ms (54942ms) | typing keyP95=31 keyMax=4623
+"turns": 1
+"modal": "none"
+
+18:49:55 [cmp-sb-limit1] rep 1: reload ready=7521ms blocked=3678ms maxFrame=856 | scroll fps=35.6 p95=16.8 max=1450 blocked=4483ms (13461ms) | typing keyP95=80 keyMax=865
+18:50:32 [cmp-sb-limit1] rep 2: reload ready=8042ms blocked=3128ms maxFrame=806 | scroll fps=33.5 p95=16.8 max=1717 blocked=5730ms (13667ms) | typing keyP95=25 keyMax=2062

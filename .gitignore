@@ -1,0 +1,9 @@
+dist/
+node_modules/
+# Raw harness output: screenshots of the account, Chrome traces, chat/project ids. lab/summarize.py
+# turns it into the tables under results/.
+lab/harness/results/
+lab/harness/recordings/
+lab/harness/logs/
+lab/harness/scratch/
+notes/bundle-hooks.md

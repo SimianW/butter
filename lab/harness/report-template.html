@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ChatGPT 长对话卡顿 · 优化前基线</title>
+<style>
+.viz-root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface-1: #fcfcfb;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
+  --critical: #d03b3b; --good: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .viz-root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface-1: #1a1a19;
+    --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
+    --critical: #e66767; --good: #0ca30c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.viz-root { background: var(--page); color: var(--text-primary); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", "Noto Sans CJK SC", sans-serif; padding: 32px 24px 64px; min-height: 100vh; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+.sub { color: var(--text-secondary); margin: 0 0 24px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; }
+.kpi .label { color: var(--text-secondary); font-size: 13px; }
+.kpi .value { font-size: 28px; font-weight: 600; margin: 4px 0 2px; }
+.kpi .delta { font-size: 13px; color: var(--text-secondary); }
+.kpi .delta b { color: var(--critical); font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.card h2 { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+.card .note { color: var(--text-secondary); font-size: 13px; margin: 0 0 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--text-secondary); margin: 0 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key-line { width: 14px; height: 2px; border-radius: 1px; }
+.key-rect { width: 10px; height: 10px; border-radius: 2px; }
+svg { display: block; width: 100%; overflow: visible; }
+svg text { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+svg .lbl { fill: var(--text-secondary); font-size: 12px; }
+.tip { position: fixed; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; z-index: 10; min-width: 150px; }
+.tip .h { color: var(--text-secondary); margin-bottom: 4px; }
+.tip .r { display: flex; align-items: center; gap: 8px; }
+.tip .r b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.tip .r span:last-child { color: var(--text-secondary); }
+.findings { margin: 0; padding-left: 20px; }
+.findings li { margin: 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text-secondary); font-weight: 500; }
+.tablewrap { overflow-x: auto; }
+details summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+.caveat { color: var(--text-secondary); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="viz-root"><div class="wrap">
+  <h1>ChatGPT 长对话卡顿 · 优化前基线</h1>
+  <p class="sub" id="sub"></p>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card" style="margin-bottom:12px">
+    <h2>结论</h2>
+    <ul class="findings" id="findings"></ul>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h2>滚动流畅度（FPS）</h2>
+      <p class="note">60 = 完全流畅。生成回答时每 1.5 秒上下滚动一次。</p>
+      <div class="legend" id="lg-fps"></div>
+      <svg id="c-fps"></svg>
+    </div>
+    <div class="card">
+      <h2>生成回答期间，主线程被占用的比例</h2>
+      <p class="note">占这段时间的百分比，100% = 浏览器完全没空响应你。</p>
+      <div class="legend" id="lg-busy"></div>
+      <svg id="c-busy"></svg>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>最长一次卡死（毫秒）</h2>
+      <p class="note">生成回答期间，单个 Long Animation Frame 的最长时长。超过 200ms 就能明显感觉到。</p>
+      <svg id="c-freeze"></svg>
+    </div>
+    <div class="card">
+      <h2>操作响应延迟（毫秒）</h2>
+      <p class="note">生成回答期间：按键到屏幕更新的最长时间；滚轮事件被处理的 p95 时间。</p>
+      <div class="legend" id="lg-input"></div>
+      <svg id="c-input"></svg>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>页面 DOM 节点数（千）</h2>
+      <p class="note">当前挂在页面上的节点。第 6 轮起 ChatGPT 开始卸载最早的回合，所以曲线变平，但仍停在很高的位置。</p>
+      <svg id="c-nodes"></svg>
+    </div>
+    <div class="card">
+      <h2>重新打开这个对话</h2>
+      <p class="note">刷新页面后，到所有回合出现、到最后一条回答的公式渲染完成的时间（秒）。</p>
+      <div class="legend" id="lg-reload"></div>
+      <svg id="c-reload"></svg>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <details>
+      <summary>数据表（所有数值）</summary>
+      <div class="tablewrap" id="table"></div>
+    </details>
+  </div>
+
+  <div class="card caveat" id="caveat"></div>
+</div></div>
+<div class="tip" id="tip"></div>
+
+<script>
+const DATA = /*DATA*/null;
+const R = DATA.rows, X = R.map(r => r.turn);
+const css = v => getComputedStyle(document.querySelector('.viz-root')).getPropertyValue(v).trim();
+const fmt = n => n == null ? '—' : n >= 10000 ? (n / 1000).toFixed(0) + 'K' : n.toLocaleString('en-US');
+const tip = document.getElementById('tip');
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs = {}) { const t = el('text', { x, y, ...attrs }, parent); t.textContent = s; return t; }
+function niceMax(v) { const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return { top: m * p, ticks: m === 2.5 ? 5 : 4 }; }
+function legend(id, items) {
+  const box = document.getElementById(id); box.textContent = '';
+  for (const it of items) { const s = document.createElement('span'); const k = document.createElement('i');
+    k.className = it.kind === 'rect' ? 'key-rect' : 'key-line'; k.style.background = css(it.color); s.append(k, document.createTextNode(it.name)); box.append(s); }
+}
+function showTip(ev, head, lines) {
+  tip.textContent = ''; const h = document.createElement('div'); h.className = 'h'; h.textContent = head; tip.append(h);
+  for (const l of lines) { const r = document.createElement('div'); r.className = 'r';
+    const k = document.createElement('i'); k.className = 'key-line'; k.style.background = css(l.color);
+    const b = document.createElement('b'); b.textContent = l.value; const n = document.createElement('span'); n.textContent = l.name;
+    r.append(k, b, n); tip.append(r); }
+  tip.style.display = 'block';
+  const w = tip.offsetWidth; tip.style.left = Math.min(ev.clientX + 14, innerWidth - w - 8) + 'px'; tip.style.top = (ev.clientY + 14) + 'px';
+}
+const hideTip = () => tip.style.display = 'none';
+
+// Shared frame: left axis with nice ticks, x = turns.
+function frame(svg, { yMax, unit = '', h = 220, cap }) {
+  svg.textContent = '';
+  const W = svg.clientWidth || 480, H = h, m = { l: 44, r: 16, t: 10, b: 28 };
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const nm = cap && yMax >= cap * 0.8 ? { top: cap, ticks: 4 } : niceMax(yMax), top = nm.top, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const y = v => m.t + ih - (v / top) * ih;
+  for (let i = 0; i <= nm.ticks; i++) { const v = top * i / nm.ticks, yy = y(v);
+    el('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy, stroke: css(i === 0 ? '--axis' : '--grid'), 'stroke-width': 1 }, svg);
+    txt(svg, m.l - 6, yy + 4, fmt(+v.toFixed(1)) + unit, { 'text-anchor': 'end' }); }
+  return { W, H, m, iw, ih, y, top };
+}
+function lineChart(id, series, { unit = '', ref } = {}) {
+  const svg = document.getElementById(id);
+  const max = Math.max(...series.flatMap(s => s.values).filter(v => v != null), ref ? ref.value : 0);
+  const f = frame(svg, { yMax: max * 1.08, unit });
+  const step = f.iw / (X.length - 1), x = i => f.m.l + i * step;
+  X.forEach((t, i) => txt(svg, x(i), f.H - 8, '第' + t + '轮', { 'text-anchor': 'middle' }));
+  if (ref) { el('line', { x1: f.m.l, x2: f.W - f.m.r, y1: f.y(ref.value), y2: f.y(ref.value), stroke: css('--axis'), 'stroke-width': 1 }, svg);
+    txt(svg, f.W - f.m.r, f.y(ref.value) - 5, ref.label, { 'text-anchor': 'end', class: 'lbl' }); }
+  for (const s of series) {
+    el('path', { d: s.values.map((v, i) => v == null ? '' : (i && s.values[i - 1] != null ? 'L' : 'M') + x(i) + ' ' + f.y(v)).join(''), fill: 'none', stroke: css(s.color), 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
+    const li = s.values.findLastIndex(v => v != null);
+    el('circle', { cx: x(li), cy: f.y(s.values[li]), r: 4, fill: css(s.color), stroke: css('--surface-1'), 'stroke-width': 2 }, svg);
+  }
+  const cross = el('line', { y1: f.m.t, y2: f.m.t + f.ih, stroke: css('--axis'), 'stroke-width': 1, visibility: 'hidden' }, svg);
+  const hit = el('rect', { x: f.m.l - step / 2, y: 0, width: f.iw + step, height: f.H, fill: 'transparent' }, svg);
+  hit.addEventListener('pointermove', ev => {
+    const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) * (f.W / r.width);
+    const i = Math.max(0, Math.min(X.length - 1, Math.round((px - f.m.l) / step)));
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+    showTip(ev, '第 ' + X[i] + ' 轮' + (R[i].missing ? '（数据缺失）' : ''), series.map(s => ({ color: s.color, name: s.name, value: fmt(s.values[i]) + unit })));
+  });
+  hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); hideTip(); });
+}
+function columns(id, series, { unit = '', stacked = false, xs = X, xLabel = t => '第' + t + '轮', labelTop, cap } = {}) {
+  const svg = document.getElementById(id);
+  const totals = xs.map((_, i) => stacked ? series.reduce((s, se) => s + (se.values[i] ?? 0), 0) : Math.max(...series.map(se => se.values[i] ?? 0)));
+  const f = frame(svg, { yMax: Math.max(...totals) * 1.12, unit, cap });
+  const band = f.iw / xs.length, groupW = Math.min(stacked ? 24 : 24 * series.length + 2 * (series.length - 1), band * 0.7);
+  const barW = stacked ? groupW : (groupW - 2 * (series.length - 1)) / series.length;
+  xs.forEach((t, i) => {
+    const cx = f.m.l + band * (i + 0.5);
+    txt(svg, cx, f.H - 8, xLabel(t), { 'text-anchor': 'middle' });
+    let acc = 0;
+    series.forEach((s, j) => {
+      const v = s.values[i]; if (!(v > 0)) return;
+      const y0 = stacked ? f.y(acc) : f.y(0), y1 = stacked ? f.y(acc + v) : f.y(v);
+      const bx = stacked ? cx - barW / 2 : cx - groupW / 2 + j * (barW + 2);
+      const isTop = !stacked || j === series.length - 1 || series.slice(j + 1).every(se => se.values[i] <= 0);
+      const hgt = Math.max(0, y0 - y1 - (stacked && acc > 0 ? 2 : 0));
+      const r = Math.min(4, hgt / 2, barW / 2);
+      const yTop = y1, yBot = y1 + hgt;
+      const d = isTop ? `M${bx} ${yBot}V${yTop + r}Q${bx} ${yTop} ${bx + r} ${yTop}H${bx + barW - r}Q${bx + barW} ${yTop} ${bx + barW} ${yTop + r}V${yBot}Z`
+                      : `M${bx} ${yBot}V${yTop}H${bx + barW}V${yBot}Z`;
+      el('path', { d, fill: css(s.color) }, svg);
+      acc += v;
+    });
+    if (labelTop && totals[i] > 0) txt(svg, cx, f.y(totals[i]) - 6, labelTop(i), { 'text-anchor': 'middle', class: 'lbl' });
+    const hit = el('rect', { x: cx - band / 2, y: f.m.t, width: band, height: f.ih, fill: 'transparent' }, svg);
+    hit.addEventListener('pointermove', ev => showTip(ev, xLabel(t), series.map(s => ({ color: s.color, name: s.name, value: fmt(s.values[i]) + unit })).reverse()));
+    hit.addEventListener('pointerleave', hideTip);
+  });
+}
+
+function render() {
+  const ok = R.filter(r => !r.missing), a = ok[0], z = ok[ok.length - 1], rl = DATA.reloads, rz = rl[rl.length - 1];
+  document.getElementById('sub').textContent = `Test 项目里的一个数学长对话，共 ${R.length} 轮，没有任何优化。${new Date(DATA.meta.started).toLocaleDateString('zh-CN')} 测得，Chromium ${DATA.meta.browser}。`;
+  const kpis = [
+    { label: '生成回答时滚动的 FPS', value: z.streamFps, delta: `第 1 轮是 ${a.streamFps}，<b>下降 ${Math.round(100 - 100 * z.streamFps / a.streamFps)}%</b>` },
+    { label: '最长一次卡死', value: (z.freezeMs / 1000).toFixed(1) + ' 秒', delta: `第 1 轮是 ${(a.freezeMs / 1000).toFixed(1)} 秒` },
+    { label: '页面 DOM 节点', value: fmt(z.nodesK * 1000), delta: `其中数学公式 ${fmt(z.katex)} 个，JS 堆 ${z.heapMB} MB` },
+    { label: `重新打开 ${rz.turn} 轮的对话`, value: rz.mathSec + ' 秒', delta: `主线程被阻塞 <b>${rz.blockedSec} 秒</b>` },
+  ];
+  const kb = document.getElementById('kpis'); kb.textContent = '';
+  for (const k of kpis) { const c = document.createElement('div'); c.className = 'card kpi';
+    c.innerHTML = `<div class="label"></div><div class="value"></div><div class="delta">${k.delta}</div>`;
+    c.querySelector('.label').textContent = k.label; c.querySelector('.value').textContent = k.value; kb.append(c); }
+
+  const maxStyle = ok.reduce((b, r) => r.style > b.style ? r : b);
+  const findings = [
+    `<b>回答结束后滚动基本不卡</b>（第 1 轮 ${a.idleFps} FPS，第 ${z.turn} 轮 ${z.idleFps} FPS），<b>卡顿集中在“正在生成回答”的时候</b>：生成期间滚动只剩 ${z.streamFps} FPS。`,
+    `<b>主要开销是样式重算（Recalc Style），不是布局或网络。</b>第 ${maxStyle.turn} 轮生成期间，${maxStyle.style}% 的时间都在重算样式，布局只占 ${maxStyle.layout}%。每流入一小段文字，浏览器就要对越来越大的页面重新计算样式。`,
+    `<b>页面越长越卡，几乎线性。</b>前 5 轮每轮数学回答增加约 ${Math.round((R[4].nodesK - a.nodesK) / 4)}K 个 DOM 节点，第 5 轮时页面上有 ${fmt(R[4].nodesK * 1000)} 个节点。ChatGPT 确实会把离视口很远的旧回合整个卸载（之后页面上始终只挂着最近 4–5 轮），但一轮数学回答就有 2 万多个节点，4–5 轮仍有约 10 万个节点，所以卡顿并没有消失：第 8 轮最长卡死 ${(z.freezeMs / 1000).toFixed(1)} 秒，比第 5 轮还长。`,
+    `<b>打字也会被拖慢。</b>生成回答期间，最慢一次按键要 ${(Math.max(...ok.map(r => r.keyMaxMs)) / 1000).toFixed(1)} 秒才显示在屏幕上。`,
+  ];
+  const fl = document.getElementById('findings'); fl.innerHTML = findings.map(f => `<li>${f}</li>`).join('');
+
+  legend('lg-fps', [{ name: '生成回答时滚动', color: '--series-1' }, { name: '回答结束后滚动', color: '--series-2' }]);
+  lineChart('c-fps', [{ name: '生成回答时滚动', color: '--series-1', values: R.map(r => r.streamFps) }, { name: '回答结束后滚动', color: '--series-2', values: R.map(r => r.idleFps) }], { ref: { value: 60, label: '60 FPS' } });
+
+  const busy = [{ name: '样式重算', color: '--series-1', values: R.map(r => r.style) }, { name: '脚本', color: '--series-2', values: R.map(r => r.script) },
+                { name: '布局', color: '--series-3', values: R.map(r => r.layout) }, { name: '其他（绘制、GC 等）', color: '--series-4', values: R.map(r => r.other) }];
+  legend('lg-busy', busy.map(s => ({ ...s, kind: 'rect' })));
+  columns('c-busy', busy, { unit: '%', stacked: true, cap: 100, labelTop: i => Math.round(R[i].busy) + '%' });
+
+  columns('c-freeze', [{ name: '最长卡死', color: '--series-1', values: R.map(r => r.freezeMs) }], { unit: '', labelTop: i => (i === 0 || i === R.length - 1 || R[i].freezeMs === Math.max(...ok.map(r => r.freezeMs))) ? fmt(R[i].freezeMs) : '' });
+
+  legend('lg-input', [{ name: '最慢一次按键', color: '--series-1' }, { name: '滚轮处理 p95', color: '--series-2' }]);
+  lineChart('c-input', [{ name: '最慢一次按键', color: '--series-1', values: R.map(r => r.keyMaxMs) }, { name: '滚轮处理 p95', color: '--series-2', values: R.map(r => r.wheelP95) }], { unit: '' });
+
+  lineChart('c-nodes', [{ name: 'DOM 节点（千）', color: '--series-1', values: R.map(r => r.nodesK) }], { unit: 'K' });
+
+  legend('lg-reload', [{ name: '所有回合出现', color: '--series-1', kind: 'rect' }, { name: '最后一条回答公式渲染完', color: '--series-2', kind: 'rect' }, { name: '主线程被阻塞', color: '--series-3', kind: 'rect' }]);
+  columns('c-reload', [{ name: '所有回合出现', color: '--series-1', values: rl.map(r => r.allTurnsSec) }, { name: '最后一条回答公式渲染完', color: '--series-2', values: rl.map(r => r.mathSec) },
+                       { name: '主线程被阻塞', color: '--series-3', values: rl.map(r => r.blockedSec) }], { unit: 's', xs: rl.map(r => r.turn), xLabel: t => t + ' 轮时' });
+
+  const cols = [['turn', '轮'], ['answerSec', '回答耗时 s'], ['mountedTurns', '页面上的回合数'], ['katex', '公式总数'], ['nodesK', 'DOM 千节点'], ['heapMB', 'JS 堆 MB'],
+    ['streamFps', '生成时 FPS'], ['streamP95', '帧间隔 p95 ms'], ['jankPct', '>50ms 帧 %'], ['freezeMs', '最长卡死 ms'], ['blockedSec', '阻塞总计 s'],
+    ['busy', '主线程占用 %'], ['style', '样式 %'], ['script', '脚本 %'], ['layout', '布局 %'], ['keyMaxMs', '最慢按键 ms'], ['wheelP95', '滚轮 p95 ms'], ['idleFps', '结束后滚动 FPS']];
+  const t = document.createElement('table'); const hr = t.createTHead().insertRow();
+  for (const [, n] of cols) { const th = document.createElement('th'); th.textContent = n; hr.append(th); }
+  const tb = t.createTBody(); for (const r of R) { const tr = tb.insertRow(); for (const [k] of cols) tr.insertCell().textContent = k === 'turn' ? r[k] : fmt(r[k]); }
+  const t2 = document.createElement('table'); t2.style.marginTop = '16px'; const h2 = t2.createTHead().insertRow();
+  for (const n of ['重新打开时的轮数', '所有回合出现 s', '公式渲染完 s', '主线程阻塞 s', 'JS 堆 MB']) { const th = document.createElement('th'); th.textContent = n; h2.append(th); }
+  const b2 = t2.createTBody(); for (const r of rl) { const tr = b2.insertRow(); for (const k of ['turn', 'allTurnsSec', 'mathSec', 'blockedSec', 'heapMB']) tr.insertCell().textContent = r[k]; }
+  const tw = document.getElementById('table'); tw.textContent = ''; tw.append(t, t2);
+
+  document.getElementById('caveat').innerHTML = `<b>测试条件</b>：Linux 台式机（12 核），Chromium 跑在虚拟显示器（Xvfb）上，没有 GPU 加速，所以绝对数值会比你平时的电脑差一些；
+    要看的是<b>随轮数变化的趋势</b>。每轮回答长度不同，所以单轮之间会有起伏。<b>第 6 轮没有数据</b>：那一轮 ChatGPT 卸载了旧回合，测试脚本判断回合出错，空等了几分钟，测到的数字不可信，已丢弃。<b>第 7 轮是在页面刷新之后开始的</b>（修好脚本后续跑），页面上只有 4 轮，所以那一轮明显流畅；到第 8 轮又掉回去了。这也说明刷新页面只能暂时缓解。FPS 用 requestAnimationFrame 测，卡死和阻塞时间来自 Long Animation Frames API，
+    主线程分解来自 Chrome DevTools Protocol 的 Performance 指标。脚本在生成回答期间每 1.5 秒上下滚动一次，模拟你“一边等回答一边滚动”的操作。`;
+}
+render();
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+</script>
+</body>
+</html>

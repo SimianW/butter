@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# ChatGPT lab: Xvfb + headed Chromium (CDP on localhost) + x11vnc + noVNC over Tailscale.
+# Usage: lab start|stop|restart|status|restart-browser
+#   LAB_EXTENSIONS=/path/a,/path/b lab restart-browser   # load unpacked extensions
+set -u
+L="${LAB_HOME:-$HOME/.local/share/chatgpt-lab}"   # runtime: x11vnc, noVNC, venv, logs, pids
+DISP=:99
+GEOM=1600x1000x24
+CDP_PORT=9222
+VNC_PORT=5999
+WEB_HOST=${LAB_WEB_HOST:-127.0.0.1}   # a Tailscale/LAN IP to view remotely
+WEB_PORT=6080
+# Snap Chromium keeps the sandbox under Ubuntu's AppArmor userns restriction.
+# Snap can't read hidden dirs in $HOME, so the profile and extensions live elsewhere.
+CHROME=/snap/bin/chromium
+PROFILE="$HOME/snap/chromium/common/chatgpt-lab-profile"
+RUN="$L/run"; LOG="$L/log"
+mkdir -p "$RUN" "$LOG"
+
+pid_alive() { [ -f "$RUN/$1.pid" ] && kill -0 "$(cat "$RUN/$1.pid")" 2>/dev/null; }
+
+spawn() { # name cmd...
+  local name=$1; shift
+  if pid_alive "$name"; then echo "$name: already running"; return; fi
+  setsid nohup "$@" >"$LOG/$name.log" 2>&1 < /dev/null &
+  echo $! >"$RUN/$name.pid"
+  echo "$name: started (pid $!)"
+}
+
+kill_one() {
+  if pid_alive "$1"; then kill "$(cat "$RUN/$1.pid")"; echo "$1: stopped"; fi
+  rm -f "$RUN/$1.pid"
+}
+
+start_xvfb() {
+  spawn xvfb Xvfb "$DISP" -screen 0 "$GEOM" -nolisten tcp
+  for _ in $(seq 50); do [ -S "/tmp/.X11-unix/X${DISP#:}" ] && return; sleep 0.1; done
+}
+
+start_browser() {
+  local ext_args=()
+  if [ -n "${LAB_EXTENSIONS:-}" ]; then
+    ext_args=(--load-extension="$LAB_EXTENSIONS")
+    echo "$LAB_EXTENSIONS" >"$RUN/extensions"
+  else
+    rm -f "$RUN/extensions"
+  fi
+  rm -f "$PROFILE/SingletonLock"
+  DISPLAY=$DISP spawn chromium "$CHROME" \
+    --user-data-dir="$PROFILE" \
+    --remote-debugging-address=127.0.0.1 --remote-debugging-port=$CDP_PORT \
+    --no-first-run --no-default-browser-check --password-store=basic \
+    --window-position=0,0 --window-size=1600,1000 \
+    "${ext_args[@]}" \
+    https://chatgpt.com/
+}
+
+start_vnc() {
+  spawn x11vnc env LD_LIBRARY_PATH="$L/root/usr/lib/x86_64-linux-gnu" \
+    "$L/root/usr/bin/x11vnc" -display "$DISP" -localhost -rfbport $VNC_PORT \
+    -rfbauth "$L/vncpass" -forever -shared -noxdamage -quiet
+  spawn novnc "$L/venv/bin/websockify" --web "$L/novnc" \
+    "$WEB_HOST:$WEB_PORT" "127.0.0.1:$VNC_PORT"
+}
+
+status() {
+  for n in xvfb chromium x11vnc novnc; do
+    if pid_alive $n; then echo "$n: running (pid $(cat "$RUN/$n.pid"))"; else echo "$n: stopped"; fi
+  done
+  [ -f "$RUN/extensions" ] && echo "extensions: $(cat "$RUN/extensions")"
+  echo "noVNC: http://$WEB_HOST:$WEB_PORT/vnc.html?autoconnect=1&resize=scale"
+  echo "CDP:   http://127.0.0.1:$CDP_PORT"
+}
+
+case "${1:-status}" in
+  start) start_xvfb; start_browser; start_vnc; status ;;
+  stop) for n in novnc x11vnc chromium xvfb; do kill_one $n; done ;;
+  restart) "$0" stop; sleep 1; "$0" start ;;
+  restart-browser) kill_one chromium; sleep 2; start_browser ;;
+  status) status ;;
+  *) echo "usage: lab start|stop|restart|status|restart-browser"; exit 1 ;;
+esac

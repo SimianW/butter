@@ -1,0 +1,2 @@
+[data-markdown-text-style="assistant-message"] > :not([data-wide-block]) { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+[class^="MainContentFrame-"], [class*=" MainContentFrame-"] { container-type: normal !important; }

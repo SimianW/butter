@@ -1,0 +1,2 @@
+[data-markdown-text-style="assistant-message"] > :not([data-wide-block]) { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+[data-turn-key] { content-visibility: auto; contain-intrinsic-size: auto 1500px; }

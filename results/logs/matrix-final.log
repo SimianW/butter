@@ -1,0 +1,14 @@
+07:21:37 [final-baseline] replaying 189 chunks over 122s, 1 reps
+07:23:56 [final-baseline] rep 1: fps=15.2 p95=299.9 jank=19% busy=87% style=65.5% blocked=75.6s maxFreeze=2082 keyP95=276.6 keyMax=3520.8 wheelP95=428 LoAF[renderSL=74s forcedSL=29.8s script=6.5s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo=null nodes=90992 turns=4 chunks=189/189
+07:24:02 [final-turbo] replaying 189 chunks over 122s, 1 reps
+07:26:19 [final-turbo] rep 1: fps=55.3 p95=16.8 jank=0.6% busy=36.9% style=8.7% blocked=2.2s maxFreeze=375 keyP95=149.9 keyMax=373.7 wheelP95=54 LoAF[renderSL=8s forcedSL=0.7s script=1.5s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":397,"published":396} nodes=90992 turns=4 chunks=189/189
+07:26:25 [oss-long-chat-smooth] replaying 189 chunks over 122s, 1 reps
+07:29:25 [oss-long-chat-smooth] rep 1: fps=4.6 p95=199.9 jank=28.7% busy=97.6% style=86.5% blocked=105.1s maxFreeze=27047 keyP95=1110.5 keyMax=17434.4 wheelP95=704 LoAF[renderSL=19.6s forcedSL=5.2s script=3.7s] answer=21448c/420k/043dc8afaf8d remounts=21 turbo=null nodes=117887 turns=4 chunks=189/189
+07:29:31 [oss-delagger] replaying 189 chunks over 122s, 1 reps
+07:32:16 [oss-delagger] rep 1: fps=3.3 p95=2016.6 jank=23.7% busy=97.7% style=88.2% blocked=106.7s maxFreeze=2754 keyP95=2982.5 keyMax=3088.9 wheelP95=2411 LoAF[renderSL=15.8s forcedSL=32.9s script=4s] answer=21448c/420k/043dc8afaf8d remounts=4 turbo=null nodes=90992 turns=4 chunks=189/189
+07:32:22 [oss-light-session] replaying 189 chunks over 122s, 1 reps
+07:34:42 [oss-light-session] rep 1: fps=15.1 p95=300 jank=19.3% busy=86.8% style=64.4% blocked=75.3s maxFreeze=2079 keyP95=289.1 keyMax=3538.9 wheelP95=427 LoAF[renderSL=72.4s forcedSL=29.9s script=6.9s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo=null nodes=90994 turns=4 chunks=189/189
+07:34:48 [oss-fetch-trimmer] replaying 189 chunks over 122s, 1 reps
+07:37:06 [oss-fetch-trimmer] rep 1: fps=14.8 p95=283.4 jank=20.4% busy=87.4% style=65.8% blocked=76.0s maxFreeze=2032 keyP95=316.5 keyMax=3460.2 wheelP95=491 LoAF[renderSL=74.9s forcedSL=29.9s script=6.7s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo=null nodes=91002 turns=4 chunks=189/189
+07:37:12 [final-turbo-r2] replaying 189 chunks over 122s, 1 reps
+07:39:29 [final-turbo-r2] rep 1: fps=55.4 p95=16.8 jank=0.6% busy=36.8% style=8.8% blocked=2.1s maxFreeze=363 keyP95=147 keyMax=345.8 wheelP95=59 LoAF[renderSL=7.8s forcedSL=0.6s script=1.4s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":398,"published":397} nodes=90992 turns=4 chunks=189/189

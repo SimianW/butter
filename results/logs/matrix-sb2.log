@@ -1,0 +1,21 @@
+"requests": [  "?num_turns=10&include_has_versions=true",  "?num_turns=10&include_has_versions=true" ]
+"turns": 5
+"modal": "none"
+
+15:31:54 [cmp-sb-default-r2] replaying 189 chunks over 122s, 2 reps
+15:34:35 [cmp-sb-default-r2] rep 1: fps=4.8 p95=1383.3 jank=14.1% busy=95.6% style=87.1% blocked=120.9s maxFreeze=9953 keyP95=6628.1 keyMax=13968.6 wheelP95=2538 LoAF[renderSL=77s forcedSL=46.5s script=3.8s] answer=21448c/420k/043dc8afaf8d remounts=7 blockAdds=1064 seenMarks=0 turbo=null nodes=91095 turns=4 chunks=189/189
+15:37:22 [cmp-sb-default-r2] rep 2: fps=4.7 p95=1399.9 jank=14.2% busy=96.1% style=87.3% blocked=123.3s maxFreeze=9708 keyP95=4633.1 keyMax=9774.9 wheelP95=2423 LoAF[renderSL=82.1s forcedSL=43.7s script=3.4s] answer=21448c/420k/043dc8afaf8d remounts=7 blockAdds=1123 seenMarks=0 turbo=null nodes=91098 turns=4 chunks=189/189
+"requests": [  "?num_turns=1&include_has_versions=true",  "?num_turns=1&include_has_versions=true" ]
+"turns": 1
+"modal": "none"
+
+15:37:45 [cmp-sb-limit1] replaying 189 chunks over 122s, 2 reps
+15:40:09 [cmp-sb-limit1] rep 1: fps=11.8 p95=600 jank=9.3% busy=88.4% style=77% blocked=97.6s maxFreeze=3498 keyP95=1715.9 keyMax=4486.6 wheelP95=991 LoAF[renderSL=79s forcedSL=26.1s script=3.5s] answer=21448c/420k/043dc8afaf8d remounts=3 blockAdds=1133 seenMarks=0 turbo=null nodes=55116 turns=2 chunks=189/189
+15:42:35 [cmp-sb-limit1] rep 2: fps=11.4 p95=600.1 jank=9.2% busy=88.7% style=77.9% blocked=99.1s maxFreeze=3487 keyP95=2168.8 keyMax=4464.9 wheelP95=983 LoAF[renderSL=78.8s forcedSL=28.1s script=3s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1128 seenMarks=0 turbo=null nodes=55116 turns=2 chunks=189/189
+"requests": [  "?num_turns=1&include_has_versions=true",  "?num_turns=1&include_has_versions=true" ]
+"turns": 1
+"modal": "none"
+
+15:42:56 [cmp-sb-limit1-turbo] replaying 189 chunks over 122s, 2 reps
+15:45:14 [cmp-sb-limit1-turbo] rep 1: fps=39.8 p95=100 jank=7.1% busy=57.9% style=34% blocked=30.6s maxFreeze=800 keyP95=343 keyMax=560.7 wheelP95=179 LoAF[renderSL=40.9s forcedSL=3.2s script=1.5s] answer=21448c/420k/043dc8afaf8d remounts=1 blockAdds=1174 seenMarks=1057 turbo={"smootherFrames":385,"published":384} nodes=55116 turns=2 chunks=189/189
+15:47:33 [cmp-sb-limit1-turbo] rep 2: fps=39.2 p95=100 jank=7.3% busy=58.9% style=34.3% blocked=31.8s maxFreeze=797 keyP95=326.7 keyMax=571.2 wheelP95=199 LoAF[renderSL=41.3s forcedSL=3.3s script=1.5s] answer=21448c/420k/043dc8afaf8d remounts=1 blockAdds=1173 seenMarks=1058 turbo={"smootherFrames":387,"published":386} nodes=55116 turns=2 chunks=189/189

@@ -1,0 +1,6 @@
+07:39:58 [safe] replaying 189 chunks over 122s, 1 reps
+07:42:15 [safe] rep 1: fps=43.3 p95=66.7 jank=6.5% busy=62.1% style=25.4% blocked=17.9s maxFreeze=673 keyP95=233.4 keyMax=706.9 wheelP95=155 LoAF[renderSL=30.1s forcedSL=7.5s script=2.1s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":387,"published":387} nodes=91071 turns=4 chunks=189/189
+07:42:21 [safe-turncv] replaying 189 chunks over 122s, 1 reps
+07:44:38 [safe-turncv] rep 1: fps=48.2 p95=50 jank=4.2% busy=50% style=21.8% blocked=11.1s maxFreeze=561 keyP95=187.9 keyMax=592.5 wheelP95=108 LoAF[renderSL=22.3s forcedSL=5.4s script=2s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":392,"published":391} nodes=90992 turns=4 chunks=189/189
+07:44:44 [safe-nocq] replaying 189 chunks over 122s, 1 reps
+07:47:02 [safe-nocq] rep 1: fps=51.4 p95=33.4 jank=2.9% busy=51.6% style=12% blocked=6.5s maxFreeze=504 keyP95=186.6 keyMax=806.6 wheelP95=78 LoAF[renderSL=15.8s forcedSL=1.6s script=1.8s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":393,"published":392} nodes=90992 turns=4 chunks=189/189

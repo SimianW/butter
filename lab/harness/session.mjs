@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.connectOverCDP('http://127.0.0.1:9222');
+const ctx = b.contexts()[0];
+for (const p of ctx.pages()) console.log('tab:', new URL(p.url()).host, '|', (await p.title()).slice(0, 50));
+const p = ctx.pages().find(x => x.url().startsWith('https://chatgpt.com')) ?? await ctx.newPage();
+if (!p.url().startsWith('https://chatgpt.com')) await p.goto('https://chatgpt.com/');
+const s = await p.evaluate(async () => (await fetch('/api/auth/session')).json());
+console.log('logged in:', !!s?.user, '| email:', s?.user?.email, '| plan:', s?.account?.planType ?? '?', '| expires:', s?.expires);
+await p.screenshot({ path: '/tmp/lab-loggedin.png' });
+await b.close();

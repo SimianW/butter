@@ -1,0 +1,14 @@
+/* Skip style and layout for turns that are off screen. `auto` remembers each turn's last
+   rendered height, so the scrollbar stays stable. */
+[data-turn-key] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1500px;
+}
+
+/* These two wrappers hold the whole thread (~90k nodes for a long math chat). As size
+   containers, they make Chrome interleave style recalc with layout for everything inside them,
+   on every streamed update. Nothing inside the thread needs them as a query container. */
+.MainContentFrame-sss8BP,
+div.\[container-type\:inline-size\].min-h-full {
+  container-type: normal !important;
+}

@@ -1,0 +1,4 @@
+04:16:08 [turbo-250-ns] replaying 189 chunks over 122s, 1 reps
+04:18:25 [turbo-250-ns] rep 1: fps=49 p95=33.4 jank=3.3% busy=44.5% style=19.8% blocked=11.8s maxFreeze=1076 keyP95=165 keyMax=1601.2 wheelP95=93 LoAF[renderSL=16.1s forcedSL=4s script=1.9s] turbo={"smootherFrames":386,"published":385} nodes=90984 turns=4 chunks=189/189
+04:18:31 [turbo-400] replaying 189 chunks over 122s, 1 reps
+04:20:48 [turbo-400] rep 1: fps=51.8 p95=16.8 jank=2.2% busy=38.1% style=15.4% blocked=9.5s maxFreeze=1015 keyP95=166.5 keyMax=1519.5 wheelP95=71 LoAF[renderSL=11.8s forcedSL=3.8s script=1.6s] turbo={"smootherFrames":252,"published":251} nodes=90992 turns=4 chunks=189/189

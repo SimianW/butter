@@ -1,0 +1,12 @@
+03:35:49 [baseline] replaying 189 chunks over 122s, 2 reps
+03:38:09 [baseline] rep 1: fps=14.5 p95=300.1 jank=20.1% busy=87.8% style=66.6% blocked=77.6s maxFreeze=2142 keyP95=307.1 keyMax=3604.8 wheelP95=498 nodes=90982 turns=4 chunks=189/189
+03:40:32 [baseline] rep 2: fps=14.8 p95=300 jank=19.6% busy=88% style=65.7% blocked=76.6s maxFreeze=2041 keyP95=280 keyMax=3442.7 wheelP95=416 nodes=90982 turns=4 chunks=189/189
+03:40:38 [cv] replaying 189 chunks over 122s, 2 reps
+03:42:55 [cv] rep 1: fps=21.7 p95=183.3 jank=21.1% busy=82.3% style=62% blocked=58.0s maxFreeze=1165 keyP95=301.2 keyMax=1801.4 wheelP95=260 nodes=90982 turns=4 chunks=189/189
+03:45:15 [cv] rep 2: fps=22.2 p95=183.2 jank=21.1% busy=81.6% style=61.3% blocked=56.1s maxFreeze=1174 keyP95=315.7 keyMax=1858.9 wheelP95=341 nodes=90982 turns=4 chunks=189/189
+03:45:21 [nocq] replaying 189 chunks over 122s, 2 reps
+03:47:40 [nocq] rep 1: fps=27.3 p95=116.6 jank=21.5% busy=81.3% style=41.8% blocked=32.4s maxFreeze=1636 keyP95=248.7 keyMax=3080.2 wheelP95=212 nodes=90982 turns=4 chunks=189/189
+03:50:10 [nocq] rep 2: fps=28.8 p95=116.6 jank=20.7% busy=79.4% style=39.1% blocked=30.8s maxFreeze=1801 keyP95=251.8 keyMax=1864 wheelP95=166 nodes=91058 turns=4 chunks=189/189
+03:50:16 [cv-nocq] replaying 189 chunks over 122s, 2 reps
+03:52:33 [cv-nocq] rep 1: fps=37.4 p95=66.7 jank=9.7% busy=71.9% style=38.8% blocked=17.2s maxFreeze=1005 keyP95=158.9 keyMax=1511.6 wheelP95=123 nodes=90982 turns=4 chunks=189/189
+03:54:54 [cv-nocq] rep 2: fps=38.3 p95=66.7 jank=9.1% busy=70.7% style=37.3% blocked=16.5s maxFreeze=1463 keyP95=156.7 keyMax=1640 wheelP95=111 nodes=90982 turns=4 chunks=189/189

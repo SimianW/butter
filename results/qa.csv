@@ -1,0 +1,9 @@
+variant,anchors,widest_block_px,find_in_page,selection_chars,text_chars,scroll_steps,scroll_jumps_over_20px,worst_jump_px
+aggressive,54,1144,True,22586,21448,40,31,282
+baseline,54,963,True,22586,21448,40,0,0
+candidate,54,973,True,22586,21448,40,26,284
+turbo-v2,54,973,True,22586,21448,40,0,4
+turbo-v3,54,973,True,22586,21448,40,28,191
+turbo-v3b,54,973,True,22586,21448,40,30,184
+turbo-v4,54,973,True,22586,21448,40,0,1
+turbo-v5,54,973,True,22586,21448,40,0,1

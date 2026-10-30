@@ -1,0 +1,2 @@
+[data-markdown-text-style="assistant-message"] > :not([data-wide-block]) { content-visibility: auto; contain-intrinsic-size: auto 120px; }
+div.\[container-type\:inline-size\].min-h-full { container-type: normal !important; }

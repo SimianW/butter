@@ -1,0 +1,4 @@
+03:58:53 [baseline-attr] replaying 189 chunks over 122s, 1 reps
+04:01:13 [baseline-attr] rep 1: fps=14.9 p95=300 jank=19.5% busy=87.2% style=65.5% blocked=76.3s maxFreeze=2088 keyP95=287.6 keyMax=3554.6 wheelP95=460 LoAF[renderSL=74s forcedSL=30.1s script=7.1s] nodes=90982 turns=4 chunks=189/189
+04:01:19 [cvnocq-attr] replaying 189 chunks over 122s, 1 reps
+04:03:38 [cvnocq-attr] rep 1: fps=38.1 p95=66.7 jank=9.5% busy=70.4% style=37.6% blocked=15.7s maxFreeze=1015 keyP95=165.5 keyMax=951.6 wheelP95=119 LoAF[renderSL=33.5s forcedSL=3.3s script=9.7s] nodes=90982 turns=4 chunks=189/189
