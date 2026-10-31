@@ -25,7 +25,10 @@
     }
     if (queue.size && !scheduled) { scheduled = true; setTimeout(() => requestAnimationFrame(flush), FLUSH_MS); }
   });
-  const watch = el => { if (!el.hasAttribute('data-turbo-seen')) ro.observe(el); };
+  const watch = el => {
+    if (el.hasAttribute('data-turn-key')) globalThis.turboNavTurn?.(el);   // history rail (turbo-nav.js)
+    if (!el.hasAttribute('data-turbo-seen')) ro.observe(el);
+  };
   const scan = root => {
     if (root.matches?.(TARGETS)) watch(root);
     // Text and KaTeX spans make up most insertions while streaming; only containers can hold targets.

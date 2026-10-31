@@ -28,3 +28,12 @@
 div.\[container-type\:inline-size\].min-h-full {
   container-type: normal !important;
 }
+
+/* History rail (turbo-nav.js): ring the question a click jumped to. */
+[data-turbo-flash] {
+  animation: turbo-flash 1.6s ease-out;
+}
+@keyframes turbo-flash {
+  0%, 35% { box-shadow: 0 0 0 2px rgb(127 127 127 / .5); }
+  100% { box-shadow: 0 0 0 2px rgb(127 127 127 / 0); }
+}
