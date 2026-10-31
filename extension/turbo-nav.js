@@ -12,7 +12,8 @@
   const HEADER = 52, COMPOSER = 140;   // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64;                 // a jumped-to question lands this far below the scroller's top
   const PAGE_AT = 240;                 // ChatGPT loads earlier messages when scrolled within ~230px of the top
-  const VEIL = 0.08;                    // chat opacity while a jump waits for ChatGPT to render
+  const SPEED = 2.5;                    // far jumps travel at this many viewport heights per second
+  const STREAK = 420;                   // height of one repeat of the travel placeholder, px
   const SIGMA = 20, SWELL = 1.6;        // hover wave: width in px, extra width at the pointer
   const REST = { s: 1, o: 0.28 }, ACTIVE = { s: 1.75, o: 1 };
   const frame = () => new Promise(r => requestAnimationFrame(r));
@@ -80,7 +81,7 @@
       if (e.contentRect.width > 0 && s !== sc) attach(s);
       if (s !== sc) continue;
       const r = s.getBoundingClientRect();
-      box = { top: r.top, bottom: r.bottom, right: r.right - (s.offsetWidth - s.clientWidth), width: r.width };
+      box = { top: r.top, bottom: r.bottom, left: r.left, right: r.right - (s.offsetWidth - s.clientWidth), width: r.width };
       changed();
     }
   });
@@ -145,12 +146,17 @@
   };
 
   // ---- Rail.
+  // Placeholder for a far jump: paragraphs of text lines and a centered formula, as seen when
+  // scrolling too fast to read. Used as a mask so the color follows the theme.
+  const STREAK_SVG = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="${STREAK}" preserveAspectRatio="none">` +
+    [[14, 100], [40, 96], [66, 98], [92, 58], [150, 30, 35], [204, 100], [230, 93], [256, 97], [282, 71], [340, 99], [366, 88]]
+      .map(([y, w, x = 0]) => `<rect x="${x}" y="${y}" width="${w}" height="10" rx="2"/>`).join('') + '</svg>');
   const CSS = `
     :host { all: initial; position: fixed; top: 0; right: 0; width: 0; height: 0; z-index: 20; display: block;
       color: #0d0d0d; font: 13px/1.45 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
-      --surface: #fff; --line: rgb(0 0 0 / .08); --muted: #8f8f8f;
+      --surface: #fff; --line: rgb(0 0 0 / .08); --muted: #8f8f8f; --streak: rgb(0 0 0 / .09);
       --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08); }
-    :host([data-dark]) { color: #ececec; --surface: #2f2f2f; --line: rgb(255 255 255 / .1); --muted: #a3a3a3;
+    :host([data-dark]) { color: #ececec; --surface: #2f2f2f; --line: rgb(255 255 255 / .1); --muted: #a3a3a3; --streak: rgb(255 255 255 / .1);
       --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3); }
     .rail { position: absolute; top: 0; right: 0; width: ${RAIL_W}px; box-sizing: border-box; padding: ${PAD}px 6px;
       transform: translate(calc(-1 * var(--r)), var(--y)); opacity: 0; pointer-events: none; will-change: transform;
@@ -184,9 +190,16 @@
     .meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; font-variant-numeric: tabular-nums; }
     .text { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
       white-space: pre-wrap; overflow-wrap: anywhere; }
+    .warp { position: fixed; left: var(--wl); top: var(--wt); width: var(--ww); height: var(--wh); overflow: hidden;
+      pointer-events: none; visibility: hidden; opacity: 0;
+      -webkit-mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent);
+      mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent); }
+    .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
+      background: var(--streak); will-change: transform;
+      -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
     @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } }`;
 
-  let host = null, rail, pill, more, tickBox, cardPos, card, meta, text;
+  let host = null, rail, pill, more, tickBox, cardPos, card, meta, text, warp, streak;
   let ticks = [], bars = [], qs = [], idxOf = new Map(), activeId = null, active = -1;
   let geo = null;   // { y: rail top, top: first tick top, pitch } in viewport px
 
@@ -195,9 +208,10 @@
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML = `<style>${CSS}</style><nav class="rail" aria-label="${TXT.label}"><div class="pill"></div>` +
       `<button class="more" aria-label="${TXT.more}"><i></i><i></i><i></i></button><div class="ticks"></div></nav>` +
-      `<div class="cardpos instant"><div class="card" role="tooltip"><div class="meta"></div><div class="text"></div></div></div>`;
-    [rail, pill, more, tickBox, cardPos, card, meta, text] =
-      ['.rail', '.pill', '.more', '.ticks', '.cardpos', '.card', '.meta', '.text'].map(s => root.querySelector(s));
+      `<div class="cardpos instant"><div class="card" role="tooltip"><div class="meta"></div><div class="text"></div></div></div>` +
+      `<div class="warp"><div class="streak"></div></div>`;
+    [rail, pill, more, tickBox, cardPos, card, meta, text, warp, streak] =
+      ['.rail', '.pill', '.more', '.ticks', '.cardpos', '.card', '.meta', '.text', '.warp', '.streak'].map(s => root.querySelector(s));
     document.body.append(host);
     const dark = () => host.toggleAttribute('data-dark', document.documentElement.classList.contains('dark') ||
       /dark/.test(getComputedStyle(document.documentElement).colorScheme));
@@ -308,6 +322,11 @@
     host.style.setProperty('--r', `${Math.round(innerWidth - box.right + 4)}px`);
     host.style.setProperty('--y', `${y}px`);
     host.style.setProperty('--pitch', `${pitch}px`);
+    const colW = Math.min(760, box.width - 96);   // the text column, for the travel placeholder
+    host.style.setProperty('--wl', `${Math.round((box.left + box.right - colW) / 2)}px`);
+    host.style.setProperty('--ww', `${Math.round(colW)}px`);
+    host.style.setProperty('--wt', `${Math.round(top)}px`);
+    host.style.setProperty('--wh', `${Math.round(bottom - top)}px`);
     host.setAttribute('data-on', '');
     if (shown >= n) hover(-2);
     kick();
@@ -340,13 +359,13 @@
     if (el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
     // Farther away the turn is unmounted or skipped by content-visibility, and rendering it takes the
     // page a second or more (more if arriving at the top makes ChatGPT load earlier messages), during
-    // which nothing can paint; right after a chat opens, ChatGPT's own start-up work adds pauses of a
-    // second at random times. So the motion the user sees runs on the compositor, which keeps going
-    // when the page is busy: fade the chat out, jump there and wait for the page behind the fade,
-    // then fade the chat in while it slides the last stretch into place (transform, not scrolling).
-    const dir = Math.sign(estimate(i) - sc.scrollTop) || 1;
+    // which nothing can paint; scrolling through the real turns in between would render each of them.
+    // So the trip is played on the compositor, which keeps animating while the page is busy: the
+    // chat speeds off toward the target, placeholder lines stream past while ChatGPT renders the
+    // target behind them, and the chat slides in at the same speed and slows to a stop on it.
+    const m = -(Math.sign(estimate(i) - sc.scrollTop) || 1);   // content moves down when going up
     setBusy(id);
-    await veil(el ?? sc.querySelector('[data-turn-key]'));
+    await depart(el ?? sc.querySelector('[data-turn-key]'), m);
     try {
       for (let tries = 0; tries < 6 && !el && live(); tries++) {
         sc.scrollTop = Math.max(0, estimate(i) - TOP_INSET);
@@ -355,35 +374,44 @@
       if (!el || !live()) return;
       sc.scrollTop = targetTop(el);
       if (cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000); await new Promise(r => setTimeout(r, 150)); }
+      // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
+      for (const end = performance.now() + 3000; live() && performance.now() < end &&
+        [...el.querySelectorAll('[data-math-source]')].some(x => !x.querySelector('.katex'));) await frame();
       await quiet(live, 4000);
       el = mountedEl(id);
       if (!el || !live()) return;
-      sc.scrollTop = targetTop(el);   // ChatGPT may have re-measured turns while we waited
+      const lead = still() ? 0 : m * Math.min(400, sc.clientHeight * 0.4);
+      await steady(el, live, lead);   // still hidden, `lead` px short of the target
+      if (!live() || !el.isConnected) return;
       flash(el);
-      await unveil(dir * Math.min(260, sc.clientHeight * 0.25));
+      await arrive(el, lead);
       await settle(el, live);
-    } finally { unveil(); setBusy(null); }
+    } finally { if (trip) arrive(null, 0); setBusy(null); }
   };
 
+  const scrollEnd = () => new Promise(r => { sc.addEventListener('scrollend', r, { once: true }); setTimeout(r, 1500); });
+  // The browser's smooth scrolling runs on the compositor: it keeps going if the page is busy.
   const glide = async (el, live) => {
     flash(el);
-    if (await slide(sc.scrollTop, targetTop(el), live, 450)) await settle(el, live);
-  };
-
-  // Ease-out scroll. A long frame pauses the slide instead of letting it jump ahead.
-  const slide = async (from, to, live, D) => {
-    let p = 0, last = performance.now();
-    for (;;) {
-      sc.scrollTop = from + (to - from) * (1 - Math.pow(1 - p, 4));
-      if (p === 1) return true;
-      const t = await frame(); if (!live()) return false;
-      p = Math.min(1, p + Math.min(t - last, 34) / D); last = t;
-    }
+    const done = scrollEnd();
+    sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
+    await done;
+    await settle(el, live);
   };
   // Turns that mounted on the way may have been re-measured.
   const settle = async (el, live) => {
     await frame(); await frame();
     if (live() && el.isConnected) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
+  };
+  // For a few frames after a jump ChatGPT still mounts and measures the neighbouring turns, which
+  // moves the target: keep it in place until it has stayed put for 8 frames in a row.
+  const steady = async (el, live, off = 0, max = 1500) => {
+    const end = performance.now() + max;
+    for (let ok = 0; ok < 8 && live() && el.isConnected && performance.now() < end;) {
+      const t = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, targetTop(el) + off));
+      if (Math.abs(t - sc.scrollTop) > 2) { sc.scrollTop = t; ok = 0; } else ok++;
+      await frame();
+    }
   };
   // Resolves once the page paints at a normal pace again: three frames under 40 ms in a row.
   const quiet = async (live, max) => {
@@ -394,24 +422,41 @@
   const pageWaiters = [];
   const nextPage = max => new Promise(r => { pageWaiters.push(r); setTimeout(r, max); });
 
-  // Fade of the thread content (the virtualizer's full-height box: turn > its wrapper > the
-  // window of mounted turns > the box), kept until unveil().
-  let veiled = null;
-  const veil = turn => {
-    const content = turn?.parentElement?.parentElement?.parentElement;
-    if (!content || content === sc || !sc.contains(content)) return Promise.resolve();
-    veiled = content.animate([{ opacity: 1 }, { opacity: VEIL }], { duration: 140, easing: 'ease-out', fill: 'forwards' });
-    return veiled.finished.catch(() => {});
+  // The trip. Both halves are things the compositor runs by itself, so they keep moving while the
+  // page is busy: opacity of the chat's content (the virtualizer's full-height box: turn > its
+  // wrapper > the window of mounted turns > the box), the browser's own smooth scrolling, and the
+  // placeholder layer `warp`. (A transform on the content box would make Chrome repaint all of it.)
+  let trip = null;
+  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Speed off: the chat scrolls toward the target and fades while the placeholder lines fade in,
+  // streaming at SPEED. `m` = +1 moves the content down (going up the chat), -1 up.
+  const depart = (turn, m) => {
+    const content = turn?.parentElement?.parentElement?.parentElement, T = 260;
+    trip = { content: content && content !== sc && sc.contains(content) ? content : null };
+    trip.off = trip.content?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T, easing: 'ease-in', fill: 'forwards' });
+    if (!still()) {
+      sc.scrollTo({ top: sc.scrollTop - m * sc.clientHeight * 0.5, behavior: 'smooth' });
+      warp.style.visibility = 'visible';
+      trip.loop = streak.animate([{ transform: 'none' }, { transform: `translateY(${m * STREAK}px)` }],
+        { duration: STREAK / (SPEED * sc.clientHeight / 1000), iterations: Infinity });
+      trip.in = warp.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: 'forwards' });
+    }
+    return new Promise(r => setTimeout(r, T));
   };
-  // Fade back in; with `dy`, also slide in from that far below (dy > 0) or above, as if scrolling there.
-  const unveil = (dy = 0) => {
-    if (!veiled) return;
-    const v = veiled; veiled = null;
-    const a = v.effect.target.isConnected && v.effect.target.animate(
-      [{ opacity: VEIL, transform: `translateY(${dy}px)` }, { opacity: 1, transform: 'none' }],
-      { duration: dy ? 520 : 300, easing: 'cubic-bezier(.2, .8, .2, 1)' });
-    v.cancel();
-    return a ? a.finished.catch(() => {}) : undefined;
+  // Arrive: the chat, waiting `lead` px short of the target, fades in and scrolls the rest of the
+  // way; the placeholder fades out.
+  const arrive = (el, lead) => {
+    const t = trip; trip = null;
+    t.content?.isConnected && t.content.animate([{ opacity: 0 }, { opacity: 1 }], { duration: lead ? 320 : 250, easing: 'ease-out' });
+    t.off?.cancel(); t.in?.cancel();
+    if (t.loop) {
+      const out = warp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, fill: 'forwards' });
+      out.finished.then(() => { t.loop.cancel(); out.cancel(); if (!trip) warp.style.visibility = 'hidden'; }, () => {});
+    }
+    if (!(el && lead)) return new Promise(r => setTimeout(r, 250));
+    const done = scrollEnd();
+    sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
+    return done;
   };
 
   let busyId = null;
@@ -425,5 +470,5 @@
   };
 
   // ChatGPT loads the previous page when the top of the chat comes into view.
-  const loadEarlier = () => { const tok = ++jumpTok; slide(sc.scrollTop, 0, () => tok === jumpTok, 450); };
+  const loadEarlier = () => { ++jumpTok; sc.scrollTo({ top: 0, behavior: 'smooth' }); };
 })();
