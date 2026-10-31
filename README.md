@@ -13,6 +13,9 @@ total, with ChatGPT Turbo for 8.0 s.
 
 中文测试报告和中文演示视频：[docs/REPORT.md](docs/REPORT.md)
 
+Current version: **0.0.1-alpha** ([changelog](CHANGELOG.md)). Alpha: it depends on ChatGPT's current
+DOM and may stop helping when ChatGPT changes it.
+
 ## Install (Windows, macOS, Linux)
 
 1. Download `chatgpt-turbo-<version>.zip` from the
@@ -80,6 +83,7 @@ extensions, ablations, method and raw tables: [docs/REPORT.md](docs/REPORT.md),
 | `notes/review.md` | Risk review of the extension code. |
 | `report/report.html` | One-page visual summary. |
 | `scripts/package.py` | Builds `dist/chatgpt-turbo-<version>.zip`. |
+| `CHANGELOG.md` | Versions. |
 
 Test: `node test/raf.test.mjs`.
 
