@@ -19,7 +19,7 @@ DOM and may stop helping when ChatGPT changes it.
 ## Install (Windows, macOS, Linux)
 
 1. Download `chatgpt-turbo-<version>.zip` from the
-   [latest release](https://github.com/SimianW/chatgpt-turbo/releases/latest) and unzip it. You get a
+   [releases page](https://github.com/SimianW/chatgpt-turbo/releases) and unzip it. You get a
    `chatgpt-turbo` folder; keep it somewhere permanent, Chrome loads it from there.
 2. Open `chrome://extensions` (Edge: `edge://extensions`) and turn on **Developer mode**.
 3. Click **Load unpacked** and pick the `chatgpt-turbo` folder.
