@@ -42,7 +42,9 @@ question you are reading.
 
 - **Hover**: the ticks around the pointer swell like a wave and a card shows the question.
 - **Click**: the chat jumps to that question and briefly rings it, also when ChatGPT has unloaded
-  that part of the chat (it keeps only about five turns on the page).
+  that part of the chat (it keeps only about five turns on the page). Far jumps fade the chat out
+  while ChatGPT renders the target, then fade it back in as it slides into place, so ChatGPT's
+  pauses don't show as stutter.
 - **Three dots** at the top: ChatGPT hasn't loaded your earlier questions yet. Click them to scroll
   to the top; ChatGPT loads the next older batch and the rail grows.
 - **Keyboard**: Tab to the rail, then ↑/↓ and Enter.
@@ -89,8 +91,10 @@ extensions, ablations, method and raw tables: [docs/REPORT.md](docs/REPORT.md),
   `data-talvt-turn-state`, `data-user-message-bubble`, `.thread-scroll-container`, one Tailwind
   class) and the history rail on the shape of ChatGPT's conversation API responses. If ChatGPT
   changes them the extension stops helping; it doesn't break the page.
-- A jump to a question far away takes 1–2.5 s on the slow test machine: ChatGPT has to render that
-  turn first.
+- A jump to a question far away takes about 1–2.5 s on the slow test machine, about 5 s to the
+  oldest loaded question right after a chat opens: ChatGPT has to render that turn (and, at the
+  top, load earlier messages) first. The chat stays faded out meanwhile and the clicked tick
+  pulses.
 
 ## Repository
 
@@ -107,6 +111,6 @@ extensions, ablations, method and raw tables: [docs/REPORT.md](docs/REPORT.md),
 | `CHANGELOG.md` | Versions. |
 
 Test: `node test/raf.test.mjs`. History rail in the lab browser: `lab/harness/nav-jumps.mjs`,
-`lab/harness/nav-stream.mjs`.
+`nav-stream.mjs`, `nav-switch.mjs`, `nav-video.mjs`.
 
 MIT license.

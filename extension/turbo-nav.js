@@ -11,6 +11,8 @@
   const PITCH_MAX = 14, PAD = 10, MORE_H = 16, RAIL_W = 52;
   const HEADER = 52, COMPOSER = 140;   // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64;                 // a jumped-to question lands this far below the scroller's top
+  const PAGE_AT = 240;                 // ChatGPT loads earlier messages when scrolled within ~230px of the top
+  const VEIL = 0.08;                    // chat opacity while a jump waits for ChatGPT to render
   const SIGMA = 20, SWELL = 1.6;        // hover wave: width in px, extra width at the pointer
   const REST = { s: 1, o: 0.28 }, ACTIVE = { s: 1.75, o: 1 };
   const frame = () => new Promise(r => requestAnimationFrame(r));
@@ -44,7 +46,7 @@
   document.addEventListener('turbo-nav', e => {
     let m; try { m = JSON.parse(e.detail); } catch { return; }
     syncConv();
-    if (m.type === 'page') mergePage(stateOf(m.conv), m);
+    if (m.type === 'page') { mergePage(stateOf(m.conv), m); if (m.before) pageWaiters.splice(0).forEach(r => r()); }
     else if (m.type === 'send') addSent(m.conv ? stateOf(m.conv) : cur, m);
     changed();
   });
@@ -62,20 +64,30 @@
 
   // ---- Turns in the DOM. ChatGPT mounts a window of about five turns; `data-turn-key` is the
   // id of the turn's question.
-  let sc = null, box = null, ioPos = null, ioBand = null, ro = null;
+  let sc = null, box = null, ioPos = null, ioBand = null;
   const mounted = new Map();   // question id -> its turn element while mounted
   const pos = new Map();       // question id -> top of its turn in scroll coordinates, last seen
   const mountedEl = id => { const el = mounted.get(id); return el?.isConnected && sc?.contains(el) ? el : null; };
 
-  const attach = s => {
-    ioPos?.disconnect(); ioBand?.disconnect(); ro?.disconnect();
-    sc = s; box = null;
-    ro = new ResizeObserver(() => {   // layout is clean in this callback, so reading it is free
-      const r = sc.getBoundingClientRect();
-      box = { top: r.top, bottom: r.bottom, right: r.right - (sc.offsetWidth - sc.clientWidth), width: r.width };
+  // ChatGPT keeps chats opened earlier in the tab as hidden copies, each with its own scroller, and
+  // shows a copy again without remounting anything: follow whichever scroller is visible.
+  // Layout is clean in a ResizeObserver callback, so reading it there is free.
+  const scrollers = new WeakSet();
+  const ro = new ResizeObserver(es => {
+    for (const e of es) {
+      const s = e.target;
+      if (!s.isConnected) { ro.unobserve(s); continue; }
+      if (e.contentRect.width > 0 && s !== sc) attach(s);
+      if (s !== sc) continue;
+      const r = s.getBoundingClientRect();
+      box = { top: r.top, bottom: r.bottom, right: r.right - (s.offsetWidth - s.clientWidth), width: r.width };
       changed();
-    });
-    ro.observe(sc);
+    }
+  });
+
+  const attach = s => {
+    ioPos?.disconnect(); ioBand?.disconnect();
+    sc = s; box = null;
     ioPos = new IntersectionObserver(es => {
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
@@ -84,9 +96,7 @@
       for (const e of es) if (e.isIntersecting) setActive(e.target.getAttribute('data-turn-key'));
     }, { root: sc, rootMargin: '-30% 0px -69% 0px' });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
-    // Any user scroll cancels a jump in progress.
-    sc.addEventListener('wheel', () => jumpTok++, { passive: true });
-    sc.addEventListener('touchstart', () => jumpTok++, { passive: true });
+    if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
 
   let reconcileQueued = false;
@@ -94,9 +104,14 @@
     syncConv();
     const s = el.closest('.thread-scroll-container');
     if (!s) return;
-    if (s !== sc) attach(s);
+    if (!scrollers.has(s)) {
+      scrollers.add(s); ro.observe(s);
+      // Any user scroll cancels a jump in progress.
+      s.addEventListener('wheel', () => jumpTok++, { passive: true });
+      s.addEventListener('touchstart', () => jumpTok++, { passive: true });
+    }
     mounted.set(el.getAttribute('data-turn-key'), el);
-    ioPos.observe(el); ioBand.observe(el);
+    if (s === sc) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
 
@@ -104,9 +119,12 @@
   // loaded late, or the API changed) and drop questions that sit between two of them (old branch).
   const reconcile = () => {
     reconcileQueued = false;
-    if (!sc?.isConnected) return;
+    if (!sc?.isConnected || !box?.width) return;   // a hidden copy holds another chat's turns
     const keys = [...sc.querySelectorAll('[data-turn-key]')].map(t => t.getAttribute('data-turn-key'));
     let list = cur.items, prev = -1;
+    // Right after switching chats the previous chat's turns can still be the visible ones: only trust
+    // turns that overlap what we know. (An empty list takes them; the chat's own response replaces them.)
+    if (list.length && !keys.some(id => list.some(x => x.id === id))) return;
     keys.forEach((id, k) => {
       let i = list.findIndex(x => x.id === id);
       if (i < 0) {
@@ -149,6 +167,8 @@
     .more:hover i, .more:focus-visible i { opacity: 1; }
     .more[hidden] { display: none; }
     .tick { height: var(--pitch); }
+    .tick.busy .bar { animation: busy .7s ease-in-out infinite alternate; }
+    @keyframes busy { to { opacity: .25; } }
     .bar { width: 12px; height: 2px; border-radius: 2px; background: currentColor; opacity: ${REST.o};
       transform-origin: right center; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: -1px; border-radius: 4px; }
@@ -272,7 +292,7 @@
     }
     while (ticks.length > n) ticks.pop().remove();
     bars = ticks.map(b => b.firstChild);
-    ticks.forEach((b, i) => b.setAttribute('aria-label', qs[i].q.slice(0, 120)));
+    ticks.forEach((b, i) => { b.setAttribute('aria-label', qs[i].q.slice(0, 120)); b.classList.toggle('busy', qs[i].id === busyId); });
     const had = cs.length;
     cs.length = co.length = ct.length = n;
     for (let j = had; j < n; j++) { cs[j] = REST.s; co[j] = REST.o; ct[j] = 1; }   // new bars start at rest
@@ -309,42 +329,93 @@
     return y(lo) + (y(hi) - y(lo)) * (i - lo) / (hi - lo);
   };
 
+  const targetTop = el => Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight,
+    sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET));
+
   const jump = async i => {
-    const tok = ++jumpTok, id = qs[i].id;
+    const tok = ++jumpTok, id = qs[i].id, live = () => tok === jumpTok;
     setActive(id);
-    for (let tries = 0; tries < 6; tries++) {
-      let el = mountedEl(id);
-      if (!el) {
+    let el = mountedEl(id);
+    // Close by: glide there.
+    if (el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
+    // Farther away the turn is unmounted or skipped by content-visibility, and rendering it takes the
+    // page a second or more (more if arriving at the top makes ChatGPT load earlier messages), during
+    // which nothing can paint; right after a chat opens, ChatGPT's own start-up work adds pauses of a
+    // second at random times. So the motion the user sees runs on the compositor, which keeps going
+    // when the page is busy: fade the chat out, jump there and wait for the page behind the fade,
+    // then fade the chat in while it slides the last stretch into place (transform, not scrolling).
+    const dir = Math.sign(estimate(i) - sc.scrollTop) || 1;
+    setBusy(id);
+    await veil(el ?? sc.querySelector('[data-turn-key]'));
+    try {
+      for (let tries = 0; tries < 6 && !el && live(); tries++) {
         sc.scrollTop = Math.max(0, estimate(i) - TOP_INSET);
-        for (let f = 0; f < 30 && !(el = mountedEl(id)); f++) { await frame(); if (tok !== jumpTok) return; }
+        for (let f = 0; f < 30 && live() && !(el = mountedEl(id)); f++) await frame();
       }
-      if (el) return glide(el, tok);
-    }
+      if (!el || !live()) return;
+      sc.scrollTop = targetTop(el);
+      if (cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000); await new Promise(r => setTimeout(r, 150)); }
+      await quiet(live, 4000);
+      el = mountedEl(id);
+      if (!el || !live()) return;
+      sc.scrollTop = targetTop(el);   // ChatGPT may have re-measured turns while we waited
+      flash(el);
+      await unveil(dir * Math.min(260, sc.clientHeight * 0.25));
+      await settle(el, live);
+    } finally { unveil(); setBusy(null); }
   };
 
-  const glide = async (el, tok) => {
-    const targetTop = () => Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight,
-      sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET));
-    let to = targetTop(), from = sc.scrollTop;
-    const vh = sc.clientHeight;
-    if (Math.abs(to - from) > vh * 1.5) {
-      // Scrolling the whole way would render every turn in between; cut to just short of it.
-      sc.scrollTop = from = to - Math.sign(to - from) * vh * 0.6;
-      await frame(); if (tok !== jumpTok || !el.isConnected) return;
-      to = targetTop();
-    }
+  const glide = async (el, live) => {
     flash(el);
-    const t0 = performance.now(), D = 450;
-    for (;;) {
-      const p = Math.min(1, (performance.now() - t0) / D);
-      sc.scrollTop = from + (to - from) * (1 - Math.pow(1 - p, 4));
-      if (p === 1) break;
-      await frame(); if (tok !== jumpTok) return;
-    }
-    // Turns that mounted on the way may have been re-measured.
-    await frame(); await frame();
-    if (tok === jumpTok && el.isConnected) { const t = targetTop(); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
+    if (await slide(sc.scrollTop, targetTop(el), live, 450)) await settle(el, live);
   };
+
+  // Ease-out scroll. A long frame pauses the slide instead of letting it jump ahead.
+  const slide = async (from, to, live, D) => {
+    let p = 0, last = performance.now();
+    for (;;) {
+      sc.scrollTop = from + (to - from) * (1 - Math.pow(1 - p, 4));
+      if (p === 1) return true;
+      const t = await frame(); if (!live()) return false;
+      p = Math.min(1, p + Math.min(t - last, 34) / D); last = t;
+    }
+  };
+  // Turns that mounted on the way may have been re-measured.
+  const settle = async (el, live) => {
+    await frame(); await frame();
+    if (live() && el.isConnected) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
+  };
+  // Resolves once the page paints at a normal pace again: three frames under 40 ms in a row.
+  const quiet = async (live, max) => {
+    const end = performance.now() + max;
+    let last = await frame(), ok = 0;
+    while (ok < 3 && live() && performance.now() < end) { const t = await frame(); ok = t - last < 40 ? ok + 1 : 0; last = t; }
+  };
+  const pageWaiters = [];
+  const nextPage = max => new Promise(r => { pageWaiters.push(r); setTimeout(r, max); });
+
+  // Fade of the thread content (the virtualizer's full-height box: turn > its wrapper > the
+  // window of mounted turns > the box), kept until unveil().
+  let veiled = null;
+  const veil = turn => {
+    const content = turn?.parentElement?.parentElement?.parentElement;
+    if (!content || content === sc || !sc.contains(content)) return Promise.resolve();
+    veiled = content.animate([{ opacity: 1 }, { opacity: VEIL }], { duration: 140, easing: 'ease-out', fill: 'forwards' });
+    return veiled.finished.catch(() => {});
+  };
+  // Fade back in; with `dy`, also slide in from that far below (dy > 0) or above, as if scrolling there.
+  const unveil = (dy = 0) => {
+    if (!veiled) return;
+    const v = veiled; veiled = null;
+    const a = v.effect.target.isConnected && v.effect.target.animate(
+      [{ opacity: VEIL, transform: `translateY(${dy}px)` }, { opacity: 1, transform: 'none' }],
+      { duration: dy ? 520 : 300, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+    v.cancel();
+    return a ? a.finished.catch(() => {}) : undefined;
+  };
+
+  let busyId = null;
+  const setBusy = id => { busyId = id; ticks.forEach((b, i) => b.classList.toggle('busy', qs[i]?.id === id)); };
 
   const flash = el => {
     const b = el.querySelector('[data-user-message-bubble]');
@@ -354,13 +425,5 @@
   };
 
   // ChatGPT loads the previous page when the top of the chat comes into view.
-  const loadEarlier = async () => {
-    const tok = ++jumpTok, from = sc.scrollTop, t0 = performance.now();
-    for (;;) {
-      const p = Math.min(1, (performance.now() - t0) / 450);
-      sc.scrollTop = from * Math.pow(1 - p, 4);
-      if (p === 1 || tok !== jumpTok) return;
-      await frame();
-    }
-  };
+  const loadEarlier = () => { const tok = ++jumpTok; slide(sc.scrollTop, 0, () => tok === jumpTok, 450); };
 })();
