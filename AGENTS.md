@@ -21,7 +21,7 @@ The user may refer to a build by its `version` (for example "0.0.2.3"); that is 
 On a version change, update together:
 
 - both manifest fields;
-- "Current version" in `README.md`;
+- "Current version" in `README.md` and "当前版本" in `README.zh-CN.md`;
 - a `## <version_name> (YYYY-MM-DD)` entry at the top of `CHANGELOG.md`, describing what changed
   for the user since the previous build;
 - the package: `python3 scripts/package.py` names the zip after `version_name`.
