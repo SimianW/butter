@@ -68,7 +68,7 @@
     pos.clear(); activeId = null; active = -1; reband(); cancelJump(); hover(-2);
     if (c) {
       opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0, reset: true };
-      openRaf = requestAnimationFrame(settleOpen);
+      cancelAnimationFrame(openRaf); openRaf = requestAnimationFrame(settleOpen);
     }
     changed();
   };
