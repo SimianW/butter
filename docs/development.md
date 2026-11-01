@@ -15,7 +15,7 @@
 
 - Unit test: `node test/raf.test.mjs`.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
-  `nav-switch.mjs`, `nav-video.mjs`.
+  `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
 
 ## Release
 

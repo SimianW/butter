@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 const CHAT = process.env.CHAT, OUT = 'scratch/nav'; fs.mkdirSync('scratch', { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-execFileSync('../lab', ['restart-browser'], { env: { ...process.env, LAB_EXTENSIONS: new URL('../../extension', import.meta.url).pathname }, stdio: 'ignore' });
+execFileSync('../lab', ['restart-browser'], { env: { ...process.env, LAB_EXTENSIONS: process.env.EXT ?? new URL('../../extension', import.meta.url).pathname }, stdio: 'ignore' });
 for (let i = 0; i < 60; i++) { try { await fetch('http://127.0.0.1:9222/json/version'); break; } catch { await sleep(500); } }
 await sleep(3000);
 const b = await chromium.connectOverCDP('http://127.0.0.1:9222');
