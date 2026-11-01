@@ -287,7 +287,10 @@
     return [s, o, t];
   };
   const step = now => {
-    const k = 1 - Math.exp(-Math.min(64, now - last) / 60); last = now;
+    // A frame's timestamp is when Chrome began it, which can be earlier than the performance.now()
+    // that kick() stored while the page was busy. A negative interval made k hugely negative and
+    // threw the bars far past their targets: one tick swelled over the whole screen for a few frames.
+    const k = 1 - Math.exp(-Math.max(0, Math.min(64, now - last)) / 60); last = Math.max(last, now);
     let moving = false;
     for (let j = 0; j < bars.length; j++) {
       const [s, o, t] = targetOf(j);
