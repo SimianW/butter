@@ -17,6 +17,8 @@
   lit, and at the very bottom of a chat a short last question never got its tick lit.
 - The ring around the question a jump lands on is drawn complete; before, its right (and sometimes
   top) edge was cut off.
+- Opening a chat sometimes left no tick lit until you scrolled. The ticks of the questions on
+  screen now light as soon as the chat appears.
 
 ## 0.1.0-alpha.6 (2026-11-01)
 

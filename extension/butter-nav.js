@@ -65,7 +65,7 @@
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur);   // a new chat got its id
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
-    pos.clear(); activeId = null; active = -1; onScreen.clear(); cancelJump(); hover(-2);
+    pos.clear(); activeId = null; active = -1; reband(); cancelJump(); hover(-2);
     changed();
   };
   setInterval(syncConv, 700);
@@ -109,6 +109,13 @@
     }, { root: sc, rootMargin: `-${Math.max(HEADER, TOP_INSET) + EDGE}px 0px -${COMPOSER + EDGE}px 0px` });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
+  };
+  // Start the lit set over. An observer reports a turn only when it crosses the band, so turns
+  // already in view must be observed afresh: ChatGPT can show a chat kept in the tab, or change the
+  // URL after mounting the new chat's turns, and clearing alone left no tick lit until a scroll.
+  const reband = () => {
+    onScreen.clear();
+    if (ioBand) for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioBand.unobserve(el); ioBand.observe(el); }
   };
 
   let reconcileQueued = false;
