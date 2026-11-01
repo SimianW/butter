@@ -11,7 +11,7 @@ compare the ratios. Not yet measured on Windows or macOS:
 
 ## Results
 
-| Metric | ChatGPT as is | With Turbo |
+| Metric | ChatGPT as is | With Butter |
 |---|---|---|
 | Main thread blocked during the answer | 75.6 s | 6.3 s |
 | Frame time p95 while scrolling | 300 ms | 33 ms |
@@ -22,7 +22,7 @@ compare the ratios. Not yet measured on Windows or macOS:
 The fully streamed answer is byte-identical with and without the extension.
 
 In the recorded [demo video](media/demo-en.mp4) the page without the extension was frozen for
-75.8 s in total during the answer, with ChatGPT Turbo for 8.0 s.
+75.8 s in total during the answer, with Butter for 8.0 s.
 
 ## More
 

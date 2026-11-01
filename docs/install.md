@@ -2,11 +2,11 @@
 
 ## Install (Windows, macOS, Linux)
 
-1. Download `chatgpt-turbo-<version>.zip` from the
-   [releases page](https://github.com/SimianW/chatgpt-turbo/releases) and unzip it. You get a
-   `chatgpt-turbo` folder; keep it somewhere permanent, Chrome loads it from there.
+1. Download `butter-<version>.zip` from the
+   [releases page](https://github.com/SimianW/butter/releases) and unzip it. You get a
+   `butter` folder; keep it somewhere permanent, Chrome loads it from there.
 2. Open `chrome://extensions` (Edge: `edge://extensions`) and turn on **Developer mode**.
-3. Click **Load unpacked** and pick the `chatgpt-turbo` folder.
+3. Click **Load unpacked** and pick the `butter` folder.
 4. Reload any open chatgpt.com tabs.
 
 Works in Chrome, Edge, Brave, Arc and other Chromium browsers (version 95 or later). Not in Safari

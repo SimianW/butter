@@ -1,19 +1,19 @@
-# ChatGPT Turbo
+# Butter for ChatGPT
 
 English | [中文](README.zh-CN.md)
 
 ChatGPT on the web is painfully laggy… This is the extension that finally makes it actually work.
 
-![Side by side while a long answer streams: ChatGPT without the extension (left) and with ChatGPT Turbo (right)](docs/media/demo-en.gif)
+![Side by side while a long answer streams: ChatGPT without the extension (left) and with Butter (right)](docs/media/demo-en.gif)
 
-Left: ChatGPT as is. Right: with ChatGPT Turbo. Same chat, same answer, same input.
+Left: ChatGPT as is. Right: with Butter. Same chat, same answer, same input.
 [Full video](docs/media/demo-en.mp4)
 
 ## The difference
 
 In a long math chat, while an answer streams in:
 
-| | ChatGPT as is | With Turbo |
+| | ChatGPT as is | With Butter |
 |---|---|---|
 | Page frozen | **75.6 s** | **6.3 s** |
 | Scrolling (p95 frame) | 300 ms | 33 ms |
@@ -30,10 +30,10 @@ A thin rail on the right, one tick per question. Hover to preview, click to jump
 
 ## Install
 
-1. Download the zip from [Releases](https://github.com/SimianW/chatgpt-turbo/releases) and unzip it
+1. Download the zip from [Releases](https://github.com/SimianW/butter/releases) and unzip it
    somewhere permanent.
 2. Open `chrome://extensions`, turn on **Developer mode**.
-3. **Load unpacked** → pick the `chatgpt-turbo` folder, then reload chatgpt.com.
+3. **Load unpacked** → pick the `butter` folder, then reload chatgpt.com.
 
 Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install.md)
 

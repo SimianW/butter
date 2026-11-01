@@ -1,19 +1,19 @@
-# ChatGPT Turbo
+# Butter for ChatGPT
 
 [English](README.md) | 中文
 
 ChatGPT 网页版实在是太卡了…… 这是一个真正让它好用起来的插件。
 
-![长回答输出时的左右对比：左边是原版 ChatGPT，右边装了 ChatGPT Turbo](docs/media/demo-zh.gif)
+![长回答输出时的左右对比：左边是原版 ChatGPT，右边装了 Butter](docs/media/demo-zh.gif)
 
-左边：原版 ChatGPT。右边：装了 ChatGPT Turbo。同一个对话、同一段回答、同样的操作。
+左边：原版 ChatGPT。右边：装了 Butter。同一个对话、同一段回答、同样的操作。
 [完整视频](docs/media/demo-zh.mp4)
 
 ## 效果对比
 
 在一个很长的数学对话里，回答正在输出时：
 
-| | 原版 ChatGPT | 装了 Turbo |
+| | 原版 ChatGPT | 装了 Butter |
 |---|---|---|
 | 页面卡住 | **75.6 秒** | **6.3 秒** |
 | 滚动（p95 帧耗时） | 300 ms | 33 ms |
@@ -30,9 +30,9 @@ ChatGPT 网页版实在是太卡了…… 这是一个真正让它好用起来�
 
 ## 安装
 
-1. 从 [Releases](https://github.com/SimianW/chatgpt-turbo/releases) 下载 zip，解压到一个不会删掉的位置。
+1. 从 [Releases](https://github.com/SimianW/butter/releases) 下载 zip，解压到一个不会删掉的位置。
 2. 打开 `chrome://extensions`，打开右上角的 **开发者模式**。
-3. 点 **加载已解压的扩展程序**，选 `chatgpt-turbo` 文件夹，然后刷新 chatgpt.com。
+3. 点 **加载已解压的扩展程序**，选 `butter` 文件夹，然后刷新 chatgpt.com。
 
 支持 Chrome、Edge、Brave、Arc（Chromium 95 及以上）。[设置与更多细节（英文）→](docs/install.md)
 

@@ -8,7 +8,7 @@
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
 | `notes/review.md` | Risk review of the extension code. |
 | `report/report.html` | One-page visual summary. |
-| `scripts/package.py` | Builds `dist/chatgpt-turbo-<version>.zip`. |
+| `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
 | `CHANGELOG.md` | Versions. |
 
 ## Tests

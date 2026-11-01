@@ -1,7 +1,7 @@
 # How it works
 
 ChatGPT gets slow in long chats because every streamed update makes Chrome restyle and re-lay out
-the whole conversation. ChatGPT Turbo cuts that work in four places:
+the whole conversation. Butter cuts that work in four places:
 
 | File | Change | Why |
 |---|---|---|
