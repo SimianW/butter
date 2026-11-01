@@ -100,10 +100,10 @@
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
     // Every question with any part on screen (between the header and the composer) is lit. Not
-    // shown while pinned to a jump's target: turns stream past on the way.
+    // shown while a jump is travelling: turns stream past on the way.
     ioBand = new IntersectionObserver(es => {
       for (const e of es) if (e.isIntersecting && e.target.isConnected) onScreen.add(e.target); else onScreen.delete(e.target);
-      if (!pinned) kick();
+      if (!flying) kick();
     }, { root: sc, rootMargin: `-${HEADER}px 0px -${COMPOSER}px 0px` });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
@@ -284,7 +284,7 @@
   // Hover wave: each bar eases toward its target width/opacity; runs only while something moves.
   let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [];   // current scaleX, opacity, scaleY
   const targetOf = j => {
-    const on = pinned ? j === active : litIds.has(qs[j].id);
+    const on = flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
     let s = on ? ACTIVE.s : REST.s, o = on ? ACTIVE.o : REST.o, t = 1;
     if (pointerY !== null) {
       const d = (tickY(j) - pointerY) / SIGMA, g = Math.exp(-d * d / 2);
@@ -363,9 +363,11 @@
 
   // ---- Jumping. A turn ChatGPT hasn't mounted has no element to scroll to: go where it should be
   // (last seen there, or interpolated between turns that were), let ChatGPT mount it, then align.
-  let jumpTok = 0, journey = null;
+  // While a jump travels only its target is lit; once it lands (or ends) the ticks show what is on screen.
+  let jumpTok = 0, journey = null, flying = false;
+  const landedAt = () => { flying = false; kick(); };
   // Stops a jump in progress and shows the chat again at once.
-  function cancelJump() { jumpTok++; journey = null; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  function cancelJump() { jumpTok++; journey = null; flying = false; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
   // From a click until the user scrolls, the clicked question stays the current one.
   let pinned = false;
   let anchor = null;
@@ -443,12 +445,13 @@
     const relay = !!trip;
     if (relay) trip.tok = tok;
     setBusy(null);
-    setActive(id); pinned = true;
+    flying = true; setActive(id); pinned = true;
     let el = mountedEl(id);
     // Close by: glide there.
     if (!earlier && !relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) {
       journey = null;
       await glide(el, live);
+      if (tok === jumpTok) landedAt();
       if (live() && pinned) follow(id, tok);
       else if (tok === jumpTok) unpin();
       return;
@@ -541,6 +544,7 @@
       landed = true;
       anchor.off = 0;
       await arrive(el, lead);
+      if (tok === jumpTok) landedAt();   // stopped moving; settle only nudges by a few px
       await settle(el, live);
     } finally {
       const expired = tok === jumpTok && performance.now() >= end;
@@ -556,7 +560,7 @@
       if (trip?.tok === tok) arrive(null, 0);
       if (busyTok === tok) setBusy(null);
       if (tok === jumpTok) {
-        journey = null;
+        journey = null; landedAt();
         if (landed && pinned) follow(id, tok);
         else unpin();
       }
