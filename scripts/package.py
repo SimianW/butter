@@ -8,7 +8,7 @@ import zipfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXT = os.path.join(ROOT, 'extension')
 manifest = json.load(open(os.path.join(EXT, 'manifest.json')))
-version = manifest.get('version_name', manifest['version'])   # e.g. 0.0.1-alpha
+version = manifest.get('version_name', manifest['version'])   # e.g. 0.1.0-alpha
 os.makedirs(os.path.join(ROOT, 'dist'), exist_ok=True)
 out = os.path.join(ROOT, 'dist', f'butter-{version}.zip')
 with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:

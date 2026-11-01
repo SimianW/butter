@@ -37,7 +37,7 @@ A thin rail on the right, one tick per question. Hover to preview, click to jump
 
 Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install.md)
 
-Current version: **0.0.2-alpha.4** ([changelog](CHANGELOG.md)). Alpha: if ChatGPT changes its page, the
+Current version: **0.1.0-alpha.5** ([changelog](CHANGELOG.md)). Alpha: if ChatGPT changes its page, the
 extension may stop helping, but it won't break anything.
 
 ## More

@@ -17,7 +17,7 @@ render-phase style+layout, script-forced style+layout and script; `answer_sha` m
 `043dc8afaf8d` for every run.
 
 Variant names: `baseline`, `*-baseline*`, `smoke` = ChatGPT without extensions. `turbo-v5`,
-`cmp-turbo*` = the shipped extension (0.0.1-alpha). `nav-stock`, `nav-v001`, `nav-v002`, `nav-v002b` = ChatGPT without extensions, 0.0.1-alpha, 0.0.2-alpha (history rail) and 0.0.2-alpha after the jump and chat-switch fixes, measured on ChatGPT's newer front end that keeps only about five turns in the DOM; compare them only with each other. `oss-*` = other extensions from the survey. `cmp-sb-*` =
+`cmp-turbo*` = the shipped extension (0.1.0-alpha). `nav-stock`, `nav-v001`, `nav-v002`, `nav-v002b` = ChatGPT without extensions, 0.1.0-alpha, 0.1.0-alpha.1 (history rail) and 0.1.0-alpha.1 after the jump and chat-switch fixes, measured on ChatGPT's newer front end that keeps only about five turns in the DOM; compare them only with each other. `oss-*` = other extensions from the survey. `cmp-sb-*` =
 Speed Booster Toolkit 4.6.1 (`cmp-sb-default` was first logged as `cmp-sb-limit1`; see the note at
 the top of `logs/matrix-sb.log`). `trace-*` runs also recorded a Chrome trace, which slows them
 down; don't compare them with the rest. Other names are the ablation variants in `lab/variants/`.
