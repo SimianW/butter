@@ -11,6 +11,8 @@
   went blank for a second or two, stopped at a random spot mid-chat, and needed several clicks.
   One click loads up to 100 earlier turns or runs for up to 60 seconds; click again to continue.
 - With reduced motion turned on, a far jump shows still placeholder lines instead of a blank chat.
+- A rail tick no longer swells into a large black shape over the chat for a moment while the page
+  is busy (for example during a far jump or while earlier messages load).
 
 ## 0.1.0-alpha.5 (2026-11-01)
 
