@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 
-const source = fs.readFileSync(new URL('../extension/turbo-nav.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../extension/butter-nav.js', import.meta.url), 'utf8');
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
 class FakeElement {
@@ -99,7 +99,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     clearTimeout: id => timers.delete(id),
     setInterval() {},
   });
-  vm.runInContext(source, ctx, { filename: 'turbo-nav.js' });
+  vm.runInContext(source, ctx, { filename: 'butter-nav.js' });
   const frame = (timestamp = now + 16) => {
     // rAF's frame-start timestamp may lag the current performance.now() clock.
     now = Math.max(now, timestamp);
@@ -110,7 +110,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     for (let i = 0; frames.size && i < 150; i++) frame();
     assert.equal(frames.size, 0, 'animation should settle and stop scheduling frames');
   };
-  const send = message => document.emit('turbo-nav', { detail: JSON.stringify(message) });
+  const send = message => document.emit('butter-nav', { detail: JSON.stringify(message) });
   const scroller = new FakeElement();
   Object.assign(scroller, {
     className: 'thread-scroll-container', scrollTop: 0, scrollHeight: 5000,
@@ -124,7 +124,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     turn.top = 100 + 100 * i;
     turn.getBoundingClientRect = () => ({ top: turn.top - scroller.scrollTop, bottom: turn.top + 100 - scroller.scrollTop });
     scroller.append(turn);
-    ctx.turboNavTurn(turn);
+    ctx.butterNavTurn(turn);
     return turn;
   });
   const resize = target => {
