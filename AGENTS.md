@@ -26,6 +26,9 @@ On a version change, update together:
   for the user since the previous build;
 - the package: `python3 scripts/package.py` names the zip after `version_name`.
 
+`python3 scripts/check-version.py` verifies the manifest, README, and changelog version sites.
+For test commands, see [docs/development.md](docs/development.md).
+
 GitHub tags and releases are `v<version_name>`; alpha builds are marked as prereleases.
 
 Builds before 0.1.0-alpha.5 were renamed on 2026-11-01. Commit messages from before then still use
