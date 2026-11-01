@@ -361,7 +361,9 @@
   // size changes keep its question aligned; no polling or layout reads while the chat is idle.
   const follow = (id, tok) => {
     anchor?.ro.disconnect();
-    const ro = new ResizeObserver(() => {
+    const ro = new ResizeObserver(entries => {
+      // A turn ChatGPT unmounts reports its size going to zero once; stop holding on to it.
+      for (const e of entries) if (!e.target.isConnected) ro.unobserve(e.target);
       if (tok !== jumpTok || !pinned || trip || busyTok) return;
       const el = mountedEl(id);
       if (el) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
