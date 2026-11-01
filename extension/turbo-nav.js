@@ -47,8 +47,13 @@
   document.addEventListener('turbo-nav', e => {
     let m; try { m = JSON.parse(e.detail); } catch { return; }
     syncConv();
-    if (m.type === 'page') { mergePage(stateOf(m.conv), m); if (m.before) pageWaiters.splice(0).forEach(r => r()); }
-    else if (m.type === 'send') addSent(m.conv ? stateOf(m.conv) : cur, m);
+    if (m.type === 'page') {
+      mergePage(stateOf(m.conv), m);
+      // Earlier messages go in above every recorded turn and push them all down: forget where they were.
+      if (m.before && m.conv === convId) pos.clear();
+      if (m.before) pageWaiters.splice(0).forEach(r => r());
+    }
+    else if (m.type === 'send') { addSent(m.conv ? stateOf(m.conv) : cur, m); unpin(); }   // ChatGPT scrolls to the new question
     changed();
   });
 
@@ -92,9 +97,10 @@
     ioPos = new IntersectionObserver(es => {
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
-    // The turn crossing a line 30% down the view is the current one.
+    // The turn crossing a line 30% down the view is the current one. Not while pinned to a jump's
+    // target: turns stream past the line on the way, and a short target leaves the next turn on it.
     ioBand = new IntersectionObserver(es => {
-      for (const e of es) if (e.isIntersecting) setActive(e.target.getAttribute('data-turn-key'));
+      if (!pinned) for (const e of es) if (e.isIntersecting) setActive(e.target.getAttribute('data-turn-key'));
     }, { root: sc, rootMargin: '-30% 0px -69% 0px' });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
@@ -110,11 +116,20 @@
       // Any user scroll cancels a jump in progress.
       s.addEventListener('wheel', cancelJump, { passive: true });
       s.addEventListener('touchstart', cancelJump, { passive: true });
+      s.addEventListener('pointerdown', e => { if (s === sc && e.target === s && box && e.clientX >= box.right) cancelJump(); }, { passive: true });   // scrollbar
     }
     mounted.set(el.getAttribute('data-turn-key'), el);
     if (s === sc) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
+  // Scrolling by keyboard too, unless the key goes to a text field, a button or the rail.
+  const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' ']);
+  addEventListener('keydown', e => {
+    const t = e.target;
+    if (!SCROLL_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey || !(t instanceof Element) || t === host) return;
+    if (t.isContentEditable || t.closest('input, textarea, select') || (e.key === ' ' && t.closest('button, a, [role="button"]'))) return;
+    cancelJump();
+  }, { capture: true, passive: true });
 
   // Mounted turns are consecutive in the thread: add any the responses didn't cover (the extension
   // loaded late, or the API changed) and drop questions that sit between two of them (old branch).
@@ -336,7 +351,31 @@
   // (last seen there, or interpolated between turns that were), let ChatGPT mount it, then align.
   let jumpTok = 0;
   // Stops a jump in progress and shows the chat again at once.
-  function cancelJump() { jumpTok++; if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  function cancelJump() { jumpTok++; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  // From a click until the user scrolls, the clicked question stays the current one.
+  let pinned = false;
+  function unpin() {
+    if (!pinned) return;
+    pinned = false;
+    // Observing again reports the turn on the line now; it may not cross it again for a while.
+    if (sc) for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioBand.unobserve(el); ioBand.observe(el); }
+  }
+  // Records where the mounted turns are now, adds them to `seen`, and returns their range in `qs`
+  // ([Infinity, -1] if none). The turn after them starts where the last one ends, which keeps an
+  // estimate below a tall turn from landing inside it again.
+  const measure = seen => {
+    const top = sc.getBoundingClientRect().top - sc.scrollTop;
+    let a = Infinity, b = -1, bottom = 0;
+    for (const [id, el] of mounted) {
+      if (!el.isConnected || !sc.contains(el)) continue;
+      const r = el.getBoundingClientRect();
+      pos.set(id, r.top - top); seen.add(id);
+      const j = idxOf.get(id);
+      if (j != null) { a = Math.min(a, j); if (j > b) { b = j; bottom = r.bottom - top; } }
+    }
+    if (b >= 0 && b + 1 < qs.length) { pos.set(qs[b + 1].id, bottom); seen.add(qs[b + 1].id); }
+    return [a, b];
+  };
   const MAX_TRIP = 12000;
   const estimate = i => {
     let lo = i, hi = i;
@@ -362,7 +401,7 @@
     // the chat hidden until it next checks.
     if (trip) arrive(null, 0);
     setBusy(null);
-    setActive(id);
+    setActive(id); pinned = true;
     let el = mountedEl(id);
     // Close by: glide there.
     if (el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
@@ -372,11 +411,25 @@
     // So the trip is played on the compositor, which keeps animating while the page is busy: the
     // chat speeds off toward the target, placeholder lines stream past while ChatGPT renders the
     // target behind them, and the chat slides in at the same speed and slows to a stop on it.
-    const m = -(Math.sign(estimate(i) - sc.scrollTop) || 1);   // content moves down when going up
+    // Content moves down when going up. Which side the target is on comes from the mounted turns,
+    // whose positions are read now, rather than from records that may be stale.
+    const seen = new Set();
+    let [a, b] = measure(seen);
+    const m = -(Math.sign(el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b) || 1);
     setBusy(id, tok);
     await depart(el ?? sc.querySelector('[data-turn-key]'), m, tok);
+    let landed = false;
     try {
-      for (let tries = 0; tries < 6 && !el && live(); tries++) {
+      for (let tries = 0; tries < 8 && !el && live(); tries++) {
+        if (tries) {
+          // Where the records put the target, it didn't mount: ChatGPT has re-measured turns or inserted
+          // earlier messages since they were taken. Drop the older records between the turns mounted
+          // here and the target, so the next estimate starts from these and moves toward the target.
+          // Positions read during this jump stay: after an overshoot they bound the target from the other side.
+          [a, b] = measure(seen);
+          const [from, to] = b < 0 || (i >= a && i <= b) ? [i, i + 1] : i < a ? [0, a] : [b + 2, qs.length];
+          for (let j = from; j < to; j++) if (!seen.has(qs[j].id)) pos.delete(qs[j].id);
+        }
         sc.scrollTop = Math.max(0, estimate(i) - TOP_INSET);
         for (let f = 0; f < 30 && live() && !(el = mountedEl(id)); f++) await frame();
       }
@@ -393,9 +446,14 @@
       await steady(el, live, lead);   // still hidden, `lead` px short of the target
       if (!live() || !el.isConnected) return;
       flash(el);
+      landed = true;
       await arrive(el, lead);
       await settle(el, live);
-    } finally { if (trip?.tok === tok) arrive(null, 0); if (busyTok === tok) setBusy(null); }
+    } finally {
+      if (trip?.tok === tok) arrive(null, 0);
+      if (busyTok === tok) setBusy(null);
+      if (!landed && tok === jumpTok) unpin();   // gave up short of the target: show where the chat is
+    }
   };
 
   const scrollEnd = () => new Promise(r => { sc.addEventListener('scrollend', r, { once: true }); setTimeout(r, 1500); });
