@@ -16,7 +16,7 @@ const runs = Number(process.env.RUNS ?? 5);
 let chat = process.env.CHAT;
 if (!chat) {
   const tabs = await (await fetch('http://127.0.0.1:9222/json/list')).json();
-  chat = tabs.find(t => t.type === 'page' && /chatgpt.com\/.*\/c\//.test(t.url))?.url;
+  chat = tabs.find(t => t.type === 'page' && /^https:\/\/chatgpt\.com\/(?:[^?#]*\/)?c\//.test(t.url))?.url;
 }
 if (!chat) throw Error('Set CHAT or leave the long math chat open in the lab browser.');
 const log = (...v) => { const line = v.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' '); console.log(line); fs.appendFileSync(path.join(out,'commands.log'),line+'\n'); };

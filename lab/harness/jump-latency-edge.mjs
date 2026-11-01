@@ -5,10 +5,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 const dir=new URL('./scratch/jump-latency/',import.meta.url),root=new URL('../../',import.meta.url).pathname;
+fs.mkdirSync(dir,{recursive:true});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let chat=process.env.CHAT;if(!chat)chat=(await(await fetch('http://127.0.0.1:9222/json/list')).json()).find(t=>t.type==='page'&&t.url.includes('chatgpt.com/')&&t.url.includes('/c/')).url;
 const results=[];
-for(const version of ['head','alpha5']){
+for(const version of ['alpha6','new']){   // the arms jump-latency.mjs stages by default
  const stage=`/home/simon/snap/chromium/common/butter-jump-latency-${version}`;
  console.log(execFileSync(path.join(root,'lab/lab'),['restart-browser'],{env:{...process.env,LAB_EXTENSIONS:stage},encoding:'utf8'}).trim());
  for(let i=0;i<60;i++){try{await fetch('http://127.0.0.1:9222/json/version');break;}catch{await sleep(500);}}
