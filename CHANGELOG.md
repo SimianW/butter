@@ -10,8 +10,9 @@
   you are already travelling to no longer starts the wait over.
 - After you click a tick, the question preview card next to the rail goes away at once instead of
   sometimes staying on screen through the jump. It comes back when you point at the rail again.
-- Every question with any part on screen now has its tick lit, so when two questions share the
-  screen both ticks are long, including right after a jump lands. During a jump only the
+- Every question that takes up part of the screen now has its tick lit, so when two questions
+  share the screen both ticks are long, including right after a jump lands. A strip of the
+  previous answer left above a question you jumped to doesn't count. During a jump only the
   clicked tick is lit. Before, only the question crossing a line 30% down the screen was
   lit, and at the very bottom of a chat a short last question never got its tick lit.
 - The ring around the question a jump lands on is drawn complete; before, its right (and sometimes
