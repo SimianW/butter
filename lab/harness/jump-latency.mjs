@@ -52,7 +52,8 @@ function instrument(source) {
   const modern = source.includes('await Promise.all([ready.quiet');
   replace('    let id = qs[i].id;', `    __emit(tok, 'click', {i, label:qs[i].q.slice(0,35)});\n    let id = qs[i].id;`);
   if (modern) {
-    replace('    if (!earlier && trip && busyId === qs[i].id) return;', `    if (!earlier && trip && busyId === qs[i].id) { __emit(jumpTok, 'repeat', {i, label:qs[i].q.slice(0,35)}); return; }`);
+    const repeat = source.includes('trip && !journey?.earlier && busyId') ? 'trip && !journey?.earlier && busyId' : 'trip && busyId';
+    replace(`    if (!earlier && ${repeat} === qs[i].id) return;`, `    if (!earlier && ${repeat} === qs[i].id) { __emit(jumpTok, 'repeat', {i, label:qs[i].q.slice(0,35)}); return; }`);
     replace("      if (live()) await (relay", "      __emit(tok, relay ? 'redirect:start' : 'depart:start');\n      if (live()) await (relay");
     replace('      if (!live()) return;\n      if (earlier)', `      __emit(tok, relay ? 'redirect:end' : 'depart:end');
       __emit(tok, 'tries:start', {mounted:!!el});
@@ -85,9 +86,10 @@ function instrument(source) {
     replace(`      ${steadyCall};`, `      __emit(tok,'steady:start');\n      ${steadyCall};\n      __emit(tok,'steady:end');`);
     replace('    } finally {\n      if (trip?.tok === tok)', `    } finally {\n      __emit(tok,'finally', {landed,live:live()});\n      if (trip?.tok === tok)`);
   }
-  replace('      await arrive(el, lead);\n      await settle(el, live);', `      __emit(tok,'arrive:start', {top:el.getBoundingClientRect().top-sc.getBoundingClientRect().top});
+  const landed = source.includes('      if (tok === jumpTok) landedAt();') ? '\n      if (tok === jumpTok) landedAt();   // stopped moving; settle only nudges by a few px' : '';
+  replace(`      await arrive(el, lead);${landed}\n      await settle(el, live);`, `      __emit(tok,'arrive:start', {top:el.getBoundingClientRect().top-sc.getBoundingClientRect().top});
       await arrive(el, lead);
-      __emit(tok,'arrive:end');
+      __emit(tok,'arrive:end');${landed}
       __emit(tok,'settle:start');
       await settle(el, live);
       __emit(tok,'settle:end');`);
