@@ -236,19 +236,22 @@
     new MutationObserver(dark).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => setTimeout(dark, 50));   // theme "System"
 
-    rail.addEventListener('pointerenter', () => { rail.classList.add('hot'); });
+    rail.addEventListener('pointerenter', () => { held = false; rail.classList.add('hot'); });
     rail.addEventListener('pointermove', e => { pointerY = e.clientY; hover(indexAt(e.clientY)); kick(); });
     rail.addEventListener('pointerleave', () => { rail.classList.remove('hot'); pointerY = null; hover(-2); kick(); });
     rail.addEventListener('focusin', e => { const i = ticks.indexOf(e.target); hover(e.target === more ? -1 : i); });
     rail.addEventListener('focusout', () => { if (pointerY === null) hover(-2); });
     rail.addEventListener('click', e => {
       const i = e.target === more ? -1 : e.detail === 0 ? ticks.indexOf(e.target) : indexAt(e.clientY);
+      // The click starts the trip: put the card away until the pointer comes back to the rail. While
+      // the page is busy, moves on the way out and the leave event arrive late and would hold it up.
+      if (i >= -1 && e.detail !== 0) { hover(-2); held = true; }
       if (i === -1) loadEarlier(); else if (i >= 0) jump(i);
     });
     rail.addEventListener('keydown', e => {
       const i = ticks.indexOf(e.target), d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (i < 0 || !d) return;
-      e.preventDefault(); ticks[Math.max(0, Math.min(ticks.length - 1, i + d))].focus();
+      e.preventDefault(); held = false; ticks[Math.max(0, Math.min(ticks.length - 1, i + d))].focus();
     });
   };
 
@@ -261,9 +264,9 @@
   };
   const tickY = i => geo.top + (i + 0.5) * geo.pitch;
 
-  let shown = -2;
+  let shown = -2, held = false;
   const hover = i => {
-    if (i === shown || !host) return;
+    if (i === shown || !host || (held && i !== -2)) return;
     const was = shown; shown = i;
     if (i === -2) { card.classList.remove('show'); return; }
     meta.textContent = i === -1 ? '' : cur.hasPrev ? TXT.fromLatest(qs.length - i) : `${i + 1} / ${qs.length}`;

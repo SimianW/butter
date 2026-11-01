@@ -8,6 +8,10 @@
 - Clicking several ticks during a far jump no longer keeps the placeholder lines running
   indefinitely: the whole burst ends within about 12 seconds of the first click. Clicking the tick
   you are already travelling to no longer starts the wait over.
+- After you click a tick, the question preview card next to the rail goes away at once instead of
+  sometimes staying on screen through the jump. It comes back when you point at the rail again.
+- The ring around the question a jump lands on is drawn complete; before, its right (and sometimes
+  top) edge was cut off.
 
 ## 0.1.0-alpha.6 (2026-11-01)
 
