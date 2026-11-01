@@ -67,7 +67,7 @@
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
     pos.clear(); activeId = null; active = -1; reband(); cancelJump(); hover(-2);
     if (c) {
-      opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0, reset: true };
+      opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0 };
       cancelAnimationFrame(openRaf); openRaf = requestAnimationFrame(settleOpen);
     }
     changed();
@@ -325,7 +325,7 @@
   };
 
   // Hover wave: each bar eases toward its target width/opacity; runs only while something moves.
-  let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [];   // current scaleX, opacity, scaleY
+  let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [], barIds = [];   // current scaleX, opacity, scaleY; question per bar
   const targetOf = j => {
     const on = opening ? j === qs.length - 1 : flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
     let s = on ? ACTIVE.s : REST.s, o = on ? ACTIVE.o : REST.o, t = 1;
@@ -379,18 +379,17 @@
     while (ticks.length > n) ticks.pop().remove();
     bars = ticks.map(b => b.firstChild);
     ticks.forEach((b, i) => { b.setAttribute('aria-label', qs[i].q.slice(0, 120)); b.classList.toggle('busy', qs[i].id === busyId); });
-    const had = cs.length;
+    // A bar's animation state follows its question, not its slot: an older page adds questions at
+    // the top and shifts every slot, which made the lit look slide onto the wrong tick and back.
+    // While a chat is opening the bars show the prediction at once, in step with the ticks moving.
+    const was = new Map(barIds.map((id, j) => [id, [cs[j], co[j], ct[j]]]));
+    barIds = qs.map(x => x.id);
     cs.length = co.length = ct.length = n;
-    for (let j = had; j < n; j++) { cs[j] = REST.s; co[j] = REST.o; ct[j] = 1; }   // new bars start at rest
-    if (opening?.reset) {
-      // Reused bars must not carry the previous chat's lit set into the first opening frame.
-      opening.reset = false;
-      for (let j = 0; j < n; j++) {
-        const a = j === n - 1 ? ACTIVE : REST;
-        cs[j] = a.s; co[j] = a.o; ct[j] = 1;
-        bars[j].style.transform = `scale(${a.s}, 1)`;
-        bars[j].style.opacity = a.o;
-      }
+    for (let j = 0; j < n; j++) {
+      const a = j === n - 1 ? ACTIVE : REST;
+      [cs[j], co[j], ct[j]] = opening ? [a.s, a.o, 1] : was.get(barIds[j]) ?? [REST.s, REST.o, 1];   // new bars start at rest
+      bars[j].style.transform = `scale(${cs[j].toFixed(3)}, ${ct[j].toFixed(3)})`;
+      bars[j].style.opacity = co[j].toFixed(3);
     }
     active = idxOf.get(activeId) ?? -1;
 
