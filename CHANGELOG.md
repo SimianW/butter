@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.2-alpha.4 (2026-11-01)
+
+- The clicked rail tick stays lit through the whole jump and after it, until you scroll yourself
+  (wheel, touch, scrollbar or keyboard). Before, other ticks lit up on the way, and landing on a
+  short question could leave the next one lit.
+- A far jump down after earlier messages have loaded (for example from the first question to the
+  latest) lands on its target instead of stopping partway. Jumps now re-read where the turns on
+  the page are and correct course until the target appears.
+- Scrolling with the keyboard or dragging the scrollbar ends a running jump, like the wheel does.
+
 ## 0.0.2-alpha.3 (2026-11-01)
 
 - Clicking rail ticks in quick succession no longer leaves the chat blank: a new click, a wheel
