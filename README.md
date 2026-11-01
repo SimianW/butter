@@ -1,5 +1,7 @@
 # ChatGPT Turbo
 
+ChatGPT on the web is painfully laggy… This is the extension that finally makes it actually work.
+
 Chrome extension (MV3) that keeps long, math-heavy chatgpt.com conversations smooth while an
 answer streams in. In a 9-turn math chat it cuts main-thread blocking during an answer from 75.6 s
 to 6.3 s (12×) and the p95 frame time from 300 ms to 33 ms. It also adds a history rail to jump
