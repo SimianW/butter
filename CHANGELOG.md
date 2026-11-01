@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.2-alpha.2 (2026-10-31)
+
+- History rail follows the chat on screen when ChatGPT keeps earlier chats as hidden copies in the
+  tab: the rail no longer goes missing after switching back to a chat, and questions from the
+  previous chat no longer mix in.
+- Far jumps play as one continuous fast scroll: the chat speeds off, placeholder lines stream past
+  on the compositor while ChatGPT renders the target, and the chat slides in on it. Jumping right
+  after a long chat opens no longer stutters.
+
 ## 0.0.2-alpha (2026-10-30)
 
 - History rail at the right edge of the chat: one tick per question. Hovering swells the ticks

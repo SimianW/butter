@@ -14,7 +14,7 @@ total, with ChatGPT Turbo for 8.0 s.
 
 中文测试报告和中文演示视频：[docs/REPORT.md](docs/REPORT.md)
 
-Current version: **0.0.2-alpha** ([changelog](CHANGELOG.md)). Alpha: it depends on ChatGPT's current
+Current version: **0.0.2-alpha.2** ([changelog](CHANGELOG.md)). Alpha: it depends on ChatGPT's current
 DOM and may stop helping when ChatGPT changes it.
 
 ## Install (Windows, macOS, Linux)
