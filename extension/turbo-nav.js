@@ -2,7 +2,7 @@
 // the ticks around the pointer like a wave and previews the question; clicking jumps to it.
 // Questions come from turbo-nav-main.js (ChatGPT's own API responses); turbo-cv.js reports every
 // turn ChatGPT mounts. Cost: the rail lives in a shadow root and animates only transform and
-// opacity, so hovering never restyles ChatGPT's page. Nothing reads layout except a click.
+// opacity, so hovering never restyles ChatGPT's page. Layout is read for jumps and their size corrections.
 (() => {
   const ZH = /^zh\b/i.test(navigator.language);
   const TXT = ZH
@@ -12,6 +12,7 @@
   const HEADER = 52, COMPOSER = 140;   // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64;                 // a jumped-to question lands this far below the scroller's top
   const PAGE_AT = 240;                 // ChatGPT loads earlier messages when scrolled within ~230px of the top
+  const MAX_EARLIER = 50;               // at most 100 older turns / 60s per click; another click continues
   const SPEED = 2.5;                    // far jumps travel at this many viewport heights per second
   const STREAK = 420;                   // height of one repeat of the travel placeholder, px
   const SIGMA = 20, SWELL = 1.6;        // hover wave: width in px, extra width at the pointer
@@ -25,11 +26,12 @@
   let convId = null, cur = { items: [], hasPrev: false };
 
   const mergePage = (s, { before, hasPrev, items }) => {
-    if (!items.length) return;
+    // An empty/overlapping final page can still tell us that history is complete.
+    if (!items.length) { if (before) s.hasPrev = hasPrev; return; }
     if (before) {   // an older page; it ends where the loaded messages begin
       const have = new Set(s.items.map(x => x.id));
       const k = items.findIndex(x => have.has(x.id));
-      if (k === 0) return;
+      if (k === 0) { s.hasPrev = hasPrev; return; }
       s.items = (k < 0 ? items : items.slice(0, k)).concat(s.items);
       s.hasPrev = hasPrev;
     } else {        // the newest page, on load or refetch
@@ -51,7 +53,6 @@
       mergePage(stateOf(m.conv), m);
       // Earlier messages go in above every recorded turn and push them all down: forget where they were.
       if (m.before && m.conv === convId) pos.clear();
-      if (m.before) pageWaiters.splice(0).forEach(r => r());
     }
     else if (m.type === 'send') { addSent(m.conv ? stateOf(m.conv) : cur, m); unpin(); }   // ChatGPT scrolls to the new question
     changed();
@@ -119,6 +120,7 @@
       s.addEventListener('pointerdown', e => { if (s === sc && e.target === s && box && e.clientX >= box.right) cancelJump(); }, { passive: true });   // scrollbar
     }
     mounted.set(el.getAttribute('data-turn-key'), el);
+    if (anchor && s === sc) anchor.ro.observe(el);
     if (s === sc) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
@@ -354,7 +356,23 @@
   function cancelJump() { jumpTok++; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
   // From a click until the user scrolls, the clicked question stays the current one.
   let pinned = false;
+  let anchor = null;
+  // Delayed KaTeX or a remounted neighbour can grow even after arrival. While the tick is pinned,
+  // size changes keep its question aligned; no polling or layout reads while the chat is idle.
+  const follow = (id, tok) => {
+    anchor?.ro.disconnect();
+    const ro = new ResizeObserver(() => {
+      if (tok !== jumpTok || !pinned || trip || busyTok) return;
+      const el = mountedEl(id);
+      if (el) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
+    });
+    anchor = { ro };
+    const el = mountedEl(id);
+    for (let p = el?.parentElement; p && p !== sc; p = p.parentElement) ro.observe(p);
+    for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) ro.observe(el);
+  };
   function unpin() {
+    anchor?.ro.disconnect(); anchor = null;
     if (!pinned) return;
     pinned = false;
     // Observing again reports the turn on the line now; it may not cross it again for a while.
@@ -393,10 +411,12 @@
   const targetTop = el => Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight,
     sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET));
 
-  const jump = async i => {
+  const jump = async (i, earlier = false) => {
     // A trip that runs past MAX_TRIP (pages that never settle, very long frames) ends where it is.
-    const tok = ++jumpTok, id = qs[i].id, end = performance.now() + MAX_TRIP,
+    const tok = ++jumpTok, end = performance.now() + (earlier ? 60000 : MAX_TRIP),
       live = () => tok === jumpTok && performance.now() < end;
+    anchor?.ro.disconnect(); anchor = null;
+    let id = qs[i].id;
     // A click during a trip takes the trip over (its jump is no longer live). Ending it would fade the
     // chat in and out again while the page is busy, showing whatever half-rendered part it is at.
     const relay = !!trip;
@@ -404,7 +424,11 @@
     setActive(id); pinned = true;
     let el = mountedEl(id);
     // Close by: glide there.
-    if (!relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
+    if (!earlier && !relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) {
+      await glide(el, live);
+      if (live()) follow(id, tok);
+      return;
+    }
     // Farther away the turn is unmounted or skipped by content-visibility, and rendering it takes the
     // page a second or more (more if arriving at the top makes ChatGPT load earlier messages), during
     // which nothing can paint; scrolling through the real turns in between would render each of them.
@@ -415,12 +439,36 @@
     // whose positions are read now, rather than from records that may be stale.
     const seen = new Set();
     let [a, b] = measure(seen);
-    const m = -(Math.sign(el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b) || 1);
+    const m = earlier ? 1 : -(Math.sign(el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b) || 1);
     setBusy(id, tok);
     await (relay ? redirect(m, tok) : depart(el ?? sc.querySelector('[data-turn-key]'), m, tok));
     let landed = false;
     try {
+      if (!live()) return;
+      if (earlier) {
+        const loadEnd = end - 10000;   // reserve time to align/reveal after the loading bound
+        for (let pages = 0; cur.hasPrev && pages < MAX_EARLIER && live() && performance.now() < loadEnd; pages++) {
+          // Leave and re-enter the paging band: a prepend can keep the sentinel intersecting.
+          sc.scrollTop = PAGE_AT + 32;
+          await frame(); await frame();
+          if (!live()) return;
+          const page = nextPage(Math.min(10000, loadEnd - performance.now()), live);   // arm before scrolling
+          sc.scrollTop = 0;
+          if (!await page) break;             // stalled/offline: reveal the oldest loaded question
+          await frame();
+          id = cur.items.find(x => x.q != null)?.id;
+          // The fetch hook reports before React commits. Don't start another page in that gap.
+          const until = performance.now() + 2000;
+          while (live() && !mountedEl(id) && performance.now() < until) { sc.scrollTop = 0; await frame(); }
+        }
+        await frame();
+        if (!live()) return;
+        i = 0; id = qs[0]?.id; el = mountedEl(id);
+        setActive(id); setBusy(id, tok);
+      }
       for (let tries = 0; tries < 8 && !el && live(); tries++) {
+        i = idxOf.get(id);   // earlier pages may have changed the question's index
+        if (i == null) return;
         if (tries) {
           // Where the records put the target, it didn't mount: ChatGPT has re-measured turns or inserted
           // earlier messages since they were taken. Drop the older records between the turns mounted
@@ -435,7 +483,7 @@
       }
       if (!el || !live()) return;
       sc.scrollTop = targetTop(el);
-      if (cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000); await new Promise(r => setTimeout(r, 150)); }
+      if (!earlier && cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000, live); await new Promise(r => setTimeout(r, 150)); }
       // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
       for (const end = performance.now() + 3000; live() && performance.now() < end &&
         [...el.querySelectorAll('[data-math-source]')].some(x => !x.querySelector('.katex'));) await frame();
@@ -443,8 +491,8 @@
       el = mountedEl(id);
       if (!el || !live()) return;
       const lead = still() ? 0 : m * Math.min(400, sc.clientHeight * 0.4);
-      await steady(el, live, lead);   // still hidden, `lead` px short of the target
-      if (!live() || !el.isConnected) return;
+      el = await steady(el, live, lead);   // still hidden, `lead` px short of the target
+      if (!live() || !el?.isConnected) return;
       flash(el);
       landed = true;
       await arrive(el, lead);
@@ -452,6 +500,7 @@
     } finally {
       if (trip?.tok === tok) arrive(null, 0);
       if (busyTok === tok) setBusy(null);
+      if (landed && tok === jumpTok) follow(id, tok);
       if (!landed && tok === jumpTok) unpin();   // gave up short of the target: show where the chat is
     }
   };
@@ -465,20 +514,22 @@
     await done;
     await settle(el, live);
   };
-  // Turns that mounted on the way may have been re-measured.
-  const settle = async (el, live) => {
-    await frame(); await frame();
-    if (live() && el.isConnected) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
-  };
-  // For a few frames after a jump ChatGPT still mounts and measures the neighbouring turns, which
-  // moves the target: keep it in place until it has stayed put for 8 frames in a row.
-  const steady = async (el, live, off = 0, max = 1500) => {
-    const end = performance.now() + max;
-    for (let ok = 0; ok < 8 && live() && el.isConnected && performance.now() < end;) {
+  // A few quiet frames don't mean neighbouring answers have finished mounting/typesetting. Keep
+  // following the question through arrival, including a replacement of its virtualized element.
+  const settle = (el, live) => steady(el, live, 0, 2000, 350);
+  const steady = async (el, live, off = 0, max = 3000, min = 600) => {
+    const start = performance.now(), end = start + max, id = el.getAttribute('data-turn-key');
+    let since = start, height = sc.scrollHeight;
+    while (live() && performance.now() < end) {
+      el = mountedEl(id);
+      if (!el) { since = performance.now(); await frame(); continue; }
       const t = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, targetTop(el) + off));
-      if (Math.abs(t - sc.scrollTop) > 2) { sc.scrollTop = t; ok = 0; } else ok++;
+      if (Math.abs(t - sc.scrollTop) > 2) { sc.scrollTop = t; since = performance.now(); }
+      if (height !== sc.scrollHeight) { height = sc.scrollHeight; since = performance.now(); }
+      if (performance.now() - start >= min && performance.now() - since >= 350) return el;
       await frame();
     }
+    return mountedEl(id);
   };
   // Resolves once the page paints at a normal pace again: three frames under 40 ms in a row.
   const quiet = async (live, max) => {
@@ -486,8 +537,16 @@
     let last = await frame(), ok = 0;
     while (ok < 3 && live() && performance.now() < end) { const t = await frame(); ok = t - last < 40 ? ok + 1 : 0; last = t; }
   };
-  const pageWaiters = [];
-  const nextPage = max => new Promise(r => { pageWaiters.push(r); setTimeout(r, max); });
+  // Conversation-scoped and cancellable. A response from a hidden chat cannot wake this wait;
+  // timed-out waits leave no callbacks behind. Completion also includes empty final pages.
+  const nextPage = async (max, live) => {
+    const first = cur.items[0]?.id, end = performance.now() + max;
+    while (live() && performance.now() < end) {
+      if (!cur.hasPrev || cur.items[0]?.id !== first) return true;
+      await frame();
+    }
+    return false;
+  };
 
   // The trip. Both halves are things the compositor runs by itself, so they keep moving while the
   // page is busy: opacity of the chat's content (the virtualizer's full-height box: turn > its
@@ -505,11 +564,11 @@
     const content = turn?.parentElement?.parentElement?.parentElement, T = LEAVE;
     trip = { tok, m, content: content && content !== sc && sc.contains(content) ? content : null };
     trip.off = trip.content?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T, easing: 'ease-in', fill: 'forwards' });
+    warp.style.visibility = 'visible';
+    trip.in = warp.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: 'forwards' });
     if (!still()) {
       sc.scrollTo({ top: sc.scrollTop - m * sc.clientHeight * 0.5, behavior: 'smooth' });
-      warp.style.visibility = 'visible';
       trip.loop = stream(m);
-      trip.in = warp.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: 'forwards' });
     }
     return new Promise(r => setTimeout(r, T));
   };
@@ -529,9 +588,9 @@
     if (!t) return Promise.resolve();
     t.content?.isConnected && t.content.animate([{ opacity: 0 }, { opacity: 1 }], { duration: lead ? 320 : 250, easing: 'ease-out' });
     t.off?.cancel(); t.in?.cancel();
-    if (t.loop) {
+    if (t.in) {
       const out = warp.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, fill: 'forwards' });
-      out.finished.then(() => { t.loop.cancel(); out.cancel(); if (!trip) warp.style.visibility = 'hidden'; }, () => {});
+      out.finished.then(() => { t.loop?.cancel(); out.cancel(); if (!trip) warp.style.visibility = 'hidden'; }, () => {});
     }
     if (!(el && lead)) return new Promise(r => setTimeout(r, 250));
     const done = scrollEnd();
@@ -550,5 +609,5 @@
   };
 
   // ChatGPT loads the previous page when the top of the chat comes into view.
-  const loadEarlier = () => { cancelJump(); sc.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const loadEarlier = () => { if (sc && qs.length) jump(0, true); };
 })();

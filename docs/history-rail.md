@@ -9,7 +9,7 @@ question you are reading.
 |---|---|
 | **Hover** | The ticks around the pointer swell like a wave and a card shows the question. |
 | **Click** | The chat jumps to that question and briefly rings it. |
-| **Three dots** at the top | ChatGPT hasn't loaded your earlier questions yet. Click to scroll to the top; ChatGPT loads the next older batch and the rail grows. |
+| **Three dots** at the top | Click (or press Enter) to travel to the earliest question, loading older batches behind the moving placeholders. The dots disappear when all history is loaded. One trip loads up to 50 batches (100 older turns) or runs for 60 s; if a limit or a stalled request stops it, it lands on the oldest loaded question and the dots let you continue. |
 | **Keyboard** | Tab to the rail, then ↑/↓ and Enter. |
 
 Jumps also work when ChatGPT has unloaded that part of the chat (it keeps only about five turns on

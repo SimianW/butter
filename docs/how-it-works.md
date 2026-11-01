@@ -13,7 +13,8 @@ the whole conversation. Butter cuts that work in four places:
 The [history rail](history-rail.md) lives in `turbo-nav.js` and `turbo-nav-main.js`.
 `turbo-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches;
 `turbo-nav.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
-hovering never restyles ChatGPT's page. It reads layout only when you click.
+hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
+the jumped-to question; scrolling yourself releases that alignment.
 
 ## Privacy
 
