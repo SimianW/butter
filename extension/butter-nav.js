@@ -11,6 +11,7 @@
   const PITCH_MAX = 14, PAD = 10, MORE_H = 16, RAIL_W = 52;
   const HEADER = 52, COMPOSER = 140;   // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64;                 // a jumped-to question lands this far below the scroller's top
+  const EDGE = 40;                      // a turn showing only this much at the top or bottom isn't lit
   const PAGE_AT = 240;                 // ChatGPT loads earlier messages when scrolled within ~230px of the top
   const MAX_EARLIER = 50;               // at most 100 older turns / 60s per click; another click continues
   const SPEED = 2.5;                    // far jumps travel at this many viewport heights per second
@@ -99,12 +100,13 @@
     ioPos = new IntersectionObserver(es => {
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
-    // Every question with any part on screen (between the header and the composer) is lit. Not
-    // shown while a jump is travelling: turns stream past on the way.
+    // Every question showing more than EDGE px between the header and the composer is lit. The top
+    // edge starts below TOP_INSET, so the turn above a jumped-to question (its last line or action
+    // buttons in that strip) doesn't light too. Not shown while a jump is travelling.
     ioBand = new IntersectionObserver(es => {
       for (const e of es) if (e.isIntersecting && e.target.isConnected) onScreen.add(e.target); else onScreen.delete(e.target);
       if (!flying) kick();
-    }, { root: sc, rootMargin: `-${HEADER}px 0px -${COMPOSER}px 0px` });
+    }, { root: sc, rootMargin: `-${Math.max(HEADER, TOP_INSET) + EDGE}px 0px -${COMPOSER + EDGE}px 0px` });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
@@ -434,8 +436,10 @@
 
   const jump = async (i, earlier = false) => {
     // Repeated input for the current destination keeps its in-progress readiness work.
-    if (!earlier && trip && busyId === qs[i].id) return;
+    // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
+    if (!earlier && trip && !journey?.earlier && busyId === qs[i].id) return;
     const flight = journey ?? { end: performance.now() + (earlier ? 60000 : MAX_TRIP), ready: new Map() };
+    flight.earlier = earlier;
     const tok = ++jumpTok, end = flight.end,
       live = () => tok === jumpTok && performance.now() < end;
     anchor?.ro.disconnect(); anchor = null;
