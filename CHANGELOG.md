@@ -1,6 +1,16 @@
 # Changelog
 
-## 0.0.2-alpha.4 (2026-11-01)
+## 0.1.0-alpha.5 (2026-11-01)
+
+- Clicking another rail tick while a far jump is still running takes over that jump instead of
+  ending it. Before, the chat flashed in for a moment, often showing a blank or half-drawn part of
+  the conversation, and the placeholder lines flickered. A quick burst of clicks now sends the chat
+  only to the last one.
+- The extension is now called Butter for ChatGPT and has its own icon.
+- Versions are renamed to 0.1.0: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
+  0.0.2-alpha.N is 0.1.0-alpha.N.
+
+## 0.1.0-alpha.4 (2026-11-01)
 
 - The clicked rail tick stays lit through the whole jump and after it, until you scroll yourself
   (wheel, touch, scrollbar or keyboard). Before, other ticks lit up on the way, and landing on a
@@ -10,7 +20,7 @@
   the page are and correct course until the target appears.
 - Scrolling with the keyboard or dragging the scrollbar ends a running jump, like the wheel does.
 
-## 0.0.2-alpha.3 (2026-11-01)
+## 0.1.0-alpha.3 (2026-11-01)
 
 - Clicking rail ticks in quick succession no longer leaves the chat blank: a new click, a wheel
   scroll or switching chats ends the running jump at once and shows the chat again.
@@ -19,7 +29,7 @@
   an early question was blocked for at most 1.8 s instead of 3.7 s, and the jump took 4.0 s instead
   of 6.0 s. Scrolling back through a whole long chat takes more requests.
 
-## 0.0.2-alpha.2 (2026-10-31)
+## 0.1.0-alpha.2 (2026-10-31)
 
 - History rail follows the chat on screen when ChatGPT keeps earlier chats as hidden copies in the
   tab: the rail no longer goes missing after switching back to a chat, and questions from the
@@ -28,7 +38,7 @@
   on the compositor while ChatGPT renders the target, and the chat slides in on it. Jumping right
   after a long chat opens no longer stutters.
 
-## 0.0.2-alpha (2026-10-30)
+## 0.1.0-alpha.1 (2026-10-30)
 
 - History rail at the right edge of the chat: one tick per question. Hovering swells the ticks
   around the pointer and previews the question; clicking jumps to it, also when ChatGPT has
@@ -42,9 +52,9 @@
   disappears, or mixes in the previous chat's questions, when you switch back to one.
 - Re-measured on ChatGPT's new front end (it now keeps only about five turns on the page):
   main thread blocked during the replayed answer 66.5 s without the extension, 3.7 s with
-  0.0.1-alpha, 3.8 s with 0.0.2-alpha; the rail costs nothing measurable.
+  0.1.0-alpha, 3.8 s with 0.1.0-alpha.1; the rail costs nothing measurable.
 
-## 0.0.1-alpha (2026-10-30)
+## 0.1.0-alpha (2026-10-30)
 
 First release. Removes the size container around the conversation, skips rendering of off-screen
 turns and answer blocks after their first layout, and limits ChatGPT's stream smoother to one
