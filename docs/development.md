@@ -17,6 +17,8 @@
 - Version consistency: `python3 scripts/check-version.py`.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
+  Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
+  `jump-latency-summary.mjs`; takeover deadline fixture: `nav-takeovers.mjs`.
 
 ## Release
 
