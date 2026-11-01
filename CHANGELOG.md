@@ -19,6 +19,9 @@
   top) edge was cut off.
 - Opening a chat sometimes left no tick lit until you scrolled. The ticks of the questions on
   screen now light as soon as the chat appears.
+- Opening a chat no longer briefly lights every tick, or the ticks lit in the chat you came from.
+  The latest question's tick is lit from the start, and once the chat stops moving the rail shows
+  what is actually on screen.
 
 ## 0.1.0-alpha.6 (2026-11-01)
 
