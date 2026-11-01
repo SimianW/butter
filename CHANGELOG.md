@@ -21,7 +21,8 @@
   screen now light as soon as the chat appears.
 - Opening a chat no longer briefly lights every tick, or the ticks lit in the chat you came from.
   The latest question's tick is lit from the start, and once the chat stops moving the rail shows
-  what is actually on screen.
+  what is actually on screen. When earlier questions load in at the top meanwhile, the lit tick
+  stays on the latest question instead of sliding over from the one above it.
 
 ## 0.1.0-alpha.6 (2026-11-01)
 
