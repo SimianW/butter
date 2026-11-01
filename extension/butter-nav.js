@@ -120,7 +120,7 @@
       s.addEventListener('pointerdown', e => { if (s === sc && e.target === s && box && e.clientX >= box.right) cancelJump(); }, { passive: true });   // scrollbar
     }
     mounted.set(el.getAttribute('data-turn-key'), el);
-    if (anchor && s === sc) anchor.ro.observe(el);
+    if (anchor && s === sc) anchor.observe(el);
     if (s === sc) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
@@ -354,27 +354,33 @@
 
   // ---- Jumping. A turn ChatGPT hasn't mounted has no element to scroll to: go where it should be
   // (last seen there, or interpolated between turns that were), let ChatGPT mount it, then align.
-  let jumpTok = 0;
+  let jumpTok = 0, journey = null;
   // Stops a jump in progress and shows the chat again at once.
-  function cancelJump() { jumpTok++; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  function cancelJump() { jumpTok++; journey = null; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
   // From a click until the user scrolls, the clicked question stays the current one.
   let pinned = false;
   let anchor = null;
   // Delayed KaTeX or a remounted neighbour can grow even after arrival. While the tick is pinned,
   // size changes keep its question aligned; no polling or layout reads while the chat is idle.
-  const follow = (id, tok) => {
+  const follow = (id, tok, off = 0) => {
     anchor?.ro.disconnect();
+    const observe = el => {
+      ro.observe(el);
+      if (el.getAttribute('data-turn-key') === id)
+        for (let p = el.parentElement; p && p !== sc; p = p.parentElement) ro.observe(p);
+    };
     const ro = new ResizeObserver(entries => {
-      // A turn ChatGPT unmounts reports its size going to zero once; stop holding on to it.
+      // A remount gets observed by butterNavTurn; retain the logical id, not the old element.
       for (const e of entries) if (!e.target.isConnected) ro.unobserve(e.target);
-      if (tok !== jumpTok || !pinned || trip || busyTok) return;
+      if (tok !== jumpTok || !pinned) return;
       const el = mountedEl(id);
-      if (el) { const t = targetTop(el); if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t; }
+      if (el) {
+        const t = targetTop(el, anchor.off);
+        if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t;
+      }
     });
-    anchor = { ro };
-    const el = mountedEl(id);
-    for (let p = el?.parentElement; p && p !== sc; p = p.parentElement) ro.observe(p);
-    for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) ro.observe(el);
+    anchor = { ro, observe, off };
+    for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) observe(el);
   };
   function unpin() {
     anchor?.ro.disconnect(); anchor = null;
@@ -413,25 +419,30 @@
     return y(lo) + (y(hi) - y(lo)) * (i - lo) / (hi - lo);
   };
 
-  const targetTop = el => Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight,
-    sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET));
+  const targetTop = (el, off = 0) => Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight,
+    sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET + off));
 
   const jump = async (i, earlier = false) => {
-    // A trip that runs past MAX_TRIP (pages that never settle, very long frames) ends where it is.
-    const tok = ++jumpTok, end = performance.now() + (earlier ? 60000 : MAX_TRIP),
+    // Repeated input for the current destination keeps its in-progress readiness work.
+    if (!earlier && trip && busyId === qs[i].id) return;
+    const flight = journey ?? { end: performance.now() + (earlier ? 60000 : MAX_TRIP), ready: new Map() };
+    const tok = ++jumpTok, end = flight.end,
       live = () => tok === jumpTok && performance.now() < end;
     anchor?.ro.disconnect(); anchor = null;
     let id = qs[i].id;
     // A click during a trip takes the trip over (its jump is no longer live). Ending it would fade the
     // chat in and out again while the page is busy, showing whatever half-rendered part it is at.
     const relay = !!trip;
+    if (relay) trip.tok = tok;
     setBusy(null);
     setActive(id); pinned = true;
     let el = mountedEl(id);
     // Close by: glide there.
     if (!earlier && !relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) {
+      journey = null;
       await glide(el, live);
-      if (live()) follow(id, tok);
+      if (live() && pinned) follow(id, tok);
+      else if (tok === jumpTok) unpin();
       return;
     }
     // Farther away the turn is unmounted or skipped by content-visibility, and rendering it takes the
@@ -442,13 +453,14 @@
     // target behind them, and the chat slides in at the same speed and slows to a stop on it.
     // Content moves down when going up. Which side the target is on comes from the mounted turns,
     // whose positions are read now, rather than from records that may be stale.
+    journey = flight;
     const seen = new Set();
     let [a, b] = measure(seen);
     const m = earlier ? 1 : -(Math.sign(el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b) || 1);
     setBusy(id, tok);
-    await (relay ? redirect(m, tok) : depart(el ?? sc.querySelector('[data-turn-key]'), m, tok));
     let landed = false;
     try {
+      if (live()) await (relay ? redirect(m, tok) : depart(el ?? sc.querySelector('[data-turn-key]'), m, tok));
       if (!live()) return;
       if (earlier) {
         const loadEnd = end - 10000;   // reserve time to align/reveal after the loading bound
@@ -471,6 +483,7 @@
         i = 0; id = qs[0]?.id; el = mountedEl(id);
         setActive(id); setBusy(id, tok);
       }
+      el = mountedEl(id);
       for (let tries = 0; tries < 8 && !el && live(); tries++) {
         i = idxOf.get(id);   // earlier pages may have changed the question's index
         if (i == null) return;
@@ -488,25 +501,57 @@
       }
       if (!el || !live()) return;
       sc.scrollTop = targetTop(el);
-      if (!earlier && cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000, live); await new Promise(r => setTimeout(r, 150)); }
+      let ready = flight.ready.get(id);
+      const top = sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      if (!ready || ready.el !== el || Math.abs(ready.top - top) > 2) {
+        ready = { el, top, geometry: {} }; flight.ready.set(id, ready);
+      }
+      if (!ready.page) {
+        if (!earlier && cur.hasPrev && sc.scrollTop < PAGE_AT) { await nextPage(4000, live); await new Promise(r => setTimeout(r, 150)); }
+        if (!live()) return;
+        ready.page = true;
+      }
       // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
-      for (const end = performance.now() + 3000; live() && performance.now() < end &&
-        [...el.querySelectorAll('[data-math-source]')].some(x => !x.querySelector('.katex'));) await frame();
-      await quiet(live, 4000);
+      const pendingMath = () => [...(mountedEl(id)?.querySelectorAll('[data-math-source]') ?? [])].some(x => !x.querySelector('.katex'));
+      if (!ready.math || pendingMath()) {
+        for (const end = performance.now() + 3000; live() && performance.now() < end && pendingMath();) await frame();
+        if (!live()) return;
+        ready.math = !pendingMath();
+      }
       el = mountedEl(id);
       if (!el || !live()) return;
       const lead = still() ? 0 : m * Math.min(400, sc.clientHeight * 0.4);
-      el = await steady(el, live, lead);   // still hidden, `lead` px short of the target
-      if (!live() || !el?.isConnected) return;
+      follow(id, tok, lead);   // keep correcting while hidden, during reveal, and across remounts
+      // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
+      // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
+      await Promise.all([ready.quiet ? null : quiet(live, 4000), steady(el, live, lead, 3000, 150, ready.geometry)]);
+      if (!live()) return;
+      ready.quiet = true;
+      el = await steady(el, live, lead, 3000, 150, ready.geometry);
+      if (!live() || !el?.isConnected || !pinned) return;
       flash(el);
       landed = true;
+      anchor.off = 0;
       await arrive(el, lead);
       await settle(el, live);
     } finally {
+      const expired = tok === jumpTok && performance.now() >= end;
+      // A takeover inherits the first click's deadline. At expiry keep a mounted, aligned target;
+      // otherwise reveal where ChatGPT got to and release the anchor, without another render.
+      if (expired && !landed) {
+        el = mountedEl(id);
+        if (el) {
+          landed = Math.abs(targetTop(el) - sc.scrollTop) <= 2;
+          if (landed) flash(el);
+        }
+      }
       if (trip?.tok === tok) arrive(null, 0);
       if (busyTok === tok) setBusy(null);
-      if (landed && tok === jumpTok) follow(id, tok);
-      if (!landed && tok === jumpTok) unpin();   // gave up short of the target: show where the chat is
+      if (tok === jumpTok) {
+        journey = null;
+        if (landed && pinned) follow(id, tok);
+        else unpin();
+      }
     }
   };
 
@@ -522,16 +567,18 @@
   // A few quiet frames don't mean neighbouring answers have finished mounting/typesetting. Keep
   // following the question through arrival, including a replacement of its virtualized element.
   const settle = (el, live) => steady(el, live, 0, 2000, 350);
-  const steady = async (el, live, off = 0, max = 3000, min = 600) => {
-    const start = performance.now(), end = start + max, id = el.getAttribute('data-turn-key');
-    let since = start, height = sc.scrollHeight;
+  const steady = async (el, live, off = 0, max = 3000, span = 150, state = {}) => {
+    const end = performance.now() + max, id = el.getAttribute('data-turn-key');
     while (live() && performance.now() < end) {
       el = mountedEl(id);
-      if (!el) { since = performance.now(); await frame(); continue; }
-      const t = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, targetTop(el) + off));
-      if (Math.abs(t - sc.scrollTop) > 2) { sc.scrollTop = t; since = performance.now(); }
-      if (height !== sc.scrollHeight) { height = sc.scrollHeight; since = performance.now(); }
-      if (performance.now() - start >= min && performance.now() - since >= 350) return el;
+      if (!el) { state.el = null; state.since = performance.now(); await frame(); continue; }
+      const top = sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      if (state.el !== el || Math.abs(state.top - top) > 2 || state.since == null) {
+        state.el = el; state.top = top; state.since = performance.now();
+      }
+      const t = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, top - TOP_INSET + off));
+      if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t;
+      if (performance.now() - state.since >= span) return el;
       await frame();
     }
     return mountedEl(id);
