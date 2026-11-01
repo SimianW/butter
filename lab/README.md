@@ -1,6 +1,6 @@
 # Test lab
 
-Everything used to measure ChatGPT Turbo. The method and results are in
+Everything used to measure Butter for ChatGPT. The method and results are in
 [`../docs/REPORT.md`](../docs/REPORT.md).
 
 ## Browser (`lab`)
@@ -46,7 +46,7 @@ the lab browser with exactly those unpacked extensions (`EXT=` empty = no extens
 | `run-matrix.sh`, `run-sb*.sh` | Batches used for the report. |
 
 `python3 lab/make-demo.py` edits the two `demo.mjs` recordings into the side-by-side video with
-captions (`dist/demo/chatgpt-turbo-demo.mp4` and a GIF excerpt).
+captions (`dist/demo/chatgpt-butter-demo.mp4` and a GIF excerpt).
 
 Raw output goes to `harness/results/` and stays local (screenshots show the account; JSON holds
 chat ids). `python3 lab/summarize.py` writes the tables in [`../results/`](../results).
@@ -54,6 +54,6 @@ chat ids). `python3 lab/summarize.py` writes the tables in [`../results/`](../re
 ## Variants (`variants/`)
 
 One unpacked extension per ablation step in the report: `cv` (turn-level `content-visibility`),
-`nocq` (size containers removed), `cv-nocq`, `turbo-60|120|250|400` (plus the smoother throttle at
-that interval), `smooth-only`, `turbo-250-blocks` (aggressive block-level skipping),
+`nocq` (size containers removed), `cv-nocq`, `butter-60|120|250|400` (plus the smoother throttle at
+that interval), `smooth-only`, `butter-250-blocks` (aggressive block-level skipping),
 `safe*` (gated block skipping with different container choices), `v2-blocks`, `v4-flush5`.

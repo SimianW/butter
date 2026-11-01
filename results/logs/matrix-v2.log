@@ -1,3 +1,3 @@
-07:58:15 [turbo-v2] replaying 189 chunks over 122s, 2 reps
-08:00:33 [turbo-v2] rep 1: fps=49.3 p95=49.9 jank=3.9% busy=48% style=17.4% blocked=11.4s maxFreeze=663 keyP95=199.5 keyMax=507.4 wheelP95=101 LoAF[renderSL=21.8s forcedSL=3.8s script=1.7s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":391,"published":390} nodes=90992 turns=4 chunks=189/189
-08:02:51 [turbo-v2] rep 2: fps=49.5 p95=50 jank=3.9% busy=48% style=17.2% blocked=10.9s maxFreeze=626 keyP95=191.5 keyMax=852.8 wheelP95=89 LoAF[renderSL=20.8s forcedSL=3.8s script=1.9s] answer=21448c/420k/043dc8afaf8d remounts=2 turbo={"smootherFrames":391,"published":390} nodes=90992 turns=4 chunks=189/189
+07:58:15 [butter-v2] replaying 189 chunks over 122s, 2 reps
+08:00:33 [butter-v2] rep 1: fps=49.3 p95=49.9 jank=3.9% busy=48% style=17.4% blocked=11.4s maxFreeze=663 keyP95=199.5 keyMax=507.4 wheelP95=101 LoAF[renderSL=21.8s forcedSL=3.8s script=1.7s] answer=21448c/420k/043dc8afaf8d remounts=2 butter={"smootherFrames":391,"published":390} nodes=90992 turns=4 chunks=189/189
+08:02:51 [butter-v2] rep 2: fps=49.5 p95=50 jank=3.9% busy=48% style=17.2% blocked=10.9s maxFreeze=626 keyP95=191.5 keyMax=852.8 wheelP95=89 LoAF[renderSL=20.8s forcedSL=3.8s script=1.9s] answer=21448c/420k/043dc8afaf8d remounts=2 butter={"smootherFrames":391,"published":390} nodes=90992 turns=4 chunks=189/189

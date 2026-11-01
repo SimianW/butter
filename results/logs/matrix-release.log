@@ -1,2 +1,2 @@
 19:02:32 [release-0.5.0-zip] replaying 189 chunks over 122s, 1 reps
-19:04:49 [release-0.5.0-zip] rep 1: fps=51.8 p95=33.3 jank=2.5% busy=43.5% style=13.9% blocked=6.7s maxFreeze=649 keyP95=177.3 keyMax=745.1 wheelP95=78 LoAF[renderSL=15.3s forcedSL=1.8s script=2s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1169 seenMarks=1060 turbo={"smootherFrames":394,"published":393} nodes=90995 turns=4 chunks=189/189
+19:04:49 [release-0.5.0-zip] rep 1: fps=51.8 p95=33.3 jank=2.5% busy=43.5% style=13.9% blocked=6.7s maxFreeze=649 keyP95=177.3 keyMax=745.1 wheelP95=78 LoAF[renderSL=15.3s forcedSL=1.8s script=2s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1169 seenMarks=1060 butter={"smootherFrames":394,"published":393} nodes=90995 turns=4 chunks=189/189

@@ -16,11 +16,11 @@
         "https://chatgpt.com/*"
       ],
       "css": [
-        "turbo.css"
+        "butter.css"
       ],
       "js": [
-        "turbo-nav.js",
-        "turbo-cv.js"
+        "butter-nav.js",
+        "butter-cv.js"
       ],
       "run_at": "document_start"
     },
@@ -30,8 +30,8 @@
       ],
       "js": [
         "config.js",
-        "turbo-main.js",
-        "turbo-nav-main.js"
+        "butter-main.js",
+        "butter-nav-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"

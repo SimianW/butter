@@ -2,8 +2,8 @@
 // Same replay as bench.mjs, but inputs follow a fixed human-like script: type a sentence, scroll up
 // through the answer and back, type again. Inputs are dispatched on schedule without waiting for
 // the page, so a frozen page shows them late, as it would for a person.
-// Usage: CHAT=<url> [REC=recordings/x.json] EXT=<dirs or empty> node demo.mjs <lang>/<stock|turbo>
-//   -> ../../dist/demo/<lang>/<stock|turbo>.{mp4,json}
+// Usage: CHAT=<url> [REC=recordings/x.json] EXT=<dirs or empty> node demo.mjs <lang>/<stock|butter>
+//   -> ../../dist/demo/<lang>/<stock|butter>.{mp4,json}
 import { chromium } from 'playwright';
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
@@ -165,7 +165,7 @@ const out = {
   loaf: D.loaf.filter(([t0]) => t0 >= enter - 3000).map(([t0, dur, block]) => [rel(t0), Math.round(dur), Math.round(block)]),
   chars: D.chars.filter(([t0]) => t0 >= enter).map(([t0, len]) => [rel(t0), len]),
   intents: intents.map(([t0, what]) => [rel(t0), what]),
-  turbo: await page.evaluate(() => window.__turboStats ?? null),
+  butter: await page.evaluate(() => window.__butterStats ?? null),
 };
 const after = out.loaf.filter(([t0]) => t0 >= 0);
 out.blockedS = +(after.reduce((a, l) => a + l[2], 0) / 1000).toFixed(1);

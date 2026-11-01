@@ -3,7 +3,7 @@ import json
 b=Path(__file__).resolve().parent/'scratch/jump-typing';p=b/'report.md';s=p.read_text()
 findings='''## Findings
 
-**Two-turn older pages are the strongest demonstrated partial mitigation.** After the ten-second wait, pooled Event Timing input-delay p95 is 1287.5 ms versus 2948.8 ms for current Turbo, and the worst key is 1821.0 ms versus 3704.4 ms. Median successful jump time falls from 6045.1 to 4006.9 ms. The first older response falls from 145714 to 27708 decoded bytes. That still leaves conspicuous input freezes; this is not a complete responsiveness fix.
+**Two-turn older pages are the strongest demonstrated partial mitigation.** After the ten-second wait, pooled Event Timing input-delay p95 is 1287.5 ms versus 2948.8 ms for current Butter, and the worst key is 1821.0 ms versus 3704.4 ms. Median successful jump time falls from 6045.1 to 4006.9 ms. The first older response falls from 145714 to 27708 decoded bytes. That still leaves conspicuous input freezes; this is not a complete responsiveness fix.
 
 **The largest tasks are dominated by forced layout during React commit, not KaTeX parsing or GC.** The stock ten-second trace’s largest task takes 4827.4 ms, including 3931.1 ms of layout and 141.3 ms of style. The two-turn ten-second trace’s largest task is 1854.5 ms, including 1488.5 ms of layout and 77.2 ms of style. Those tasks have only 26.1 ms and 5.8 ms of minor GC respectively. Across the complete jump windows, KaTeX `renderToString` and parser/build-tree-like functions are present but account for tens to low hundreds of sampled milliseconds, not the multi-second dominant task.
 

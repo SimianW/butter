@@ -1,4 +1,4 @@
-// Node check of turbo-main.js's rAF throttle with a fake clock: node test/raf.test.mjs
+// Node check of butter-main.js's rAF throttle with a fake clock: node test/raf.test.mjs
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
@@ -6,19 +6,19 @@ import assert from 'node:assert/strict';
 function setup(smoothMs = 250) {
   let now = 10_000, nextId = 1; const frames = new Map(), timers = [];   // performance.now() is never near 0 on a real page
   const win = {
-    __turboConfig: { smoothMs },
+    __butterConfig: { smoothMs },
     requestAnimationFrame(cb) { const id = nextId++; frames.set(id, cb); return id; },
     cancelAnimationFrame(id) { frames.delete(id); },
   };
   const ctx = vm.createContext({ window: win, performance: { now: () => now }, Symbol, Map, Number, Math, Function,
     setTimeout: (f, ms) => { const t = { f, at: now + ms, live: true }; timers.push(t); return t; }, clearTimeout: t => { if (t) t.live = false; } });
-  vm.runInContext(fs.readFileSync(new URL('../extension/turbo-main.js', import.meta.url), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(new URL('../extension/butter-main.js', import.meta.url), 'utf8'), ctx);
   const tick = ms => { // advance time in 16ms frames, running timers and frames
     for (let end = now + ms; now < end;) { now += 16;
       for (const t of timers) if (t.live && t.at <= now) { t.live = false; t.f(); }
       const due = [...frames]; frames.clear(); for (const [, cb] of due) cb(now); }
   };
-  return { win, tick, stats: () => win.__turboStats };
+  return { win, tick, stats: () => win.__butterStats };
 }
 
 // A smoother instance shaped like ChatGPT's: re-arms only when this.frame is null.
@@ -36,7 +36,7 @@ function smoother(win) {
 { // other callbacks pass straight through, including ones that merely mention publish
   const { win, tick } = setup(250); let n = 0; const store = { publish() { n++; } };
   for (let i = 0; i < 10; i++) { win.requestAnimationFrame(() => { n++; }); win.requestAnimationFrame(() => store.publish()); tick(16); }
-  assert.equal(n, 20); assert.equal(win.__turboStats.smootherFrames, 0);
+  assert.equal(n, 20); assert.equal(win.__butterStats.smootherFrames, 0);
 }
 { // cancel before and after the throttle timer fires: callback never runs
   const { win, tick } = setup(250); const s = smoother(win);

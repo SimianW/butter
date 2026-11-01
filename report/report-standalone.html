@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ChatGPT Turbo · 优化结果</title>
+<title>Butter for ChatGPT · 优化结果</title>
 <style>
 .r {
   --surface: var(--card, #fcfcfb); --ink: var(--foreground, #0b0b0b); --ink-2: var(--muted-foreground, #52514e);
@@ -68,7 +68,7 @@ svg text.v { fill: var(--ink); font-variant-numeric: tabular-nums; }
   </div>
 
   <div class="card">
-    <h2>ChatGPT Turbo 做了什么</h2>
+    <h2>Butter for ChatGPT 做了什么</h2>
     <ul>
       <li><b>平滑器节流到 250ms 一次</b>：只拦截那一个回调，文字照样流式出现，每次多一小段。</li>
       <li><b>去掉对话外层的尺寸容器</b>（保留负责侧边面板的外层应用容器）：收益最大的一条。</li>
@@ -93,7 +93,7 @@ svg text.v { fill: var(--ink); font-variant-numeric: tabular-nums; }
 </div>
 <div class="tip" id="tip"></div>
 <script>
-const D = {"rows": [{"name": "ChatGPT 原样", "kind": "base", "n": 1, "blocked": 75.6, "p95": 299.9, "fps": 15.2, "freeze": 2082, "keyMax": 3521, "keyP95": 277, "busy": 87, "style": 65.5, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（默认）", "kind": "oss", "n": 4, "blocked": 121.5, "p95": 1358.3, "fps": 5.0, "freeze": 9263, "keyMax": 9401, "keyP95": 4441, "busy": 95.5, "style": 87.1, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（只加载 1 条）", "kind": "oss", "n": 2, "blocked": 98.3, "p95": 600.0, "fps": 11.6, "freeze": 3493, "keyMax": 4476, "keyP95": 1942, "busy": 88.6, "style": 77.5, "sha": "043dc8afaf8d"}, {"name": "CJ-tpub Long Chat Optimizer", "kind": "oss", "n": 1, "blocked": 105.1, "p95": 199.9, "fps": 4.6, "freeze": 27047, "keyMax": 17434, "keyP95": 1110, "busy": 97.6, "style": 86.5, "sha": "043dc8afaf8d"}, {"name": "GPT Delagger", "kind": "oss", "n": 1, "blocked": 106.7, "p95": 2016.6, "fps": 3.3, "freeze": 2754, "keyMax": 3089, "keyP95": 2982, "busy": 97.7, "style": 88.2, "sha": "043dc8afaf8d"}, {"name": "LightSession Pro", "kind": "oss", "n": 1, "blocked": 75.3, "p95": 300, "fps": 15.1, "freeze": 2079, "keyMax": 3539, "keyP95": 289, "busy": 86.8, "style": 64.4, "sha": "043dc8afaf8d"}, {"name": "In-Memory Trimmer", "kind": "oss", "n": 1, "blocked": 76.0, "p95": 283.4, "fps": 14.8, "freeze": 2032, "keyMax": 3460, "keyP95": 316, "busy": 87.4, "style": 65.8, "sha": "043dc8afaf8d"}, {"name": "Turbo 激进版（不采用）", "kind": "rej", "n": 2, "blocked": 2.1, "p95": 16.8, "fps": 55.3, "freeze": 369, "keyMax": 360, "keyP95": 148, "busy": 36.8, "style": 8.8, "sha": "043dc8afaf8d"}, {"name": "ChatGPT Turbo（最终版）", "kind": "ours", "n": 2, "blocked": 6.3, "p95": 33.3, "fps": 52.1, "freeze": 595, "keyMax": 787, "keyP95": 182, "busy": 42.4, "style": 13.8, "sha": "043dc8afaf8d"}], "scenarios": {"baseline": {"reloadBlocked": 7244, "reloadMax": 2857, "scrollMax": 3566, "scrollBlocked": 7098, "scrollWall": 50695, "typeP95": 31, "typeMax": 279}, "turbo-v5": {"reloadBlocked": 3694, "reloadMax": 1140, "scrollMax": 708, "scrollBlocked": 2664, "scrollWall": 38460, "typeP95": 23, "typeMax": 256}}, "qa": {"baseline": {"jumps": 0, "worst": 0, "find": true, "sel": 22586, "wideMax": 963}, "turbo-v5": {"jumps": 0, "worst": 1, "find": true, "sel": 22586, "wideMax": 973}, "aggressive": {"jumps": 31, "worst": 282, "find": true, "sel": 22586, "wideMax": 1144}}};
+const D = {"rows": [{"name": "ChatGPT 原样", "kind": "base", "n": 1, "blocked": 75.6, "p95": 299.9, "fps": 15.2, "freeze": 2082, "keyMax": 3521, "keyP95": 277, "busy": 87, "style": 65.5, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（默认）", "kind": "oss", "n": 4, "blocked": 121.5, "p95": 1358.3, "fps": 5.0, "freeze": 9263, "keyMax": 9401, "keyP95": 4441, "busy": 95.5, "style": 87.1, "sha": "043dc8afaf8d"}, {"name": "Speed Booster（只加载 1 条）", "kind": "oss", "n": 2, "blocked": 98.3, "p95": 600.0, "fps": 11.6, "freeze": 3493, "keyMax": 4476, "keyP95": 1942, "busy": 88.6, "style": 77.5, "sha": "043dc8afaf8d"}, {"name": "CJ-tpub Long Chat Optimizer", "kind": "oss", "n": 1, "blocked": 105.1, "p95": 199.9, "fps": 4.6, "freeze": 27047, "keyMax": 17434, "keyP95": 1110, "busy": 97.6, "style": 86.5, "sha": "043dc8afaf8d"}, {"name": "GPT Delagger", "kind": "oss", "n": 1, "blocked": 106.7, "p95": 2016.6, "fps": 3.3, "freeze": 2754, "keyMax": 3089, "keyP95": 2982, "busy": 97.7, "style": 88.2, "sha": "043dc8afaf8d"}, {"name": "LightSession Pro", "kind": "oss", "n": 1, "blocked": 75.3, "p95": 300, "fps": 15.1, "freeze": 2079, "keyMax": 3539, "keyP95": 289, "busy": 86.8, "style": 64.4, "sha": "043dc8afaf8d"}, {"name": "In-Memory Trimmer", "kind": "oss", "n": 1, "blocked": 76.0, "p95": 283.4, "fps": 14.8, "freeze": 2032, "keyMax": 3460, "keyP95": 316, "busy": 87.4, "style": 65.8, "sha": "043dc8afaf8d"}, {"name": "Butter 激进版（不采用）", "kind": "rej", "n": 2, "blocked": 2.1, "p95": 16.8, "fps": 55.3, "freeze": 369, "keyMax": 360, "keyP95": 148, "busy": 36.8, "style": 8.8, "sha": "043dc8afaf8d"}, {"name": "Butter for ChatGPT（最终版）", "kind": "ours", "n": 2, "blocked": 6.3, "p95": 33.3, "fps": 52.1, "freeze": 595, "keyMax": 787, "keyP95": 182, "busy": 42.4, "style": 13.8, "sha": "043dc8afaf8d"}], "scenarios": {"baseline": {"reloadBlocked": 7244, "reloadMax": 2857, "scrollMax": 3566, "scrollBlocked": 7098, "scrollWall": 50695, "typeP95": 31, "typeMax": 279}, "butter-v5": {"reloadBlocked": 3694, "reloadMax": 1140, "scrollMax": 708, "scrollBlocked": 2664, "scrollWall": 38460, "typeP95": 23, "typeMax": 256}}, "qa": {"baseline": {"jumps": 0, "worst": 0, "find": true, "sel": 22586, "wideMax": 963}, "butter-v5": {"jumps": 0, "worst": 1, "find": true, "sel": 22586, "wideMax": 973}, "aggressive": {"jumps": 31, "worst": 282, "find": true, "sel": 22586, "wideMax": 1144}}};
 const R = D.rows, S = D.scenarios, Q = D.qa;
 const base = R.find(r => r.kind === 'base'), ours = R.find(r => r.kind === 'ours');
 const css = v => getComputedStyle(document.querySelector('.r')).getPropertyValue(v).trim();
@@ -104,7 +104,7 @@ const kpis = [
   ['主线程卡住', ours.blocked + ' 秒', `原来 ${base.blocked} 秒 · 少 ${x(base.blocked, ours.blocked)}`],
   ['滚动帧间隔 p95', ours.p95 + ' ms', `原来 ${base.p95} ms · 快 ${x(base.p95, ours.p95)}`],
   ['最慢一次按键', sec(ours.keyMax), `原来 ${sec(base.keyMax)} · 快 ${x(base.keyMax, ours.keyMax)}`],
-  ['滚动整段对话最长一帧', sec(S['turbo-v5'].scrollMax), `原来 ${sec(S.baseline.scrollMax)} · 快 ${x(S.baseline.scrollMax, S['turbo-v5'].scrollMax)}`],
+  ['滚动整段对话最长一帧', sec(S['butter-v5'].scrollMax), `原来 ${sec(S.baseline.scrollMax)} · 快 ${x(S.baseline.scrollMax, S['butter-v5'].scrollMax)}`],
 ];
 const kb = document.getElementById('kpis');
 for (const [l, v, d] of kpis) { const c = document.createElement('div'); c.className = 'card kpi';
@@ -146,8 +146,8 @@ const order = ['base', 'oss', 'rej', 'ours'];
 const T = [...R].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
 table('t1', ['配置', '卡住 秒', '帧 p95 ms', 'FPS', '最长卡顿 ms', '最慢按键 ms', '按键 p95 ms', '主线程占用 %', '样式重算 %'],
   T.map(r => [r.name, r.blocked, r.p95, r.fps, r.freeze.toLocaleString('en-US'), r.keyMax.toLocaleString('en-US'), r.keyP95.toLocaleString('en-US'), r.busy, r.style]), T.indexOf(ours));
-const b = S.baseline, o = S['turbo-v5'];
-table('t2', ['场景', 'ChatGPT 原样', 'Turbo', '倍数'], [
+const b = S.baseline, o = S['butter-v5'];
+table('t2', ['场景', 'ChatGPT 原样', 'Butter', '倍数'], [
   ['重新打开对话：主线程卡住', sec(b.reloadBlocked), sec(o.reloadBlocked), x(b.reloadBlocked, o.reloadBlocked)],
   ['重新打开对话：最长一帧', sec(b.reloadMax), sec(o.reloadMax), x(b.reloadMax, o.reloadMax)],
   ['滚动整段对话：最长一帧', sec(b.scrollMax), sec(o.scrollMax), x(b.scrollMax, o.scrollMax)],
@@ -155,12 +155,12 @@ table('t2', ['场景', 'ChatGPT 原样', 'Turbo', '倍数'], [
   ['空闲时打字：按键 p95', b.typeP95 + ' ms', o.typeP95 + ' ms', '持平'],
 ]);
 const yes = v => v ? '正常' : '失败';
-table('t3', ['检查', 'ChatGPT 原样', 'Turbo', '激进版'], [
+table('t3', ['检查', 'ChatGPT 原样', 'Butter', '激进版'], [
   ['回答文本（SHA）', '043dc8afaf8d', '一致', '一致'],
-  ['页内查找屏幕外文字', yes(Q.baseline.find), yes(Q['turbo-v5'].find), yes(Q.aggressive.find)],
-  ['全选复制（字符数）', Q.baseline.sel.toLocaleString('en-US'), Q['turbo-v5'].sel.toLocaleString('en-US'), Q.aggressive.sel.toLocaleString('en-US')],
-  ['刷新后往上滚，跳动 >20px 的步数', `${Q.baseline.jumps} / 40`, `${Q['turbo-v5'].jumps} / 40`, `${Q.aggressive.jumps} / 40（最大 ${Q.aggressive.worst}px）`],
-  ['最宽表格宽度', Q.baseline.wideMax + 'px', Q['turbo-v5'].wideMax + 'px', Q.aggressive.wideMax + 'px'],
+  ['页内查找屏幕外文字', yes(Q.baseline.find), yes(Q['butter-v5'].find), yes(Q.aggressive.find)],
+  ['全选复制（字符数）', Q.baseline.sel.toLocaleString('en-US'), Q['butter-v5'].sel.toLocaleString('en-US'), Q.aggressive.sel.toLocaleString('en-US')],
+  ['刷新后往上滚，跳动 >20px 的步数', `${Q.baseline.jumps} / 40`, `${Q['butter-v5'].jumps} / 40`, `${Q.aggressive.jumps} / 40（最大 ${Q.aggressive.worst}px）`],
+  ['最宽表格宽度', Q.baseline.wideMax + 'px', Q['butter-v5'].wideMax + 'px', Q.aggressive.wideMax + 'px'],
   ['同位置截图', '—', '内容一致（差异只在侧边栏新对话和 1px 偏移）', '—'],
 ]);
 </script>

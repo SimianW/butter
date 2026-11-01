@@ -1,8 +1,8 @@
 04:05:01 [smooth-only] replaying 189 chunks over 122s, 1 reps
-04:07:27 [smooth-only] rep 1: fps=16.9 p95=283.3 jank=18% busy=84.9% style=63.8% blocked=72.4s maxFreeze=2393 keyP95=304.5 keyMax=2488.1 wheelP95=413 LoAF[renderSL=75.9s forcedSL=28.8s script=3.9s] turbo={"smootherFrames":388,"published":388} nodes=90982 turns=4 chunks=189/189
-04:07:32 [turbo-120] replaying 189 chunks over 122s, 1 reps
-04:09:49 [turbo-120] rep 1: fps=44.8 p95=50.1 jank=5.5% busy=55.4% style=27.6% blocked=13.2s maxFreeze=1008 keyP95=186.3 keyMax=1521.5 wheelP95=104 LoAF[renderSL=25.9s forcedSL=3.8s script=2.2s] turbo={"smootherFrames":744,"published":743} nodes=90982 turns=4 chunks=189/189
-04:09:55 [turbo-60] replaying 189 chunks over 122s, 1 reps
-04:12:13 [turbo-60] rep 1: fps=39.1 p95=66.7 jank=8.3% busy=67.6% style=36.8% blocked=16.2s maxFreeze=1022 keyP95=158.9 keyMax=1512.5 wheelP95=144 LoAF[renderSL=33.2s forcedSL=4.5s script=3.2s] turbo={"smootherFrames":1284,"published":1284} nodes=90982 turns=4 chunks=189/189
-04:12:19 [turbo-250] replaying 189 chunks over 122s, 1 reps
-04:14:36 [turbo-250] rep 1: fps=49.3 p95=33.4 jank=3.2% busy=43.7% style=19.8% blocked=11.6s maxFreeze=1117 keyP95=175.2 keyMax=1005.8 wheelP95=91 LoAF[renderSL=17.3s forcedSL=3.6s script=1.5s] turbo={"smootherFrames":382,"published":381} nodes=90986 turns=4 chunks=189/189
+04:07:27 [smooth-only] rep 1: fps=16.9 p95=283.3 jank=18% busy=84.9% style=63.8% blocked=72.4s maxFreeze=2393 keyP95=304.5 keyMax=2488.1 wheelP95=413 LoAF[renderSL=75.9s forcedSL=28.8s script=3.9s] butter={"smootherFrames":388,"published":388} nodes=90982 turns=4 chunks=189/189
+04:07:32 [butter-120] replaying 189 chunks over 122s, 1 reps
+04:09:49 [butter-120] rep 1: fps=44.8 p95=50.1 jank=5.5% busy=55.4% style=27.6% blocked=13.2s maxFreeze=1008 keyP95=186.3 keyMax=1521.5 wheelP95=104 LoAF[renderSL=25.9s forcedSL=3.8s script=2.2s] butter={"smootherFrames":744,"published":743} nodes=90982 turns=4 chunks=189/189
+04:09:55 [butter-60] replaying 189 chunks over 122s, 1 reps
+04:12:13 [butter-60] rep 1: fps=39.1 p95=66.7 jank=8.3% busy=67.6% style=36.8% blocked=16.2s maxFreeze=1022 keyP95=158.9 keyMax=1512.5 wheelP95=144 LoAF[renderSL=33.2s forcedSL=4.5s script=3.2s] butter={"smootherFrames":1284,"published":1284} nodes=90982 turns=4 chunks=189/189
+04:12:19 [butter-250] replaying 189 chunks over 122s, 1 reps
+04:14:36 [butter-250] rep 1: fps=49.3 p95=33.4 jank=3.2% busy=43.7% style=19.8% blocked=11.6s maxFreeze=1117 keyP95=175.2 keyMax=1005.8 wheelP95=91 LoAF[renderSL=17.3s forcedSL=3.6s script=1.5s] butter={"smootherFrames":382,"published":381} nodes=90986 turns=4 chunks=189/189

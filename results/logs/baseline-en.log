@@ -25,4 +25,4 @@
 19:48:24 turn 8: ttft=16775ms total=100215ms nodes=101724 katex=1278 heap=171.2MB stream fps=29.9 p95=183.3 busy=69.9% virt=0
 19:48:34 turn 8: idle scroll fps=49.1 p95=33.4 loafBlock=0ms
 19:48:55 turn 8: reload allTurns=8965ms math=16609ms loafBlock=8256.4ms
-19:48:55 done ~/Dev/chatgpt-turbo/lab/harness/results/baseline-en-2026-10-30
+19:48:55 done ~/Dev/chatgpt-butter/lab/harness/results/baseline-en-2026-10-30

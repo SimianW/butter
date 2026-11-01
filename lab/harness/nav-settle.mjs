@@ -9,7 +9,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const where = label => p.evaluate(label => {
   const sc = document.querySelector('.thread-scroll-container');
   const t = [...sc.querySelectorAll('[data-turn-key]')].find(t => t.querySelector('[data-user-message-bubble]')?.textContent.trim().startsWith(label));
-  const root = document.querySelector('chatgpt-turbo-nav').shadowRoot;
+  const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
   return { top: t ? Math.round(t.getBoundingClientRect().top - sc.getBoundingClientRect().top) : null,
     busy: root.querySelectorAll('.busy').length, warp: getComputedStyle(root.querySelector('.warp')).visibility };
 }, label);

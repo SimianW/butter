@@ -1,13 +1,13 @@
 # NOTE: Speed Booster resets its settings when the browser restarts, and bench.mjs restarts the
-# browser, so the runs labelled cmp-sb-limit1 / cmp-sb-limit1-turbo below actually ran with its
-# default limit of 10 (confirmed by probing). They are stored as cmp-sb-default / cmp-sb-default-turbo.
+# browser, so the runs labelled cmp-sb-limit1 / cmp-sb-limit1-butter below actually ran with its
+# default limit of 10 (confirmed by probing). They are stored as cmp-sb-default / cmp-sb-default-butter.
 # The real limit-1 runs are in matrix-sb2.log. cmp-sb-default failed: the welcome modal blocked the click.
 14:41:43 [cmp-baseline] replaying 189 chunks over 122s, 2 reps
-14:44:03 [cmp-baseline] rep 1: fps=14.9 p95=300 jank=19.1% busy=87.2% style=65.7% blocked=76.6s maxFreeze=2049 keyP95=298.4 keyMax=3493.9 wheelP95=525 LoAF[renderSL=74.1s forcedSL=31.5s script=6.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1163 seenMarks=0 turbo=null nodes=90992 turns=4 chunks=189/189
-14:46:25 [cmp-baseline] rep 2: fps=14.9 p95=300 jank=19.6% busy=86.9% style=66.4% blocked=77.1s maxFreeze=2052 keyP95=241.6 keyMax=3525 wheelP95=480 LoAF[renderSL=74.9s forcedSL=30.1s script=6.8s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1163 seenMarks=0 turbo=null nodes=90992 turns=4 chunks=189/189
-14:46:31 [cmp-turbo] replaying 189 chunks over 122s, 2 reps
-14:48:49 [cmp-turbo] rep 1: fps=52.2 p95=33.3 jank=2.6% busy=42.8% style=13.6% blocked=6.2s maxFreeze=576 keyP95=173.8 keyMax=516.3 wheelP95=79 LoAF[renderSL=16s forcedSL=1.7s script=1.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1168 seenMarks=1059 turbo={"smootherFrames":395,"published":394} nodes=91070 turns=4 chunks=189/189
-14:51:07 [cmp-turbo] rep 2: fps=51.9 p95=33.3 jank=2.6% busy=43.6% style=13.9% blocked=6.8s maxFreeze=598 keyP95=172 keyMax=718 wheelP95=88 LoAF[renderSL=15.5s forcedSL=1.7s script=1.8s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1175 seenMarks=1068 turbo={"smootherFrames":395,"published":394} nodes=90992 turns=4 chunks=189/189
+14:44:03 [cmp-baseline] rep 1: fps=14.9 p95=300 jank=19.1% busy=87.2% style=65.7% blocked=76.6s maxFreeze=2049 keyP95=298.4 keyMax=3493.9 wheelP95=525 LoAF[renderSL=74.1s forcedSL=31.5s script=6.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1163 seenMarks=0 butter=null nodes=90992 turns=4 chunks=189/189
+14:46:25 [cmp-baseline] rep 2: fps=14.9 p95=300 jank=19.6% busy=86.9% style=66.4% blocked=77.1s maxFreeze=2052 keyP95=241.6 keyMax=3525 wheelP95=480 LoAF[renderSL=74.9s forcedSL=30.1s script=6.8s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1163 seenMarks=0 butter=null nodes=90992 turns=4 chunks=189/189
+14:46:31 [cmp-butter] replaying 189 chunks over 122s, 2 reps
+14:48:49 [cmp-butter] rep 1: fps=52.2 p95=33.3 jank=2.6% busy=42.8% style=13.6% blocked=6.2s maxFreeze=576 keyP95=173.8 keyMax=516.3 wheelP95=79 LoAF[renderSL=16s forcedSL=1.7s script=1.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1168 seenMarks=1059 butter={"smootherFrames":395,"published":394} nodes=91070 turns=4 chunks=189/189
+14:51:07 [cmp-butter] rep 2: fps=51.9 p95=33.3 jank=2.6% busy=43.6% style=13.9% blocked=6.8s maxFreeze=598 keyP95=172 keyMax=718 wheelP95=88 LoAF[renderSL=15.5s forcedSL=1.7s script=1.8s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1175 seenMarks=1068 butter={"smootherFrames":395,"published":394} nodes=90992 turns=4 chunks=189/189
 "requests": [  "?num_turns=10&include_has_versions=true",  "?num_turns=10&include_has_versions=true" ]
 "turns": 5
 14:51:36 [cmp-sb-default] replaying 189 chunks over 122s, 2 reps
@@ -77,10 +77,10 @@ Node.js v24.17.0
 "requests": [  "?num_turns=1&include_has_versions=true",  "?num_turns=1&include_has_versions=true" ]
 "turns": 1
 14:52:48 [cmp-sb-limit1] replaying 189 chunks over 122s, 2 reps
-14:55:19 [cmp-sb-limit1] rep 1: fps=5.3 p95=1350 jank=11.9% busy=94.8% style=87.3% blocked=120.5s maxFreeze=8743 keyP95=3264.2 keyMax=7556.7 wheelP95=2652 LoAF[renderSL=79.8s forcedSL=42.3s script=3.4s] answer=21448c/420k/043dc8afaf8d remounts=6 blockAdds=1110 seenMarks=0 turbo=null nodes=91095 turns=4 chunks=189/189
-14:58:00 [cmp-sb-limit1] rep 2: fps=5.1 p95=1300 jank=12.2% busy=95.4% style=86.7% blocked=121.5s maxFreeze=8647 keyP95=3238.9 keyMax=6302.6 wheelP95=2542 LoAF[renderSL=78.9s forcedSL=44.2s script=3.6s] answer=21448c/420k/043dc8afaf8d remounts=8 blockAdds=1115 seenMarks=0 turbo=null nodes=91095 turns=4 chunks=189/189
-14:58:06 [cmp-sb-limit1-turbo] replaying 189 chunks over 122s, 2 reps
-15:00:26 [cmp-sb-limit1-turbo] rep 1: fps=21.9 p95=233.3 jank=14.5% busy=81.2% style=61.2% blocked=65.8s maxFreeze=1000 keyP95=386.7 keyMax=1015.3 wheelP95=440 LoAF[renderSL=31.5s forcedSL=3.7s script=2.4s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1152 seenMarks=1062 turbo={"smootherFrames":258,"published":258} nodes=91095 turns=4 chunks=189/189
-15:02:46 [cmp-sb-limit1-turbo] rep 2: fps=21.7 p95=233.3 jank=14.5% busy=81.2% style=60.8% blocked=65.6s maxFreeze=1032 keyP95=434.8 keyMax=1051 wheelP95=449 LoAF[renderSL=31.6s forcedSL=3.9s script=2.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1154 seenMarks=1061 turbo={"smootherFrames":250,"published":250} nodes=91095 turns=4 chunks=189/189
+14:55:19 [cmp-sb-limit1] rep 1: fps=5.3 p95=1350 jank=11.9% busy=94.8% style=87.3% blocked=120.5s maxFreeze=8743 keyP95=3264.2 keyMax=7556.7 wheelP95=2652 LoAF[renderSL=79.8s forcedSL=42.3s script=3.4s] answer=21448c/420k/043dc8afaf8d remounts=6 blockAdds=1110 seenMarks=0 butter=null nodes=91095 turns=4 chunks=189/189
+14:58:00 [cmp-sb-limit1] rep 2: fps=5.1 p95=1300 jank=12.2% busy=95.4% style=86.7% blocked=121.5s maxFreeze=8647 keyP95=3238.9 keyMax=6302.6 wheelP95=2542 LoAF[renderSL=78.9s forcedSL=44.2s script=3.6s] answer=21448c/420k/043dc8afaf8d remounts=8 blockAdds=1115 seenMarks=0 butter=null nodes=91095 turns=4 chunks=189/189
+14:58:06 [cmp-sb-limit1-butter] replaying 189 chunks over 122s, 2 reps
+15:00:26 [cmp-sb-limit1-butter] rep 1: fps=21.9 p95=233.3 jank=14.5% busy=81.2% style=61.2% blocked=65.8s maxFreeze=1000 keyP95=386.7 keyMax=1015.3 wheelP95=440 LoAF[renderSL=31.5s forcedSL=3.7s script=2.4s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1152 seenMarks=1062 butter={"smootherFrames":258,"published":258} nodes=91095 turns=4 chunks=189/189
+15:02:46 [cmp-sb-limit1-butter] rep 2: fps=21.7 p95=233.3 jank=14.5% busy=81.2% style=60.8% blocked=65.6s maxFreeze=1032 keyP95=434.8 keyMax=1051 wheelP95=449 LoAF[renderSL=31.6s forcedSL=3.9s script=2.7s] answer=21448c/420k/043dc8afaf8d remounts=2 blockAdds=1154 seenMarks=1061 butter={"smootherFrames":250,"published":250} nodes=91095 turns=4 chunks=189/189
 "requests": [  "?num_turns=10&include_has_versions=true",  "?num_turns=10&include_has_versions=true" ]
 "turns": 5

@@ -1,7 +1,7 @@
 18:42:14 [cmp-baseline] rep 1: reload ready=11060ms blocked=8316ms maxFrame=3159 | scroll fps=50.4 p95=33.3 max=2550 blocked=7740ms (45994ms) | typing keyP95=30 keyMax=276
 18:43:30 [cmp-baseline] rep 2: reload ready=15461ms blocked=7304ms maxFrame=2784 | scroll fps=47.3 p95=33.4 max=2450 blocked=4800ms (48985ms) | typing keyP95=31 keyMax=281
-18:44:34 [cmp-turbo] rep 1: reload ready=7454ms blocked=4595ms maxFrame=1487 | scroll fps=54.5 p95=16.8 max=750 blocked=3095ms (39756ms) | typing keyP95=29 keyMax=165
-18:45:34 [cmp-turbo] rep 2: reload ready=8304ms blocked=4541ms maxFrame=1488 | scroll fps=54.7 p95=16.8 max=700 blocked=2812ms (39509ms) | typing keyP95=22 keyMax=263
+18:44:34 [cmp-butter] rep 1: reload ready=7454ms blocked=4595ms maxFrame=1487 | scroll fps=54.5 p95=16.8 max=750 blocked=3095ms (39756ms) | typing keyP95=29 keyMax=165
+18:45:34 [cmp-butter] rep 2: reload ready=8304ms blocked=4541ms maxFrame=1488 | scroll fps=54.7 p95=16.8 max=700 blocked=2812ms (39509ms) | typing keyP95=22 keyMax=263
 "turns": 5
 "modal": "none"
 

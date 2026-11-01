@@ -1,7 +1,7 @@
 // Measure jank on your own machine (Windows, macOS, Linux) without the lab harness.
 // 1. Open a long ChatGPT chat, open DevTools (F12 / Cmd+Opt+I) > Console, paste this file, Enter.
 // 2. Ask a long question and use the page normally (scroll, type) while the answer streams.
-// 3. When the answer has finished, run  turboMeasure.stop()  and note the printed table.
+// 3. When the answer has finished, run  butterMeasure.stop()  and note the printed table.
 // Compare runs with the extension on and off (chrome://extensions toggle, then reload the tab).
 (() => {
   const frames = [], loaf = [], keys = [];
@@ -15,13 +15,13 @@
   addEventListener('keydown', onKey, true);
   const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s.length ? s[Math.min(s.length - 1, Math.floor(p * s.length))] : null; };
   const r = x => x == null ? null : Math.round(x);
-  window.turboMeasure = {
+  window.butterMeasure = {
     stop() {
       running = false; po.disconnect(); removeEventListener('keydown', onKey, true);
       const secs = (performance.now() - t0) / 1000, f = frames.slice(1);
       const res = {
         'duration (s)': +secs.toFixed(1),
-        'turbo extension active': !!window.__turboStats,
+        'butter extension active': !!window.__butterStats,
         'main thread blocked (s)': +(loaf.reduce((a, e) => a + e.blockingDuration, 0) / 1000).toFixed(1),
         'longest freeze (ms)': r(Math.max(0, ...loaf.map(e => e.duration))),
         'fps': +(f.length / secs).toFixed(1),
@@ -36,5 +36,5 @@
       return res;
     },
   };
-  console.log('Recording. Run turboMeasure.stop() when the answer has finished.');
+  console.log('Recording. Run butterMeasure.stop() when the answer has finished.');
 })();

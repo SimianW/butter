@@ -32,13 +32,13 @@ for(let rep=1;rep<=reps;rep++)for(const position of process.env.POSITIONS?proces
   if(probe==='composer-contain')document.querySelector('.ProseMirror').closest('form').style.contain='layout style';
   if(probe==='app-container-normal')document.querySelector('[class*=MainContentFrame-]').style.setProperty('container-type','normal','important');
   if(probe==='no-surface-has'){const walk=rs=>{for(const r of rs){if(r.cssRules)walk(r.cssRules);if(r.selectorText?.includes(':has(')&&r.selectorText.includes('data-thread-scroll-footer'))r.selectorText=':not(*)';}};for(const sheet of document.styleSheets)try{walk(sheet.cssRules)}catch{}}
-  if(probe==='no-nav')document.querySelector('chatgpt-turbo-nav')?.remove();
+  if(probe==='no-nav')document.querySelector('chatgpt-butter-nav')?.remove();
   const st=document.createElement('style');st.textContent=({contain:'.thread-scroll-container { contain: layout style !important; }','no-anim':'*,*::before,*::after {animation:none!important;transition:none!important}'})[probe]??'';document.head.append(st);
  },probe);
  if(probe)await sleep(2500);
  const prefix=path.join(out,`${rep}-${position}`);
  await p.screenshot({path:prefix+'-before.png'});
- const dom=await p.evaluate(()=>({turbo:typeof window.__turboTyping==='object'?{...window.__turboTyping}:null,nav:!!document.querySelector('chatgpt-turbo-nav'),nodes:document.querySelectorAll('*').length,turns:document.querySelectorAll('[data-turn-key]').length,katexNodes:document.querySelectorAll('.katex *').length,geometry:(()=>{const e=document.querySelector('.ProseMirror'),t=document.querySelector('[data-turn-key]');const rect=e=>e?Object.fromEntries(['x','y','width','height'].map(k=>[k,e.getBoundingClientRect()[k]])):null;return {composer:rect(e),turn:rect(t)}})(),scroll:(()=>{const s=document.querySelector('.thread-scroll-container');return s?{top:s.scrollTop,height:s.scrollHeight,client:s.clientHeight}:null})()}));
+ const dom=await p.evaluate(()=>({butter:typeof window.__butterTyping==='object'?{...window.__butterTyping}:null,nav:!!document.querySelector('chatgpt-butter-nav'),nodes:document.querySelectorAll('*').length,turns:document.querySelectorAll('[data-turn-key]').length,katexNodes:document.querySelectorAll('.katex *').length,geometry:(()=>{const e=document.querySelector('.ProseMirror'),t=document.querySelector('[data-turn-key]');const rect=e=>e?Object.fromEntries(['x','y','width','height'].map(k=>[k,e.getBoundingClientRect()[k]])):null;return {composer:rect(e),turn:rect(t)}})(),scroll:(()=>{const s=document.querySelector('.thread-scroll-container');return s?{top:s.scrollTop,height:s.scrollHeight,client:s.clientHeight}:null})()}));
  await p.evaluate(()=>{
   const s=window.__typing={events:[],longtasks:[],frames:[],keys:[],mutations:[],running:true};
   s.po=new PerformanceObserver(l=>s.events.push(...l.getEntries().map(e=>({name:e.name,start:e.startTime,duration:e.duration,processing:e.processingEnd-e.processingStart,delay:e.processingStart-e.startTime,id:e.interactionId}))));s.po.observe({type:'event',durationThreshold:16,buffered:true});
@@ -55,7 +55,7 @@ for(let rep=1;rep<=reps;rep++)for(const position of process.env.POSITIONS?proces
   await p.evaluate(()=>{performance.mark('typing-end');window.__typing.end=performance.now();window.__typing.running=false});await traceStop(prefix+'-trace.json');
   const r=await p.evaluate(()=>{const s=window.__typing;s.running=false;s.po.disconnect();s.lt.disconnect();s.mo.disconnect();removeEventListener('keydown',s.handler,true);return {start:s.start,end:s.end,events:s.events.filter(e=>e.start>=s.start&&e.start<=s.end),longtasks:s.longtasks.filter(e=>e.start>=s.start&&e.start<s.end),frames:s.frames.filter(e=>e.t>=s.start&&e.t<=s.end).map(e=>Math.min(e.duration,e.t-s.start)),keys:s.keys,mutations:s.mutations}});
   await p.screenshot({path:prefix+'-typed.png'});
-  const semanticCheck=await p.evaluate(()=>window.__turboTyping?.verify?.()??null);
+  const semanticCheck=await p.evaluate(()=>window.__butterTyping?.verify?.()??null);
   const typedDom=await p.evaluate(()=>{let e=document.querySelector('.ProseMirror'),a=[];while(e&&e!==document.body){const s=getComputedStyle(e);if(s.containerType!=='normal'||/thread-scroll/.test(e.className))a.push({cls:e.className,container:s.containerType,h:e.offsetHeight});e=e.parentElement;}return a;});
   await composer.click();await p.keyboard.press('Control+a');await p.keyboard.press('Backspace');await sleep(500);
   if((await composer.innerText()).trim())throw Error('Failed to clear composer');await p.screenshot({path:prefix+'-after.png'});

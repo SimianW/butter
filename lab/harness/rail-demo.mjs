@@ -23,7 +23,7 @@ await page.evaluate(() => {
   addEventListener('pointermove', e => { c.style.transform = `translate(${e.clientX - 4}px,${e.clientY - 2}px)`; }, true);
 });
 const geo = () => page.evaluate(() => {
-  const r = document.querySelector('chatgpt-turbo-nav').shadowRoot, b = r.querySelector('.rail').getBoundingClientRect();
+  const r = document.querySelector('chatgpt-butter-nav').shadowRoot, b = r.querySelector('.rail').getBoundingClientRect();
   const n = r.querySelectorAll('.tick').length, more = !r.querySelector('.more').hidden;
   return { x: b.x + b.width / 2, y0: b.y + 10 + (more ? 16 : 0), pitch: (b.height - 20 - (more ? 16 : 0)) / n, n, dotsY: b.y + 18 };
 });
