@@ -19,7 +19,8 @@ In a long math chat, while an answer streams in:
 | Scrolling (p95 frame) | 300 ms | 33 ms |
 | Slowest keystroke | 3.5 s | 0.8 s |
 
-Works out of the box. No account, no requests of its own. [How it was measured →](docs/benchmarks.md)
+Works out of the box. No account, no requests of its own. If ChatGPT changes its page, the
+extension may stop helping, but it won't break anything. [How it was measured →](docs/benchmarks.md)
 
 ## Jump between your questions
 
@@ -37,8 +38,7 @@ A thin rail on the right, one tick per question. Hover to preview, click to jump
 
 Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install.md)
 
-Current version: **0.1.0-alpha.7** ([changelog](CHANGELOG.md)). Alpha: if ChatGPT changes its page, the
-extension may stop helping, but it won't break anything.
+Current version: **0.1.0-alpha.7** ([changelog](CHANGELOG.md)).
 
 ## More
 
