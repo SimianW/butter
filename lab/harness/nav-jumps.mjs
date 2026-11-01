@@ -14,7 +14,7 @@ const p = b.contexts()[0].pages().find(x => x.url().startsWith('https://chatgpt.
 const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text().slice(0, 200)); });
 await p.goto(CHAT); await p.locator('.ProseMirror').first().waitFor(); await sleep(8000);
 const state = () => p.evaluate(() => {
-  const h = document.querySelector('chatgpt-turbo-nav'); if (!h) return null;
+  const h = document.querySelector('chatgpt-butter-nav'); if (!h) return null;
   const r = h.shadowRoot, rail = r.querySelector('.rail').getBoundingClientRect();
   return { on: h.hasAttribute('data-on'), n: r.querySelectorAll('.tick').length, more: !r.querySelector('.more').hidden,
     labels: [...r.querySelectorAll('.tick')].map(t => t.getAttribute('aria-label').slice(0, 14)),
@@ -34,13 +34,13 @@ const where = id => p.evaluate(id => {
   const t = document.querySelector(`[data-turn-key="${id}"]`), sc = document.querySelector('.thread-scroll-container');
   return t ? Math.round(t.getBoundingClientRect().top - sc.getBoundingClientRect().top) : null;
 }, id);
-const ids = await p.evaluate(() => [...document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelectorAll('.tick')].length);
+const ids = await p.evaluate(() => [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick')].length);
 for (const i of [0, ids - 1, 1, Math.floor(ids / 2), ids - 2]) {
   const s1 = await state(); const [x1, y1, w1, h1] = s1.rail;
   const pitch = (h1 - 20 - (s1.more ? 16 : 0)) / s1.n, ty = y1 + 10 + (s1.more ? 16 : 0) + (i + 0.5) * pitch;
   await p.mouse.move(x1 + w1 / 2, ty);
   await sleep(200);
-  const label = await p.evaluate(() => document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelector('.card .text').textContent.slice(0, 20));
+  const label = await p.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.card .text').textContent.slice(0, 20));
   const t0 = Date.now(); await p.mouse.click(x1 + w1 / 2, ty);
   // find target id by label match in DOM over time
   let top = null, key = null;
@@ -61,5 +61,5 @@ for (const i of [0, ids - 1, 1, Math.floor(ids / 2), ids - 2]) {
   if (i === 0) await p.screenshot({ path: `${OUT}-3-after-jump.png` });
 }
 console.log('final', JSON.stringify(await state()));
-console.log('errors', errs.filter(e => /turbo|nav/i.test(e)));
+console.log('errors', errs.filter(e => /butter|nav/i.test(e)));
 await b.close();

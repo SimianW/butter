@@ -5,14 +5,14 @@ the whole conversation. Butter cuts that work in four places:
 
 | File | Change | Why |
 |---|---|---|
-| `turbo.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
-| `turbo.css` + `turbo-cv.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-turbo-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
-| `turbo-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
-| `turbo-nav-main.js` + `config.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Scrolling back through a whole long chat takes several times as many requests. |
+| `butter.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
+| `butter.css` + `butter-cv.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
+| `butter-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
+| `butter-nav-main.js` + `config.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Scrolling back through a whole long chat takes several times as many requests. |
 
-The [history rail](history-rail.md) lives in `turbo-nav.js` and `turbo-nav-main.js`.
-`turbo-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches;
-`turbo-nav.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
+The [history rail](history-rail.md) lives in `butter-nav.js` and `butter-nav-main.js`.
+`butter-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches;
+`butter-nav.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 

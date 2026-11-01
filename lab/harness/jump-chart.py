@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 base=Path(__file__).resolve().parent/'scratch/jump-typing'
 data=json.loads((base/'summary.json').read_text())['rows']
-labels={'stock':'Stock + rail','current':'Current Turbo','page2':'Older page 2','page3':'Older page 3','page5':'Older page 5','initial100':'All at open','blocks-only':'Blocks only'}
+labels={'stock':'Stock + rail','current':'Current Butter','page2':'Older page 2','page3':'Older page 3','page5':'Older page 5','initial100':'All at open','blocks-only':'Blocks only'}
 rows=[{'mode':labels[r['mode']],'wait':r['T'],'p95':round(r['delay'][1]/1000,3) if r['delay'][1] is not None else None,'runs':r['valid']} for r in data]
 html='''<!doctype html><html><head><meta charset="utf-8"><style>
 html,body{background:transparent;margin:0;color:var(--foreground);font-family:var(--font-sans,system-ui)}

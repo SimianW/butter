@@ -15,7 +15,7 @@ for (const k of order) {
   const check = () => p.evaluate(() => {
     const sc = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.getBoundingClientRect().width > 0);
     const visible = [...sc.querySelectorAll('[data-user-message-bubble]')].map(b => b.textContent.trim().slice(0, 30));
-    const h = document.querySelector('chatgpt-turbo-nav'), labels = [...h.shadowRoot.querySelectorAll('.tick')].map(t => t.getAttribute('aria-label').slice(0, 30));
+    const h = document.querySelector('chatgpt-butter-nav'), labels = [...h.shadowRoot.querySelectorAll('.tick')].map(t => t.getAttribute('aria-label').slice(0, 30));
     return { on: h.hasAttribute('data-on'), ticks: labels.length, visible: visible.length, missing: visible.filter(v => !labels.includes(v)).length, extra: labels.filter(l => !visible.includes(l)).length,
       lastFrameAgo: Math.round(performance.now() - (window.__lf ?? 0)) };
   });

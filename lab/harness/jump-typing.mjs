@@ -38,24 +38,24 @@ await p.addInitScript(()=>{
  po('event','events',e=>({name:e.name,start:e.startTime,duration:e.duration,delay:e.processingStart-e.startTime,processing:e.processingEnd-e.processingStart,id:e.interactionId}),{durationThreshold:16});
  po('longtask','longtasks',e=>({start:e.startTime,duration:e.duration}));
  po('long-animation-frame','loafs',e=>({start:e.startTime,duration:e.duration,blockingDuration:e.blockingDuration,styleAndLayoutStart:e.styleAndLayoutStart,renderStart:e.renderStart,scripts:e.scripts.map(x=>({invoker:x.invoker,invokerType:x.invokerType,sourceURL:x.sourceURL,sourceFunctionName:x.sourceFunctionName,duration:x.duration,forcedStyleAndLayoutDuration:x.forcedStyleAndLayoutDuration}))}));
- document.addEventListener('turbo-nav',e=>{try{const d=JSON.parse(e.detail);if(d.type==='page')s.pages.push(d)}catch{}});
+ document.addEventListener('butter-nav',e=>{try{const d=JSON.parse(e.detail);if(d.type==='page')s.pages.push(d)}catch{}});
  addEventListener('keydown',e=>{if(e.target.closest?.('.ProseMirror'))s.keys.push({start:e.timeStamp,at:performance.now(),delay:performance.now()-e.timeStamp,key:e.key.length===1?'ascii':e.key})},true);
  // Preserve editor focus while clicking the rail. No post-click renderer RPC gates input dispatch.
  addEventListener('mousedown',e=>{if(e.composedPath().some(e=>e?.classList?.contains('tick')))e.preventDefault()},true);
  addEventListener('click',e=>{
-  s.lastPhysicalClick={at:performance.now(),tag:e.target.tagName,railOn:!!document.querySelector('chatgpt-turbo-nav[data-on]'),ticks:document.querySelector('chatgpt-turbo-nav')?.shadowRoot?.querySelectorAll('.tick').length??0};
+  s.lastPhysicalClick={at:performance.now(),tag:e.target.tagName,railOn:!!document.querySelector('chatgpt-butter-nav[data-on]'),ticks:document.querySelector('chatgpt-butter-nav')?.shadowRoot?.querySelectorAll('.tick').length??0};
   const tick=e.composedPath().find(e=>e?.classList?.contains('tick'));if(!tick)return;
-  s.clickTickCount=tick.parentElement.querySelectorAll('.tick').length;s.clickHasEarlier=!document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelector('.more').hidden;s.clickedIndex=[...tick.parentElement.querySelectorAll('.tick')].indexOf(tick);s.click=performance.now();s.landed=null;s.targetLabel=tick.getAttribute('aria-label');
+  s.clickTickCount=tick.parentElement.querySelectorAll('.tick').length;s.clickHasEarlier=!document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.more').hidden;s.clickedIndex=[...tick.parentElement.querySelectorAll('.tick')].indexOf(tick);s.click=performance.now();s.landed=null;s.targetLabel=tick.getAttribute('aria-label');
   s.target=s.pages.flatMap(x=>x.items).find(x=>x.q?.slice(0,120)===s.targetLabel)?.id??null;
   performance.mark('jump-start');window.__jumpClick?.(String(performance.timeOrigin+s.click));
  },true);
  function frame(t){if(!s.running)return;if(s.last)s.frames.push({start:s.last,duration:t-s.last});s.last=t;
   const editor=document.querySelector('.ProseMirror');if(editor&&s.ready===null){s.ready=performance.now();performance.mark('composer-ready');if(!editor.textContent.trim())editor.focus({preventScroll:true})}
   if(editor&&s.editor!==editor){s.editor=editor;if(!editor.textContent.trim())editor.focus({preventScroll:true})}
-  if(!s.railReady&&editor&&document.querySelector('chatgpt-turbo-nav[data-on]')?.shadowRoot?.querySelector('.tick')){s.railReady=performance.now();performance.mark('rail-ready');window.__jumpReady?.(String(performance.timeOrigin+s.railReady))}
+  if(!s.railReady&&editor&&document.querySelector('chatgpt-butter-nav[data-on]')?.shadowRoot?.querySelector('.tick')){s.railReady=performance.now();performance.mark('rail-ready');window.__jumpReady?.(String(performance.timeOrigin+s.railReady))}
   if(s.click&&!s.landed){const sc=document.querySelector('.thread-scroll-container');let el=s.target?document.querySelector(`[data-turn-key="${s.target}"]`):null;
    if(!el&&sc)el=[...sc.querySelectorAll('[data-turn-key]')].find(t=>t.querySelector('[data-user-message-bubble]')?.textContent.trim().startsWith(s.targetLabel));
-   if(el&&sc){const top=el.getBoundingClientRect().top-sc.getBoundingClientRect().top;s.lastTargetTop=top;const root=document.querySelector('chatgpt-turbo-nav')?.shadowRoot;
+   if(el&&sc){const top=el.getBoundingClientRect().top-sc.getBoundingClientRect().top;s.lastTargetTop=top;const root=document.querySelector('chatgpt-butter-nav')?.shadowRoot;
     const visible=!root?.querySelector('.tick.busy')&&getComputedStyle(root.querySelector('.warp')).visibility==='hidden';
     if(Math.abs(top-64)<=4&&visible){s.alignedSince??=t;if(t-s.alignedSince>150){s.landed=t;performance.mark('jump-landed')}}else s.alignedSince=null;
    }
@@ -64,7 +64,7 @@ await p.addInitScript(()=>{
 });
 if(mode==='stock'){
  // Navigation-only control: native ChatGPT rendering plus the exact production jump algorithm.
- await p.addInitScript({content:fs.readFileSync(path.join(root,'extension/turbo-nav-main.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'extension/turbo-nav.js'),'utf8')+`\n(()=>{const seen=new WeakSet();const scan=()=>{for(const e of document.querySelectorAll('[data-turn-key]'))if(!seen.has(e)){seen.add(e);globalThis.turboNavTurn(e)}};new MutationObserver(scan).observe(document,{subtree:true,childList:true});})();`});
+ await p.addInitScript({content:fs.readFileSync(path.join(root,'extension/butter-nav-main.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'extension/butter-nav.js'),'utf8')+`\n(()=>{const seen=new WeakSet();const scan=()=>{for(const e of document.querySelectorAll('[data-turn-key]'))if(!seen.has(e)){seen.add(e);globalThis.butterNavTurn(e)}};new MutationObserver(scan).observe(document,{subtree:true,childList:true});})();`});
 }
 async function traceStop(file){const done=new Promise(r=>cdp.once('Tracing.tracingComplete',r));await cdp.send('Tracing.end');const {stream}=await done;const f=fs.createWriteStream(file);for(;;){const x=await cdp.send('IO.read',{handle:stream,size:1<<20});f.write(x.base64Encoded?Buffer.from(x.data,'base64'):x.data);if(x.eof)break}await new Promise(r=>f.end(r));await cdp.send('IO.close',{handle:stream})}
 async function traceStart(){await cdp.send('Tracing.start',{transferMode:'ReturnAsStream',traceConfig:{includedCategories:['toplevel','devtools.timeline','disabled-by-default-devtools.timeline','disabled-by-default-devtools.timeline.stack','disabled-by-default-v8.cpu_profiler','v8.execute','blink.user_timing']}})}
@@ -83,7 +83,7 @@ for(const T of (process.env.CHECK_ONLY?[]:times))for(let rep=+(process.env.START
  const g=calibrated;
  await sleep(Math.max(0,readyAt+T*1000-Date.now()));
  const clickSignal=new Promise(resolve=>{onClick=resolve});const dispatchAt=Date.now(),pending=[];const send=(method,data)=>{const x=input.send(method,data).catch(e=>({error:safe(e.message)}));pending.push(x)};
- send('Runtime.evaluate',{expression:`document.querySelector('chatgpt-turbo-nav')?.shadowRoot?.querySelectorAll('.tick')[${tickIndex}]?.click()`});
+ send('Runtime.evaluate',{expression:`document.querySelector('chatgpt-butter-nav')?.shadowRoot?.querySelectorAll('.tick')[${tickIndex}]?.click()`});
  // The binding is emitted at click capture, before the production handler can block.
  const processedClickAt=await Promise.race([clickSignal,sleep(5000).then(()=>null)]);onClick=null;const typingAt=(processedClickAt??Date.now())+300;
  ownsDraft=true;
@@ -96,7 +96,7 @@ for(const T of (process.env.CHECK_ONLY?[]:times))for(let rep=+(process.env.START
  for(let k=0;k<200;k++){state=await p.evaluate(()=>({landed:window.__jumpProbe.landed,top:window.__jumpProbe.lastTargetTop,click:window.__jumpProbe.click}));if(state.landed||state.click===null||Date.now()-dispatchAt>25000)break;await sleep(100)}
  await sleep(500);await p.evaluate(()=>{performance.mark('jump-end');window.__jumpProbe.end=performance.now();window.__jumpProbe.running=false});
  if(trace)await traceStop(prefix+'-trace.json');
- const raw=await p.evaluate(()=>{const s=window.__jumpProbe;return {clickTickCount:s.clickTickCount,clickHasEarlier:s.clickHasEarlier,railReady:s.railReady,physicalClick:s.lastPhysicalClick,target:s.target,clickedIndex:s.clickedIndex,ready:s.ready,click:s.click,landed:s.landed,end:s.end,lastTargetTop:s.lastTargetTop,events:s.events,longtasks:s.longtasks,loafs:s.loafs,keys:s.keys,frames:s.frames,nav:performance.getEntriesByType('navigation').map(n=>({dcl:n.domContentLoadedEventEnd,load:n.loadEventEnd})),railCount:document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelectorAll('.tick').length,hasEarlier:!document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelector('.more').hidden,composerLength:document.querySelector('.ProseMirror').textContent.length,focused:document.activeElement===document.querySelector('.ProseMirror'),mounted:[...document.querySelectorAll('[data-turn-key]')].map(e=>e.getAttribute('data-turn-key'))}});
+ const raw=await p.evaluate(()=>{const s=window.__jumpProbe;return {clickTickCount:s.clickTickCount,clickHasEarlier:s.clickHasEarlier,railReady:s.railReady,physicalClick:s.lastPhysicalClick,target:s.target,clickedIndex:s.clickedIndex,ready:s.ready,click:s.click,landed:s.landed,end:s.end,lastTargetTop:s.lastTargetTop,events:s.events,longtasks:s.longtasks,loafs:s.loafs,keys:s.keys,frames:s.frames,nav:performance.getEntriesByType('navigation').map(n=>({dcl:n.domContentLoadedEventEnd,load:n.loadEventEnd})),railCount:document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick').length,hasEarlier:!document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.more').hidden,composerLength:document.querySelector('.ProseMirror').textContent.length,focused:document.activeElement===document.querySelector('.ProseMirror'),mounted:[...document.querySelectorAll('[data-turn-key]')].map(e=>e.getAttribute('data-turn-key'))}});
  // Always clear with real editor input, never submit. Stop measurement before cleanup.
  await editor.focus();await p.keyboard.press('Control+a');await p.keyboard.press('Backspace');await sleep(250);if((await editor.innerText()).trim())throw Error('Failed to clear composer');ownsDraft=false;
  await Promise.all(jobs);active=false;
@@ -110,25 +110,25 @@ for(const T of (process.env.CHECK_ONLY?[]:times))for(let rep=+(process.env.START
 if(process.env.CHECK!=='0'){
  // Separate correctness navigation. Reference request is XHR, so it cannot seed the rail.
  await p.goto('about:blank');await sleep(200);requests=[];jobs=[];received=new Map();errors=[];active=true;await gotoChat();await p.locator('.ProseMirror').first().waitFor({timeout:90000});await sleep(10000);
- if(!await p.locator('chatgpt-turbo-nav[data-on]').count()){await p.goto('about:blank');await gotoChat();await p.locator('chatgpt-turbo-nav[data-on]').waitFor({state:'attached',timeout:90000});await sleep(5000)}
+ if(!await p.locator('chatgpt-butter-nav[data-on]').count()){await p.goto('about:blank');await gotoChat();await p.locator('chatgpt-butter-nav[data-on]').waitFor({state:'attached',timeout:90000});await sleep(5000)}
  active=false;const getReference=()=>p.evaluate(async()=>{const tok=(await (await fetch('/api/auth/session')).json()).accessToken,id=/\/c\/([^/?#]+)/.exec(location.pathname)[1];return await new Promise((resolve,reject)=>{const x=new XMLHttpRequest();x.open('GET',`/backend-api/conversations/${id}?num_turns=100&include_has_versions=true`);x.setRequestHeader('authorization','Bearer '+tok);x.onload=()=>{try{const j=JSON.parse(x.responseText);resolve({status:x.status,data:j})}catch{reject(Error('reference JSON'))}};x.onerror=()=>reject(Error('reference network'));x.send()})});
  let reference=await getReference();for(let attempt=0;reference.status===429&&attempt<2;attempt++){const ms=Math.max(1000,rateLimitUntil-Date.now());console.log('REFERENCE_BACKOFF429 '+ms+'ms');await sleep(ms);reference=await getReference()}
  active=true;const ref=payload(reference.data);let passCount=0,stall=0,prev=-1,restarts=0;const visited=new Set();
  for(let k=0;k<60;k++){
-  const s=await p.evaluate(()=>{const r=document.querySelector('chatgpt-turbo-nav')?.shadowRoot,sc=document.querySelector('.thread-scroll-container');return {more:r?!r.querySelector('.more').hidden:null,n:r?.querySelectorAll('.tick').length??0,ids:[...document.querySelectorAll('[data-turn-key]')].map(e=>e.getAttribute('data-turn-key'))}});
-  s.ids.map(sha).forEach(x=>visited.add(x));if(!s.more){passCount=s.n;break}if(s.n===prev)stall++;else stall=0;if(stall===2&&restarts<2){restarts++;await p.goto('about:blank');await gotoChat();await p.locator('chatgpt-turbo-nav[data-on]').waitFor({state:'attached',timeout:90000});await sleep(4000);prev=-1;stall=0;continue}if(stall>4)break;prev=s.n;
+  const s=await p.evaluate(()=>{const r=document.querySelector('chatgpt-butter-nav')?.shadowRoot,sc=document.querySelector('.thread-scroll-container');return {more:r?!r.querySelector('.more').hidden:null,n:r?.querySelectorAll('.tick').length??0,ids:[...document.querySelectorAll('[data-turn-key]')].map(e=>e.getAttribute('data-turn-key'))}});
+  s.ids.map(sha).forEach(x=>visited.add(x));if(!s.more){passCount=s.n;break}if(s.n===prev)stall++;else stall=0;if(stall===2&&restarts<2){restarts++;await p.goto('about:blank');await gotoChat();await p.locator('chatgpt-butter-nav[data-on]').waitFor({state:'attached',timeout:90000});await sleep(4000);prev=-1;stall=0;continue}if(stall>4)break;prev=s.n;
   if(rateLimitUntil>Date.now()){console.log('BACKOFF429 '+(rateLimitUntil-Date.now())+'ms');await sleep(rateLimitUntil-Date.now())}
   await p.evaluate(()=>{const sc=document.querySelector('.thread-scroll-container');sc.scrollTop=500});await sleep(300);await p.evaluate(()=>{document.querySelector('.thread-scroll-container').scrollTop=0});await sleep(2200);
  }
  await Promise.all(jobs);
- const pages=requests.filter(r=>r.status===200&&r.questionHashes),ids=[...new Set(pages.flatMap(r=>r.questionHashes))],last=await p.evaluate(()=>{const r=document.querySelector('chatgpt-turbo-nav').shadowRoot;return {railCount:r.querySelectorAll('.tick').length,more:!r.querySelector('.more').hidden}});
+ const pages=requests.filter(r=>r.status===200&&r.questionHashes),ids=[...new Set(pages.flatMap(r=>r.questionHashes))],last=await p.evaluate(()=>{const r=document.querySelector('chatgpt-butter-nav').shadowRoot;return {railCount:r.querySelectorAll('.tick').length,more:!r.querySelector('.more').hidden}});
  // Click every rail tick, with the loaded full rail, and check target landing/mounting.
  const reach=[];if(!last.more&&last.railCount<=100){for(let i=0;i<last.railCount;i++){
-  await p.evaluate(i=>{window.__jumpProbe.running=true;const r=document.querySelector('chatgpt-turbo-nav').shadowRoot;r.querySelectorAll('.tick')[i].click()},i);
-  let v;for(let k=0;k<100;k++){await sleep(100);v=await p.evaluate(()=>{const s=window.__jumpProbe,sc=document.querySelector('.thread-scroll-container'),t=s.target&&sc?.querySelector(`[data-turn-key="${s.target}"]`),r=document.querySelector('chatgpt-turbo-nav').shadowRoot;return {mounted:!!t,bottomClamped:sc?Math.abs(sc.scrollTop-(sc.scrollHeight-sc.clientHeight))<=5:false,top:t?t.getBoundingClientRect().top-sc.getBoundingClientRect().top:null,busy:!!r.querySelector('.tick.busy')}});if(v.mounted&&(Math.abs(v.top-64)<=5||(v.bottomClamped&&v.top>=64&&v.top<700))&&!v.busy)break}reach.push({index:i,...v,pass:v.mounted&&(Math.abs(v.top-64)<=5||(v.bottomClamped&&v.top>=64&&v.top<700))&&!v.busy});
+  await p.evaluate(i=>{window.__jumpProbe.running=true;const r=document.querySelector('chatgpt-butter-nav').shadowRoot;r.querySelectorAll('.tick')[i].click()},i);
+  let v;for(let k=0;k<100;k++){await sleep(100);v=await p.evaluate(()=>{const s=window.__jumpProbe,sc=document.querySelector('.thread-scroll-container'),t=s.target&&sc?.querySelector(`[data-turn-key="${s.target}"]`),r=document.querySelector('chatgpt-butter-nav').shadowRoot;return {mounted:!!t,bottomClamped:sc?Math.abs(sc.scrollTop-(sc.scrollHeight-sc.clientHeight))<=5:false,top:t?t.getBoundingClientRect().top-sc.getBoundingClientRect().top:null,busy:!!r.querySelector('.tick.busy')}});if(v.mounted&&(Math.abs(v.top-64)<=5||(v.bottomClamped&&v.top>=64&&v.top<700))&&!v.busy)break}reach.push({index:i,...v,pass:v.mounted&&(Math.abs(v.top-64)<=5||(v.bottomClamped&&v.top>=64&&v.top<700))&&!v.busy});
  }}
  const labels=messages(reference.data).filter(m=>m.author?.role==='user'&&!m.metadata?.is_visually_hidden_from_conversation&&['text','multimodal_text'].includes(m.content?.content_type)).map(m=>(m.content.parts??[]).filter(p=>typeof p==='string').join('\n').trim().slice(0,120));
- const railOrderMatches=await p.evaluate(labels=>JSON.stringify([...document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelectorAll('.tick')].map(e=>e.getAttribute('aria-label')))===JSON.stringify(labels),labels);
+ const railOrderMatches=await p.evaluate(labels=>JSON.stringify([...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick')].map(e=>e.getAttribute('aria-label')))===JSON.stringify(labels),labels);
  const fetchedMessages=[...new Set(pages.flatMap(r=>r.messageHashes))];
  const merged=[];for(const pg of pages){const fresh=pg.messageHashes.filter(id=>!merged.includes(id));if(pg.kind==='older')merged.unshift(...fresh);else merged.push(...fresh)}
  const messageOrderMatches=JSON.stringify(merged)===JSON.stringify(ref.messageHashes);

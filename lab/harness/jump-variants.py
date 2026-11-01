@@ -7,7 +7,7 @@ for name,older,initial in [('jump-page2',2,None),('jump-page3',3,None),('jump-pa
     dst=root/'lab/variants'/name
     if dst.exists(): raise SystemExit(f'Refusing to overwrite {dst}')
     shutil.copytree(src,dst)
-    p=dst/'turbo-nav-main.js';s=p.read_text()
+    p=dst/'butter-nav-main.js';s=p.read_text()
     needle='    const res = of.apply(this, arguments);'
     code=f'''    // Lab experiment: rewrite only ChatGPT's existing paginated GET requests.
     try {{

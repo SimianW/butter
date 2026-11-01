@@ -106,7 +106,7 @@ const INSTRUMENT = () => {
       this.mo2 = new MutationObserver(recs => { for (const r of recs) {
         if (r.type === 'attributes') this.seenMarks++;
         else for (const n of r.addedNodes) if (n.nodeType === 1 && n.parentElement?.matches('[data-markdown-text-style="assistant-message"]')) this.blockAdds++; } });
-      this.mo2.observe(document.querySelector('.thread-scroll-container') || document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-turbo-seen'] });
+      this.mo2.observe(document.querySelector('.thread-scroll-container') || document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-butter-seen'] });
     },
     stop() { this.running = false; this.po.disconnect(); removeEventListener('keydown', this.onKey, true); this.mo.disconnect(); this.mo2.disconnect(); return { seenMarks: this.seenMarks, blockAdds: this.blockAdds, frames: this.frames, loaf: this.loaf, keys: this.keys, attr: this.attr, remounts: this.remounts }; },
   };
@@ -188,7 +188,7 @@ async function runOnce(rep) {
   const d = Object.fromEntries(CDP_KEYS.map(k => [k, +(m1[k] - m0[k]).toFixed(3)]));
   const f = r.frames.slice(1);
   const res = {
-    variant, rep, wallMs: wall, answer, before, after: await page.evaluate(DOM), chunksSent: (await page.evaluate(() => window.__replay)).chunksSent, turbo: await page.evaluate(() => window.__turboStats ?? null),
+    variant, rep, wallMs: wall, answer, before, after: await page.evaluate(DOM), chunksSent: (await page.evaluate(() => window.__replay)).chunksSent, butter: await page.evaluate(() => window.__butterStats ?? null),
     fps: +(f.length / (wall / 1000)).toFixed(1), p50: q(f, 0.5), p95: q(f, 0.95), maxFrame: Math.max(...f), jankPct: +(100 * f.filter(x => x > 50).length / f.length).toFixed(1),
     loafBlockMs: r.loaf.reduce((a, e) => a + e.block, 0), loafMaxMs: Math.max(0, ...r.loaf.map(e => e.dur)), loafCount: r.loaf.length,
     keyP50: q(r.keys, 0.5), keyP95: q(r.keys, 0.95), keyMax: Math.max(0, ...r.keys), wheelP95: q(wheelMs, 0.95),
@@ -202,7 +202,7 @@ async function runOnce(rep) {
   };
   fs.writeFileSync(path.join(OUT, `rep-${rep}.json`), JSON.stringify(res, null, 1));
   await page.screenshot({ path: path.join(OUT, `rep-${rep}.png`) });
-  log(`rep ${rep}: fps=${res.fps} p95=${res.p95} jank=${res.jankPct}% busy=${res.busyPct}% style=${res.stylePct}% blocked=${(res.loafBlockMs / 1000).toFixed(1)}s maxFreeze=${res.loafMaxMs} keyP95=${res.keyP95} keyMax=${res.keyMax} wheelP95=${res.wheelP95} LoAF[renderSL=${res.attr.renderSLs}s forcedSL=${res.attr.forcedSLs}s script=${res.attr.scripts}s] answer=${res.answer.chars}c/${res.answer.katex}k/${res.answer.sha} remounts=${res.remounts.length} blockAdds=${res.blockAdds} seenMarks=${res.seenMarks} turbo=${JSON.stringify(res.turbo)} nodes=${res.after.nodes} turns=${res.after.turns} chunks=${res.chunksSent}/${REPLAY.schedule.length}`);
+  log(`rep ${rep}: fps=${res.fps} p95=${res.p95} jank=${res.jankPct}% busy=${res.busyPct}% style=${res.stylePct}% blocked=${(res.loafBlockMs / 1000).toFixed(1)}s maxFreeze=${res.loafMaxMs} keyP95=${res.keyP95} keyMax=${res.keyMax} wheelP95=${res.wheelP95} LoAF[renderSL=${res.attr.renderSLs}s forcedSL=${res.attr.forcedSLs}s script=${res.attr.scripts}s] answer=${res.answer.chars}c/${res.answer.katex}k/${res.answer.sha} remounts=${res.remounts.length} blockAdds=${res.blockAdds} seenMarks=${res.seenMarks} butter=${JSON.stringify(res.butter)} nodes=${res.after.nodes} turns=${res.after.turns} chunks=${res.chunksSent}/${REPLAY.schedule.length}`);
   return res;
 }
 

@@ -11,7 +11,7 @@ P9=$(node -e "import('./prompts-en.mjs').then(m => console.log(m.default[8]))")
 node record.mjs "$EN_CHAT" '[t09]' "$P9" recordings/en-t09.json | tail -2
 EXT_T=$(cd ../../extension && pwd)
 CHAT="$EN_CHAT" REC=recordings/en-t09.json EXT='' node demo.mjs en/stock | grep -v '^chromium:'
-CHAT="$EN_CHAT" REC=recordings/en-t09.json EXT="$EXT_T" node demo.mjs en/turbo | grep -v '^chromium:'
+CHAT="$EN_CHAT" REC=recordings/en-t09.json EXT="$EXT_T" node demo.mjs en/butter | grep -v '^chromium:'
 CHAT="$ZH_CHAT" EXT='' node demo.mjs zh/stock | grep -v '^chromium:'
-CHAT="$ZH_CHAT" EXT="$EXT_T" node demo.mjs zh/turbo | grep -v '^chromium:'
+CHAT="$ZH_CHAT" EXT="$EXT_T" node demo.mjs zh/butter | grep -v '^chromium:'
 cd ../.. && python3 lab/make-demo.py en | tail -13 && python3 lab/make-demo.py zh | tail -13

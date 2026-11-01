@@ -37,7 +37,7 @@ await p.addInitScript(R => {
   };
 }, R);
 await p.goto(process.env.CHAT); await p.locator('.ProseMirror').first().waitFor(); await sleep(8000);
-const rail = () => p.evaluate(() => { const r = document.querySelector('chatgpt-turbo-nav').shadowRoot;
+const rail = () => p.evaluate(() => { const r = document.querySelector('chatgpt-butter-nav').shadowRoot;
   const b = r.querySelector('.rail').getBoundingClientRect(); return { n: r.querySelectorAll('.tick').length, more: !r.querySelector('.more').hidden, rect: [b.x, b.y, b.width, b.height], last: r.querySelector('.tick:last-child').getAttribute('aria-label').slice(0, 20) }; });
 console.log('before send', JSON.stringify(await rail()));
 await p.locator('.ProseMirror').first().click(); await p.keyboard.press('Control+A'); await p.keyboard.press('Backspace');
@@ -48,7 +48,7 @@ const r1 = await rail(); console.log('streaming', JSON.stringify(r1));
 const [x, y, w, h] = r1.rect, pitch = (h - 20 - (r1.more ? 16 : 0)) / r1.n, i = r1.n - 3;
 const ty = y + 10 + (r1.more ? 16 : 0) + (i + 0.5) * pitch;
 await p.mouse.move(x + w / 2, ty); await sleep(300);
-const label = await p.evaluate(() => document.querySelector('chatgpt-turbo-nav').shadowRoot.querySelector('.card .text').textContent.slice(0, 15));
+const label = await p.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.card .text').textContent.slice(0, 15));
 await p.mouse.click(x + w / 2, ty); await p.mouse.move(700, 500);
 const top = () => p.evaluate(lbl => { const sc = document.querySelector('.thread-scroll-container');
   for (const t of document.querySelectorAll('[data-turn-key]')) if ((t.querySelector('[data-user-message-bubble]')?.textContent.trim() ?? '').startsWith(lbl)) return Math.round(t.getBoundingClientRect().top - sc.getBoundingClientRect().top);
@@ -60,7 +60,7 @@ await p.screenshot({ path: 'scratch/nav-stream.png' });
 await p.emulateMedia({ colorScheme: 'dark' }); await sleep(1000);
 await p.mouse.move(x + w / 2, ty - pitch * 2, { steps: 4 }); await sleep(500);
 await p.screenshot({ path: 'scratch/nav-dark.png', clip: { x: x - 400, y: y - 80, width: 400 + w + 30, height: h + 160 } });
-console.log('dark attr', await p.evaluate(() => document.querySelector('chatgpt-turbo-nav').hasAttribute('data-dark')), await p.evaluate(() => getComputedStyle(document.documentElement).colorScheme + ' ' + document.documentElement.className));
+console.log('dark attr', await p.evaluate(() => document.querySelector('chatgpt-butter-nav').hasAttribute('data-dark')), await p.evaluate(() => getComputedStyle(document.documentElement).colorScheme + ' ' + document.documentElement.className));
 await p.emulateMedia({ colorScheme: null }); await p.mouse.move(700, 500);
 // wait for stream end, then clear the composer draft
 while (!(await p.evaluate(() => window.__replay.done))) await sleep(2000);

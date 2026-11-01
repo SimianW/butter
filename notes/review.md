@@ -1,6 +1,6 @@
-# ChatGPT Turbo: adversarial correctness and robustness review
+# Butter for ChatGPT: adversarial correctness and robustness review
 
-Reviewed 2026-10-30. Scope: `manifest.json`, `turbo.css`, `config.js`, and `turbo-main.js`; all four were read before investigating. Only this report was changed in the project. No browser, login, or authenticated request was used.
+Reviewed 2026-10-30. Scope: `manifest.json`, `butter.css`, `config.js`, and `butter-main.js`; all four were read before investigating. Only this report was changed in the project. No browser, login, or authenticated request was used.
 
 **Recommendation:** keep the smoother throttle as an experiment, harden its wrapper contract, and reconsider the unconditional CSS changes before wider use. The strongest counterexample is the claim that the two removed size containers have no consumers: the supplied JS and fetched public CSS contain real responsive and container-unit dependencies. The 9-turn textContent SHA result is useful evidence for that replay's text, but cannot detect clipping, incorrect layout, generated equation numbers, scrolling, or other scheduler users.
 
@@ -10,7 +10,7 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 - Extension references are one-based file lines. Bundle/CSS `@offset` references are zero-based UTF-16 character offsets, matching JavaScript `String.slice`, not byte offsets. All bundle basenames below refer to `/tmp/cgjs/`.
 - Inspected all seven numbered JS files in that directory, including `731863.626bb34a55.js` and the virtualizer in `77693.a20de07237.js`. Read section 4 and supporting evidence in `notes/bundle-hooks.md`. This is a partial deployment corpus, not an exhaustive application audit.
-- Fetched only public assets/specifications. Public stylesheet: [0d26df3bbf50.css](https://chatgpt.com/cdn/assets/0d26df3bbf50.css), 1,826,344 bytes, SHA-256 `cc4f3bfc402d38d38b029f7070db1a44809038f5a60040c70188314b3f4a8620`; temporary local copy `/tmp/chatgpt-turbo-review-live.css`. A successful fetch does not establish that every live account loads this asset or every rule's target; the direct JS consumer cited below provides additional evidence.
+- Fetched only public assets/specifications. Public stylesheet: [0d26df3bbf50.css](https://chatgpt.com/cdn/assets/0d26df3bbf50.css), 1,826,344 bytes, SHA-256 `cc4f3bfc402d38d38b029f7070db1a44809038f5a60040c70188314b3f4a8620`; temporary local copy `/tmp/chatgpt-butter-review-live.css`. A successful fetch does not establish that every live account loads this asset or every rule's target; the direct JS consumer cited below provides additional evidence.
 - Primary behavior references: [CSS Containment 2, layout/style/paint containment and content visibility](https://www.w3.org/TR/css-contain-2/), [CSS Containment 3, container queries and units](https://www.w3.org/TR/css-contain-3/), [HTML animation frames](https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#animation-frames), and [Web IDL callback invocation](https://webidl.spec.whatwg.org/#invoke-a-callback-function).
 - Ran the existing `/tmp/cgjs/check-smoother.cjs`: all three actual-class checks passed (ordinary completion, completion with pending throttled work, stream replacement). Additional inline Node/VM checks extracted the actual smoother class and exercised cancellation after the throttle timer had fired, plus paused rAF with timers clamped to at least one second. Both passed with no pending work after destruction/completion.
 - Deterministic scheduler fixtures reproduced negative-ID wrapper collisions, the native-ID-zero cancellation edge case, false-positive callback matching, and multiple deliveries in one frame. These fixtures establish JavaScript bookkeeping behavior, not Chrome's rendering/visibility behavior.
@@ -19,7 +19,7 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 ### 1. High — Removing size containers changes real responsive layout and wide-block sizing
 
-**Location:** `turbo.css:16–23`; especially the assertion at line 18.
+**Location:** `butter.css:16–23`; especially the assertion at line 18.
 
 **Scenario:** open a conversation with a floating side panel at a main-content width of at least 900px. The thread should reserve right padding for the panel; removing the named query container can prevent that rule from applying, leaving text beneath the panel. At narrow main-content widths, an expanded thread can also miss its compact maximum-width rule. Separately, display a wide table, diagram, or visualization in a conversation with a sidebar or split panel: removing the inner size container changes what `cqi`/`cqw` resolve against, potentially choosing a wider ancestor or the small viewport and producing over-wide content/clipping.
 
@@ -39,7 +39,7 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 ### 2. High — Placeholder heights can become virtualizer measurements and destabilize navigation
 
-**Location:** `turbo.css:3–13`.
+**Location:** `butter.css:3–13`.
 
 **Scenario:** reload a long chat at the bottom, then jump to a never-rendered older message. A turn's outer box can initially represent 1500px while its unrendered answer blocks represent 120px each. A long equation/table could really be 700px; a short paragraph might be 24px. The app measures those boxes, positions rows and anchors from that geometry, then gets different heights when the content becomes relevant. Result: an incorrectly aligned jump, a blank band, scrollbar changes, or a viewport correction while reading. Resizing/zooming while older turns are skipped can likewise leave remembered heights obsolete until their content is laid out again.
 
@@ -57,7 +57,7 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 ### 3. Medium — Paint containment clips deliberate overflow and introduces new stacking boundaries
 
-**Location:** both selectors in `turbo.css:3–13`.
+**Location:** both selectors in `butter.css:3–13`.
 
 **Scenario:** an answer contains a centered wide visualization/table, an unscrolled long equation, or a non-portaled control that draws beyond the turn's border box. Even while visible, the new paint containment can clip that content at the turn or block boundary. A high-z-index answer toolbar can also lose to an adjacent stacking context. An identical `textContent` hash will not reveal either problem.
 
@@ -71,7 +71,7 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 ### 4. Medium — Style containment can restart CSS-generated equation numbering
 
-**Location:** `turbo.css:3–13`.
+**Location:** `butter.css:3–13`.
 
 **Scenario:** two separately rendered display-math blocks use KaTeX automatic equation numbering. The original document-scoped counter advances across them; with each answer block style-contained, a counter increment in one block no longer propagates out to the next. The second equation can repeat a number. Turn-level style containment also prevents progression between turns. This can change visible math references while leaving `textContent` unchanged because the number is generated by CSS.
 
@@ -83,21 +83,21 @@ Severity: **High** = material layout/navigation failure in an ordinary supported
 
 ### 5. Medium — Independent fake-ID allocators or mismatched wrappers can cancel the wrong request
 
-**Location:** `turbo-main.js:11–12,20–45`.
+**Location:** `butter-main.js:11–12,20–45`.
 
-**Scenario:** another MAIN-world extension wraps rAF first and returns monotonically decreasing negative IDs. An ordinary callback goes through Turbo to that wrapper and receives `-1`. Turbo then schedules a smoother callback and independently returns its own `-1`. Canceling the ordinary callback deletes Turbo's pending smoother instead, leaving the ordinary callback alive. The smoother's `this.frame` is still non-null, so its 50ms drain loop does not schedule a replacement; intermediate publication can remain stuck until completion/reset. The fixture reproduced exactly this collision. Re-executing this bootstrap can create a similar second allocator.
+**Scenario:** another MAIN-world extension wraps rAF first and returns monotonically decreasing negative IDs. An ordinary callback goes through Butter to that wrapper and receives `-1`. Butter then schedules a smoother callback and independently returns its own `-1`. Canceling the ordinary callback deletes Butter's pending smoother instead, leaving the ordinary callback alive. The smoother's `this.frame` is still non-null, so its 50ms drain loop does not schedule a replacement; intermediate publication can remain stuck until completion/reset. The fixture reproduced exactly this collision. Re-executing this bootstrap can create a similar second allocator.
 
-A second interference path is another tool retaining Turbo's request function but replacing/bypassing its cancel function: `destroy()` sends a fake ID to the wrong cancel implementation and the old timer can still publish after teardown. Playwright clock replacement can also create mixed generations: captured rAF/cAF are from installation time, while `setTimeout`, `clearTimeout`, and `performance.now` are read later.
+A second interference path is another tool retaining Butter's request function but replacing/bypassing its cancel function: `destroy()` sends a fake ID to the wrong cancel implementation and the old timer can still publish after teardown. Playwright clock replacement can also create mixed generations: captured rAF/cAF are from installation time, while `setTimeout`, `clearTimeout`, and `performance.now` are read later.
 
 **Likelihood:** medium when stacking scheduling extensions, manually reinjecting scripts, or installing clock mocks at the wrong time; low in the clean profile used for the replay. Ordinary forwarding wrappers that preserve IDs and pair request/cancel correctly can compose successfully.
 
 **Evidence:** the ID namespaces are not coordinated; nonmatching IDs pass through unchanged at line 25 but matching IDs are minted independently at line 27. Lookup at line 40 cannot distinguish two owners of the same numeric ID. `fire` and the inner rAF callback do not check a canceled/generation flag. `manifest.json:15–16` makes this shared MAIN-world state, and does not establish ordering against other extensions. No installation guard is present.
 
-**Concrete fix:** guard installation with a private shared marker and install/restore request and cancel as a pair. Prefer deriving exposed handles from the captured request API: reserve a handle with an initial captured rAF, then keep a mapping from that exposed handle to the timer/current real frame while delaying delivery. Both pass-through and throttled handles then come from the same lower allocator instead of independent `-1` sequences. Maintain canceled/generation state and test it in both timer and real-frame callbacks; use nullable IDs. Capture clock/timer primitives consistently, and install clock mocks before Turbo or reload afterward. Arbitrary later replacement that bypasses Turbo cannot be made fully interoperable: detect it and disable/reload the experiment rather than claiming universal compatibility.
+**Concrete fix:** guard installation with a private shared marker and install/restore request and cancel as a pair. Prefer deriving exposed handles from the captured request API: reserve a handle with an initial captured rAF, then keep a mapping from that exposed handle to the timer/current real frame while delaying delivery. Both pass-through and throttled handles then come from the same lower allocator instead of independent `-1` sequences. Maintain canceled/generation state and test it in both timer and real-frame callbacks; use nullable IDs. Capture clock/timer primitives consistently, and install clock mocks before Butter or reload afterward. Arbitrary later replacement that bypasses Butter cannot be made fully interoperable: detect it and disable/reload the experiment rather than claiming universal compatibility.
 
 ### 6. Medium — The source fingerprint is too broad for a global API hook and can silently stop matching
 
-**Location:** `turbo-main.js:13–16,25`.
+**Location:** `butter-main.js:13–16,25`.
 
 **Scenario:** a different store schedules `()=>store.publish()` or even `()=>{ /* .publish() */ draw() }`. Both satisfy the current zero-arity, under-80-character substring test, so unrelated painting receives 250ms delays and nonnative IDs. A future refactor to `()=>this.publish()` also matches without the smoother's frame-clear/lifecycle contract. Conversely, renaming `publish`, using `obj["publish"]()`, wrapping the callback for instrumentation, or increasing its source length makes the real smoother stop matching with no visible warning.
 
@@ -109,7 +109,7 @@ A second interference path is another tool retaining Turbo's request function bu
 
 ### 7. Medium — Selectors survive hash changes but remain tied to private structure and utility spelling
 
-**Location:** `turbo.css:3,11,20–22`; `manifest.json:8,13`.
+**Location:** `butter.css:3,11,20–22`; `manifest.json:8,13`.
 
 **Scenario:** the app changes the source component name, replaces its Tailwind container utility with a module class, wraps all markdown blocks in one extra element, or switches renderer. The extension then silently loses an optimization or applies containment to the whole new wrapper/widget. In a different route sharing the app shell, the prefix-based container override can also affect a page that was never benchmarked. The manifest matches every path on chatgpt.com.
 
@@ -128,7 +128,7 @@ A second interference path is another tool retaining Turbo's request function bu
 
 ### 8. Low — Shared `lastRun` does not enforce the documented interval across multiple smoothers
 
-**Location:** `turbo-main.js:9–10,20,29–34`.
+**Location:** `butter-main.js:9–10,20,29–34`.
 
 **Scenario:** two matching callbacks are scheduled before either has run, or during the same 250ms wait window. Each independently chooses its wait from the same old `lastRun`; both can enter the same native frame and publish together. A newly created smoother can also inherit an unrelated smoother's delay. Therefore “at most once per smoothMs” holds for the current single instance with its one-pending-frame guard, not as an aggregate global limit. A page with several independently smoothed blocks can still produce a burst of React work.
 
@@ -140,7 +140,7 @@ A second interference path is another tool retaining Turbo's request function bu
 
 ### 9. Low — Truthy ID sentinels and fake-ID coercion do not preserve the native cancellation contract
 
-**Location:** `turbo-main.js:28,39–44`.
+**Location:** `butter-main.js:28,39–44`.
 
 **Scenario:** the underlying implementation/mock returns real rAF ID `0`; destruction deletes the fake entry but skips `caf(0)` because `entry.realId` is falsy. The queued callback subsequently publishes. Separately, a caller that normalizes a returned ID to an unsigned integer or passes its string form will miss the exact negative-number Map key, despite native `cancelAnimationFrame` accepting Web IDL numeric conversion.
 
@@ -152,7 +152,7 @@ A second interference path is another tool retaining Turbo's request function bu
 
 ### 10. Low — `smoothMs` is trusted without finite-number validation
 
-**Location:** `config.js:2–5`; `turbo-main.js:3–5,33–34`.
+**Location:** `config.js:2–5`; `butter-main.js:3–5,33–34`.
 
 **Scenario:** a benchmark/user edit sets `smoothMs: "250"`. The `> 0` check accepts it, but `lastRun + smoothMs` concatenates: with `lastRun=1000` and current time 1000ms, the requested wait is 999,250ms instead of 250ms. Intermediate output can look frozen for more than 16 minutes. Infinity/oversized delays instead overflow the timer range and can remove the intended throttling. A zero/negative value already intentionally disables the hook.
 
@@ -181,7 +181,7 @@ A second interference path is another tool retaining Turbo's request function bu
 | Drag/Shift-select across several skipped blocks and copy | `auto` content must remain selectable; selected contents are relevant and should render. **Accept native selection/copy semantics**, pending browser verification. A large selection may activate a large subtree and erase the performance benefit; that is a sensible cost of preserving behavior. The app's selection toolbar reads Range/element rects (`431882.155aa23127.js` @30757–32767), so initial activation can cause expensive geometry work or a transiently misplaced toolbar. If reproducible, temporarily disable extension containment in the selected answer and wait for layout before toolbar positioning; do not suppress selection or clipboard events. Compare actual pasted text, not just answer textContent. |
 | Adjacent paragraph spacing versus parent/child margin collapse | Independent formatting contexts stop margins from collapsing **through** a contained boundary and stop empty-box collapse. They do **not** automatically make every pair of adjacent sibling outer margins add instead of collapse. Ordinary sibling paragraph spacing need not change. A new wrapper with a first/last child's external margin can acquire extra space even on screen. CSS @514316 onward and @515790 onward uses paragraph/list/block margins; the universal child selector offers no structural exemption. **Accept current ordinary paragraph behavior pending a screenshot-free visual check by the human**; exempt a failing wrapper or preserve its intended spacing with audited explicit margins/padding. Do not globally zero margins. |
 | Code/table headers stay sticky while the answer scrolls | See finding 3. **Accept normal sticky behavior pending validation**; inspect clipping and layering rather than assuming `auto` creates a new scrolling box. Test both vertical thread scroll and horizontal code/table scroll, including first activation. |
-| Print/PDF before scrolling through history | `turbo.css` has no print exemption, so its implicit containment remains applicable. The site's dedicated print CSS resets code containment/overflow and avoids breaks in headings/tables (CSS @495211 onward, @547521 onward), but does not reset the extension's `content-visibility`. Printing should make printable content render in a conforming implementation; **omitted off-screen text was not demonstrated**. Risks still include clipping from finding 3, changed counter scope from finding 4, and pagination interaction with layout containment. Dedicated print output may have different matching DOM. Concrete hardening: limit these optimizations to screen and explicitly disable them on `[data-conversation-print]`, or add the reset below. A reset does not remount history removed by the app's own virtualizer. Test both browser Ctrl+P and any app print/export path. |
+| Print/PDF before scrolling through history | `butter.css` has no print exemption, so its implicit containment remains applicable. The site's dedicated print CSS resets code containment/overflow and avoids breaks in headings/tables (CSS @495211 onward, @547521 onward), but does not reset the extension's `content-visibility`. Printing should make printable content render in a conforming implementation; **omitted off-screen text was not demonstrated**. Risks still include clipping from finding 3, changed counter scope from finding 4, and pagination interaction with layout containment. Dedicated print output may have different matching DOM. Concrete hardening: limit these optimizations to screen and explicitly disable them on `[data-conversation-print]`, or add the reset below. A reset does not remount history removed by the app's own virtualizer. Test both browser Ctrl+P and any app print/export path. |
 
 Suggested print reset, to be implemented separately if this experiment continues:
 
@@ -217,7 +217,7 @@ These checks are for a human; none was performed in this review. Compare extensi
 3. **Find and copy:** Ctrl+F a unique term in an off-screen mounted answer, repeat next/previous, then select across several turns/blocks and paste into plain text. Check missing text, jump alignment and toolbar positioning. Repeat with an equation in the selection.
 4. **Streaming lifecycle:** stop/regenerate, navigate away midstream, and replace a stream while a 250ms delay is pending. Hide the tab for more than a minute and return both before and after completion. Confirm final copied output, no old-answer flashes, and no stuck partial answer; the small exposed stats do not prove the private pending Map is empty.
 5. **Print:** print/PDF immediately after a cold load, then after traversing history. Compare first/middle/last answers, long tables/code, equation numbering and page breaks; exercise both browser and app printing if available.
-6. **Compatibility/performance:** repeat a short lifecycle check with the actual other scheduling extensions/Playwright setup. Install clock mocks before page initialization. Count all/inspected/matching rAF registrations for a short trace, with and without Turbo, and inspect allocations only if that rate warrants it. Confirm expected matcher activity after a deployment change.
+6. **Compatibility/performance:** repeat a short lifecycle check with the actual other scheduling extensions/Playwright setup. Install clock mocks before page initialization. Count all/inspected/matching rAF registrations for a short trace, with and without Butter, and inspect allocations only if that rate warrants it. Confirm expected matcher activity after a deployment change.
 
 ## Done check
 

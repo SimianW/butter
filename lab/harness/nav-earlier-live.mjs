@@ -11,16 +11,16 @@ p.on('pageerror', e => errors.push(e.message));
 p.on('response', r => { const u = new URL(r.url()); if (/\/messages$/.test(u.pathname) && u.searchParams.has('before')) pages.push({ at: Date.now(), status: r.status(), turns: u.searchParams.get('num_turns') }); });
 try {
   await p.goto(process.env.CHAT); await p.locator('.ProseMirror').first().waitFor();
-  await p.locator('chatgpt-turbo-nav[data-on]').waitFor({ state: 'attached' }); await sleep(3000);
+  await p.locator('chatgpt-butter-nav[data-on]').waitFor({ state: 'attached' }); await sleep(3000);
   await p.evaluate(() => { const sc = document.querySelector('.thread-scroll-container'); sc.scrollTop = sc.scrollHeight; });
   await sleep(1500);
   const initial = await p.evaluate(() => {
-    const root = document.querySelector('chatgpt-turbo-nav').shadowRoot;
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
     return { ticks: root.querySelectorAll('.tick').length, more: !root.querySelector('.more').hidden };
   });
   assert.ok(initial.more, 'start with unloaded history');
   await p.evaluate(() => {
-    const sc = document.querySelector('.thread-scroll-container'), root = document.querySelector('chatgpt-turbo-nav').shadowRoot;
+    const sc = document.querySelector('.thread-scroll-container'), root = document.querySelector('chatgpt-butter-nav').shadowRoot;
     const st = window.__earlierCheck = { samples: [], insertions: [], started: performance.now(), done: false };
     const sample = () => {
       const warp = root.querySelector('.warp'), turn = sc.querySelector('[data-turn-key]');
@@ -36,12 +36,12 @@ try {
     });
     mo.observe(sc, { childList: true, subtree: true });
   });
-  const start = Date.now(); await p.locator('chatgpt-turbo-nav .more').click(); await p.mouse.move(5, 500);
+  const start = Date.now(); await p.locator('chatgpt-butter-nav .more').click(); await p.mouse.move(5, 500);
   const max = process.env.BASELINE ? 8000 : 65000;
   await sleep(500);
   while (Date.now() - start < max) {
     const done = await p.evaluate(() => {
-      const root = document.querySelector('chatgpt-turbo-nav').shadowRoot;
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
       return root.querySelector('.more').hidden && !root.querySelector('.busy') && getComputedStyle(root.querySelector('.warp')).visibility === 'hidden';
     });
     if (done) break;
@@ -50,7 +50,7 @@ try {
   await sleep(2000);
   const result = await p.evaluate(() => {
     __earlierCheck.done = true;
-    const root = document.querySelector('chatgpt-turbo-nav').shadowRoot, sc = document.querySelector('.thread-scroll-container');
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot, sc = document.querySelector('.thread-scroll-container');
     const first = root.querySelector('.tick').getAttribute('aria-label');
     const turn = [...sc.querySelectorAll('[data-turn-key]')].find(t => t.querySelector('[data-user-message-bubble]')?.textContent.trim().startsWith(first));
     return { first: first.slice(0, 6), top: turn ? Math.round(turn.getBoundingClientRect().top - sc.getBoundingClientRect().top) : null,

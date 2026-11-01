@@ -1,6 +1,6 @@
 {
  "manifest_version": 3,
- "name": "ChatGPT Turbo",
+ "name": "Butter for ChatGPT",
  "version": "0.1.0",
  "description": "Makes long ChatGPT conversations stay smooth while answers stream.",
  "content_scripts": [
@@ -10,7 +10,7 @@
    ],
    "js": [
     "config.js",
-    "turbo-main.js"
+    "butter-main.js"
    ],
    "world": "MAIN",
    "run_at": "document_start"
