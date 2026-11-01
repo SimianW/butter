@@ -66,9 +66,40 @@
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
     pos.clear(); activeId = null; active = -1; reband(); cancelJump(); hover(-2);
+    if (c) {
+      opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0, reset: true };
+      openRaf = requestAnimationFrame(settleOpen);
+    }
     changed();
   };
   setInterval(syncConv, 700);
+
+  // Opening layout mustn't light the whole rail before ChatGPT restores its scroll; a kept copy
+  // may restore somewhere in the middle. Predict the latest question until the visible chat's geometry
+  // is quiet for 350ms, then trust the band. The cap also releases stalled/never-mounted chats.
+  let opening = null, openRaf = 0;
+  const endOpening = () => {
+    if (!opening) return;
+    opening = null;
+    cancelAnimationFrame(openRaf); openRaf = 0;
+    kick();
+  };
+  addEventListener('wheel', endOpening, { capture: true, passive: true });
+  addEventListener('touchstart', endOpening, { capture: true, passive: true });
+  const settleOpen = () => {
+    openRaf = 0;
+    if (!opening) return;
+    const now = performance.now();
+    if (now >= opening.end) { endOpening(); return; }
+    // The previous chat can remain visible after the URL changes; don't settle against its scroller.
+    if (box?.width && cur.items.some(x => x.q != null && mountedEl(x.id))) {
+      const top = sc.scrollTop, height = sc.scrollHeight;
+      if (sc !== opening.sc || top !== opening.top || height !== opening.height) {
+        Object.assign(opening, { sc, top, height, since: now });
+      } else if (now - opening.since >= 350) { endOpening(); return; }
+    } else opening.sc = null;
+    openRaf = requestAnimationFrame(settleOpen);
+  };
 
   // ---- Turns in the DOM. ChatGPT mounts a window of about five turns; `data-turn-key` is the
   // id of the turn's question.
@@ -95,6 +126,7 @@
   });
 
   const attach = s => {
+    syncConv();   // a newly visible scroller can precede both its turns and the next URL poll
     ioPos?.disconnect(); ioBand?.disconnect();
     sc = s; box = null; onScreen.clear();
     ioPos = new IntersectionObserver(es => {
@@ -138,6 +170,7 @@
   // Scrolling by keyboard too, unless the key goes to a text field, a button or the rail.
   const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' ']);
   addEventListener('keydown', e => {
+    endOpening();
     const t = e.target;
     if (!SCROLL_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey || !(t instanceof Element) || t === host) return;
     if (t.isContentEditable || t.closest('input, textarea, select') || (e.key === ' ' && t.closest('button, a, [role="button"]'))) return;
@@ -253,6 +286,7 @@
     rail.addEventListener('focusin', e => { const i = ticks.indexOf(e.target); hover(e.target === more ? -1 : i); });
     rail.addEventListener('focusout', () => { if (pointerY === null) hover(-2); });
     rail.addEventListener('click', e => {
+      endOpening();
       const i = e.target === more ? -1 : e.detail === 0 ? ticks.indexOf(e.target) : indexAt(e.clientY);
       // The click starts the trip: put the card away until the pointer comes back to the rail. While
       // the page is busy, moves on the way out and the leave event arrive late and would hold it up.
@@ -293,7 +327,7 @@
   // Hover wave: each bar eases toward its target width/opacity; runs only while something moves.
   let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [];   // current scaleX, opacity, scaleY
   const targetOf = j => {
-    const on = flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
+    const on = opening ? j === qs.length - 1 : flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
     let s = on ? ACTIVE.s : REST.s, o = on ? ACTIVE.o : REST.o, t = 1;
     if (pointerY !== null) {
       const d = (tickY(j) - pointerY) / SIGMA, g = Math.exp(-d * d / 2);
@@ -348,6 +382,16 @@
     const had = cs.length;
     cs.length = co.length = ct.length = n;
     for (let j = had; j < n; j++) { cs[j] = REST.s; co[j] = REST.o; ct[j] = 1; }   // new bars start at rest
+    if (opening?.reset) {
+      // Reused bars must not carry the previous chat's lit set into the first opening frame.
+      opening.reset = false;
+      for (let j = 0; j < n; j++) {
+        const a = j === n - 1 ? ACTIVE : REST;
+        cs[j] = a.s; co[j] = a.o; ct[j] = 1;
+        bars[j].style.transform = `scale(${a.s}, 1)`;
+        bars[j].style.opacity = a.o;
+      }
+    }
     active = idxOf.get(activeId) ?? -1;
 
     // Centered in the part of the chat that isn't under the header or the composer.
@@ -376,7 +420,7 @@
   let jumpTok = 0, journey = null, flying = false;
   const landedAt = () => { flying = false; kick(); };
   // Stops a jump in progress and shows the chat again at once.
-  function cancelJump() { jumpTok++; journey = null; flying = false; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  function cancelJump() { endOpening(); jumpTok++; journey = null; flying = false; unpin(); if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
   // From a click until the user scrolls, the clicked question stays the current one.
   let pinned = false;
   let anchor = null;
