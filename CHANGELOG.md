@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.0-alpha.6 (2026-11-01)
+
+- A far jump lands on the question you clicked even when the answers above it are still drawing
+  (for example formulas being typeset). Before, a jump down could stop one question short. After
+  landing, the question stays in place if something above it grows, until you scroll yourself.
+- Clicking the three dots at the top of the rail (or pressing Enter on them) now takes you to the
+  first question in the chat in one trip, loading earlier messages behind the moving placeholder
+  lines, and the dots disappear once everything is loaded. Before, the chat scrolled up for real,
+  went blank for a second or two, stopped at a random spot mid-chat, and needed several clicks.
+  One click loads up to 100 earlier turns or runs for up to 60 seconds; click again to continue.
+- With reduced motion turned on, a far jump shows still placeholder lines instead of a blank chat.
+
 ## 0.1.0-alpha.5 (2026-11-01)
 
 - Clicking another rail tick while a far jump is still running takes over that jump instead of
