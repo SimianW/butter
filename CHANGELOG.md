@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-alpha.7 (2026-11-01)
+
+- Far jumps show the question about half a second sooner. The chat no longer waits a fixed time
+  behind the placeholder lines before revealing it; it reveals as soon as the question has stopped
+  moving and keeps it in place through and after the reveal.
+- Clicking several ticks during a far jump no longer keeps the placeholder lines running
+  indefinitely: the whole burst ends within about 12 seconds of the first click. Clicking the tick
+  you are already travelling to no longer starts the wait over.
+
 ## 0.1.0-alpha.6 (2026-11-01)
 
 - A far jump lands on the question you clicked even when the answers above it are still drawing

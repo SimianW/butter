@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Butter for ChatGPT",
-  "version": "0.1.0.6",
-  "version_name": "0.1.0-alpha.6",
+  "version": "0.1.0.7",
+  "version_name": "0.1.0-alpha.7",
   "description": "Keeps long ChatGPT conversations smooth while answers stream, with a history rail to jump between questions.",
   "icons": {
     "16": "icons/icon-16.png",
