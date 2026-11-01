@@ -30,7 +30,7 @@ for(const version of ['alpha6','new']){   // the arms jump-latency.mjs stages by
  await p.goto(chat);await p.locator('.ProseMirror').first().waitFor();await p.locator('chatgpt-butter-nav[data-on]').waitFor({state:'attached'});await sleep(2500);
  const done=async()=>p.waitForFunction(()=>{const r=document.querySelector('chatgpt-butter-nav').shadowRoot;return !r.querySelector('.busy')&&getComputedStyle(r.querySelector('.warp')).visibility==='hidden';},{},{timeout:25000});
  for(const scenario of ['cold-top','no-math']){
-  const start=await p.evaluate(()=>performance.now());
+  const start=await p.evaluate(()=>{__edge.mathSample=null;return performance.now();});
   if(scenario==='cold-top')await p.locator('chatgpt-butter-nav .tick').first().click();else await p.locator('chatgpt-butter-nav .tick').last().click();
   await p.mouse.move(5,500);await done();await sleep(1500);
   const end=await p.evaluate(()=>performance.now());
