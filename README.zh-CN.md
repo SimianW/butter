@@ -36,7 +36,7 @@ ChatGPT 网页版实在是太卡了…… 这是一个真正让它好用起来�
 
 支持 Chrome、Edge、Brave、Arc（Chromium 95 及以上）。[设置与更多细节（英文）→](docs/install.md)
 
-当前版本：**0.1.0-alpha.5**（[更新日志](CHANGELOG.md)）。Alpha 版：如果 ChatGPT 改了页面结构，插件可能会失效，但不会弄坏页面。
+当前版本：**0.1.0-alpha.6**（[更新日志](CHANGELOG.md)）。Alpha 版：如果 ChatGPT 改了页面结构，插件可能会失效，但不会弄坏页面。
 
 ## 更多
 
