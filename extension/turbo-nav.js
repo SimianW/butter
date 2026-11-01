@@ -397,14 +397,14 @@
     // A trip that runs past MAX_TRIP (pages that never settle, very long frames) ends where it is.
     const tok = ++jumpTok, id = qs[i].id, end = performance.now() + MAX_TRIP,
       live = () => tok === jumpTok && performance.now() < end;
-    // A click during a trip ends that trip now: its jump is no longer live and would otherwise keep
-    // the chat hidden until it next checks.
-    if (trip) arrive(null, 0);
+    // A click during a trip takes the trip over (its jump is no longer live). Ending it would fade the
+    // chat in and out again while the page is busy, showing whatever half-rendered part it is at.
+    const relay = !!trip;
     setBusy(null);
     setActive(id); pinned = true;
     let el = mountedEl(id);
     // Close by: glide there.
-    if (el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
+    if (!relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) return glide(el, live);
     // Farther away the turn is unmounted or skipped by content-visibility, and rendering it takes the
     // page a second or more (more if arriving at the top makes ChatGPT load earlier messages), during
     // which nothing can paint; scrolling through the real turns in between would render each of them.
@@ -417,7 +417,7 @@
     let [a, b] = measure(seen);
     const m = -(Math.sign(el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b) || 1);
     setBusy(id, tok);
-    await depart(el ?? sc.querySelector('[data-turn-key]'), m, tok);
+    await (relay ? redirect(m, tok) : depart(el ?? sc.querySelector('[data-turn-key]'), m, tok));
     let landed = false;
     try {
       for (let tries = 0; tries < 8 && !el && live(); tries++) {
@@ -495,21 +495,32 @@
   // placeholder layer `warp`. (A transform on the content box would make Chrome repaint all of it.)
   let trip = null;
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LEAVE = 260;   // ms to speed off
+  const stream = m => streak.animate([{ transform: 'none' }, { transform: `translateY(${m * STREAK}px)` }],
+    { duration: STREAK / (SPEED * sc.clientHeight / 1000), iterations: Infinity });
   // Speed off: the chat scrolls toward the target and fades while the placeholder lines fade in,
   // streaming at SPEED. `m` = +1 moves the content down (going up the chat), -1 up.
   const depart = (turn, m, tok) => {
     if (trip) arrive(null, 0);
-    const content = turn?.parentElement?.parentElement?.parentElement, T = 260;
-    trip = { tok, content: content && content !== sc && sc.contains(content) ? content : null };
+    const content = turn?.parentElement?.parentElement?.parentElement, T = LEAVE;
+    trip = { tok, m, content: content && content !== sc && sc.contains(content) ? content : null };
     trip.off = trip.content?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T, easing: 'ease-in', fill: 'forwards' });
     if (!still()) {
       sc.scrollTo({ top: sc.scrollTop - m * sc.clientHeight * 0.5, behavior: 'smooth' });
       warp.style.visibility = 'visible';
-      trip.loop = streak.animate([{ transform: 'none' }, { transform: `translateY(${m * STREAK}px)` }],
-        { duration: STREAK / (SPEED * sc.clientHeight / 1000), iterations: Infinity });
+      trip.loop = stream(m);
       trip.in = warp.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: 'forwards' });
     }
     return new Promise(r => setTimeout(r, T));
+  };
+  // A new click mid-trip: the chat stays hidden and the placeholder turns around if the new target is
+  // the other way. Waiting as long as speeding off would means a burst of clicks sends the chat only
+  // to the last target, instead of making ChatGPT render every one on the way.
+  const redirect = (m, tok) => {
+    trip.tok = tok;
+    if (trip.loop && trip.m !== m) { trip.loop.cancel(); trip.loop = stream(m); }
+    trip.m = m;
+    return new Promise(r => setTimeout(r, LEAVE));
   };
   // Arrive: the chat, waiting `lead` px short of the target, fades in and scrolls the rest of the
   // way; the placeholder fades out.
