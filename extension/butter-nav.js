@@ -64,7 +64,7 @@
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur);   // a new chat got its id
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
-    pos.clear(); activeId = null; active = -1; cancelJump(); hover(-2);
+    pos.clear(); activeId = null; active = -1; onScreen.clear(); cancelJump(); hover(-2);
     changed();
   };
   setInterval(syncConv, 700);
@@ -72,6 +72,7 @@
   // ---- Turns in the DOM. ChatGPT mounts a window of about five turns; `data-turn-key` is the
   // id of the turn's question.
   let sc = null, box = null, ioPos = null, ioBand = null;
+  const onScreen = new Set();   // mounted turn elements with any part in view
   const mounted = new Map();   // question id -> its turn element while mounted
   const pos = new Map();       // question id -> top of its turn in scroll coordinates, last seen
   const mountedEl = id => { const el = mounted.get(id); return el?.isConnected && sc?.contains(el) ? el : null; };
@@ -94,15 +95,16 @@
 
   const attach = s => {
     ioPos?.disconnect(); ioBand?.disconnect();
-    sc = s; box = null;
+    sc = s; box = null; onScreen.clear();
     ioPos = new IntersectionObserver(es => {
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
-    // The turn crossing a line 30% down the view is the current one. Not while pinned to a jump's
-    // target: turns stream past the line on the way, and a short target leaves the next turn on it.
+    // Every question with any part on screen (between the header and the composer) is lit. Not
+    // shown while pinned to a jump's target: turns stream past on the way.
     ioBand = new IntersectionObserver(es => {
-      if (!pinned) for (const e of es) if (e.isIntersecting) setActive(e.target.getAttribute('data-turn-key'));
-    }, { root: sc, rootMargin: '-30% 0px -69% 0px' });
+      for (const e of es) if (e.isIntersecting && e.target.isConnected) onScreen.add(e.target); else onScreen.delete(e.target);
+      if (!pinned) kick();
+    }, { root: sc, rootMargin: `-${HEADER}px 0px -${COMPOSER}px 0px` });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
@@ -282,7 +284,8 @@
   // Hover wave: each bar eases toward its target width/opacity; runs only while something moves.
   let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [];   // current scaleX, opacity, scaleY
   const targetOf = j => {
-    let s = j === active ? ACTIVE.s : REST.s, o = j === active ? ACTIVE.o : REST.o, t = 1;
+    const on = pinned ? j === active : litIds.has(qs[j].id);
+    let s = on ? ACTIVE.s : REST.s, o = on ? ACTIVE.o : REST.o, t = 1;
     if (pointerY !== null) {
       const d = (tickY(j) - pointerY) / SIGMA, g = Math.exp(-d * d / 2);
       s = Math.max(s, REST.s + SWELL * g); o = Math.max(o, REST.o + (1 - REST.o) * g); t = 1 + 0.6 * g;
@@ -308,7 +311,10 @@
     }
     raf = moving ? requestAnimationFrame(step) : 0;
   };
-  const kick = () => { if (!raf && geo) { last = performance.now(); raf = requestAnimationFrame(step); } };
+  // Ids of the questions on screen, worked out once per animation run rather than per bar.
+  let litIds = new Set();
+  const lit = () => { litIds = new Set(); for (const el of onScreen) if (el.isConnected) litIds.add(el.getAttribute('data-turn-key')); else onScreen.delete(el); };
+  const kick = () => { lit(); if (!raf && geo) { last = performance.now(); raf = requestAnimationFrame(step); } };
 
   const setActive = id => { activeId = id; const i = idxOf.get(id) ?? -1; if (i !== active) { active = i; kick(); } };
 
@@ -389,8 +395,7 @@
     anchor?.ro.disconnect(); anchor = null;
     if (!pinned) return;
     pinned = false;
-    // Observing again reports the turn on the line now; it may not cross it again for a while.
-    if (sc) for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioBand.unobserve(el); ioBand.observe(el); }
+    kick();   // back to lighting what is on screen; the set kept up to date while pinned
   }
   // Records where the mounted turns are now, adds them to `seen`, and returns their range in `qs`
   // ([Infinity, -1] if none). The turn after them starts where the last one ends, which keeps an
