@@ -21,11 +21,11 @@ function profileSummary(profile,r,click,reveal){
 }
 function traceSummary(file){
  const all=JSON.parse(fs.readFileSync(new URL(file,dir))).traceEvents;
+ const mark=all.find(e=>e.name?.startsWith('butter-latency:')&&e.name.endsWith(':click'));   // the ChatGPT tab's renderer
  const cost=new Map();for(const e of all)if(e.name==='Layout'&&e.ph==='X')cost.set(e.pid,(cost.get(e.pid)??0)+(e.dur??0));
- const pid=[...cost].sort((a,b)=>b[1]-a[1])[0]?.[0];
+ const pid=mark?.pid??[...cost].sort((a,b)=>b[1]-a[1])[0]?.[0];
  const thread=all.find(e=>e.name==='thread_name'&&e.args.name==='CrRendererMain'&&e.pid===pid);
  if(!thread)return {error:'No main thread'};
- const mark=all.find(e=>e.pid===thread.pid&&e.name?.startsWith('butter-latency:')&&e.name.endsWith(':click'));
  const events=all.filter(e=>e.pid===thread.pid&&e.tid===thread.tid&&e.ph==='X'&&(!mark||e.ts+(e.dur??0)>=mark.ts));
  const tasks=events.filter(e=>/RunTask$/.test(e.name)&&e.dur>=50000).map(e=>{
   const sub=events.filter(x=>x.ts>=e.ts&&x.ts<e.ts+e.dur);

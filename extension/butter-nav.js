@@ -170,7 +170,6 @@
   // Scrolling by keyboard too, unless the key goes to a text field, a button or the rail.
   const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' ']);
   addEventListener('keydown', e => {
-    endOpening();
     const t = e.target;
     if (!SCROLL_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey || !(t instanceof Element) || t === host) return;
     if (t.isContentEditable || t.closest('input, textarea, select') || (e.key === ' ' && t.closest('button, a, [role="button"]'))) return;
@@ -607,7 +606,10 @@
       if (expired && !landed) {
         el = mountedEl(id);
         if (el) {
-          landed = Math.abs(targetTop(el) - sc.scrollTop) <= 2;
+          // `follow` may still hold it `lead` px short of the landing spot: align it before the reveal.
+          const t = targetTop(el);
+          if (pinned) sc.scrollTop = t;
+          landed = Math.abs(t - sc.scrollTop) <= 2;
           if (landed) flash(el);
         }
       }
