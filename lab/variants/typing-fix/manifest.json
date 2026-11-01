@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Turbo",
+  "version": "0.0.2.2",
+  "version_name": "0.0.2-alpha.2",
+  "description": "Keeps long ChatGPT conversations smooth while answers stream, with a history rail to jump between questions.",
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "css": ["turbo.css"],
+      "js": ["turbo-nav.js", "turbo-cv.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["config.js", "turbo-main.js", "turbo-nav-main.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://chatgpt.com/*"],
+      "js": ["turbo-typing.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    }
+  ]
+}
