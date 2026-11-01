@@ -449,7 +449,7 @@
     const relay = !!trip;
     if (relay) trip.tok = tok;
     setBusy(null);
-    flying = true; setActive(id); pinned = true;
+    flying = true; setActive(id); pinned = true; kick();   // setActive kicks only when the index changes
     let el = mountedEl(id);
     // Close by: glide there.
     if (!earlier && !relay && el && Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 && !(cur.hasPrev && targetTop(el) < PAGE_AT)) {
