@@ -132,13 +132,13 @@
     ioPos = new IntersectionObserver(es => {
       for (const e of es) pos.set(e.target.getAttribute('data-turn-key'), e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop);
     }, { root: sc });
-    // Every question showing more than EDGE px between the header and the composer is lit. The top
-    // edge starts below TOP_INSET, so the turn above a jumped-to question (its last line or action
-    // buttons in that strip) doesn't light too. Not shown while a jump is travelling.
+    // Every question showing more than EDGE px between the header and the composer is lit. A jump
+    // lands its question TOP_INSET down, so the turn above shows only TOP_INSET - HEADER px under the
+    // header (its last line or action buttons) and doesn't light too. Not shown while a jump is travelling.
     ioBand = new IntersectionObserver(es => {
       for (const e of es) if (e.isIntersecting && e.target.isConnected) onScreen.add(e.target); else onScreen.delete(e.target);
       if (!flying) kick();
-    }, { root: sc, rootMargin: `-${Math.max(HEADER, TOP_INSET) + EDGE}px 0px -${COMPOSER + EDGE}px 0px` });
+    }, { root: sc, rootMargin: `-${HEADER + EDGE}px 0px -${COMPOSER + EDGE}px 0px` });
     for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) { ioPos.observe(el); ioBand.observe(el); }
     if (!reconcileQueued) { reconcileQueued = true; setTimeout(reconcile, 150); }
   };
