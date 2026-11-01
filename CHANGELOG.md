@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.0.2-alpha.3 (2026-11-01)
+
+- Clicking rail ticks in quick succession no longer leaves the chat blank: a new click, a wheel
+  scroll or switching chats ends the running jump at once and shows the chat again.
+- Earlier messages load 2 turns per page instead of 10 (`olderPageTurns` in `config.js`). ChatGPT
+  lays each page out in one long task that blocks typing; in the test chat, typing during a jump to
+  an early question was blocked for at most 1.8 s instead of 3.7 s, and the jump took 4.0 s instead
+  of 6.0 s. Scrolling back through a whole long chat takes more requests.
+
 ## 0.0.2-alpha.2 (2026-10-31)
 
 - History rail follows the chat on screen when ChatGPT keeps earlier chats as hidden copies in the

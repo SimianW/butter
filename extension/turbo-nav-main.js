@@ -42,9 +42,24 @@
     emit({ type: 'send', conv: b.conversation_id ?? null, parent: b.parent_message_id ?? null, item: item(m) });
   };
 
+  // Smaller pages of earlier messages (config.js `olderPageTurns`): ChatGPT lays each page out in one
+  // long task, during which the composer can't take input. Only lowers an existing `num_turns`.
+  const older = (input, init) => {
+    const n = window.__turboConfig?.olderPageTurns;
+    if (!(n > 0)) return input;
+    const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
+    const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (method !== 'GET' || !PAGE.exec(raw)?.[2]) return input;
+    const url = new URL(raw, location.href);
+    if (!(+url.searchParams.get('num_turns') > n)) return input;
+    url.searchParams.set('num_turns', String(n));
+    return input instanceof Request ? new Request(url.href, input) : url.href;
+  };
+
   const of = window.fetch;
   window.fetch = function (input, init) {
-    const res = of.apply(this, arguments);
+    try { input = older(input, init); } catch {}
+    const res = of.call(this, input, init);
     try {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
       const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();

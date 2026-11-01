@@ -14,7 +14,7 @@ total, with ChatGPT Turbo for 8.0 s.
 
 中文测试报告和中文演示视频：[docs/REPORT.md](docs/REPORT.md)
 
-Current version: **0.0.2-alpha.2** ([changelog](CHANGELOG.md)). Alpha: it depends on ChatGPT's current
+Current version: **0.0.2-alpha.3** ([changelog](CHANGELOG.md)). Alpha: it depends on ChatGPT's current
 DOM and may stop helping when ChatGPT changes it.
 
 ## Install (Windows, macOS, Linux)
@@ -58,9 +58,11 @@ The questions come from the conversation data ChatGPT downloads anyway; the rail
 | `turbo.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
 | `turbo.css` + `turbo-cv.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-turbo-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
 | `turbo-nav.js` + `turbo-nav-main.js` (page world) | History rail. `turbo-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches; `turbo-nav.js` draws the rail in a shadow root and handles hover and jumps. | The rail animates only `transform` and `opacity` inside its own shadow root, so hovering never restyles ChatGPT's page, and it reads layout only when you click. |
+| `turbo-nav-main.js` + `config.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`; 0 turns this off). | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Scrolling back through a whole long chat takes several times as many requests. |
 | `turbo-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
 
-The extension makes no network requests, stores nothing, and doesn't change messages.
+The extension sends no requests of its own, stores nothing, and doesn't change messages. The one
+request it touches is ChatGPT's own request for earlier messages, where it lowers the page size.
 
 ## Measured effect
 
