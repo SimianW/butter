@@ -58,7 +58,7 @@
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur);   // a new chat got its id
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
-    pos.clear(); activeId = null; active = -1; jumpTok++; hover(-2);
+    pos.clear(); activeId = null; active = -1; cancelJump(); hover(-2);
     changed();
   };
   setInterval(syncConv, 700);
@@ -108,8 +108,8 @@
     if (!scrollers.has(s)) {
       scrollers.add(s); ro.observe(s);
       // Any user scroll cancels a jump in progress.
-      s.addEventListener('wheel', () => jumpTok++, { passive: true });
-      s.addEventListener('touchstart', () => jumpTok++, { passive: true });
+      s.addEventListener('wheel', cancelJump, { passive: true });
+      s.addEventListener('touchstart', cancelJump, { passive: true });
     }
     mounted.set(el.getAttribute('data-turn-key'), el);
     if (s === sc) { ioPos.observe(el); ioBand.observe(el); }
@@ -335,6 +335,9 @@
   // ---- Jumping. A turn ChatGPT hasn't mounted has no element to scroll to: go where it should be
   // (last seen there, or interpolated between turns that were), let ChatGPT mount it, then align.
   let jumpTok = 0;
+  // Stops a jump in progress and shows the chat again at once.
+  function cancelJump() { jumpTok++; if (trip) arrive(null, 0); if (busyTok) setBusy(null); }
+  const MAX_TRIP = 12000;
   const estimate = i => {
     let lo = i, hi = i;
     while (lo >= 0 && !pos.has(qs[lo].id)) lo--;
@@ -352,7 +355,13 @@
     sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top - TOP_INSET));
 
   const jump = async i => {
-    const tok = ++jumpTok, id = qs[i].id, live = () => tok === jumpTok;
+    // A trip that runs past MAX_TRIP (pages that never settle, very long frames) ends where it is.
+    const tok = ++jumpTok, id = qs[i].id, end = performance.now() + MAX_TRIP,
+      live = () => tok === jumpTok && performance.now() < end;
+    // A click during a trip ends that trip now: its jump is no longer live and would otherwise keep
+    // the chat hidden until it next checks.
+    if (trip) arrive(null, 0);
+    setBusy(null);
     setActive(id);
     let el = mountedEl(id);
     // Close by: glide there.
@@ -364,8 +373,8 @@
     // chat speeds off toward the target, placeholder lines stream past while ChatGPT renders the
     // target behind them, and the chat slides in at the same speed and slows to a stop on it.
     const m = -(Math.sign(estimate(i) - sc.scrollTop) || 1);   // content moves down when going up
-    setBusy(id);
-    await depart(el ?? sc.querySelector('[data-turn-key]'), m);
+    setBusy(id, tok);
+    await depart(el ?? sc.querySelector('[data-turn-key]'), m, tok);
     try {
       for (let tries = 0; tries < 6 && !el && live(); tries++) {
         sc.scrollTop = Math.max(0, estimate(i) - TOP_INSET);
@@ -386,7 +395,7 @@
       flash(el);
       await arrive(el, lead);
       await settle(el, live);
-    } finally { if (trip) arrive(null, 0); setBusy(null); }
+    } finally { if (trip?.tok === tok) arrive(null, 0); if (busyTok === tok) setBusy(null); }
   };
 
   const scrollEnd = () => new Promise(r => { sc.addEventListener('scrollend', r, { once: true }); setTimeout(r, 1500); });
@@ -430,9 +439,10 @@
   const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Speed off: the chat scrolls toward the target and fades while the placeholder lines fade in,
   // streaming at SPEED. `m` = +1 moves the content down (going up the chat), -1 up.
-  const depart = (turn, m) => {
+  const depart = (turn, m, tok) => {
+    if (trip) arrive(null, 0);
     const content = turn?.parentElement?.parentElement?.parentElement, T = 260;
-    trip = { content: content && content !== sc && sc.contains(content) ? content : null };
+    trip = { tok, content: content && content !== sc && sc.contains(content) ? content : null };
     trip.off = trip.content?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: T, easing: 'ease-in', fill: 'forwards' });
     if (!still()) {
       sc.scrollTo({ top: sc.scrollTop - m * sc.clientHeight * 0.5, behavior: 'smooth' });
@@ -447,6 +457,7 @@
   // way; the placeholder fades out.
   const arrive = (el, lead) => {
     const t = trip; trip = null;
+    if (!t) return Promise.resolve();
     t.content?.isConnected && t.content.animate([{ opacity: 0 }, { opacity: 1 }], { duration: lead ? 320 : 250, easing: 'ease-out' });
     t.off?.cancel(); t.in?.cancel();
     if (t.loop) {
@@ -459,8 +470,8 @@
     return done;
   };
 
-  let busyId = null;
-  const setBusy = id => { busyId = id; ticks.forEach((b, i) => b.classList.toggle('busy', qs[i]?.id === id)); };
+  let busyId = null, busyTok = 0;
+  const setBusy = (id, tok = 0) => { busyId = id; busyTok = tok; ticks.forEach((b, i) => b.classList.toggle('busy', qs[i]?.id === id)); };
 
   const flash = el => {
     const b = el.querySelector('[data-user-message-bubble]');
@@ -470,5 +481,5 @@
   };
 
   // ChatGPT loads the previous page when the top of the chat comes into view.
-  const loadEarlier = () => { ++jumpTok; sc.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const loadEarlier = () => { cancelJump(); sc.scrollTo({ top: 0, behavior: 'smooth' }); };
 })();
