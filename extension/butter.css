@@ -4,9 +4,13 @@
    renders normally; butter-cv.js marks turns and answer blocks `data-butter-seen` after their
    first layout, and only then may they be skipped. Wide blocks (tables,
    visualizations) deliberately overflow the text column, which paint containment would clip, so
-   they are never skipped. */
+   they are never skipped.
+   The paint containment that skipping brings clips at the turn's edge; the clip margin lets small
+   overflow through, such as ChatGPT's pulsing "responding" dot, which sits flush with the turn's
+   left edge and grows past it as it pulses. */
 html:not([data-butter-off~="cv"]) [data-turn-key] {
   contain-intrinsic-size: auto 1500px;
+  overflow-clip-margin: 8px;
 }
 html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
   contain-intrinsic-size: auto 120px;
