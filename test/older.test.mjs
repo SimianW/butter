@@ -6,7 +6,7 @@ import vm from 'node:vm';
 function setup() {
   let off = '', inputSeen, initSeen; const listeners = new Map(); let facts;
   class CustomEvent { constructor(type, init) { this.type = type; this.detail = init.detail; } }
-  const win = { __butterConfig: { olderPageTurns: 2 }, fetch(input, init) {
+  const win = { addEventListener() {}, __butterConfig: { olderPageTurns: 2 }, fetch(input, init) {
     inputSeen = input; initSeen = init; return Promise.resolve({ ok: false });
   } };
   vm.runInNewContext(fs.readFileSync(new URL('../extension/butter-nav-main.js', import.meta.url), 'utf8'), {

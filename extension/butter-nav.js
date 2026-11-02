@@ -68,7 +68,7 @@
       // Earlier messages go in above every recorded turn and push them all down: forget where they were.
       if (m.before && m.conv === convId) pos.clear();
     }
-    else if (m.type === 'send') { addSent(m.conv ? stateOf(m.conv) : cur, m); unpin(); }   // ChatGPT scrolls to the new question
+    else if (m.type === 'send') { addSent(m.conv ? stateOf(m.conv) : cur, m); cancelJump(); }   // ChatGPT scrolls to the new question
     changed();
   });
 
@@ -187,6 +187,33 @@
     if (!SCROLL_KEYS.has(e.key) || e.altKey || e.ctrlKey || e.metaKey || !(t instanceof Element) || t === host) return;
     if (t.isContentEditable || t.closest('input, textarea, select') || (e.key === ' ' && t.closest('button, a, [role="button"]'))) return;
     cancelJump();
+  }, { capture: true, passive: true });
+
+  // ChatGPT's submit spring visits every intervening virtualized turn. Move close to
+  // the end before its handler measures placement, leaving it the final viewport to animate.
+  // Capture is essential: the fetch-level `send` notification arrives after placement starts.
+  const COMPOSER_INPUT = '.ProseMirror[contenteditable="true"]';
+  const SEND_BUTTON = '[data-testid="send-button"], #composer-submit-button, button[type="submit"]';
+  const beforeSend = composer => {
+    if (!composer?.textContent.trim() || !sc?.isConnected || !sc.clientHeight) return;
+    cancelJump();
+    const bottom = sc.scrollHeight - sc.clientHeight;
+    if (bottom - sc.scrollTop > 1.5 * sc.clientHeight) {
+      sc.scrollTo({ top: Math.max(0, bottom - sc.clientHeight), behavior: 'instant' });
+    }
+  };
+  addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || e.isComposing || e.keyCode === 229 || e.repeat || !(e.target instanceof Element)) return;
+    const composer = e.target.closest(COMPOSER_INPUT);
+    const button = composer?.closest('form')?.querySelector(SEND_BUTTON);
+    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+    beforeSend(composer);
+  }, { capture: true, passive: true });
+  addEventListener('click', e => {
+    if (!(e.target instanceof Element)) return;
+    const button = e.target.closest(SEND_BUTTON);
+    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+    beforeSend(button.closest('form')?.querySelector(COMPOSER_INPUT));
   }, { capture: true, passive: true });
 
   // Mounted turns are consecutive in the thread: add any the responses didn't cover (the extension

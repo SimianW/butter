@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-alpha.9 (2026-11-02)
+
+- Sending a question while you're far up in a long chat brings you to the new question much
+  sooner. Butter first jumps close to the end, so ChatGPT's scroll no longer passes, and lays out,
+  every turn in between: from the top of a long test chat it took 2.6 s instead of 9.6 s.
+- While you hold the scrollbar, earlier messages wait until you let go, so the thumb no longer
+  jumps away from under your mouse near the top of a long chat. This follows the "Load history in
+  small batches" switch.
+
 ## 0.1.0-alpha.8 (2026-11-01)
 
 - A toolbar popup shows live checks for the five optimizations on the current ChatGPT tab.

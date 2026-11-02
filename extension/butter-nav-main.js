@@ -11,6 +11,55 @@
   const PAGE = /\/backend-api\/conversations?\/([0-9a-f-]{36})(\/messages)?(?:\?|$)/;
   const SEND = /\/backend-api\/(?:f\/)?conversation(?:\?|$)/;
   const emit = msg => document.dispatchEvent(new CustomEvent('butter-nav', { detail: JSON.stringify(msg) }));
+  const olderOff = () => document.documentElement?.getAttribute('data-butter-off')?.split(/\s+/).includes('older');
+
+  // In Chromium native scrollbar drags deliver down/up, but no move events while held.
+  // Inserting an older page during the drag changes the scroll range under the thumb.
+  let holding = false, holdTimer;
+  const waiting = new Set();
+  const release = () => {
+    holding = false;
+    clearTimeout(holdTimer);
+    for (const start of [...waiting]) start();
+  };
+  const down = e => {
+    if (olderOff() || e.button !== 0 || (e.pointerType && e.pointerType !== 'mouse')) return;
+    const s = e.target;
+    if (!s?.matches?.('.thread-scroll-container') || s.scrollHeight <= s.clientHeight) return;
+    const r = s.getBoundingClientRect(), style = getComputedStyle(s);
+    // clientLeft includes a left-hand scrollbar in RTL. Convert viewport to local pixels
+    // to also handle a scaled scroller. Overlay scrollbars have no layout gutter.
+    const x = (e.clientX - r.left) * s.offsetWidth / r.width;
+    const y = (e.clientY - r.top) * s.clientHeight / r.height;
+    const left = parseFloat(style.borderLeftWidth) || 0, right = parseFloat(style.borderRightWidth) || 0;
+    const gutter = s.offsetWidth - s.clientWidth - left - right;
+    const onBar = gutter > 0
+      ? (x >= left && x < s.clientLeft) || (x >= s.clientLeft + s.clientWidth && x < s.offsetWidth - right)
+      : style.direction === 'rtl' ? x >= 0 && x < 12 : x >= s.offsetWidth - 12 && x < s.offsetWidth;
+    if (!onBar || y < 0 || y >= s.clientHeight) return;
+    holding = true;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(release, 30_000); // A lost up event must never block history forever.
+  };
+  for (const type of ['pointerdown', 'mousedown']) window.addEventListener(type, down, true);
+  for (const type of ['pointerup', 'mouseup', 'pointercancel']) window.addEventListener(type, release, true);
+  window.addEventListener('blur', release); // Not capture: focusing the scrollbar blurs the composer.
+  window.addEventListener('mousemove', e => { if (holding && !e.buttons) release(); }, true);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
+  document.addEventListener('butter-settings', () => { if (olderOff()) release(); });
+
+  const afterHold = (start, signal) => new Promise((resolve, reject) => {
+    const cleanup = () => { waiting.delete(run); signal?.removeEventListener('abort', abort); };
+    const abort = () => { cleanup(); reject(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError')); };
+    const run = () => {
+      cleanup();
+      if (signal?.aborted) { abort(); return; }
+      try { resolve(start()); } catch (error) { reject(error); }
+    };
+    if (signal?.aborted) { abort(); return; }
+    waiting.add(run);
+    signal?.addEventListener('abort', abort, { once: true });
+  });
 
   // `q` is set only for questions the user sees in the thread; other messages keep their place so
   // an edit's parent can be found.
@@ -62,7 +111,7 @@
   // Smaller pages of earlier messages (config.js `olderPageTurns`): ChatGPT lays each page out in one
   // long task, during which the composer can't take input. Only lowers an existing `num_turns`.
   const older = (input, init) => {
-    if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('older')) return input;
+    if (olderOff()) return input;
     const n = window.__butterConfig?.olderPageTurns;
     if (!(n > 0)) return input;
     const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
@@ -79,8 +128,17 @@
 
   const of = window.fetch;
   window.fetch = function (input, init) {
+    if (olderOff() && holding) release();
     try { input = older(input, init); } catch {}
-    const res = of.call(this, input, init);
+    let defer = false;
+    try {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
+      const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+      defer = holding && !olderOff() && method === 'GET' && !!PAGE.exec(url)?.[2];
+    } catch {}
+    const res = defer
+      ? afterHold(() => of.call(this, input, init), init?.signal !== undefined ? init.signal : input instanceof Request ? input.signal : null)
+      : of.call(this, input, init);
     try {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
       const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();

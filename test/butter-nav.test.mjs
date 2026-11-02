@@ -46,6 +46,9 @@ class FakeElement {
   contains(el) { return this === el || this.children.some(child => child.contains(el)); }
   closest(selector) {
     if (selector === '.thread-scroll-container' && this.className === 'thread-scroll-container') return this;
+    if (selector === 'form' && this.tagName === 'form') return this;
+    if (selector === '.ProseMirror[contenteditable="true"]' && this.className === 'ProseMirror') return this;
+    if (selector === '[data-testid="send-button"], #composer-submit-button, button[type="submit"]' && (this.getAttribute('data-testid') === 'send-button' || this.getAttribute('type') === 'submit')) return this;
     return this.parentElement?.closest(selector) ?? null;
   }
   querySelectorAll(selector) {
@@ -54,7 +57,14 @@ class FakeElement {
       ...child.querySelectorAll(selector),
     ]);
   }
-  querySelector() { return null; }
+  querySelector(selector) {
+    for (const child of this.children) {
+      if (child.closest(selector) === child) return child;
+      const nested = child.querySelector(selector);
+      if (nested) return nested;
+    }
+    return null;
+  }
   attachShadow() {
     // Only the rail's static template needs lookup; dynamic buttons use append/firstChild.
     const elements = new Map();
@@ -151,7 +161,11 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     assert.ok(values.every(Number.isFinite), `non-finite geometry: ${values}`);
     return values;
   });
-  return { frame, flush, send, select, ticks, pointer, geometry, host, scroller, turns, resize, window,
+  const form = new FakeElement('form'), composer = new FakeElement(), sendButton = new FakeElement('button');
+  composer.className = 'ProseMirror'; composer.textContent = 'New question';
+  sendButton.setAttribute('data-testid', 'send-button');
+  form.append(composer); form.append(sendButton);
+  return { frame, flush, send, select, ticks, pointer, geometry, host, scroller, turns, resize, window, composer, sendButton,
     pendingFrames: () => frames.size,
     advanceClock: ms => { now += ms; },
   };
@@ -220,7 +234,7 @@ test('overlapping older pages deduplicate questions, and an empty final page hid
   assert.equal(nav.ticks().length, 4);
 });
 
-for (const cancel of ['wheel', 'keyboard', 'new click']) {
+for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
   test(`${cancel} invalidates a pending jump before it can settle or pin its old target`, async () => {
     const nav = setup();
     const click = index => nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[index] });
@@ -228,6 +242,7 @@ for (const cancel of ['wheel', 'keyboard', 'new click']) {
     assert.equal(nav.scroller.scrollTop, nav.turns[2].top - 64);
     if (cancel === 'wheel') nav.scroller.emit('wheel');
     else if (cancel === 'keyboard') nav.window.emit('keydown', { key: 'PageDown', target: nav.scroller });
+    else if (cancel === 'send') nav.send({ type: 'send', conv: conversation, parent: 'q4', item: { id: 'new', q: 'New question' } });
     else click(4);
     nav.turns[2].top = 800;
     nav.scroller.scrollTop = 700; // user's scroll, or the newer jump's position
@@ -246,3 +261,55 @@ for (const cancel of ['wheel', 'keyboard', 'new click']) {
     }
   });
 }
+
+for (const trigger of ['Enter', 'click']) {
+  test(`${trigger} pre-jumps a distant send but leaves the last viewport for ChatGPT`, () => {
+    const nav = setup();
+    if (trigger === 'Enter') nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    else {
+      const icon = new FakeElement('svg'); nav.sendButton.append(icon);
+      nav.window.emit('click', { target: icon });
+    }
+    assert.equal(nav.scroller.scrollTop, 3200);
+  });
+}
+
+test('near-bottom sends and non-send key events preserve the thread position', () => {
+  const nav = setup();
+  for (const event of [{ shiftKey: true }, { ctrlKey: true }, { metaKey: true }, { altKey: true },
+    { isComposing: true }, { keyCode: 229 }, { repeat: true }, { key: 'x' }, { target: nav.scroller }]) {
+    nav.window.emit('keydown', { key: 'Enter', target: nav.composer, ...event });
+    assert.equal(nav.scroller.scrollTop, 0);
+  }
+  for (const top of [2750, 3200, 4100]) {
+    nav.scroller.scrollTop = top;
+    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    assert.equal(nav.scroller.scrollTop, top);
+  }
+});
+
+test('empty composers and disabled send buttons do not pre-jump', () => {
+  const nav = setup();
+  for (const text of ['', '  \n ']) {
+    nav.composer.textContent = text;
+    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    nav.window.emit('click', { target: nav.sendButton });
+    assert.equal(nav.scroller.scrollTop, 0);
+  }
+  nav.composer.textContent = 'New question';
+  nav.sendButton.disabled = true;
+  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.emit('click', { target: nav.sendButton });
+  assert.equal(nav.scroller.scrollTop, 0);
+  nav.sendButton.disabled = false; nav.sendButton.setAttribute('aria-disabled', 'true');
+  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.emit('click', { target: nav.sendButton });
+  assert.equal(nav.scroller.scrollTop, 0);
+});
+
+test('the current composer submit button works without legacy IDs', () => {
+  const nav = setup();
+  nav.sendButton.removeAttribute('data-testid'); nav.sendButton.setAttribute('type', 'submit');
+  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  assert.equal(nav.scroller.scrollTop, 3200);
+});
