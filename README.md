@@ -45,5 +45,6 @@ Current version: **0.1.0-alpha.9** ([changelog](CHANGELOG.md)).
 - [How it works](docs/how-it-works.md): what it changes, privacy, known trade-offs
 - [Benchmarks](docs/benchmarks.md): full results and method
 - [Development](docs/development.md): repo layout, tests, packaging
+- [Privacy policy](PRIVACY.md): what it reads, stores and sends
 
 MIT license.
