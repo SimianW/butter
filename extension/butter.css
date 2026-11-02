@@ -5,17 +5,17 @@
    first layout, and only then may they be skipped. Wide blocks (tables,
    visualizations) deliberately overflow the text column, which paint containment would clip, so
    they are never skipped. */
-[data-turn-key] {
+html:not([data-butter-off~="cv"]) [data-turn-key] {
   contain-intrinsic-size: auto 1500px;
 }
-[data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
   contain-intrinsic-size: auto 120px;
 }
-[data-turn-key][data-butter-seen],
-[data-markdown-text-style="assistant-message"] > [data-butter-seen]:not([data-wide-block]),
+html:not([data-butter-off~="cv"]) [data-turn-key][data-butter-seen],
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-seen]:not([data-wide-block]),
 /* Blocks of the answer being streamed appear on screen and render before they can scroll away,
    so they are safe to skip right away; waiting for their mark leaves them all rendering. */
-[data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
+html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
   content-visibility: auto;
 }
 
@@ -25,7 +25,7 @@
    Its only consumers are container units (cqi) in wide blocks, which then resolve against the
    enclosing app-shell-main-content container instead: about 10px wider at a 1600px window.
    The outer app-shell container is kept; its named queries lay out the floating side panel. */
-div.\[container-type\:inline-size\].min-h-full {
+html:not([data-butter-off~="container"]) div.\[container-type\:inline-size\].min-h-full {
   container-type: normal !important;
 }
 

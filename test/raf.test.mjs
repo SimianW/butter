@@ -3,14 +3,14 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
-function setup(smoothMs = 250) {
+function setup(smoothMs = 250, off = '') {
   let now = 10_000, nextId = 1; const frames = new Map(), timers = [];   // performance.now() is never near 0 on a real page
   const win = {
     __butterConfig: { smoothMs },
     requestAnimationFrame(cb) { const id = nextId++; frames.set(id, cb); return id; },
     cancelAnimationFrame(id) { frames.delete(id); },
   };
-  const ctx = vm.createContext({ window: win, performance: { now: () => now }, Symbol, Map, Number, Math, Function,
+  const ctx = vm.createContext({ window: win, document: { documentElement: { getAttribute: () => off }, addEventListener() {} }, location: { pathname: '/' }, performance: { now: () => now }, Symbol, Map, Number, Math, Function,
     setTimeout: (f, ms) => { const t = { f, at: now + ms, live: true }; timers.push(t); return t; }, clearTimeout: t => { if (t) t.live = false; } });
   vm.runInContext(fs.readFileSync(new URL('../extension/butter-main.js', import.meta.url), 'utf8'), ctx);
   const tick = ms => { // advance time in 16ms frames, running timers and frames
@@ -53,5 +53,11 @@ function smoother(win) {
 { // bad config falls back to 250ms; 0 disables
   assert.equal(setup('x').stats().smootherFrames, 0);
   const off = setup(0); assert.equal(off.stats(), undefined);
+}
+
+{ // Item off: even the exact callback is sent to native rAF on every frame.
+  const { win, tick } = setup(250, 'throttle'); const s = smoother(win);
+  for (let i = 0; i < 10; i++) { s.arm(); tick(16); }
+  assert.equal(s.pubs, 10); assert.equal(win.__butterStats.smootherFrames, 0);
 }
 console.log('raf throttle: all checks passed');

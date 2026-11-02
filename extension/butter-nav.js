@@ -4,10 +4,23 @@
 // turn ChatGPT mounts. Cost: the rail lives in a shadow root and animates only transform and
 // opacity, so hovering never restyles ChatGPT's page. Layout is read for jumps and their size corrections.
 (() => {
-  const ZH = /^zh\b/i.test(navigator.language);
-  const TXT = ZH
+  const strings = zh => zh
     ? { label: '对话中的问题', more: '更早的问题还没加载，点击加载', fromLatest: k => `最近第 ${k} 个问题` }
     : { label: 'Questions in this chat', more: 'Earlier questions are not loaded yet. Click to load them.', fromLatest: k => k === 1 ? 'Latest question' : `${k} questions back` };
+  let TXT = strings(document.documentElement?.getAttribute('data-butter-lang') === 'zh');
+  const railOff = () => document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('rail');
+  document.addEventListener('butter-settings', () => {
+    TXT = strings(document.documentElement?.getAttribute('data-butter-lang') === 'zh');
+    if (host) {
+      rail.setAttribute('aria-label', TXT.label);
+      more.setAttribute('aria-label', TXT.more);
+      if (shown !== -2) { const i = shown; shown = -2; hover(i); }
+      host.style.display = railOff() ? 'none' : '';
+      host.inert = !!railOff();
+    }
+    if (railOff()) { cancelJump(); hover(-2); pointerY = null; rail?.classList.remove('hot'); }
+    changed();
+  });
   const PITCH_MAX = 14, PAD = 10, MORE_H = 16, RAIL_W = 52;
   const HEADER = 52, COMPOSER = 140;   // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64;                 // a jumped-to question lands this far below the scroller's top
@@ -285,6 +298,7 @@
     rail.addEventListener('focusin', e => { const i = ticks.indexOf(e.target); hover(e.target === more ? -1 : i); });
     rail.addEventListener('focusout', () => { if (pointerY === null) hover(-2); });
     rail.addEventListener('click', e => {
+      if (railOff()) return;
       endOpening();
       const i = e.target === more ? -1 : e.detail === 0 ? ticks.indexOf(e.target) : indexAt(e.clientY);
       // The click starts the trip: put the card away until the pointer comes back to the rail. While
@@ -367,7 +381,7 @@
     qs = cur.items.filter(x => x.q != null);
     idxOf = new Map(qs.map((x, i) => [x.id, i]));
     const n = qs.length;
-    const on = !!box && box.width >= 560 && n >= 1 && n + (cur.hasPrev ? 1 : 0) >= 2;
+    const on = !railOff() && !!box && box.width >= 560 && n >= 1 && n + (cur.hasPrev ? 1 : 0) >= 2;
     if (!on) { host?.removeAttribute('data-on'); hover(-2); geo = null; return; }
     if (!host) { if (!document.body) return; build(); }
     while (ticks.length < n) {

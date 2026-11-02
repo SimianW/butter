@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.8 (2026-11-01)
+
+- A toolbar popup shows live checks for the five optimizations on the current ChatGPT tab.
+- Turn each optimization on or off, or pause Butter with the master switch. Changes apply immediately.
+- Choose English or 中文 in the popup; the question rail follows the same language, live.
+- Butter now stores only these switch and language settings locally in Chrome.
+
 ## 0.1.0-alpha.7 (2026-11-01)
 
 - Far jumps show the question about half a second sooner. The chat no longer waits a fixed time

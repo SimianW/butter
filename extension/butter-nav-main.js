@@ -24,6 +24,22 @@
     return { id: m.id, q };
   };
 
+  const parsed = new Set();
+  let olderSeen = false, olderEngaged = false;
+  let statusPath = location.pathname;
+  const syncStatus = () => {
+    if (statusPath !== location.pathname) { statusPath = location.pathname; olderSeen = olderEngaged = false; }
+  };
+  // ChatGPT may wrap fetch again and still delegate to us: report observed engagement, not identity.
+  document.addEventListener('butter-status-request', () => {
+    syncStatus();
+    const conv = /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1];
+    document.dispatchEvent(new CustomEvent('butter-status-response', { detail: JSON.stringify({
+      older: { exercised: olderSeen, engaged: olderEngaged, failed: olderSeen && !olderEngaged },
+      rail: { parsed: parsed.has(conv) },
+    }) }));
+  });
+
   const onPage = (conv, before, j) => {
     let msgs = j.messages;
     if (!msgs && j.mapping) {   // older single-object format: walk the current branch up from its tip
@@ -32,6 +48,7 @@
       msgs.reverse();
     }
     if (!Array.isArray(msgs)) return;
+    parsed.add(conv);
     emit({ type: 'page', conv, before, hasPrev: !!j.page_info?.has_previous_page, items: msgs.filter(m => m?.id).map(item) });
   };
 
@@ -45,6 +62,7 @@
   // Smaller pages of earlier messages (config.js `olderPageTurns`): ChatGPT lays each page out in one
   // long task, during which the composer can't take input. Only lowers an existing `num_turns`.
   const older = (input, init) => {
+    if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('older')) return input;
     const n = window.__butterConfig?.olderPageTurns;
     if (!(n > 0)) return input;
     const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
@@ -52,8 +70,11 @@
     if (method !== 'GET' || !PAGE.exec(raw)?.[2]) return input;
     const url = new URL(raw, location.href);
     if (!(+url.searchParams.get('num_turns') > n)) return input;
+    syncStatus(); olderSeen = true;
     url.searchParams.set('num_turns', String(n));
-    return input instanceof Request ? new Request(url.href, input) : url.href;
+    const result = input instanceof Request ? new Request(url.href, input) : url.href;
+    olderEngaged = true;
+    return result;
   };
 
   const of = window.fetch;

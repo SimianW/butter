@@ -6,6 +6,16 @@
 
   const cfg = window.__butterConfig || {};
   const smoothMs = Number.isFinite(cfg.smoothMs) ? Math.min(Math.max(cfg.smoothMs, 0), 2000) : 250;
+  let hook;
+  let matched = false;
+  let statusPath = location.pathname;
+  document.addEventListener('butter-status-request', () => {
+    if (statusPath !== location.pathname) { statusPath = location.pathname; matched = false; }
+    document.dispatchEvent(new CustomEvent('butter-status-response', { detail: JSON.stringify({
+      throttle: { configured: smoothMs > 0, available: window.requestAnimationFrame === hook,
+        matched, engaged: matched },
+    }) }));
+  });
   if (!(smoothMs > 0)) return;
 
   // ChatGPT's stream smoother drains buffered text a few characters at a time and schedules
@@ -27,8 +37,12 @@
   // Handles we hand out come from the native allocator, so they can't collide with other code's ids.
   const pending = new Map();   // handle -> { canceled, timer, realId }
 
-  window.requestAnimationFrame = function requestAnimationFrame(cb) {
+  hook = window.requestAnimationFrame = function requestAnimationFrame(cb) {
     if (!isSmootherPublish(cb)) return raf.call(window, cb);
+    // Switched off in the popup (butter-settings.js). Checked only for the smoother's callback.
+    if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('throttle')) return raf.call(window, cb);
+    if (statusPath !== location.pathname) { statusPath = location.pathname; matched = false; }
+    matched = true;
     stats.smootherFrames++;
     const entry = { canceled: false, timer: 0, realId: 0 };
     const run = t => {

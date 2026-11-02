@@ -14,7 +14,13 @@ or Firefox.
 
 ## Settings
 
-Settings live in `config.js` inside the extension folder. After editing it, click the reload icon
+Click Butter's toolbar icon to open the popup. **Status & settings** checks the five optimizations
+live on the current ChatGPT tab. Each has its own switch; changes apply to all ChatGPT tabs
+immediately. **Not yet checked** means the page has not exercised that optimization yet.
+Choose **English** or **中文** at the bottom; the question rail uses the same language. Butter
+stores these switch and language settings locally in Chrome.
+
+Numeric settings live in `config.js` inside the extension folder. After editing it, click the reload icon
 on the extension card and reload the chatgpt.com tab.
 
 | Setting | Default | What it does |
@@ -24,4 +30,6 @@ on the extension card and reload the chatgpt.com tab.
 
 ## Turning it off
 
-Toggle the extension off on `chrome://extensions` and reload the tab.
+Turn off **Enable on ChatGPT** in the popup to pause every optimization immediately. Turn it back
+on to resume with your individual switch settings. You can also disable the extension on
+`chrome://extensions` and reload the tab.

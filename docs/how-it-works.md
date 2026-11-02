@@ -18,7 +18,8 @@ the jumped-to question; scrolling yourself releases that alignment.
 
 ## Privacy
 
-The extension sends no requests of its own, stores nothing, and doesn't change messages. The one
+The extension stores only your switch and language settings locally (`chrome.storage.local`). It
+sends no requests of its own and doesn't change messages. The one
 request it touches is ChatGPT's own request for earlier messages, where it lowers the page size.
 
 ## Known trade-offs
