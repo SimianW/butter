@@ -13,8 +13,13 @@ await page.setViewportSize({ width: 320, height: 600 });
 await page.goto(`chrome-extension://${id}/popup.html`);
 await page.waitForSelector('.card');
 const popupUrl = page.url();
-const ref = await context.newPage(); await ref.setContent(await fs.readFile('mockups/popup.html', 'utf8'));
-await ref.addStyleTag({ content: '.popup { box-shadow: none; max-height:600px; overflow-y:auto; scrollbar-width:thin; }' });
+// Optional: BUTTER_MOCKUP=<path to the design mockup HTML> also captures reference shots (the mockup isn't in the repo).
+const mockup = process.env.BUTTER_MOCKUP;
+const ref = mockup ? await context.newPage() : null;
+if (ref) {
+  await ref.setContent(await fs.readFile(mockup, 'utf8'));
+  await ref.addStyleTag({ content: '.popup { box-shadow: none; max-height:600px; overflow-y:auto; scrollbar-width:thin; }' });
+}
 const defaults = { enabled: true, opts: { container: true, cv: true, throttle: true, older: true, rail: true }, lang: 'en' };
 const fixtures = [
   ['home-ok', 'home', ['ok','ok','ok','ok','ok'], true, true],
@@ -48,7 +53,7 @@ for (const lang of ['en','zh']) for (const theme of ['light','dark']) for (const
   // Compare the 14 approved reference panels, including clipping at Chrome's height cap.
   const fixtureIndex = fixtures.findIndex(x => x[0] === name);
   const index = lang === 'en' ? (theme === 'light' ? 0 : 6) + fixtureIndex : theme === 'light' && name === 'home-ok' ? 12 : theme === 'light' && name === 'settings-mixed' ? 13 : -1;
-  if (index >= 0) { await ref.evaluate(lang => document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en', lang); await ref.bringToFront(); await ref.locator('.popup').nth(index).screenshot({ path: `${shots}/reference-${lang}-${theme}-${name}.png` }); }
+  if (ref && index >= 0) { await ref.evaluate(lang => document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en', lang); await ref.bringToFront(); await ref.locator('.popup').nth(index).screenshot({ path: `${shots}/reference-${lang}-${theme}-${name}.png` }); }
 }
 // Dynamic card count, off items excluded, keyboard, scrolling, and live theme/language.
 await page.evaluate(async () => {
@@ -74,4 +79,4 @@ await page.evaluate(async () => { await chrome.storage.local.set({ butter: Butte
 assert.deepEqual(errors, []);
 await fs.writeFile(`${shots}/screenshots.json`, JSON.stringify({ popupUrl, files, errors }, null, 2));
 console.log(`PASS: ${files.length} screenshots; all approved states plus Chinese dark variants, capped scrolling, dynamic counts, keyboard switch, focus ring, 150ms transition; no popup errors.`);
-await ref.close(); await page.close(); await browser.close();
+await ref?.close(); await page.close(); await browser.close();
