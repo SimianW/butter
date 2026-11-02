@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.10 (2026-11-02)
+
+- ChatGPT's pulsing "responding" dot is shown whole again. Before, its left edge was cut off while
+  it waited for an answer.
+
 ## 0.1.0-alpha.9 (2026-11-02)
 
 - Sending a question while you're far up in a long chat brings you to the new question much

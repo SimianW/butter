@@ -38,7 +38,7 @@ A thin rail on the right, one tick per question. Hover to preview, click to jump
 
 Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install.md)
 
-Current version: **0.1.0-alpha.9** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.10** ([changelog](CHANGELOG.md)).
 
 ## More
 
