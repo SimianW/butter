@@ -16,7 +16,7 @@ function fixture() {
     querySelectorAll:s=>s==='[data-math-source]'?(c.math?[]:[{querySelector:()=>null}]):s.includes(':not(')?blocks:blocks,
   });item.closest=()=>turn; sc.querySelectorAll=()=>[turn];
   const doc={addEventListener:(n,fn)=>listeners[n]=fn,querySelectorAll:()=>[sc]};
-  const context={document:doc,location:{pathname:'/g/g-p-project/c/00000000-0000-0000-0000-000000000000'},innerWidth:1600,Element,performance:{now:()=>1},__butterSeekCore:core,
+  const context={document:doc,location:{pathname:'/g/g-p-project/c/00000000-0000-0000-0000-000000000000'},innerWidth:1600,Element,performance:{now:()=>1},__butterSeekCore:core,__butterLayoutCheck:require('../extension/seek/layout-check-main.js'),
     ResizeObserver:class {constructor(fn){resized=fn;}observe(e){observed.add(e);}unobserve(e){observed.delete(e);}},
     MutationObserver:class {constructor(fn){mutation=fn;}observe(){}},requestAnimationFrame:fn=>(frames.push(fn),frames.length),
     requestIdleCallback:fn=>(frames.push(fn),frames.length),
@@ -75,4 +75,18 @@ test('the recorder keeps inline and display TeX spans with measured display heig
  assert.equal(item.math[1].display,true);assert.equal(item.math[1].h,48);
  assert.equal(item.text.slice(item.math[1].start,item.math[1].end),'\\frac{a}{b}');
  assert.ok(!JSON.stringify(f.context.__heightCacheDump()).includes('value'));
+});
+
+test('height cache uses the shared fingerprint and preserves checkpoint width values',()=>{
+ const f=fixture(),calls=[];
+ const fingerprint=f.context.__butterLayoutCheck.layoutFingerprint;
+ f.context.__butterLayoutCheck={...f.context.__butterLayoutCheck,layoutFingerprint:input=>{calls.push({...input});return fingerprint(input);}};
+ f.blocks.push(f.item);f.mutation([{target:{},addedNodes:[f.turn],removedNodes:[]}]);
+ f.resize([{target:f.turn,contentRect:{height:500}},{target:f.item,contentRect:{height:26}}]);
+ for(const vw of [800,1440,1600]){
+  f.context.innerWidth=vw;f.resize([{target:f.turn,contentRect:{height:500}}]);f.flush();
+  const entry=f.context.__butterHeightCache.get('a');
+  assert.equal(entry.vw,vw);assert.equal(entry.sw,768);
+  assert.deepEqual(calls.at(-1),{vw,sw:768});
+ }
 });

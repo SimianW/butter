@@ -59,7 +59,9 @@ at most 64 rows globally. A long conversation uses about 2.35 MB per layout; dif
 need separate records. Width, DPR, font, column, theme, application assets, message IDs and content
 digests must match before adoption or restore. Conversation writes invalidate the usable records
 and pre-write history responses cannot reintroduce them. Restore validation uses a fingerprint
-computed outside the native width hook; resize, theme and font changes invalidate it without
+computed outside the native width hook. The pure `layoutFingerprint` helper in
+`seek/layout-check-main.js` defines the full stored identity and the width fields used by
+`seek/height-cache-main.js`; the session and persistent caches remain separate; resize, theme and font changes invalidate it without
 forcing layout. To clear saved geometry, delete that database in Chrome DevTools under
 Application → IndexedDB on chatgpt.com, then reload. It sends no requests of its own and doesn't
 change messages. The one request it touches is ChatGPT's own request for earlier messages, where it

@@ -1,5 +1,10 @@
 // Pure source-block reconstruction, persisted geometry identity and semantic landing.
 (function(root){'use strict';
+// Pure layout identity; callers supply measurements outside the native width restore hook.
+// Warm records use only vw/sw; persistent records serialize the full object in this order.
+function layoutFingerprint({sw,vw,dpr,font,column,theme,build}){
+ return {schema:1,sw,vw,dpr,font,column:column>0?column:null,theme,build};
+}
 const TTL=30*24*60*60*1000;
 function visibleRect(r,box,view,tolerance=.5){
  return !!r&&[r.top,r.bottom,r.left,r.right,r.width,r.height,box.top,box.bottom,box.left,box.right,view.top,view.bottom,view.left,view.right].every(Number.isFinite)&&r.width>0&&r.height>0&&r.top>=Math.max(box.top,view.top)-tolerance&&r.bottom<=Math.min(box.bottom,view.bottom)+tolerance&&r.left>=Math.max(box.left,view.left)-tolerance&&r.right<=Math.min(box.right,view.right)+tolerance;
@@ -54,6 +59,6 @@ function acceptStored(x,ctx,now=Date.now()){
 function hydrate(x,parts,q=''){
  return {...x,removed:true,recordedAt:0,records:0,fromStorage:true,items:x.items.map(it=>({...it,text:it.source===-2?q:parts[it.source]?.plain||''})),missingText:x.items.filter(it=>it.source===-1&&it.h>1).length};
 }
-const api={TTL,visibleRect,semanticTarget,segments,inline,geometryOnly,acceptStored,hydrate};
+const api={layoutFingerprint,TTL,visibleRect,semanticTarget,segments,inline,geometryOnly,acceptStored,hydrate};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.__butterLayoutCheck=api;
 })(globalThis);

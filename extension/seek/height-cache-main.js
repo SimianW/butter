@@ -90,7 +90,8 @@
         let text = leanCache.get(el); if (text == null) { text = lean(el, r.height); leanCache.set(el, text); }
         return { top: r.top - rr.top, h: r.height, left: r.left - sr.left - sc.clientLeft, w: r.width, user: el.matches('[data-user-message-bubble]'), css: styleKey(el), text: text.text, math: text.math };
       });
-      snap = { ...snap, h: contentH.get(t) ?? t.clientHeight, rowH: rr.height, turnOffset: tr.top - rr.top, turnH: tr.height, w: rr.width, vw: innerWidth, sw: sc.clientWidth, msg: identity(t), blocks, items };
+      const {vw,sw} = globalThis.__butterLayoutCheck.layoutFingerprint({vw:innerWidth,sw:sc.clientWidth});
+      snap = { ...snap, h: contentH.get(t) ?? t.clientHeight, rowH: rr.height, turnOffset: tr.top - rr.top, turnH: tr.height, w: rr.width, vw, sw, msg: identity(t), blocks, items };
     }
     if (snap.sw != null) scWidths.set(sc, snap.sw);
     const prev = turns.get(key);

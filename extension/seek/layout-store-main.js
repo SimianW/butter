@@ -29,7 +29,7 @@
      columns.set(s,column);
      if (column) { owners.set(column,s); layoutObserver.observe(column); }
    }
-   const value=JSON.stringify({schema:1,sw,vw:innerWidth,dpr:devicePixelRatio,font:getComputedStyle(column||s).font,column:width>0?width:null,theme:theme(),build:[...document.scripts].map(e=>e.src).filter(x=>x.includes('/cdn/assets/')).sort().join('|')});
+   const value=JSON.stringify(c.layoutFingerprint({sw,vw:innerWidth,dpr:devicePixelRatio,font:getComputedStyle(column||s).font,column:width,theme:theme(),build:[...document.scripts].map(e=>e.src).filter(x=>x.includes('/cdn/assets/')).sort().join('|')}));
    if (!layouts.has(s)) layoutObserver.observe(s);
    layouts.set(s,{value,stamp:stamp()});
    return value;
