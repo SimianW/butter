@@ -1,0 +1,12 @@
+node_modules/
+dist/
+docs/media/
+lab/
+results/
+report/
+design/
+mockups/
+**/scratch/
+**/recordings/
+**/logs/
+**/*.log

@@ -1,4 +1,4 @@
-// Node check of stream/throttle-main.js's rAF throttle with a fake clock: node test/raf.test.mjs
+// Node check of stream/throttle-main.js's rAF throttle with a fake clock.
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
@@ -24,7 +24,11 @@ function setup(smoothMs = 250, off = '') {
 // A smoother instance shaped like ChatGPT's: re-arms only when this.frame is null.
 function smoother(win) {
   const s = { frame: undefined, pubs: 0, publish() { this.pubs++; } };
-  s.arm = function () { if (this.frame == null) this.frame = win.requestAnimationFrame(() => { this.frame = void 0, this.publish(); }); };
+  s.arm = function () {
+    // Callback source is the contract under test; parentheses added by formatting change the match.
+    // prettier-ignore
+    if (this.frame == null) this.frame = win.requestAnimationFrame(() => { this.frame = void 0, this.publish(); });
+  };
   return s;
 }
 

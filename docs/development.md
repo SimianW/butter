@@ -30,6 +30,12 @@ the layout-storage build option formerly loaded separately; all consumers still 
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
   `jump-latency-summary.mjs`; takeover deadline fixture: `nav-takeovers.mjs`.
 
+## Formatting
+
+Run `npm ci` to install the pinned development formatter, then `npm run format` to format
+`extension/**/*.{js,css,html,json}` and `test/**`. Use `npm run format:check` to check them.
+`node --test` uses only Node built-ins and still runs without installing npm dependencies.
+
 ## Release
 
 `python3 scripts/package.py` builds the zip. Version rules are in [AGENTS.md](../AGENTS.md).
