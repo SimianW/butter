@@ -12,8 +12,8 @@ p.on('pageerror', e=>errors.push(e.message));
 await cx.route('http://butter.test/**', r=>r.fulfill({contentType:'text/html',body:`<!doctype html><style>
 body{margin:0}.thread-scroll-container{height:100vh;overflow:auto;overflow-anchor:none}.content{padding:64px 180px 1000px}article{height:1800px}
 </style><div class="thread-scroll-container"><div class="content"><div class="window"></div></div></div>`}));
-const cv = fs.readFileSync(new URL('extension/butter-cv.js',repo),'utf8');
-const css = fs.readFileSync(new URL('extension/butter.css',repo),'utf8');
+const cv = fs.readFileSync(new URL('extension/stream/offscreen.js',repo),'utf8');
+const css = fs.readFileSync(new URL('extension/stream/containment.css',repo),'utf8');
 // Historical baselines use the stem recorded in their tree; expose the current protocol.
 const baselineFile = execFileSync('git',['ls-tree','-r','--name-only','75a9387','extension'],{cwd:repo,encoding:'utf8'}).trim().split('\n').find(f=>f.endsWith('-nav.js'));
 const baselineStem = baselineFile.slice('extension/'.length,-'-nav.js'.length);
@@ -38,7 +38,7 @@ const done = ()=>p.waitForFunction(()=>{const r=document.querySelector('chatgpt-
 const state = id=>p.evaluate(id=>{const sc=document.querySelector('.thread-scroll-container'),el=sc.querySelector(`[data-turn-key="${id}"]`),r=document.querySelector('chatgpt-butter-nav').shadowRoot;return {clicks:fixture.clicks.map(t=>Math.round(t-fixture.clicks[0])),revealMs:Math.round(fixture.reveals.at(-1)-fixture.clicks[0]),top:el?Math.round(el.getBoundingClientRect().top-sc.getBoundingClientRect().top):null,busy:!!r.querySelector('.busy'),warp:getComputedStyle(r.querySelector('.warp')).visibility};},id);
 try {
   for(const version of ['alpha6','new']){
-    const source=version==='new'?fs.readFileSync(new URL('extension/butter-nav.js',repo),'utf8'):baseline;
+    const source=version==='new'?fs.readFileSync(new URL('extension/rail/rail.js',repo),'utf8'):baseline;
     for(const [kind,seq] of [['repeat',[8,8,8]],['same-final',[8,4,8]],['deadline',Array.from({length:12},(_,i)=>i%2?4:8)]]){
       await setup(source);const start=Date.now();
       for(let i=0;i<seq.length;i++){await p.waitForTimeout(Math.max(0,start+i*1000-Date.now()));await click(seq[i]);}

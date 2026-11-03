@@ -1,4 +1,4 @@
-// Page world. Feeds the history rail (butter-nav.js) with the conversation's messages, read from the
+// Page world. Feeds the history rail (rail/rail.js) with the conversation's messages, read from the
 // responses ChatGPT fetches anyway; the extension makes no requests of its own. ChatGPT loads a
 // long chat in pages, newest first, and keeps only about five turns in the DOM, so the DOM alone
 // can't list the questions. Events go to the isolated world as JSON strings on `butter-nav`.
@@ -109,7 +109,7 @@
     emit({ type: 'send', conv: b.conversation_id ?? null, parent: b.parent_message_id ?? null, item: item(m) });
   };
 
-  // Smaller pages of earlier messages (config.js `olderPageTurns`): ChatGPT lays each page out in one
+  // Smaller pages of earlier messages (shared/config-main.js `olderPageTurns`): ChatGPT lays each page out in one
   // long task, during which the composer can't take input. Only lowers an existing `num_turns`.
   const older = (input, init) => {
     if (olderOff()) return input;

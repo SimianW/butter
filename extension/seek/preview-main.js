@@ -1,6 +1,6 @@
 // MAIN world: native-thumb scroll suppression, lean preview and one destination commit.
 (() => {
-  const core = globalThis.__butterSeekCore, cold = globalThis.__butterColdCore;
+  const core = globalThis.__butterSeekCore, layoutCheck = globalThis.__butterLayoutCheck;
   if (!core) return;
   const S = { v: 2, events: [], updates: [], sessions: [], presses: [], active: false };
   const conversations = new Map();
@@ -35,7 +35,7 @@
     if (before) { const have = new Set(old.messages.map(m => m.id)); msgs = msgs.filter(m => !have.has(m.id)).concat(old.messages); }
     conversations.set(c, { messages: msgs, hasPrev: !!j.page_info?.has_previous_page });
     const source = texts(c).byId;
-    queueMicrotask(() => globalThis.__coldStore?.setTexts(c, source));
+    queueMicrotask(() => globalThis.__butterLayoutStore?.setTexts(c, source));
     while (conversations.size > 2) conversations.delete(conversations.keys().next().value);
     if (active?.conv === c) { event('data-during-hold', { before }); finish('data-invalidation', false); }
     else if (pendingCommit?.conv === c) { pendingCommit.release.invalidate('history-data'); event('data-during-release'); }
@@ -85,7 +85,7 @@
       anchor = { id: rows[0].id, top: rows[0].r.top - sr.top + s.scrollTop };
       if (rows.length > 1) { const g = rows[1].r.top - rows[0].r.bottom; if (g >= 0 && g < 64) gap = g; }
     }
-    const stored = globalThis.__coldStore?.records(s) || {};
+    const stored = globalThis.__butterLayoutStore?.records(s) || {};
     const records = {}; if (cache) for (const id of ids) { const e = cache.get(id, s); if (e) records[id] = e; }
     for (const [id, r] of Object.entries(stored)) if (!records[id]) records[id] = r;
     cache?.adopt?.(stored, s);
@@ -390,7 +390,7 @@
         const candidates = !est.hidden && a.estTurn === d.id ? [est] :
           [...a.rendered].filter(([i]) => a.prep.model[a.prep.flat[i].turn].id === d.id).map(([, el]) => el);
         let visible;
-        for (const el of candidates) { visible = globalThis.__coldVisibleNeedles?.(el, a.hostRect, 1)?.[0]; if (visible) break; }
+        for (const el of candidates) { visible = globalThis.__butterAnchorVisibleNeedles?.(el, a.hostRect, 1)?.[0]; if (visible) break; }
         a.semantic = { needle: visible?.needle || null, previewY: visible?.y ?? a.hostRect.y, anchorVisible: !!visible, attempts: 0, passes: 0, matched: false };
       }
       if(el && !pendingMath && a.semantic && !a.semantic.done){
@@ -398,13 +398,13 @@
         const ys=sem.needle?textRect(el,sem.needle):[], y=ys.length?ys.reduce((x,y)=>Math.abs(x-sem.previewY)<Math.abs(y-sem.previewY)?x:y):null;
         if(y!=null){
           sem.matched=true;sem.lastError=y-sem.previewY;
-          const r=cold.semanticTarget({scrollTop:a.sc.scrollTop,realY:y,previewY:sem.previewY,maxScroll:a.sc.scrollHeight-a.sc.clientHeight});
+          const r=layoutCheck.semanticTarget({scrollTop:a.sc.scrollTop,realY:y,previewY:sem.previewY,maxScroll:a.sc.scrollHeight-a.sc.clientHeight});
           if(r && sem.attempts<3){sem.attempts++;sem.clamped=r.clamped;a.sc.scrollTop=r.to;quiet=0;prev=0;event('semantic-retarget',{to:r.to,error:r.delta});requestAnimationFrame(ready);return;}
         } else {
           // Math-only/unmatched previews retain the selected question identity.
           const q=el.querySelector('[data-user-message-bubble]')||el.querySelector('[data-message-author-role="user"]');
           if(q){const y=q.getBoundingClientRect().top;sem.matched=false;sem.fallback=true;sem.lastError=y-a.hostRect.y;
-            const r=cold.semanticTarget({scrollTop:a.sc.scrollTop,realY:y,previewY:a.hostRect.y,maxScroll:a.sc.scrollHeight-a.sc.clientHeight});
+            const r=layoutCheck.semanticTarget({scrollTop:a.sc.scrollTop,realY:y,previewY:a.hostRect.y,maxScroll:a.sc.scrollHeight-a.sc.clientHeight});
             if(r&&sem.attempts<3){sem.attempts++;sem.clamped=r.clamped;a.sc.scrollTop=r.to;quiet=0;prev=0;event('semantic-question-fallback',{to:r.to});requestAnimationFrame(ready);return;}
           }
         }
@@ -445,9 +445,9 @@
   // ---- swap alignment audit: where the preview showed text vs where the real text is ----
   const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
   const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/u;
-  const textRect = (root, needle) => (globalThis.__coldTextBoxes?.(root, needle) || []).map(r => r.top);
+  const textRect = (root, needle) => (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map(r => r.top);
   function measureSwap(a) {
-    if (globalThis.__coldVisibleSwap) { a.swap = globalThis.__coldVisibleSwap(a); return; }
+    if (globalThis.__butterAnchorVisibleSwap) { a.swap = globalThis.__butterAnchorVisibleSwap(a); return; }
     const s = a.sc, sr = s.getBoundingClientRect(), top = a.lastTop, H = a.hostRect;
     const items = [], anchors = [];
     // Block level: each rendered preview item vs the same-index real item of the same turn.
@@ -489,7 +489,7 @@
     const ups = S.updates, js = ups.map(u => u.jsMs).sort((x, y) => x - y), lat = ups.filter(u => u.latency != null).map(u => u.latency).sort((x, y) => x - y);
     const q = (xs, p) => xs.length ? Math.round(xs[Math.min(xs.length - 1, Math.floor(xs.length * p))] * 10) / 10 : null;
     const out = { v: 2, active: S.active, pending: !!pendingCommit, sessions: S.sessions.map(clean), presses: S.presses.slice(-20), updateCount: ups.length, scriptMsP95: q(js, .95), scriptMsMax: q(js, 1), eventToPaintMsP95: q(lat, .95), eventToPaintMsMax: q(lat, 1),
-      storage: globalThis.__coldStore?.dump(),
+      storage: globalThis.__butterLayoutStore?.dump(),
       cache: window.__heightCacheDump?.().stats ? (({ observed, records, refreshes, rejected, restored, blocksRestored, restoreMisses, recordMs, recordMax }) => ({ observed, records, refreshes, rejected, restored, blocksRestored, restoreMisses, recordMs: Math.round(recordMs), recordMax: Math.round(recordMax) }))(window.__heightCacheDump().stats) : null,
       scroller: (() => { const s = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0); return s ? { clientWidth: s.clientWidth, offsetWidth: s.offsetWidth, scrollHeight: s.scrollHeight } : null; })() };
     if (full) { out.events = S.events.map(({ kind, t, top, why, ms, error, reason, kind2 }) => ({ kind, t, top, why, ms, error, reason })); out.updates = ups.map(({ seq, t, eventTime, top, turn, offset, layout, known, items, renderMs, jsMs, latency }) => ({ seq, t, eventTime, top, turn, offset, layout, known, items, renderMs, jsMs, latency })); }

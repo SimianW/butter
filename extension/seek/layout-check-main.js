@@ -55,5 +55,5 @@ function hydrate(x,parts,q=''){
  return {...x,removed:true,recordedAt:0,records:0,fromStorage:true,items:x.items.map(it=>({...it,text:it.source===-2?q:parts[it.source]?.plain||''})),missingText:x.items.filter(it=>it.source===-1&&it.h>1).length};
 }
 const api={TTL,visibleRect,semanticTarget,segments,inline,geometryOnly,acceptStored,hydrate};
-if(typeof module==='object'&&module.exports)module.exports=api;else root.__butterColdCore=api;
+if(typeof module==='object'&&module.exports)module.exports=api;else root.__butterLayoutCheck=api;
 })(globalThis);

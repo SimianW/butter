@@ -1,7 +1,7 @@
 // Unit tests: height-cache recording rules, restore gate, coverage, preview model, re-target.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const core = require('../extension/seek-core.js');
+const core = require('../extension/seek/core-main.js');
 
 const base = { conv: 'c1', complete: true, mathReady: true, skipped: false, h: 5000, rowH: 5000, w: 768, vw: 1600, sw: 1243, msg: 'm1' };
 const items = [{ top: 100, h: 60, left: 245, w: 768, text: 'q' }, { top: 190, h: 32, left: 245, w: 768, text: 'h1' }];
@@ -77,7 +77,7 @@ test('mapTop finds the turn and offset', () => {
   assert.deepEqual([core.mapTop(m, 50).index, core.mapTop(m, 50).offset], [0, 50]);
   assert.deepEqual([core.mapTop(m, 150).index, core.mapTop(m, 150).offset], [1, 38]);
 });
-test('retarget: corrects height drift above a measured destination (v1 cold miss: +2936 px)', () => {
+test('retarget: corrects height drift above a measured destination (v1 layoutCheck miss: +2936 px)', () => {
   const r = core.retarget({ known: true, frozenTurnTop: 200344, actualTurnTop: 203280, offset: 5614, height: 14875, scrollTop: 205958, maxScroll: 215000 });
   assert.equal(r.to, 203280 + 5614); assert.equal(r.drift, 2936);
   assert.equal(core.retarget({ known: true, frozenTurnTop: 100, actualTurnTop: 102, offset: 0, height: 10, scrollTop: 100, maxScroll: 1e6 }), null);

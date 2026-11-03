@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
-const core = require('../extension/seek-core.js');
+const core = require('../extension/seek/core-main.js');
 function fixture() {
   const frames = [], observed = new Set(), listeners = {}, blocks = [];
   let mutation, resized; const nativeReads=[];
@@ -22,7 +22,7 @@ function fixture() {
     requestIdleCallback:fn=>(frames.push(fn),frames.length),
     getComputedStyle:()=>({fontStyle:'normal',fontWeight:'400',fontSize:'16px',lineHeight:'26px',fontFamily:'system-ui',paddingTop:'0px',paddingRight:'0px',paddingBottom:'0px',paddingLeft:'0px',borderRadius:'0px',backgroundColor:'transparent',color:'black',textAlign:'left'})};
   context.window=context;vm.createContext(context);
-  vm.runInContext(fs.readFileSync(require.resolve('../extension/height-cache.js'),'utf8'),context);
+  vm.runInContext(fs.readFileSync(require.resolve('../extension/seek/height-cache-main.js'),'utf8'),context);
   const flush=()=>{const jobs=frames.splice(0);jobs.forEach(f=>f());};
   return {context,c,turn,item,blocks,nativeReads,Element,sc,observed,flush,mutation:r=>mutation(r),resize:rs=>resized(rs),frames};
 }

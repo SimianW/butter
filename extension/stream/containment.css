@@ -1,7 +1,7 @@
 /* Skip style and layout for turns and answer blocks that are off screen. A long math answer is
    ~20k nodes, most of it scrolled past while the end is still streaming.
    `contain-intrinsic-size: auto` makes the browser remember each element's real height while it
-   renders normally; butter-cv.js marks turns and answer blocks `data-butter-seen` after their
+   renders normally; stream/offscreen.js marks turns and answer blocks `data-butter-seen` after their
    first layout, and only then may they be skipped. Wide blocks (tables,
    visualizations) deliberately overflow the text column, which paint containment would clip, so
    they are never skipped.
@@ -33,7 +33,7 @@ html:not([data-butter-off~="container"]) div.\[container-type\:inline-size\].min
   container-type: normal !important;
 }
 
-/* History rail (butter-nav.js): ring the question a click jumped to. Drawn inside the bubble: an
+/* History rail (rail/rail.js): ring the question a click jumped to. Drawn inside the bubble: an
    outer ring is clipped where the bubble touches its turn's edge (top, and right for a user
    message), since content-visibility gives the turn paint containment. */
 [data-butter-flash] {

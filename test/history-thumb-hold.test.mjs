@@ -14,7 +14,7 @@ function setup({ rtl = false, overlay = false } = {}) {
     clientWidth: overlay ? 800 : 780, offsetWidth: 800, clientLeft: rtl && !overlay ? 20 : 0, clientTop: 0,
     getBoundingClientRect: () => ({ left: 100, right: 900, top: 20, bottom: 620, width: 800, height: 600 }) };
   win.fetch = function(input, init) { calls.push({ input, init, receiver: this }); return Promise.resolve({ ok: true, clone: () => ({ json: async () => ({ messages: [{ id: 'q', author: { role: 'user' }, content: { content_type: 'text', parts: ['hello'] } }], page_info: { has_previous_page: true } }) }) }); };
-  vm.runInNewContext(fs.readFileSync(new URL('../extension/butter-nav-main.js', import.meta.url), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(new URL('../extension/history/conversation-main.js', import.meta.url), 'utf8'), {
     window: win, document: doc, URL, Request, DOMException, Symbol, CustomEvent,
     location: { href: 'https://chatgpt.com/', pathname: '/' },
     getComputedStyle: () => ({ direction: rtl ? 'rtl' : 'ltr', borderLeftWidth: '0', borderRightWidth: '0' }),

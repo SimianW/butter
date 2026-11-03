@@ -1,5 +1,5 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const core=require(process.env.SEEK_CORE_SOURCE||'../extension/seek-core.js');
+const core=require(process.env.SEEK_CORE_SOURCE||'../extension/seek/core-main.js');
 
 test('a recorded tall block retains a text fallback throughout its geometry',()=>{
  // The recorder caps lean text at 4000 characters, while preserving the full block height.

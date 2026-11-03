@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import core from '../extension/seek-core.js';
-import seekMeta from '../extension/butter-seek-meta.js';
+import core from '../extension/seek/core-main.js';
+import seekMeta from '../extension/seek/seek-meta.js';
 
 test('seek card describes seen, unseen and loading questions in both UI languages', () => {
   assert.equal(seekMeta(false, 7, 14, 'dragging'), 'Question 7 of 14');
@@ -40,8 +40,8 @@ test('each content-script file is assigned to one world so Chrome does not dedup
     if (worlds.has(path)) assert.equal(worlds.get(path), world, `${path} must not cross content-script worlds`);
     worlds.set(path, world);
   }
-  assert.equal(worlds.get('seek-core.js'), 'MAIN');
-  assert.equal(worlds.get('butter-seek-meta.js'), 'ISOLATED');
+  assert.equal(worlds.get('seek/core-main.js'), 'MAIN');
+  assert.equal(worlds.get('seek/seek-meta.js'), 'ISOLATED');
 });
 
 // The normal rail observes the turn element against -92px / -180px root margins.

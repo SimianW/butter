@@ -1,10 +1,10 @@
 // Persistent geometry in site-origin IndexedDB. Never serializes preview/source text.
 (()=>{
- if(!globalThis.__coldOptions?.storage)return;
+ if(!globalThis.__butterLayoutOptions?.storage)return;
  const unsupported=new Set(),invalidated=new Set(),epochs=new Map();
  document.addEventListener('butter-seek-write',e=>api.invalidate(e.detail.conv||location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1]));
  document.addEventListener('butter-seek-data',e=>{const {conv,j,before}=e.detail;if(!before)invalidated.delete(conv);const msgs=j.messages||Object.values(j.mapping||{}).map(n=>n.message).filter(Boolean);if(msgs.some(m=>!m.metadata?.is_visually_hidden_from_conversation&&['user','assistant'].includes(m.author?.role)&&(!m.channel||m.channel==='final')&&((m.content?.parts||[]).some(x=>typeof x!=='string')||(m.metadata?.attachments||[]).length||(m.metadata?.citations||[]).length)))unsupported.add(conv);});
- const c=__butterColdCore,rows=new Map(),contexts=new Map(),memory=new Map(),pending=new Map();
+ const c=__butterLayoutCheck,rows=new Map(),contexts=new Map(),memory=new Map(),pending=new Map();
  const S={ready:false,loads:0,hits:0,writes:0,bytes:0,rejected:{},errors:0};let db,job=0;
  const reject=why=>S.rejected[why]=(S.rejected[why]||0)+1;
  const digest=async text=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -37,7 +37,7 @@
  const cachedLayout = s => { const x=s&&layouts.get(s);return x&&x.stamp===stamp()?x.value:null; };
  const key=ctx=>JSON.stringify([ctx.conv,ctx.turn,ctx.msg,ctx.digest,ctx.layout]);
  const opened=new Promise(resolve=>{const r=indexedDB.open('butter-seek-cold-geometry-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('geometry',{keyPath:'key'});r.onerror=()=>{S.errors++;resolve(null)};r.onsuccess=()=>{db=r.result;const q=db.transaction('geometry').objectStore('geometry').getAll();q.onsuccess=()=>{for(const x of q.result){memory.set(x.key,x);S.bytes+=JSON.stringify(x).length;}S.ready=true;resolve(db)};q.onerror=()=>{S.errors++;resolve(db)}}});
- const api=globalThis.__coldStore={
+ const api=globalThis.__butterLayoutStore={
   async setTexts(conv,texts){const generation=epochs.get(conv)||0;await opened;if(invalidated.has(conv))return;if(unsupported.has(conv)||Object.values(texts).some(t=>/!\[|<img\b|<video\b/i.test(t.q+t.answer))){reject('unsupported-media-or-citations');for(const [id,ctx]of contexts)if(ctx.conv===conv)contexts.delete(id);return;}for(const [turn,t]of Object.entries(texts)){
     const sig=await digest(JSON.stringify([t.q,t.answer,t.ids||[],t.msg]));if((epochs.get(conv)||0)!==generation||invalidated.has(conv))return;rows.set(turn,{...t,parts:c.segments(t.answer)});contexts.set(turn,{conv,turn,msg:t.msg||'',digest:sig});
   }S.loads++;},

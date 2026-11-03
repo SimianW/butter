@@ -69,7 +69,7 @@
     if (globalThis.__butterSeeking?.()) { idle = requestAnimationFrame(flush); return; }
     const sc = scroller();
     const batch = [...pending]; pending.clear();
-    const layout = batch.length ? globalThis.__coldStore?.refreshLayout(sc) : null;
+    const layout = batch.length ? globalThis.__butterLayoutStore?.refreshLayout(sc) : null;
     for (const t of batch) record(t, sc, layout);
   }
   function record(t, sc, layout) {
@@ -96,7 +96,7 @@
     const prev = turns.get(key);
     const { entry, changed, reason } = core.mergeRecord(prev?.conv === c ? prev : null, snap, performance.now());
     if (reason) { S.rejected[reason] = (S.rejected[reason] || 0) + 1; if (reason === 'zero-block') S.lastZero = [...t.querySelectorAll(BLOCK)].filter(b => !(contentH.get(b) > 0)).slice(0, 8).map(b => ({ tag: b.tagName, observed: contentH.get(b) ?? null })); }
-    else { if (prev?.ready) S.refreshes++; S.records++; turns.delete(key); turns.set(key, entry); globalThis.__coldStore?.record(key, entry, sc, layout); }
+    else { if (prev?.ready) S.refreshes++; S.records++; turns.delete(key); turns.set(key, entry); globalThis.__butterLayoutStore?.record(key, entry, sc, layout); }
     while (turns.size > 64) turns.delete(turns.keys().next().value);
     const ms = performance.now() - t0; S.recordMs += ms; S.recordMax = Math.max(S.recordMax, ms);
     void changed;
@@ -143,7 +143,7 @@
   // Adopted geometry must still match current source, layout and expiry at each use.
   const currentEntry = (key, sc) => {
     const e = turns.get(key);
-    if (e?.fromStorage && !globalThis.__coldStore?.valid(key, e, sc || scroller())) { turns.delete(key); return null; }
+    if (e?.fromStorage && !globalThis.__butterLayoutStore?.valid(key, e, sc || scroller())) { turns.delete(key); return null; }
     return e;
   };
   // Restore only when identity, width, completeness and every block size still agree.
@@ -169,10 +169,10 @@
     return Reflect.apply(d.get, this, []);
   } });
 
-  // Read API for seek-preview.js (same world). Records carry chat text: never dump them.
+  // Read API for seek/preview-main.js (same world). Records carry chat text: never dump them.
   globalThis.__butterHeightCache = {
-    get: (key, preparedScroller) => { const sc = preparedScroller || scroller(); if (!preparedScroller && turns.get(key)?.fromStorage) globalThis.__coldStore?.refreshLayout(sc); const e = currentEntry(key, sc); return e && e.conv === conv() ? e : null; },
-    coverage: ids => { const sc = scroller(); if (ids.some(id => turns.get(id)?.fromStorage)) globalThis.__coldStore?.refreshLayout(sc); return core.coverage(k => currentEntry(k, sc), ids, { conv: conv(), vw: innerWidth }); },
+    get: (key, preparedScroller) => { const sc = preparedScroller || scroller(); if (!preparedScroller && turns.get(key)?.fromStorage) globalThis.__butterLayoutStore?.refreshLayout(sc); const e = currentEntry(key, sc); return e && e.conv === conv() ? e : null; },
+    coverage: ids => { const sc = scroller(); if (ids.some(id => turns.get(id)?.fromStorage)) globalThis.__butterLayoutStore?.refreshLayout(sc); return core.coverage(k => currentEntry(k, sc), ids, { conv: conv(), vw: innerWidth }); },
     flush,
     invalidate: c => { for (const [id, e] of turns) if (e.conv === c) turns.delete(id); },
     adopt: (records, sc) => { scWidths.set(sc, sc.clientWidth); for (const [id, e] of Object.entries(records)) if (!turns.has(id)) turns.set(id, e); },

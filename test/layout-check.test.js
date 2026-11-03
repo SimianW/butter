@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
-const c=require('../extension/cold-core.js');
-test('cold semantic landing corrects the visible anchor rather than the obsolete row offset',()=>{
+const c=require('../extension/seek/layout-check-main.js');
+test('layoutCheck semantic landing corrects the visible anchor rather than the obsolete row offset',()=>{
  assert.deepEqual(c.semanticTarget({scrollTop:60000,realY:3700,previewY:102,maxScroll:200000}),{to:63598,delta:3598,clamped:false});
  assert.equal(c.semanticTarget({scrollTop:60000,realY:103,previewY:102,maxScroll:200000}),null);
  assert.equal(c.semanticTarget({scrollTop:60000,realY:NaN,previewY:102,maxScroll:200000}),null);
@@ -31,7 +31,7 @@ test('a text run in clipped overflow is not a visible preview anchor',()=>{
  assert.equal(c.visibleRect({top:75,bottom:95,left:400,right:600,width:200,height:20},box,view),false);
 });
 test('stored geometry supplies native-range weights and an opened layout without native height writes',()=>{
- const seek=require('../extension/seek-core.js');
+ const seek=require('../extension/seek/core-main.js');
  const records={a:{fromStorage:true,rowH:1000,sw:600,turnOffset:20,turnH:980,items:[{top:20,h:26,text:'a'}]},b:{fromStorage:true,rowH:3000,sw:600,items:[{top:0,h:26,text:'b'}]}};
  const measured={c:100};
  const model=seek.buildModel({ids:['a','b','c'],measured,records,texts:{},scrollHeight:1700,gap:0,sw:600});
@@ -41,7 +41,7 @@ test('stored geometry supplies native-range weights and an opened layout without
  assert.deepEqual(measured,{c:100});
 });
 test('stored preview uses full row geometry without overlapping native estimated spans',()=>{
- const seek=require(process.env.GEOMETRY_SOURCE || '../extension/seek-core.js');
+ const seek=require(process.env.GEOMETRY_SOURCE || '../extension/seek/core-main.js');
  const native=[{id:'a',index:0,top:0,h:200,layout:true,litTop:20,litH:1980,items:[{top:1900,h:100}]},{id:'b',index:1,top:212,h:200,layout:true,litTop:232,litH:980,items:[{top:20,h:100}]}];
  const preview=seek.buildPreviewModel?.(native,{a:{rowH:2000},b:{rowH:1000}},12) || native;
  assert.deepEqual(preview.map(t=>t.top),[0,2012]);

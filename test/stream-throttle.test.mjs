@@ -1,4 +1,4 @@
-// Node check of butter-main.js's rAF throttle with a fake clock: node test/raf.test.mjs
+// Node check of stream/throttle-main.js's rAF throttle with a fake clock: node test/raf.test.mjs
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
@@ -12,7 +12,7 @@ function setup(smoothMs = 250, off = '') {
   };
   const ctx = vm.createContext({ window: win, document: { documentElement: { getAttribute: () => off }, addEventListener() {} }, location: { pathname: '/' }, performance: { now: () => now }, Symbol, Map, Number, Math, Function,
     setTimeout: (f, ms) => { const t = { f, at: now + ms, live: true }; timers.push(t); return t; }, clearTimeout: t => { if (t) t.live = false; } });
-  vm.runInContext(fs.readFileSync(new URL('../extension/butter-main.js', import.meta.url), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(new URL('../extension/stream/throttle-main.js', import.meta.url), 'utf8'), ctx);
   const tick = ms => { // advance time in 16ms frames, running timers and frames
     for (let end = now + ms; now < end;) { now += 16;
       for (const t of timers) if (t.live && t.at <= now) { t.live = false; t.f(); }

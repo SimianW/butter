@@ -1,6 +1,6 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const vm = require('node:vm'), fs = require('node:fs'), crypto = require('node:crypto').webcrypto;
-const seek = require(process.env.REVIEW_SOURCE ? process.env.REVIEW_SOURCE + '/seek-core.js' : '../extension/seek-core.js'), cold = require(process.env.REVIEW_SOURCE ? process.env.REVIEW_SOURCE + '/cold-core.js' : '../extension/cold-core.js');
+const seek = require(process.env.REVIEW_SOURCE ? process.env.REVIEW_SOURCE + '/seek/core-main.js' : '../extension/seek/core-main.js'), layoutCheck = require(process.env.REVIEW_SOURCE ? process.env.REVIEW_SOURCE + '/seek/layout-check-main.js' : '../extension/seek/layout-check-main.js');
 const conv = '00000000-0000-0000-0000-000000000000';
 const texts = {t: {q: 'question', answer: 'answer', msg: 'm', ids: ['m']}};
 const record = {conv, ready: true, removed: true, h: 500, rowH: 520, w: 768, vw: 1600, sw: 1258,
@@ -25,14 +25,14 @@ function fixture() {
  const on = (name, fn) => (events[name] ||= []).push(fn);
  const document = {fonts: {addEventListener: on}, scripts: [], documentElement: {className: 'light', hasAttribute: () => false}, addEventListener: on, querySelectorAll: () => [sc]};
  const ctx = {document, location: {pathname: '/c/' + conv}, innerWidth: 1600, devicePixelRatio: 1,
-  Element, performance: {now: () => 1}, __coldOptions: {storage: true}, __butterColdCore: cold, __butterSeekCore: seek,
+  Element, performance: {now: () => 1}, __butterLayoutOptions: {storage: true}, __butterLayoutCheck: layoutCheck, __butterSeekCore: seek,
   TextEncoder, crypto, queueMicrotask, setTimeout: () => 1, clearTimeout() {}, setInterval() {}, requestAnimationFrame: () => 1,
   addEventListener: on, ResizeObserver: class {constructor(fn) { resizeObservers.push(fn); } observe() {} unobserve() {}}, MutationObserver: class {observe() {}},
   getComputedStyle: () => ({font: '16px system-ui'}), indexedDB: {open() {const r = {result: {transaction: tx}}; queueMicrotask(() => r.onsuccess()); return r;}}};
  ctx.window = ctx; vm.createContext(ctx);
  const load = name => vm.runInContext(fs.readFileSync(`${process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension')}/${name}.js`, 'utf8'), ctx);
- load('cold-store'); load('height-cache');
- return {ctx, sc, turn, block, disk, load, resizeObservers, get prematureReads() { return prematureReads; }, store: ctx.__coldStore, cache: ctx.__butterHeightCache,
+ load('seek/layout-store-main'); load('seek/height-cache-main');
+ return {ctx, sc, turn, block, disk, load, resizeObservers, get prematureReads() { return prematureReads; }, store: ctx.__butterLayoutStore, cache: ctx.__butterHeightCache,
   event: (name, detail) => {for (const fn of events[name] || []) fn({detail});},
   restore() {const bubble = Object.assign(new Element(), {firstElementChild: {classList: {contains: () => true}}, closest: s => s === '.thread-scroll-container' ? sc : {}}); restoring = true; void bubble.clientWidth; restoring = false;}};
 }
@@ -53,7 +53,7 @@ test('S2 adopted geometry is revalidated before preview reads and remount restor
   if (change === 'theme') f.ctx.document.documentElement.className = 'dark';
   if (change === 'font') f.ctx.getComputedStyle = () => ({font: '18px system-ui'});
   if (change === 'digest') await f.store.setTexts(conv, {t: {...texts.t, answer: 'edited answer'}});
-  if (change === 'expiry') {const now = Date.now(); t.mock.method(Date, 'now', () => now + cold.TTL + 1);}
+  if (change === 'expiry') {const now = Date.now(); t.mock.method(Date, 'now', () => now + layoutCheck.TTL + 1);}
   assert.equal(Object.keys(f.store.records(f.sc)).length, 0, `${change}: storage must reject the record`);
   if (use === 'preview') assert.equal(f.cache.get('t'), null, `${change}: preview must retire stale adopted geometry`);
   else {
@@ -67,7 +67,7 @@ test('S2 adopted geometry is revalidated before preview reads and remount restor
 test('S3 warm layouts prepare after write invalidation without fetched source', async () => {
  const f = fixture();
  // Expose the real preparation closure only in this VM; production has no extra API.
- const source = fs.readFileSync(`${process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension')}/seek-preview.js`, 'utf8');
+ const source = fs.readFileSync(`${process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension')}/seek/preview-main.js`, 'utf8');
  vm.runInContext(source.replace(/\}\)\(\);\s*$/, 'globalThis.prepareForTest = prepare;})();'), f.ctx);
  await f.store.setTexts(conv, texts); f.store.record('t', record); await f.store.flush();
  f.event('butter-seek-data', {conv, before: false, j: {messages: []}});
@@ -93,7 +93,7 @@ test('the product render completes before publishing rail state for a known prev
  f.ctx.NodeFilter={SHOW_TEXT:4};f.ctx.document.createTreeWalker=()=>{let first=true;return{nextNode(){if(!first)return null;first=false;return {data:'visible answer'};}}};
  f.ctx.testLayer = {style: {}}; f.ctx.testEst = {hidden: true}; f.ctx.testFade = {};
  f.ctx.document.createRange = () => ({selectNodeContents() {}, getClientRects: () => [{width: 100, height: 20, top: 60, bottom: 80, left: 20, right: 120}]});
- const source = fs.readFileSync(require('node:path').join(__dirname, '../extension/seek-preview.js'), 'utf8');
+ const source = fs.readFileSync(require('node:path').join(__dirname, '../extension/seek/preview-main.js'), 'utf8');
  vm.runInContext(source.replace(/\}\)\(\);\s*$/, 'layer=testLayer;est=testEst;fade=testFade;globalThis.renderForTest=render;})();'), f.ctx);
  const item = {textContent: 'visible answer', getBoundingClientRect: () => ({top: 52, bottom: 200}), remove() {}};
  const model = [{id: 't', index: 0, top: 0, h: 500, layout: true, items: [{top: 52, h: 148}]}];
@@ -116,7 +116,7 @@ test('a nested math or answer box is not proof of ink when its text is clipped a
  f.ctx.document.createTreeWalker=()=>{let first=true;return{nextNode(){if(!first)return null;first=false;return textNode;}}};
  f.ctx.document.createRange=()=>({selectNodeContents(n){this.node=n;},getClientRects(){return this.node===textNode?[{width:100,height:20,top:-8000,bottom:-7980,left:20,right:120}]:[{width:100,height:10000,top:-8000,bottom:2000,left:20,right:120}];}});
  f.ctx.document.createElement=()=>({append(){},style:{}});f.ctx.document.createTextNode=text=>({textContent:text});
- const source=fs.readFileSync(process.env.RENDER_SOURCE||require('node:path').join(__dirname,'../extension/seek-preview.js'),'utf8');
+ const source=fs.readFileSync(process.env.RENDER_SOURCE||require('node:path').join(__dirname,'../extension/seek/preview-main.js'),'utf8');
  vm.runInContext(source.replace(/\}\)\(\);\s*$/, 'layer=testLayer;est=testEst;fade=testFade;globalThis.renderForTest=render;})();'),f.ctx);
  const item={textContent:'capped text',getBoundingClientRect:()=>({top:-8000,bottom:2000}),remove(){}};
  const model=[{id:'t',index:0,top:0,h:10000,layout:true,q:'question',answer:'source excerpt',items:[{top:0,h:10000}]}];
@@ -166,8 +166,8 @@ test('S4 preparation and storage flush reuse one fingerprint per batch', async (
  for (const id of Object.keys(rows)) assert.ok(f.cache.get(id));
  assert.equal(styles, 0, 'Warm cache lookups do not need a stored-layout fingerprint');
  assert.equal(scripts, 0);
- f.load('seek-preview');
- const source = fs.readFileSync(require('node:path').join(process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension'), 'seek-preview.js'), 'utf8');
+ f.load('seek/preview-main');
+ const source = fs.readFileSync(require('node:path').join(process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension'), 'seek/preview-main.js'), 'utf8');
  vm.runInContext(source.replace(/\}\)\(\);\s*$/, 'globalThis.prepareForTest=prepare;})();'), f.ctx);
  styles = scripts = 0; f.ctx.prepareForTest(f.sc);
  assert.equal(styles, 1, 'Preparation shares its fingerprint across cache lookups and stored reads');
@@ -180,9 +180,9 @@ test('WARM dispatch precedes semantic work and aligned releases stop looking up 
   Object.assign(f.ctx, {Event: class {}, CustomEvent: class {}, CSS: {escape: x => x},
    clearInterval() {}, matchMedia: () => ({matches: true}),
    requestAnimationFrame: fn => frames.push(fn),
-   __coldVisibleNeedles: () => {assert.ok(dispatched, 'Anchor selection must follow destination dispatch'); selections++; return [{needle: 'visible text', y: 52}];},
-   __coldTextBoxes: () => {lookups++; return [{top: 52 + error - (unstable ? 0 : f.sc.scrollTop - 100)}];},
-   __coldVisibleSwap: () => ({items: 0})});
+   __butterAnchorVisibleNeedles: () => {assert.ok(dispatched, 'Anchor selection must follow destination dispatch'); selections++; return [{needle: 'visible text', y: 52}];},
+   __butterAnchorTextBoxes: () => {lookups++; return [{top: 52 + error - (unstable ? 0 : f.sc.scrollTop - 100)}];},
+   __butterAnchorVisibleSwap: () => ({items: 0})});
   f.ctx.performance.now = () => now;
   f.ctx.document.dispatchEvent = () => {};
   f.sc.isConnected = true; f.sc.dispatchEvent = () => {dispatched = true;};
@@ -193,7 +193,7 @@ test('WARM dispatch precedes semantic work and aligned releases stop looking up 
    startTop: 0, lastTop: 100, previewTop: 16, insetTop: 52, hostRect: {x: 0, y: 52, width: 768, height: 500}, rendered: new Map([[0, {}]])};
   f.ctx.testActive.prep.flat = [{turn: 0}];
   f.ctx.testEst = {hidden: true};
-  const source = fs.readFileSync(require('node:path').join(process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension'), 'seek-preview.js'), 'utf8');
+  const source = fs.readFileSync(require('node:path').join(process.env.REVIEW_SOURCE || require('node:path').join(__dirname, '../extension'), 'seek/preview-main.js'), 'utf8');
   vm.runInContext(source.replace(/\}\)\(\);\s*$/, 'active=testActive;revealOwner=active;est=testEst;globalThis.finishForTest=finish;})();'), f.ctx);
   f.ctx.finishForTest('test');
   for (let i = 0; frames.length && i < 20; i++) {now += 16; frames.shift()();}

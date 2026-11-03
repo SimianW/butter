@@ -13,7 +13,7 @@ test('every conversation POST invalidates before fetch and a pre-write GET canno
     if (!init?.method) return new Promise(r => complete = r);
     return Promise.resolve({ ok: false });
   } };
-  vm.runInNewContext(fs.readFileSync(new URL('../extension/butter-nav-main.js', import.meta.url), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(new URL('../extension/history/conversation-main.js', import.meta.url), 'utf8'), {
     window: win, URL, Request, Symbol, CustomEvent, location: { pathname: '/c/' + conv },
     document: { documentElement: { getAttribute: () => '' }, addEventListener() {}, dispatchEvent: e => events.push(e) },
   });

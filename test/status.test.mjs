@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import status from '../extension/butter-status.js';
+import status from '../extension/shared/status.js';
 
 test('missing selector after observing turns fails; unexercised hooks wait', () => {
   const states = status.classify({ container: { exercised: true, failed: true } });

@@ -262,7 +262,7 @@
   }
 
   function previewLitQuestions(turns, scrollTop, height) {
-    // Match butter-nav.js ioBand: HEADER=52, COMPOSER=140, EDGE=40.
+    // Match rail/rail.js ioBand: HEADER=52, COMPOSER=140, EDGE=40.
     const top = scrollTop + 52 + 40, bottom = scrollTop + height - 140 - 40;
     if (bottom < top) return [];
     return turns.filter(t => (t.litTop ?? t.top) <= bottom &&

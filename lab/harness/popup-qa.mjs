@@ -10,7 +10,7 @@ const errors = []; page.on('pageerror', e => errors.push(e.message));
 await page.goto('chrome://extensions');
 const id = await page.evaluate(() => new Promise(r => chrome.developerPrivate.getExtensionsInfo({}, rows => r(rows.find(x => x.name === 'Butter for ChatGPT').id))));
 await page.setViewportSize({ width: 320, height: 600 });
-await page.goto(`chrome-extension://${id}/popup.html`);
+await page.goto(`chrome-extension://${id}/popup/popup.html`);
 await page.waitForSelector('.card');
 const popupUrl = page.url();
 // Optional: BUTTER_MOCKUP=<path to the design mockup HTML> also captures reference shots (the mockup isn't in the repo).

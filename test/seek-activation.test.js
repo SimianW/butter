@@ -1,7 +1,7 @@
 // Unit tests: thumb press classification and activation (fixtures from the lab and the user's Mac probe).
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const core = require('../extension/seek-core.js');
+const core = require('../extension/seek/core-main.js');
 
 // User's Mac (overlay): clientWidth 766 = offsetWidth 766, thumb press at x 761-762.
 const mac = { isTrusted: true, button: 0, pointerType: 'mouse', targetIsScroller: true, offsetWidth: 766, clientWidth: 766, clientHeight: 900, scrollHeight: 313000, scrollTop: 150000, y: 450 };

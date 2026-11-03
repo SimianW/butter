@@ -14,7 +14,7 @@ await context.route(url, route => route.fulfill({ status: 200, contentType: 'tex
 await fixture.goto(url);
 const popup = await context.newPage(); await popup.goto('chrome://extensions');
 const id = await popup.evaluate(() => new Promise(r => chrome.developerPrivate.getExtensionsInfo({}, rows => r(rows.find(x => x.name === 'Butter for ChatGPT').id))));
-await popup.goto(`chrome-extension://${id}/popup.html`); await fixture.bringToFront();
+await popup.goto(`chrome-extension://${id}/popup/popup.html`); await fixture.bringToFront();
 const tabId = await popup.evaluate(async () => (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id);
 const status = () => popup.evaluate(id => chrome.tabs.sendMessage(id, { type: 'butter-status' }).then(x => x.states), tabId);
 await popup.evaluate(() => chrome.storage.local.remove('butter'));

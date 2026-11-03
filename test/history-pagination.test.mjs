@@ -9,7 +9,7 @@ function setup() {
   const win = { addEventListener() {}, __butterConfig: { olderPageTurns: 2 }, fetch(input, init) {
     inputSeen = input; initSeen = init; return Promise.resolve({ ok: false });
   } };
-  vm.runInNewContext(fs.readFileSync(new URL('../extension/butter-nav-main.js', import.meta.url), 'utf8'), {
+  vm.runInNewContext(fs.readFileSync(new URL('../extension/history/conversation-main.js', import.meta.url), 'utf8'), {
     window: win, URL, Request, Symbol, CustomEvent, location: { href: 'https://chatgpt.com/', pathname: '/' },
     document: { documentElement: { getAttribute: () => off }, addEventListener(type, cb) { listeners.set(type, cb); }, dispatchEvent(e) { facts = JSON.parse(e.detail); } },
   });

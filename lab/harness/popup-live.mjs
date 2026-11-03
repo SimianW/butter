@@ -12,7 +12,7 @@ await chat.locator('[data-turn-key]').first().waitFor({ timeout: 30000 });
 const popup = await context.newPage();
 await popup.goto('chrome://extensions');
 const id = await popup.evaluate(() => new Promise(r => chrome.developerPrivate.getExtensionsInfo({}, rows => r(rows.find(x => x.name === 'Butter for ChatGPT').id))));
-await popup.goto(`chrome-extension://${id}/popup.html`);
+await popup.goto(`chrome-extension://${id}/popup/popup.html`);
 await chat.bringToFront();
 const tabId = await popup.evaluate(async () => (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id);
 const defaults = { enabled: true, opts: { container: true, cv: true, throttle: true, older: true, rail: true }, lang: 'en' };

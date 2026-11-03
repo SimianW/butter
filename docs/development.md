@@ -3,9 +3,9 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup.html`, `popup.css`, `popup.js` | Toolbar popup, bundled Lucide SVGs and translations. |
-| `extension/butter-status.js` | Pure settings defaults and status classification, shared with the popup. |
-| `extension/butter-settings.js` | Storage, live off markers and on-request page probes. |
+| `extension/popup/popup.html`, `popup/popup.css`, `popup/popup.js` | Toolbar popup, bundled Lucide SVGs and translations. |
+| `extension/shared/status.js` | Pure settings defaults and status classification, shared with the popup. |
+| `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `docs/` | User docs, test report, media. |
 | `results/` | Result tables from every benchmark run, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
@@ -14,9 +14,13 @@
 | `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
 | `CHANGELOG.md` | Versions. |
 
+The MAIN-world scripts retain their dependency order. `shared/config-main.js` also sets
+the layout-storage build option formerly loaded separately; all consumers still run after it.
+`seek/anchor-main.js` supplies semantic landing anchors as well as swap diagnostics.
+
 ## Tests
 
-- Unit tests: `node --test` (runs every `*.test.mjs`).
+- Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
 - Popup in the lab browser: `node lab/harness/popup-qa.mjs` captures every mockup state;
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. Load `extension/` in the lab browser first (see `lab/README.md`).

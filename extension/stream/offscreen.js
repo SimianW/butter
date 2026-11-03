@@ -1,5 +1,5 @@
 // Isolated world. Marks turns and answer blocks with `data-butter-seen` once they've been laid out
-// at their real size; butter.css only skips rendering for marked elements. Because the browser has
+// at their real size; stream/containment.css only skips rendering for marked elements. Because the browser has
 // already remembered a marked element's real height (`contain-intrinsic-size: auto`), skipping it
 // never swaps in a placeholder height: no scroll jumps, and ChatGPT's turn virtualizer measures
 // true heights. (Marking whole answers instead isn't enough: ChatGPT inserts a remounted answer's
@@ -28,7 +28,7 @@
     if (queue.size && !scheduled) { scheduled = true; setTimeout(() => requestAnimationFrame(flush), FLUSH_MS); }
   });
   const watch = el => {
-    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el);   // history rail (butter-nav.js)
+    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el);   // history rail (rail/rail.js)
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = root => {

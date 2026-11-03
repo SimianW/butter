@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import status from '../extension/butter-status.js';
+import status from '../extension/shared/status.js';
 
 test('seek follows the master switch independently of the rail and every existing option', async () => {
   const attrs = new Map(); let changed;
@@ -19,7 +19,7 @@ test('seek follows the master switch independently of the rail and every existin
     chrome: { storage: { local: { get: async () => ({ butter: { opts: { rail: false } } }) },
       onChanged: { addListener: fn => { changed = fn; } } }, runtime: { onMessage: { addListener() {} } } },
   });
-  vm.runInContext(fs.readFileSync(new URL('../extension/butter-settings.js', import.meta.url), 'utf8'), ctx);
+  vm.runInContext(fs.readFileSync(new URL('../extension/shared/settings.js', import.meta.url), 'utf8'), ctx);
   await Promise.resolve();
   assert.equal(attrs.get('data-butter-off'), 'rail');
   assert.equal(attrs.has('data-butter-disabled'), false);

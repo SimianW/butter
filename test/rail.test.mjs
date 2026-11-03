@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import seekMeta from '../extension/butter-seek-meta.js';
+import seekMeta from '../extension/seek/seek-meta.js';
 
-const source = fs.readFileSync(new URL('../extension/butter-nav.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../extension/rail/rail.js', import.meta.url), 'utf8');
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
 class FakeElement {
@@ -111,7 +111,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     clearTimeout: id => timers.delete(id),
     setInterval() {},
   });
-  vm.runInContext(source, ctx, { filename: 'butter-nav.js' });
+  vm.runInContext(source, ctx, { filename: 'rail/rail.js' });
   const frame = (timestamp = now + 16) => {
     // rAF's frame-start timestamp may lag the current performance.now() clock.
     now = Math.max(now, timestamp);

@@ -16,14 +16,14 @@
         "https://chatgpt.com/*"
       ],
       "css": [
-        "butter.css"
+        "stream/containment.css"
       ],
       "js": [
-        "butter-status.js",
-        "butter-settings.js",
-        "butter-seek-meta.js",
-        "butter-nav.js",
-        "butter-cv.js"
+        "shared/status.js",
+        "shared/settings.js",
+        "seek/seek-meta.js",
+        "rail/rail.js",
+        "stream/offscreen.js"
       ],
       "run_at": "document_start"
     },
@@ -32,16 +32,15 @@
         "https://chatgpt.com/*"
       ],
       "js": [
-        "config.js",
-        "butter-main.js",
-        "butter-nav-main.js",
-        "seek-core.js",
-        "cold-options.js",
-        "cold-core.js",
-        "visible-audit.js",
-        "cold-store.js",
-        "height-cache.js",
-        "seek-preview.js"
+        "shared/config-main.js",
+        "stream/throttle-main.js",
+        "history/conversation-main.js",
+        "seek/core-main.js",
+        "seek/layout-check-main.js",
+        "seek/anchor-main.js",
+        "seek/layout-store-main.js",
+        "seek/height-cache-main.js",
+        "seek/preview-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"
@@ -51,7 +50,7 @@
     "storage"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"

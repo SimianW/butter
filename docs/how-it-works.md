@@ -5,24 +5,24 @@ the whole conversation. Butter cuts that work in six places:
 
 | File | Change | Why |
 |---|---|---|
-| `butter.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
-| `butter.css` + `butter-cv.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
-| `butter-nav.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end first, then lets ChatGPT scroll the new question into place. Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
-| `butter-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
-| `butter-nav-main.js` + `config.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
-| `seek-preview.js` + `height-cache.js` (page world) | Holds virtualizer scroll notifications during a native thumb drag and draws cached text instead. | ChatGPT mounts the destination after release, so dragging past many turns does not mount each one. |
+| `stream/containment.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
+| `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
+| `rail/rail.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end first, then lets ChatGPT scroll the new question into place. Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
+| `stream/throttle-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
+| `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
+| `seek/preview-main.js` + `seek/height-cache-main.js` (page world) | Holds virtualizer scroll notifications during a native thumb drag and draws cached text instead. | ChatGPT mounts the destination after release, so dragging past many turns does not mount each one. |
 
-The [history rail](history-rail.md) lives in `butter-nav.js` and `butter-nav-main.js`.
-`butter-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches;
-`butter-nav.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
+The [history rail](history-rail.md) lives in `rail/rail.js` and `history/conversation-main.js`.
+`history/conversation-main.js` reads the questions out of the conversation responses ChatGPT fetches;
+`rail/rail.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
 ## Seek preview
 
-While you hold and drag the thread's native scrollbar thumb, `seek-preview.js` stops its scroll
+While you hold and drag the thread's native scrollbar thumb, `seek/preview-main.js` stops its scroll
 notifications before ChatGPT's virtualizer sees them. The real turns move off screen and a lightweight
-text preview takes their place. `height-cache.js` records complete, typeset turns and their block
+text preview takes their place. `seek/height-cache-main.js` records complete, typeset turns and their block
 positions; skipped, incomplete or zero-size snapshots never replace a good record. When a removed
 turn mounts again at the same width with the same message and blocks, the cache restores its sizes
 before ChatGPT's first layout read.

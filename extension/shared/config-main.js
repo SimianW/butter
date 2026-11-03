@@ -8,3 +8,6 @@ window.__butterConfig = {
   // more requests when scrolling back through a long chat. 0 leaves ChatGPT's requests unchanged.
   olderPageTurns: 2,
 };
+
+// Persistent geometry and semantic landing; no source text is stored.
+globalThis.__butterLayoutOptions = { storage: true };

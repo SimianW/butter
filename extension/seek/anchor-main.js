@@ -12,11 +12,11 @@
  function needles(el,H,limit=3){
   if(!el||el.hidden)return[];
   const box=el.getBoundingClientRect(),viewport={top:H.y,bottom:H.y+H.height,left:H.x,right:H.x+H.width},out=[],seen=new Set();
-  for(const m of el.textContent.matchAll(ANCHOR)){const needle=m[0].slice(0,24);if(seen.has(needle))continue;seen.add(needle);for(const r of boxes(el,needle))if(__butterColdCore.visibleRect(r,box,viewport)){out.push({needle,y:r.top});break;}if(out.length>=limit)break;}
+  for(const m of el.textContent.matchAll(ANCHOR)){const needle=m[0].slice(0,24);if(seen.has(needle))continue;seen.add(needle);for(const r of boxes(el,needle))if(__butterLayoutCheck.visibleRect(r,box,viewport)){out.push({needle,y:r.top});break;}if(out.length>=limit)break;}
   return out;
  }
- globalThis.__coldTextBoxes=boxes;globalThis.__coldVisibleNeedles=needles;
- globalThis.__coldVisibleSwap=a=>{
+ globalThis.__butterAnchorTextBoxes=boxes;globalThis.__butterAnchorVisibleNeedles=needles;
+ globalThis.__butterAnchorVisibleSwap=a=>{
   const s=a.sc,H=a.hostRect,sr=s.getBoundingClientRect(),items=[],anchors=[],realItems=new Map();let missingReal=0;
   const ITEMS='[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
   for(const [i,el]of a.rendered){const f=a.prep.flat[i],t=a.prep.model[f.turn],py=sr.top+f.abs-(a.previewTop??a.lastTop);if(py<H.y||py>H.y+H.height-20)continue;

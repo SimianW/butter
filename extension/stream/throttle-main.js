@@ -39,7 +39,7 @@
 
   hook = window.requestAnimationFrame = function requestAnimationFrame(cb) {
     if (!isSmootherPublish(cb)) return raf.call(window, cb);
-    // Switched off in the popup (butter-settings.js). Checked only for the smoother's callback.
+    // Switched off in the popup (shared/settings.js). Checked only for the smoother's callback.
     if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('throttle')) return raf.call(window, cb);
     if (statusPath !== location.pathname) { statusPath = location.pathname; matched = false; }
     matched = true;

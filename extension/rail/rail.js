@@ -1,6 +1,6 @@
 // Isolated world. History rail: one tick per question at the right edge of the chat. Hovering swells
 // the ticks around the pointer like a wave and previews the question; clicking jumps to it.
-// Questions come from butter-nav-main.js (ChatGPT's own API responses); butter-cv.js reports every
+// Questions come from history/conversation-main.js (ChatGPT's own API responses); stream/offscreen.js reports every
 // turn ChatGPT mounts. Cost: the rail lives in a shadow root and animates only transform and
 // opacity, so hovering never restyles ChatGPT's page. Layout is read for jumps and their size corrections.
 (() => {
