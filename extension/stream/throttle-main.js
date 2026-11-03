@@ -10,11 +10,22 @@
   let matched = false;
   let statusPath = location.pathname;
   document.addEventListener('butter-status-request', () => {
-    if (statusPath !== location.pathname) { statusPath = location.pathname; matched = false; }
-    document.dispatchEvent(new CustomEvent('butter-status-response', { detail: JSON.stringify({
-      throttle: { configured: smoothMs > 0, available: window.requestAnimationFrame === hook,
-        matched, engaged: matched },
-    }) }));
+    if (statusPath !== location.pathname) {
+      statusPath = location.pathname;
+      matched = false;
+    }
+    document.dispatchEvent(
+      new CustomEvent('butter-status-response', {
+        detail: JSON.stringify({
+          throttle: {
+            configured: smoothMs > 0,
+            available: window.requestAnimationFrame === hook,
+            matched,
+            engaged: matched,
+          },
+        }),
+      }),
+    );
   });
   if (!(smoothMs > 0)) return;
 
@@ -27,31 +38,40 @@
   const caf = window.cancelAnimationFrame;
   const fnToString = Function.prototype.toString;
   const SMOOTHER = /^\(\)\s*=>\s*\{\s*this\.frame\s*=\s*void 0\s*,\s*this\.publish\(\)\s*;?\s*\}$/;
-  const isSmootherPublish = cb => {
+  const isSmootherPublish = (cb) => {
     if (typeof cb !== 'function' || cb.length !== 0) return false;
-    try { return SMOOTHER.test(fnToString.call(cb)); } catch { return false; }
+    try {
+      return SMOOTHER.test(fnToString.call(cb));
+    } catch {
+      return false;
+    }
   };
 
-  const stats = window.__butterStats = { smootherFrames: 0, published: 0 };
+  const stats = (window.__butterStats = { smootherFrames: 0, published: 0 });
   let lastRun = 0;
   // Handles we hand out come from the native allocator, so they can't collide with other code's ids.
-  const pending = new Map();   // handle -> { canceled, timer, realId }
+  const pending = new Map(); // handle -> { canceled, timer, realId }
 
   hook = window.requestAnimationFrame = function requestAnimationFrame(cb) {
     if (!isSmootherPublish(cb)) return raf.call(window, cb);
     // Switched off in the popup (shared/settings.js). Checked only for the smoother's callback.
-    if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('throttle')) return raf.call(window, cb);
-    if (statusPath !== location.pathname) { statusPath = location.pathname; matched = false; }
+    if (document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('throttle'))
+      return raf.call(window, cb);
+    if (statusPath !== location.pathname) {
+      statusPath = location.pathname;
+      matched = false;
+    }
     matched = true;
     stats.smootherFrames++;
     const entry = { canceled: false, timer: 0, realId: 0 };
-    const run = t => {
+    const run = (t) => {
       pending.delete(handle);
       if (entry.canceled) return;
-      lastRun = performance.now(); stats.published++;
+      lastRun = performance.now();
+      stats.published++;
       cb(t);
     };
-    const handle = raf.call(window, t => {
+    const handle = raf.call(window, (t) => {
       if (entry.canceled) return;
       const wait = lastRun + smoothMs - performance.now();
       if (wait <= 0) return run(t);

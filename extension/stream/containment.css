@@ -8,11 +8,13 @@
    The paint containment that skipping brings clips at the turn's edge; the clip margin lets small
    overflow through, such as ChatGPT's pulsing "responding" dot, which sits flush with the turn's
    left edge and grows past it as it pulses. */
-html:not([data-butter-off~="cv"]) [data-turn-key] {
+html:not([data-butter-off~='cv']) [data-turn-key] {
   contain-intrinsic-size: auto 1500px;
   overflow-clip-margin: 8px;
 }
-html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > :not([data-wide-block]) {
+html:not([data-butter-off~='cv'])
+  [data-markdown-text-style='assistant-message']
+  > :not([data-wide-block]) {
   contain-intrinsic-size: auto 120px;
 }
 html:not([data-butter-off~="cv"]) [data-turn-key][data-butter-seen],
@@ -29,7 +31,7 @@ html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-ma
    Its only consumers are container units (cqi) in wide blocks, which then resolve against the
    enclosing app-shell-main-content container instead: about 10px wider at a 1600px window.
    The outer app-shell container is kept; its named queries lay out the floating side panel. */
-html:not([data-butter-off~="container"]) div.\[container-type\:inline-size\].min-h-full {
+html:not([data-butter-off~='container']) div.\[container-type\:inline-size\].min-h-full {
   container-type: normal !important;
 }
 
@@ -40,6 +42,11 @@ html:not([data-butter-off~="container"]) div.\[container-type\:inline-size\].min
   animation: butter-flash 1.6s ease-out;
 }
 @keyframes butter-flash {
-  0%, 35% { box-shadow: inset 0 0 0 2px rgb(127 127 127 / .5); }
-  100% { box-shadow: inset 0 0 0 2px rgb(127 127 127 / 0); }
+  0%,
+  35% {
+    box-shadow: inset 0 0 0 2px rgb(127 127 127 / 0.5);
+  }
+  100% {
+    box-shadow: inset 0 0 0 2px rgb(127 127 127 / 0);
+  }
 }

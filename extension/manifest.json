@@ -12,12 +12,8 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://chatgpt.com/*"
-      ],
-      "css": [
-        "stream/containment.css"
-      ],
+      "matches": ["https://chatgpt.com/*"],
+      "css": ["stream/containment.css"],
       "js": [
         "shared/status.js",
         "shared/settings.js",
@@ -28,9 +24,7 @@
       "run_at": "document_start"
     },
     {
-      "matches": [
-        "https://chatgpt.com/*"
-      ],
+      "matches": ["https://chatgpt.com/*"],
       "js": [
         "shared/config-main.js",
         "stream/throttle-main.js",
@@ -46,9 +40,7 @@
       "run_at": "document_start"
     }
   ],
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {

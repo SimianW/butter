@@ -5,8 +5,10 @@
 // true heights. (Marking whole answers instead isn't enough: ChatGPT inserts a remounted answer's
 // blocks progressively, so late blocks would be skipped before they were ever measured.)
 (() => {
-  const off = () => document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
-  const TARGETS = '[data-turn-key], [data-markdown-text-style="assistant-message"] > :not([data-wide-block])';
+  const off = () =>
+    document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+  const TARGETS =
+    '[data-turn-key], [data-markdown-text-style="assistant-message"] > :not([data-wide-block])';
   // Marks are flushed in one batch per second: each flush is one style invalidation pass instead
   // of one per streamed block. The delay also lets Chrome record the sizes before we mark.
   const FLUSH_MS = 1000;
@@ -14,34 +16,42 @@
   let scheduled = false;
   const flush = () => {
     scheduled = false;
-    if (off()) { queue.clear(); return; }
+    if (off()) {
+      queue.clear();
+      return;
+    }
     for (const el of queue) if (el.isConnected) el.setAttribute('data-butter-seen', '');
     queue.clear();
   };
-  const ro = new ResizeObserver(entries => {
+  const ro = new ResizeObserver((entries) => {
     for (const e of entries) {
       if (e.contentRect.height > 0 && e.target.isConnected) {
         ro.unobserve(e.target);
         queue.add(e.target);
       }
     }
-    if (queue.size && !scheduled) { scheduled = true; setTimeout(() => requestAnimationFrame(flush), FLUSH_MS); }
+    if (queue.size && !scheduled) {
+      scheduled = true;
+      setTimeout(() => requestAnimationFrame(flush), FLUSH_MS);
+    }
   });
-  const watch = el => {
-    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el);   // history rail (rail/rail.js)
+  const watch = (el) => {
+    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el); // history rail (rail/rail.js)
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
-  const scan = root => {
+  const scan = (root) => {
     if (root.matches?.(TARGETS)) watch(root);
     // Text and KaTeX spans make up most insertions while streaming; only containers can hold targets.
     if (root.firstElementChild) root.querySelectorAll(TARGETS).forEach(watch);
   };
-  new MutationObserver(records => {
+  new MutationObserver((records) => {
     for (const r of records) for (const n of r.addedNodes) if (n.nodeType === 1) scan(n);
   }).observe(document, { childList: true, subtree: true });
   document.addEventListener('butter-settings', () => {
-    if (off()) { ro.disconnect(); queue.clear(); }
-    else if (document.documentElement) scan(document.documentElement);
+    if (off()) {
+      ro.disconnect();
+      queue.clear();
+    } else if (document.documentElement) scan(document.documentElement);
   });
   if (document.documentElement) scan(document.documentElement);
 })();

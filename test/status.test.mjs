@@ -12,13 +12,22 @@ test('confirmed engagement works; ambiguous exercise waits', () => {
   assert.equal(status.classify({ older: { exercised: true } }).older, 'wait');
 });
 test('individual and master switches override engagement and failure', () => {
-  const facts = Object.fromEntries(status.keys.map(k => [k, { engaged: true, exercised: true, failed: true }]));
+  const facts = Object.fromEntries(
+    status.keys.map((k) => [k, { engaged: true, exercised: true, failed: true }]),
+  );
   assert.equal(status.classify(facts, { opts: { cv: false } }).cv, 'off');
   assert.equal(status.classify(facts).cv, 'ok');
-  assert.deepEqual(Object.values(status.classify(facts, { enabled: false })), status.keys.map(() => 'off'));
+  assert.deepEqual(
+    Object.values(status.classify(facts, { enabled: false })),
+    status.keys.map(() => 'off'),
+  );
 });
 test('partial and missing storage values keep all defaults; English is default', () => {
-  assert.deepEqual(status.normalize(), { enabled: true, opts: Object.fromEntries(status.keys.map(k => [k, true])), lang: 'en' });
+  assert.deepEqual(status.normalize(), {
+    enabled: true,
+    opts: Object.fromEntries(status.keys.map((k) => [k, true])),
+    lang: 'en',
+  });
   assert.equal(status.normalize({ lang: 'fr', opts: { rail: false } }).lang, 'en');
   assert.equal(status.normalize({ lang: 'zh' }).lang, 'zh');
   assert.equal(status.normalize({ opts: { rail: false } }).opts.container, true);
