@@ -97,6 +97,7 @@
       msgs.reverse();
     }
     if (!Array.isArray(msgs)) return;
+    document.dispatchEvent(new CustomEvent('butter-seek-data', { detail: { conv, before, j } }));
     parsed.add(conv);
     emit({ type: 'page', conv, before, hasPrev: !!j.page_info?.has_previous_page, items: msgs.filter(m => m?.id).map(item) });
   };
@@ -126,8 +127,17 @@
     return result;
   };
 
+  let seekEpoch = 0;
   const of = window.fetch;
   window.fetch = function (input, init) {
+    const seekURL=typeof input==='string'?input:input instanceof URL?input.href:input?.url??'';
+    const seekMethod=(init?.method??(input instanceof Request?input.method:'GET')).toUpperCase();
+    if(seekMethod==='POST'&&SEND.test(seekURL)){
+      seekEpoch++;let seekConv=location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1]||null;
+      try{if(typeof init?.body==='string')seekConv=JSON.parse(init.body).conversation_id||seekConv;}catch{}
+      document.dispatchEvent(new CustomEvent('butter-seek-write',{detail:{conv:seekConv}}));
+    }
+    const seekRequestEpoch=seekEpoch;
     if (olderOff() && holding) release();
     try { input = older(input, init); } catch {}
     let defer = false;
@@ -143,7 +153,7 @@
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input?.url ?? '';
       const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
       const m = method === 'GET' && PAGE.exec(url);
-      if (m) res.then(r => r.ok ? r.clone().json() : null).then(j => j && onPage(m[1], !!m[2], j)).catch(() => {});
+      if (m) res.then(r => r.ok ? r.clone().json() : null).then(j => j && seekRequestEpoch === seekEpoch && onPage(m[1], !!m[2], j)).catch(() => {});
       else if (method === 'POST' && typeof init?.body === 'string' && SEND.test(url)) onSend(init.body);
     } catch {}
     return res;

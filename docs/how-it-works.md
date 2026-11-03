@@ -1,7 +1,7 @@
 # How it works
 
 ChatGPT gets slow in long chats because every streamed update makes Chrome restyle and re-lay out
-the whole conversation. Butter cuts that work in five places:
+the whole conversation. Butter cuts that work in six places:
 
 | File | Change | Why |
 |---|---|---|
@@ -10,6 +10,7 @@ the whole conversation. Butter cuts that work in five places:
 | `butter-nav.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end first, then lets ChatGPT scroll the new question into place. Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
 | `butter-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
 | `butter-nav-main.js` + `config.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
+| `seek-preview.js` + `height-cache.js` (page world) | Holds virtualizer scroll notifications during a native thumb drag and draws cached text instead. | ChatGPT mounts the destination after release, so dragging past many turns does not mount each one. |
 
 The [history rail](history-rail.md) lives in `butter-nav.js` and `butter-nav-main.js`.
 `butter-nav-main.js` reads the questions out of the conversation responses ChatGPT fetches;
@@ -17,19 +18,60 @@ The [history rail](history-rail.md) lives in `butter-nav.js` and `butter-nav-mai
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
+## Seek preview
+
+While you hold and drag the thread's native scrollbar thumb, `seek-preview.js` stops its scroll
+notifications before ChatGPT's virtualizer sees them. The real turns move off screen and a lightweight
+text preview takes their place. `height-cache.js` records complete, typeset turns and their block
+positions; skipped, incomplete or zero-size snapshots never replace a good record. When a removed
+turn mounts again at the same width with the same message and blocks, the cache restores its sizes
+before ChatGPT's first layout read.
+
+Seen text uses those recorded positions at half opacity. Display math becomes a single line of TeX
+in a placeholder of the recorded height. Stored geometry from a previous visit also counts as opened.
+A question without measured or stored layout previews from its
+beginning, with a bottom fade, and releasing lands at that question's start below the header.
+The history rail applies its normal lit band to the preview geometry through a `butter-seek-state`
+document event, excluding small tails behind the header or composer. Its existing card follows the
+lit question that fills most of the band and shows the question number and then loading progress. Preview
+continues to work with the rail switched off. It follows Butter's main switch and has no separate
+popup setting.
+
+On release, the last native movement is coalesced and ChatGPT receives one destination scroll.
+The real turns remain transparent while the destination loads, including behind the header and
+around the composer. This preserves their layout and visibility checks. The preview waits for the
+target turn, its math and three quiet frames. For known geometry it pins a fully visible text excerpt
+and corrects its position after mounting, falling back to the question bubble if no excerpt matches.
+Truly unknown questions retain question-start landing. A capped or missing preview block always gets
+a source excerpt or a placeholder so the viewport cannot be empty. It then restores the real
+turns and fades out over 120 ms in the same frame. Reduced motion removes the fade and spinner animation.
+A trusted mouse press must hit the thumb (or the edge band for overlay scrollbars), then actually
+scroll with unchanged selection before suppression starts. Wheel, keyboard, lost release, resize,
+navigation and data changes keep the prototype's cancellation checks and time limits.
+`window.__seekDump()` is an opt-in timing and geometry diagnostic; it contains no chat text.
+
 ## Privacy
 
-The extension stores only your switch and language settings locally (`chrome.storage.local`). It
-sends no requests of its own and doesn't change messages. The one
-request it touches is ChatGPT's own request for earlier messages, where it lowers the page size
+The extension stores your switch and language settings locally (`chrome.storage.local`). Seek text
+stays in page memory. The site-origin IndexedDB database `butter-seek-cold-geometry-v1` stores only
+per-block geometry and hashed source identities, never chat text. Records expire after 30 days with
+at most 64 rows globally. A long conversation uses about 2.35 MB per layout; different widths can
+need separate records. Width, DPR, font, column, theme, application assets, message IDs and content
+digests must match before adoption or restore. Conversation writes invalidate the usable records
+and pre-write history responses cannot reintroduce them. Restore validation uses a fingerprint
+computed outside the native width hook; resize, theme and font changes invalidate it without
+forcing layout. To clear saved geometry, delete that database in Chrome DevTools under
+Application → IndexedDB on chatgpt.com, then reload. It sends no requests of its own and doesn't
+change messages. The one request it touches is ChatGPT's own request for earlier messages, where it
+lowers the page size
 and waits for a scrollbar hold to end.
 
 ## Known trade-offs
 
 - Earlier messages load after you let go of the scrollbar. Loading the whole chat takes several
   times as many requests with 2-turn pages. A missed release stops the wait after 30 seconds;
-  requests already in flight can still land during a drag. ChatGPT's own virtualizer can still
-  move the view as it remounts turns.
+  requests already in flight can still land during a drag. Seek preview holds mounting during the
+  drag; an unmeasured destination may still need alignment when released.
 - Wide tables and visualizations are sized against the app's main content area instead of the
   thread column: about 10 px wider at a 1600 px window.
 - A block that streams in while you are scrolled far up is skipped before it's ever drawn; when

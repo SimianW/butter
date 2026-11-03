@@ -21,6 +21,7 @@
       "js": [
         "butter-status.js",
         "butter-settings.js",
+        "butter-seek-meta.js",
         "butter-nav.js",
         "butter-cv.js"
       ],
@@ -33,7 +34,14 @@
       "js": [
         "config.js",
         "butter-main.js",
-        "butter-nav-main.js"
+        "butter-nav-main.js",
+        "seek-core.js",
+        "cold-options.js",
+        "cold-core.js",
+        "visible-audit.js",
+        "cold-store.js",
+        "height-cache.js",
+        "seek-preview.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
+import seekMeta from '../extension/butter-seek-meta.js';
 
 const source = fs.readFileSync(new URL('../extension/butter-nav.js', import.meta.url), 'utf8');
 const conversation = '12345678-1234-1234-1234-123456789abc';
@@ -15,8 +16,8 @@ class FakeElement {
     this.style = { setProperty(name, value) { this[name] = value; } };
     const classes = new Set();
     this.classList = {
-      add: name => classes.add(name),
-      remove: name => classes.delete(name),
+      add: (...names) => names.forEach(name => classes.add(name)),
+      remove: (...names) => names.forEach(name => classes.delete(name)),
       contains: name => classes.has(name),
       toggle(name, force = !classes.has(name)) {
         if (force) classes.add(name); else classes.delete(name);
@@ -36,6 +37,7 @@ class FakeElement {
       listener.callback({ target: this, ...event });
     }
   }
+  prepend(child) { child.parentElement = this; this.children.unshift(child); }
   append(child) { child.parentElement = this; this.children.push(child); }
   get firstChild() { return this.children[0]; }
   remove() { this.parentElement.children = this.parentElement.children.filter(x => x !== this); }
@@ -96,7 +98,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     disconnect() {}
   }
   const ctx = vm.createContext({
-    document, navigator: { language: 'en' }, location: { pathname: `/c/${conversation}` },
+    document, ButterSeekMeta: seekMeta, navigator: { language: 'en' }, location: { pathname: `/c/${conversation}` },
     Element: FakeElement, ResizeObserver, IntersectionObserver,
     MutationObserver: class { observe() {} },
     getComputedStyle: () => ({ colorScheme: 'light' }),
@@ -165,7 +167,9 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
   composer.className = 'ProseMirror'; composer.textContent = 'New question';
   sendButton.setAttribute('data-testid', 'send-button');
   form.append(composer); form.append(sendButton);
-  return { frame, flush, send, select, ticks, pointer, geometry, host, scroller, turns, resize, window, composer, sendButton,
+  return { document, seek: message => document.emit('butter-seek-state', { detail: JSON.stringify({ conv: conversation, ...message }) }),
+    runTimers: () => { for (const [id, timer] of [...timers]) if (timer.at <= now) { timers.delete(id); timer.callback(); } },
+    frame, flush, send, select, ticks, pointer, geometry, host, scroller, turns, resize, window, composer, sendButton,
     pendingFrames: () => frames.size,
     advanceClock: ms => { now += ms; },
   };
@@ -312,4 +316,41 @@ test('the current composer submit button works without legacy IDs', () => {
   nav.sendButton.removeAttribute('data-testid'); nav.sendButton.setAttribute('type', 'submit');
   nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
   assert.equal(nav.scroller.scrollTop, 3200);
+});
+
+
+test('seek state lights only the previewed question and uses the existing instant card and busy tick', () => {
+  const nav = setup();
+  nav.seek({ state: 'dragging', id: 'q1', n: 2, total: 5, unseen: true }); nav.flush();
+  assert.equal(nav.select('.meta').textContent, 'Question 2 of 5 · not opened yet');
+  assert.equal(nav.select('.text').textContent, 'Question 1');
+  assert.ok(nav.select('.rail').classList.contains('hot'));
+  assert.ok(nav.select('.cardpos').classList.contains('instant'));
+  assert.deepEqual(nav.geometry().map(x => x[1]), [0.28, 1, 0.28, 0.28, 0.28]);
+  nav.seek({ state: 'loading', id: 'q1', n: 2, total: 5 }); nav.flush();
+  assert.equal(nav.select('.meta').textContent, 'Loading question 2…');
+  assert.equal(nav.select('.meta').firstChild.className, 'spin');
+  assert.ok(nav.ticks()[1].classList.contains('busy'));
+  nav.seek({ state: 'idle' }); nav.flush();
+  assert.equal(nav.ticks()[1].classList.contains('busy'), false);
+  nav.advanceClock(1000); nav.runTimers(); nav.flush();
+  assert.equal(nav.select('.card').classList.contains('show'), false);
+  assert.equal(nav.select('.rail').classList.contains('hot'), false);
+});
+
+test('seek card follows live language changes and ignores state from a different conversation', () => {
+  const nav = setup();
+  nav.seek({ state: 'dragging', id: 'q2', n: 3, total: 5 }); nav.flush();
+  nav.document.documentElement.setAttribute('data-butter-lang', 'zh');
+  nav.document.emit('butter-settings'); nav.flush();
+  assert.equal(nav.select('.meta').textContent, '第 3 / 5 个问题');
+  nav.seek({ conv: 'other', state: 'loading', id: 'q0', n: 1, total: 5 }); nav.flush();
+  assert.equal(nav.select('.meta').textContent, '第 3 / 5 个问题');
+});
+
+
+test('seek lights every turn intersecting the preview band', () => {
+  const nav = setup();
+  nav.seek({ state: 'dragging', id: 'q1', lit: ['q1', 'q2'], n: 2, total: 5 }); nav.flush();
+  assert.deepEqual(nav.geometry().map(x => x[1]), [0.28, 1, 1, 0.28, 0.28]);
 });

@@ -5,8 +5,8 @@
 // opacity, so hovering never restyles ChatGPT's page. Layout is read for jumps and their size corrections.
 (() => {
   const strings = zh => zh
-    ? { label: '对话中的问题', more: '更早的问题还没加载，点击加载', fromLatest: k => `最近第 ${k} 个问题` }
-    : { label: 'Questions in this chat', more: 'Earlier questions are not loaded yet. Click to load them.', fromLatest: k => k === 1 ? 'Latest question' : `${k} questions back` };
+    ? { label: '对话中的问题', more: '更早的问题还没加载，点击加载', seek: (n, total, state, unseen) => ButterSeekMeta(true, n, total, state, unseen), fromLatest: k => `最近第 ${k} 个问题` }
+    : { label: 'Questions in this chat', more: 'Earlier questions are not loaded yet. Click to load them.', seek: (n, total, state, unseen) => ButterSeekMeta(false, n, total, state, unseen), fromLatest: k => k === 1 ? 'Latest question' : `${k} questions back` };
   let TXT = strings(document.documentElement?.getAttribute('data-butter-lang') === 'zh');
   const railOff = () => document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('rail');
   document.addEventListener('butter-settings', () => {
@@ -19,6 +19,7 @@
       host.inert = !!railOff();
     }
     if (railOff()) { cancelJump(); hover(-2); pointerY = null; rail?.classList.remove('hot'); }
+    if (seek) showSeek();
     changed();
   });
   const PITCH_MAX = 14, PAD = 10, MORE_H = 16, RAIL_W = 52;
@@ -78,6 +79,7 @@
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur);   // a new chat got its id
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
+    clearTimeout(seekTimer); seek = null;
     pos.clear(); activeId = null; active = -1; reband(); cancelJump(); hover(-2);
     if (c) {
       opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0 };
@@ -288,6 +290,11 @@
       transition: opacity .16s, transform .22s cubic-bezier(.2, .8, .2, 1); }
     .card.show { opacity: 1; transform: translate(0, -50%); }
     .meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; font-variant-numeric: tabular-nums; }
+    .seek-card { max-width: 260px; }
+    .seek-card .text { -webkit-line-clamp: 3; }
+    .spin { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; border-radius: 50%;
+      border: 1.5px solid #c4c4c4; border-top-color: #5d5d5d; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(1turn); } }
     .text { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
       white-space: pre-wrap; overflow-wrap: anywhere; }
     .warp { position: fixed; left: var(--wl); top: var(--wt); width: var(--ww); height: var(--wh); overflow: hidden;
@@ -297,7 +304,7 @@
     .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
       background: var(--streak); will-change: transform;
       -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
-    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } }`;
+    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .tick.busy .bar { animation: none; } }`;
 
   let host = null, rail, pill, more, tickBox, cardPos, card, meta, text, warp, streak;
   let ticks = [], bars = [], qs = [], idxOf = new Map(), activeId = null, active = -1;
@@ -349,8 +356,42 @@
   };
   const tickY = i => geo.top + (i + 0.5) * geo.pitch;
 
+  let seek = null, seekTimer;
+  const showSeek = () => {
+    if (!seek || !host || !geo || railOff()) return;
+    const i = idxOf.get(seek.id); if (i == null) return;
+    rail.classList.add('hot'); card.classList.add('show', 'seek-card'); cardPos.classList.add('instant');
+    meta.hidden = false;
+    meta.textContent = TXT.seek(seek.n, seek.total, seek.state, seek.unseen);
+    if (seek.state === 'loading') { const spinner = document.createElement('span'); spinner.className = 'spin'; meta.prepend(spinner); }
+    text.textContent = qs[i].q.slice(0, 400);
+    host.style.setProperty('--cy', `${tickY(i)}px`);
+    ticks.forEach((tick, j) => tick.classList.toggle('busy', j === i && seek.state === 'loading'));
+    kick();
+  };
+  document.addEventListener('butter-seek-state', e => {
+    let m; try { m = JSON.parse(e.detail); } catch { return; }
+    if (m.conv !== convOfPath() || !['idle', 'dragging', 'loading'].includes(m.state)) return;
+    clearTimeout(seekTimer);
+    if (m.state === 'idle') {
+      if (!seek) return;
+      seek = { ...seek, state: 'settled' }; showSeek();
+      seekTimer = setTimeout(() => {
+        seek = null; card?.classList.remove('seek-card');
+        if (pointerY === null) { rail?.classList.remove('hot'); card?.classList.remove('show'); shown = -2; }
+        else { shown = -2; hover(indexAt(pointerY)); }
+        setBusy(busyId, busyTok); kick();
+      }, 1000);
+    } else {
+      if (!seek) cancelJump();
+      seek = m; shown = -2; held = false; pointerY = null;
+      showSeek();
+    }
+  });
+
   let shown = -2, held = false;
   const hover = i => {
+    if (seek) { showSeek(); return; }
     if (i === shown || !host || (held && i !== -2)) return;
     const was = shown; shown = i;
     if (i === -2) { card.classList.remove('show'); return; }
@@ -367,7 +408,7 @@
   // Hover wave: each bar eases toward its target width/opacity; runs only while something moves.
   let pointerY = null, raf = 0, last = 0, cs = [], co = [], ct = [], barIds = [];   // current scaleX, opacity, scaleY; question per bar
   const targetOf = j => {
-    const on = opening ? j === qs.length - 1 : flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
+    const on = seek ? (seek.lit || [seek.id]).includes(qs[j].id) : opening ? j === qs.length - 1 : flying ? j === active : litIds.has(qs[j].id) || (pinned && j === active);
     let s = on ? ACTIVE.s : REST.s, o = on ? ACTIVE.o : REST.o, t = 1;
     if (pointerY !== null) {
       const d = (tickY(j) - pointerY) / SIGMA, g = Math.exp(-d * d / 2);
@@ -409,7 +450,7 @@
     idxOf = new Map(qs.map((x, i) => [x.id, i]));
     const n = qs.length;
     const on = !railOff() && !!box && box.width >= 560 && n >= 1 && n + (cur.hasPrev ? 1 : 0) >= 2;
-    if (!on) { host?.removeAttribute('data-on'); hover(-2); geo = null; return; }
+    if (!on) { host?.removeAttribute('data-on'); card?.classList.remove('show'); geo = null; if (!seek) hover(-2); return; }
     if (!host) { if (!document.body) return; build(); }
     while (ticks.length < n) {
       const b = document.createElement('button');
@@ -449,6 +490,7 @@
     host.style.setProperty('--wt', `${Math.round(top)}px`);
     host.style.setProperty('--wh', `${Math.round(bottom - top)}px`);
     host.setAttribute('data-on', '');
+    if (seek) showSeek();
     if (shown >= n) hover(-2);
     kick();
   };

@@ -8,8 +8,9 @@
     if (!html) return;
     if (root !== html) {
       root = html;
-      new MutationObserver(apply).observe(root, { attributes: true, attributeFilter: ['data-butter-off', 'data-butter-lang'] });
+      new MutationObserver(apply).observe(root, { attributes: true, attributeFilter: ['data-butter-off', 'data-butter-lang', 'data-butter-disabled'] });
     }
+    html.toggleAttribute('data-butter-disabled', !settings.enabled);
     const off = keys.filter(k => !settings.enabled || !settings.opts[k]).join(' ');
     if (off) {
       if (html.getAttribute('data-butter-off') !== off) html.setAttribute('data-butter-off', off);
