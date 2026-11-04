@@ -317,7 +317,9 @@
       document.documentElement.classList.contains('dark') ||
       /dark/.test(getComputedStyle(document.documentElement).colorScheme);
     host.toggleAttribute('data-dark', a.dark);
-    const md = s.querySelector('[data-markdown-text-style="assistant-message"]');
+    const md =
+      globalThis.__butterLayoutCache?.column?.(s) ||
+      s.querySelector('[data-markdown-text-style="assistant-message"]');
     const fg = md ? getComputedStyle(md).color : getComputedStyle(document.body).color,
       bg = opaque(s);
     host.style.cssText += `;left:${a.hostRect.x}px;top:${a.hostRect.y}px;width:${a.hostRect.width}px;height:${a.hostRect.height}px;background:${bg};color:${fg}`;

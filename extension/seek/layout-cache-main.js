@@ -30,6 +30,16 @@
   const BLOCK = '[data-markdown-text-style="assistant-message"] > :not([data-wide-block]):not(hr)';
   const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1] || null;
+  // Any answer column serves for width and font. Reading one inside a turn that content-visibility
+  // skips forced style and layout of that whole turn (a DisplayLock update: 0.6 s for a long answer).
+  const MD = '[data-markdown-text-style="assistant-message"]';
+  const shownColumn = (s) => {
+    const first = s.querySelector(MD);
+    if (!first || !skipped.has(first.closest?.('[data-turn-key]'))) return first;
+    for (const c of s.querySelectorAll(MD))
+      if (!skipped.has(c.closest('[data-turn-key]'))) return c;
+    return first; // every answer skipped: nothing cheaper to read
+  };
   const scroller = () =>
     [...document.querySelectorAll('.thread-scroll-container')].find((s) => s.clientHeight > 0);
   const persistence = (() => {
@@ -93,7 +103,18 @@
     const columns = new WeakMap(),
       owners = new WeakMap();
     const layoutObserver = new ResizeObserver((es) => {
-      for (const e of es) layouts.delete(owners.get(e.target) || e.target);
+      for (const e of es) {
+        const s = owners.get(e.target);
+        // observe() reports a column switched in by shownColumn at once, even at the sampled width.
+        // borderWidth is untransformed like the border box; gBCR width differs under a scale.
+        if (
+          s &&
+          columns.get(s) === e.target &&
+          Math.round(e.borderBoxSize?.[0]?.inlineSize) === layouts.get(s)?.borderWidth
+        )
+          continue;
+        layouts.delete(s || e.target);
+      }
     });
     const theme = () =>
       JSON.stringify([
@@ -111,8 +132,9 @@
     const layout = (s) => {
       if (!s) return null;
       const sw = s.clientWidth,
-        column = s.querySelector('[data-markdown-text-style="assistant-message"]');
-      const width = column?.getBoundingClientRect?.().width;
+        column = shownColumn(s);
+      const width = column?.getBoundingClientRect?.().width,
+        borderWidth = column?.offsetWidth;
       if (columns.get(s) !== column) {
         if (columns.get(s)) layoutObserver.unobserve(columns.get(s));
         columns.set(s, column);
@@ -137,7 +159,7 @@
         }),
       );
       if (!layouts.has(s)) layoutObserver.observe(s);
-      layouts.set(s, { value, stamp: stamp() });
+      layouts.set(s, { value, stamp: stamp(), borderWidth });
       return value;
     };
     const cachedLayout = (s) => {
@@ -1113,6 +1135,7 @@
   // Read API for seek/preview-main.js (same world). Records carry chat text: never dump them.
   globalThis.__butterLayoutCache = {
     ...persistence,
+    column: shownColumn,
     flush: () => persistence.flush(),
     flushMeasurements: measure,
     get: (key, preparedScroller) => {

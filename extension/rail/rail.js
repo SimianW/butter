@@ -329,9 +329,13 @@
     { capture: true, passive: true },
   );
 
-  // ChatGPT's submit spring visits every intervening virtualized turn. Move close to
-  // the end before its handler measures placement, leaving it the final viewport to animate.
-  // Capture is essential: the fetch-level `send` notification arrives after placement starts.
+  // ChatGPT's submit spring visits every intervening virtualized turn. Move close to the end
+  // before the spring's first frame, leaving it the final viewport to animate. The send is seen in
+  // the capture phase (the fetch-level `send` notification arrives after placement starts), but the
+  // jump waits for the bubble phase, after ChatGPT's own key or click handler: jumping before it
+  // made that handler mount and lay out the end of the chat before the composer cleared (lab: the
+  // Enter task took 3.1 s instead of 0.6 s, with the typed text still showing). Still in the same
+  // task, so the spring starts from the end. If nothing reaches the bubble phase, jump after the task.
   const COMPOSER_INPUT = '.ProseMirror[contenteditable="true"]';
   const SEND_BUTTON = '[data-testid="send-button"], #composer-submit-button, button[type="submit"]';
   // The pre-jump belongs to the "smoother scrolling" group (older + seek), not to the rail switch.
@@ -339,14 +343,21 @@
     const off = document.documentElement?.getAttribute('data-butter-off')?.split(' ') || [];
     return off.includes('older') || off.includes('seek');
   };
-  const beforeSend = (composer) => {
+  const beforeSend = (composer, type) => {
     if (scrollingOff()) return;
     if (!composer?.textContent.trim() || !sc?.isConnected || !sc.clientHeight) return;
     cancelJump();
-    const bottom = sc.scrollHeight - sc.clientHeight;
-    if (bottom - sc.scrollTop > 1.5 * sc.clientHeight) {
-      sc.scrollTo({ top: Math.max(0, bottom - sc.clientHeight), behavior: 'instant' });
-    }
+    const s = sc;
+    const jump = () => {
+      removeEventListener(type, jump);
+      clearTimeout(late);
+      if (s !== sc || !s.isConnected) return;
+      const bottom = s.scrollHeight - s.clientHeight;
+      if (bottom - s.scrollTop > 1.5 * s.clientHeight)
+        s.scrollTo({ top: Math.max(0, bottom - s.clientHeight), behavior: 'instant' });
+    };
+    addEventListener(type, jump, { passive: true });
+    const late = setTimeout(jump, 0);
   };
   addEventListener(
     'keydown',
@@ -366,7 +377,7 @@
       const composer = e.target.closest(COMPOSER_INPUT);
       const button = composer?.closest('form')?.querySelector(SEND_BUTTON);
       if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
-      beforeSend(composer);
+      beforeSend(composer, 'keydown');
     },
     { capture: true, passive: true },
   );
@@ -376,7 +387,7 @@
       if (!(e.target instanceof Element)) return;
       const button = e.target.closest(SEND_BUTTON);
       if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
-      beforeSend(button.closest('form')?.querySelector(COMPOSER_INPUT));
+      beforeSend(button.closest('form')?.querySelector(COMPOSER_INPUT), 'click');
     },
     { capture: true, passive: true },
   );

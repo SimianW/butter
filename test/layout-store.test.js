@@ -4,11 +4,17 @@ const test = require('node:test'),
   fs = require('node:fs'),
   native = require('node:crypto').webcrypto;
 const core = require('../extension/seek/layout-check-main.js');
-function fixture({ known = true } = {}) {
+function fixture({ known = true, columns } = {}) {
   const events = {},
     control = { hold: false, release: null };
 
-  const sc = { clientWidth: 1258, clientHeight: 900, querySelector: () => ({}) };
+  const sc = {
+    clientWidth: 1258,
+    clientHeight: 900,
+    querySelector: () => (columns ? columns[0] : {}),
+    querySelectorAll: () => columns || [],
+  };
+  const resize = [];
   const document = {
     scripts: [],
     documentElement: { className: 'light' },
@@ -20,6 +26,9 @@ function fixture({ known = true } = {}) {
       observe() {}
     },
     ResizeObserver: class {
+      constructor(fn) {
+        resize.push(fn);
+      }
       observe() {}
       unobserve() {}
     },
@@ -78,6 +87,8 @@ function fixture({ known = true } = {}) {
     sc,
     disk: storage.worker.disk,
     control,
+    resize,
+    events,
     event: (name, detail) => {
       for (const fn of events[name] || []) fn({ detail });
     },
@@ -146,6 +157,61 @@ test('a pre-mutation async hash cannot reinstall stale geometry after newer JSON
   await f.control.release();
   await old;
   assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+});
+
+// shownColumn can move the fingerprint to another column when a turn is skipped. ResizeObserver
+// reports a newly observed column at once; at the sampled width that must not drop stored geometry.
+test('switching to an equal-width answer column keeps the fingerprint and stored geometry', async () => {
+  const column = (turn) => ({
+    closest: () => turn,
+    getBoundingClientRect: () => ({ width: 720 }),
+    offsetWidth: 720,
+  });
+  const turnA = {},
+    turnB = {},
+    columns = [column(turnA), column(turnB)];
+  const f = fixture({ columns });
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.api.adopt(f.api.records(f.sc), f.sc);
+  for (const fn of f.events.contentvisibilityautostatechange) fn({ target: turnA, skipped: true });
+  f.api.refreshLayout(f.sc); // now fingerprinted from columns[1], same width and font
+  const notify = (w) =>
+    f.resize[0]([
+      { target: columns[1], borderBoxSize: [{ inlineSize: w }], contentRect: { width: w } },
+    ]);
+  notify(720); // the initial notification observe() delivers
+  assert.ok(f.api.get('t', f.sc), 'stored entry survives the column switch');
+  notify(700); // a genuine resize
+  assert.equal(f.api.get('t', f.sc), null, 'a real width change still invalidates');
+});
+
+// getBoundingClientRect includes ancestor transforms; ResizeObserver's border box does not. Under
+// scale(0.9) an 800 px column samples as 720, so a resize to 720 px must not look like the sample.
+test('a scaled-ancestor resize to the old transformed width still invalidates', async () => {
+  const column = (turn) => ({
+    closest: () => turn,
+    getBoundingClientRect: () => ({ width: 720 }), // 0.9 x 800
+    offsetWidth: 800,
+  });
+  const turnA = {},
+    turnB = {},
+    columns = [column(turnA), column(turnB)];
+  const f = fixture({ columns });
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.api.adopt(f.api.records(f.sc), f.sc);
+  for (const fn of f.events.contentvisibilityautostatechange) fn({ target: turnA, skipped: true });
+  f.api.refreshLayout(f.sc);
+  const notify = (w) =>
+    f.resize[0]([
+      { target: columns[1], borderBoxSize: [{ inlineSize: w }], contentRect: { width: w } },
+    ]);
+  assert.ok(f.api.get('t', f.sc), 'stored entry survives the column switch');
+  notify(720); // a genuine resize to the old transformed sample
+  assert.equal(f.api.get('t', f.sc), null, 'the resize invalidates');
 });
 
 // Golden bytes from the checkpoint's persistent layout identity.

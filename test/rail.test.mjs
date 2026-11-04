@@ -33,18 +33,29 @@ class FakeElement {
   }
   addEventListener(type, callback, options) {
     const listeners = this.listeners.get(type) ?? [];
-    listeners.push({ callback, once: options?.once });
+    listeners.push({ callback, once: options?.once, capture: !!options?.capture });
     this.listeners.set(type, listeners);
   }
-  emit(type, event = {}) {
+  removeEventListener(type, callback) {
+    this.listeners.set(
+      type,
+      (this.listeners.get(type) ?? []).filter((x) => x.callback !== callback),
+    );
+  }
+  emit(type, event = {}, phase = null) {
     for (const listener of [...(this.listeners.get(type) ?? [])]) {
-      if (listener.once)
-        this.listeners.set(
-          type,
-          this.listeners.get(type).filter((x) => x !== listener),
-        );
+      if (phase && listener.capture !== (phase === 'capture')) continue;
+      if (!(this.listeners.get(type) ?? []).includes(listener)) continue;
+      if (listener.once) this.removeEventListener(type, listener.callback);
       listener.callback({ target: this, ...event });
     }
+  }
+  // An event dispatched to a page element, seen from window: capture listeners, then the page's
+  // own handler on the target (ChatGPT's submit), then bubble listeners, each list read afresh.
+  dispatch(type, event = {}, atTarget = () => {}) {
+    this.emit(type, event, 'capture');
+    atTarget();
+    this.emit(type, event, 'bubble');
   }
   prepend(child) {
     child.parentElement = this;
@@ -164,6 +175,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     innerWidth: 1200,
     performance: { now: () => now },
     addEventListener: window.addEventListener.bind(window),
+    removeEventListener: window.removeEventListener.bind(window),
     requestAnimationFrame(callback) {
       const id = nextId++;
       frames.set(id, callback);
@@ -425,13 +437,41 @@ for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
 for (const trigger of ['Enter', 'click']) {
   test(`${trigger} pre-jumps a distant send but leaves the last viewport for ChatGPT`, () => {
     const nav = setup();
-    if (trigger === 'Enter') nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    if (trigger === 'Enter') nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
     else {
       const icon = new FakeElement('svg');
       nav.sendButton.append(icon);
-      nav.window.emit('click', { target: icon });
+      nav.window.dispatch('click', { target: icon });
     }
     assert.equal(nav.scroller.scrollTop, 3200);
+  });
+
+  test(`${trigger}: ChatGPT's submit handler runs before the pre-jump, in the same event`, () => {
+    // Jumping first made ChatGPT's handler mount and lay out the end of the chat before it cleared
+    // the composer: the page froze for 2-3 s with the typed text still showing.
+    const nav = setup();
+    let seen = null;
+    const submit = () => (seen = nav.scroller.scrollTop);
+    if (trigger === 'Enter')
+      nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer }, submit);
+    else nav.window.dispatch('click', { target: nav.sendButton }, submit);
+    assert.equal(seen, 0, 'the handler sees the thread where the user left it');
+    assert.equal(nav.scroller.scrollTop, 3200, 'the jump lands before the task ends');
+    nav.scroller.scrollTop = 0;
+    nav.runTimers();
+    assert.equal(nav.scroller.scrollTop, 0, 'one jump per send');
+  });
+
+  test(`${trigger}: a send whose event never bubbles still pre-jumps after the task`, () => {
+    const nav = setup();
+    if (trigger === 'Enter')
+      nav.window.emit('keydown', { key: 'Enter', target: nav.composer }, 'capture');
+    else nav.window.emit('click', { target: nav.sendButton }, 'capture');
+    assert.equal(nav.scroller.scrollTop, 0);
+    nav.runTimers();
+    assert.equal(nav.scroller.scrollTop, 3200);
+    nav.window.dispatch('keyup', { key: 'Enter', target: nav.composer });
+    assert.equal(nav.window.listeners.get('keydown').filter((x) => !x.capture).length, 0);
   });
 }
 
@@ -439,13 +479,13 @@ test('the scrolling group switch also turns off the send pre-jump', () => {
   for (const off of ['seek', 'older', 'older seek']) {
     const nav = setup();
     nav.document.documentElement.setAttribute('data-butter-off', off);
-    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
-    nav.window.emit('click', { target: nav.sendButton });
+    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
+    nav.window.dispatch('click', { target: nav.sendButton });
     assert.equal(nav.scroller.scrollTop, 0, `pre-jump must stay off when ${off} is off`);
   }
   const nav = setup();
   nav.document.documentElement.setAttribute('data-butter-off', 'rail');
-  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
   assert.equal(nav.scroller.scrollTop, 3200, 'the rail switch does not control the pre-jump');
 });
 
@@ -462,12 +502,12 @@ test('near-bottom sends and non-send key events preserve the thread position', (
     { key: 'x' },
     { target: nav.scroller },
   ]) {
-    nav.window.emit('keydown', { key: 'Enter', target: nav.composer, ...event });
+    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer, ...event });
     assert.equal(nav.scroller.scrollTop, 0);
   }
   for (const top of [2750, 3200, 4100]) {
     nav.scroller.scrollTop = top;
-    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
     assert.equal(nav.scroller.scrollTop, top);
   }
 });
@@ -476,19 +516,19 @@ test('empty composers and disabled send buttons do not pre-jump', () => {
   const nav = setup();
   for (const text of ['', '  \n ']) {
     nav.composer.textContent = text;
-    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
-    nav.window.emit('click', { target: nav.sendButton });
+    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
+    nav.window.dispatch('click', { target: nav.sendButton });
     assert.equal(nav.scroller.scrollTop, 0);
   }
   nav.composer.textContent = 'New question';
   nav.sendButton.disabled = true;
-  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
-  nav.window.emit('click', { target: nav.sendButton });
+  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.dispatch('click', { target: nav.sendButton });
   assert.equal(nav.scroller.scrollTop, 0);
   nav.sendButton.disabled = false;
   nav.sendButton.setAttribute('aria-disabled', 'true');
-  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
-  nav.window.emit('click', { target: nav.sendButton });
+  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.dispatch('click', { target: nav.sendButton });
   assert.equal(nav.scroller.scrollTop, 0);
 });
 
@@ -496,7 +536,7 @@ test('the current composer submit button works without legacy IDs', () => {
   const nav = setup();
   nav.sendButton.removeAttribute('data-testid');
   nav.sendButton.setAttribute('type', 'submit');
-  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
   assert.equal(nav.scroller.scrollTop, 3200);
 });
 
