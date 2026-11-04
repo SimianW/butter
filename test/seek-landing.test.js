@@ -486,7 +486,7 @@ test('S4 preparation and storage flush reuse one fingerprint per batch', async (
   assert.equal(scripts, 1);
 });
 
-test('WARM dispatch precedes semantic work and aligned releases stop looking up text', () => {
+test('WARM dispatch refreshes invalidated stored fingerprints before restore and precedes semantic work', async () => {
   for (const { stored, error = 0, unstable = false } of [
     { stored: false },
     { stored: true },
@@ -499,6 +499,15 @@ test('WARM dispatch precedes semantic work and aligned releases stop looking up 
       dispatched = false,
       selections = 0,
       lookups = 0;
+    if (stored) {
+      await f.store.setTexts(conv, texts);
+      f.store.record('t', record);
+      await f.store.flush();
+      f.cache.adopt(f.store.records(f.sc), f.sc);
+      // During a long native hold, RO may retire an otherwise unchanged column fingerprint.
+      for (const observer of f.resizeObservers)
+        observer([{ target: f.sc, contentRect: { width: 1258 } }]);
+    }
     Object.assign(f.ctx, {
       Event: class {},
       CustomEvent: class {},
@@ -522,6 +531,19 @@ test('WARM dispatch precedes semantic work and aligned releases stop looking up 
     f.sc.isConnected = true;
     f.sc.dispatchEvent = () => {
       dispatched = true;
+      if (stored) {
+        f.restore();
+        assert.equal(
+          f.block.style.containIntrinsicSize,
+          'auto 26px',
+          'Stored restore must survive fingerprint invalidation during a long hold',
+        );
+        assert.equal(
+          f.prematureReads,
+          0,
+          'Refresh occurs before dispatch, never inside clientWidth restore',
+        );
+      }
     };
     f.sc.scrollTop = 100;
     f.turn.parentElement.getBoundingClientRect = () => ({ top: -16, bottom: 504 });

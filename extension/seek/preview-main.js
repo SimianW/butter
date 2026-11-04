@@ -850,6 +850,9 @@
         a.sc.scrollTop = a.destination.top;
         currentTop = a.sc.scrollTop;
       }
+      // A long hold can retire the fingerprint via RO/font events without changing its value.
+      // Refresh before React sees the destination; the native width hook itself stays layout-free.
+      if (question.layout) globalThis.__butterLayoutCache?.refreshLayout(a.sc);
       pendingCommit = null;
       a.sc.dispatchEvent(new Event('scroll'));
       a.dispatched = performance.now();

@@ -35,7 +35,9 @@ available with both backends and is not a reason for choosing IndexedDB.
 A content script's `indexedDB` is the site's origin, including from the ISOLATED world. Every
 extension-origin layout read/write goes through the versioned runtime protocol to the service
 worker; only the one-time deletion of the legacy site DB runs in a content script.
-`unlimitedStorage` avoids browser quota/eviction heuristics. Butter independently enforces the
+IndexedDB has no fixed 10 MB ceiling: 50 MB can fit without `unlimitedStorage`, but its normal
+quota and eviction behavior are not a guarantee. The warning-free permission avoids those
+quota/eviction heuristics. Butter independently enforces the
 50,000,000-byte sum of serialized geometry rows, including their metadata and `bytes` field.
 IndexedDB file/index overhead and the bounded non-content control metadata are outside this count.
 No `navigator.storage.estimate()` value is used.
@@ -65,7 +67,9 @@ text stays in the merged cache's page memory and is hydrated against the current
 Current-conversation prefetch starts on known account / chat source arrival. It finishes in memory
 before drag preparation; no disk request is made by `prepare`. Records are checked on hydration and
 again on use against the same source/layout/expiry validator. Queued measurements retain their
-original identities. The width restore hook only consults cached fingerprints. Write epochs,
+original identities. The width restore hook only consults cached fingerprints. Release refreshes a fingerprint retired
+during a long hold before dispatching the destination, preserving stored restoration without a
+layout read in the native hook. Write epochs,
 account switches, clear generations, and stale prefetch responses are fenced separately.
 
 The worker refreshes LRU on load without extending the 30-day TTL, prunes on usage/load/write,

@@ -73,7 +73,9 @@ happen before a drag. The preview's `prepare` remains synchronous: it reads memo
 layout fingerprint, never awaits storage. Content digests, message ids, width, DPR, font, rendered
 column width, theme, application assets and the 30-day expiry must all match. Adopted entries pass
 the same `acceptStored` check at each use. Resize, theme and font events invalidate the cached
-fingerprint without a layout read inside the native `clientWidth` hook. Queued writes capture their
+fingerprint without a layout read inside the native `clientWidth` hook. A long hold may retire an
+unchanged fingerprint; release refreshes it before destination dispatch so stored heights still
+restore before React reads layout. Queued writes capture their
 measurement identity; conversation write epochs prevent stale responses/hashes from reviving it.
 Warm previews still prepare without fetched source after writes.
 
