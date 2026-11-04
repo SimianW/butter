@@ -125,6 +125,13 @@ the [runtime API](development.md#layout-storage-api), and the
   times as many requests with 2-turn pages. A missed release stops the wait after 30 seconds;
   requests already in flight can still land during a drag. Seek preview holds mounting during the
   drag; an unmeasured destination may still need alignment when released.
+- Holding mounts during a drag moves ChatGPT's first render of the destination area to the
+  release. ChatGPT then renders the target turn and its never-rendered neighbours in one task, so
+  typing right after release can wait about 5 s in a long chat, against about 2 s without the
+  preview at a real drag pace. Time until the destination is readable is about the same. In
+  exchange the drag itself stays smooth: held-frame p95 about 30 ms, against 120–1455 ms. Butter's
+  own scripts take about 70 ms of that task. Every fix we found changes what you see: skipping the
+  neighbours with estimated heights, revealing before they mount, or mounting during the drag.
 - Wide tables and visualizations are sized against the app's main content area instead of the
   thread column: about 10 px wider at a 1600 px window.
 - A block that streams in while you are scrolled far up is skipped before it's ever drawn; when
