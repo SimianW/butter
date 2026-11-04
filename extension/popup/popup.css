@@ -77,6 +77,8 @@ body {
   line-height: 0.9;
 }
 .ver {
+  display: block;
+  text-decoration: none;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -406,12 +408,31 @@ body {
   font-weight: 900;
 }
 
-.ft {
+/* Language switch and links share the header's top-right, so the popup fits Chromium's 600px cap. */
+.hd {
+  position: relative;
+}
+.hd-side {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 4px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: space-between;
-  padding: 14px 16px 16px;
-  margin-top: 18px;
+}
+/* CJK line boxes are 2px taller; start higher so the link underline clears the pill. */
+html:lang(zh-CN) .hd-side {
+  top: 14px;
+}
+.hd-side .links {
+  gap: 12px;
+  white-space: nowrap;
+}
+/* The removed footer used to supply this space; it keeps the list's shadow inside the popup. */
+.list {
+  margin-bottom: 18px;
 }
 .lang {
   display: flex;
@@ -546,4 +567,9 @@ html {
 }
 .dark .row .pend {
   color: var(--butter);
+}
+
+/* The version label is a quiet link to the changelog: no link styling until hovered. */
+.ver:hover {
+  color: var(--ink-2);
 }
