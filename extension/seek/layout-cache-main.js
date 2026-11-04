@@ -61,6 +61,10 @@
       pending = new Map();
     const S = { ready: false, loads: 0, hits: 0, writes: 0, bytes: 0, rejected: {}, errors: 0 };
     let job = 0;
+    const queuePending = (turn, value) => {
+      if (!pending.has(turn) && pending.size >= 256) pending.delete(pending.keys().next().value);
+      pending.set(turn, value);
+    };
     const reject = (why) => (S.rejected[why] = (S.rejected[why] || 0) + 1);
     const digest = async (text) =>
       [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))]
@@ -196,13 +200,18 @@
         const convHash = await hashed(conv);
         const result = await send('load', { account: owner, conv: convHash });
         if (sequence !== loadSerial || token !== scope || owner !== account || !diskEnabled) return;
+        S.loads++;
+        if (result.error || !Number.isSafeInteger(result.generation) || result.generation < 0) {
+          S.ready = false;
+          S.errors++;
+          return;
+        }
         memory.clear();
         for (const x of result.records || [])
           if (ButterLayoutCodec.valid(x)) memory.set(ButterLayoutCodec.key(x), x);
         generation = result.generation;
         loadedConv = conv;
-        S.ready = !result.error;
-        S.loads++;
+        S.ready = true;
         S.bytes = [...memory.values()].reduce((n, x) => n + ButterLayoutCodec.bytes(x), 0);
       })().finally(() => {
         if (sequence === loadSerial) loading = null;
@@ -340,7 +349,7 @@
             (s) => s.clientHeight > 0,
           );
         if (!diskEnabled || !account || !ctx || ctx.conv !== conv() || !s) return;
-        pending.set(turn, {
+        queuePending(turn, {
           r,
           ctx: { ...ctx, layout: l ?? layout(s) },
           account,
@@ -355,6 +364,13 @@
         if (!diskEnabled || !account || globalThis.__butterSeeking?.()) return;
         const s = scroller();
         if (!s) return;
+        const tokenBeforeLoad = scope;
+        if (loadedConv !== conv() || generation === undefined) await prefetch(conv());
+        if (tokenBeforeLoad !== scope) return;
+        if (loadedConv !== conv() || generation === undefined) {
+          if (pending.size && !job) job = setTimeout(() => persistence.flush(), 5000);
+          return;
+        }
         const batch = [...pending];
         pending.clear();
         const l = layout(s),
@@ -403,7 +419,8 @@
           if (result.error) {
             S.errors++;
             if (token === scope && owner === account && diskEnabled) {
-              for (const [turn, queued] of batch) if (!pending.has(turn)) pending.set(turn, queued);
+              for (const [turn, queued] of batch)
+                if (!pending.has(turn)) queuePending(turn, queued);
               if (!job) job = setTimeout(() => persistence.flush(), 5000);
             }
           } else if (token === scope && owner === account && diskEnabled) {

@@ -225,3 +225,30 @@ test('merged prepare synchronously uses prefetched memory with no disk reads at 
   f.ctx.getComputedStyle = () => ({ font: '20px serif' });
   assert.equal(Object.keys(f.api.prepare(f.sc, ['t']).records).length, 0);
 });
+
+test('failed loads retain bounded measurements and recover on the next source update', async () => {
+  const f = fixture({ known: false });
+  const message = f.storage.worker.message;
+  let available = false;
+  f.storage.worker.message = (m) =>
+    !available && m.type === 'butter-layout-load'
+      ? Promise.resolve({ error: 'layout-storage' })
+      : message(m);
+  await new Promise(setImmediate);
+  f.storage.account();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(f.api.dump().pending, 1, 'failed load must not consume a measurement');
+  const many = Object.fromEntries(Array.from({ length: 300 }, (_, i) => ['t' + i, texts.t]));
+  await f.api.setTexts(conv, many);
+  for (const turn of Object.keys(many)) f.api.record(turn, record);
+  assert.ok(f.api.dump().pending <= 256, 'unavailable storage has a bounded queue');
+  f.api.record('t', record);
+  available = true;
+  await f.api.setTexts(conv, texts);
+  await f.api.flush();
+  assert.equal(f.api.dump().pending, 0);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 256);
+  assert.equal(f.disk.size, 256);
+});
