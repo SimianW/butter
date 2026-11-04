@@ -14,8 +14,14 @@ Butter for ChatGPT runs only on `chatgpt.com`, and everything it does happens in
 
 ## What it stores
 
-Only your settings: the on/off switches for each optimization and your language choice. They are
-saved in `chrome.storage.local` on your device.
+Your settings are saved in `chrome.storage.local`. Butter also saves layout numbers, typography,
+hashed message/conversation ids, and content/layout digests in extension-owned IndexedDB, partitioned
+by a SHA-256 hash of the ChatGPT user id passively observed from responses the page already loads.
+Chat text, raw account ids, auth tokens and cookies are never saved. Preview text stays in page memory.
+Records expire after 30 days; all accounts share a 50 MB cap with least recently used eviction.
+Unknown accounts cannot read or write saved layouts. Turning `butter.opts.layout` off deletes every
+account's saved layouts and stops persisted reads/writes. See [clear instructions](docs/development.md#layout-storage-api).
+Uninstalling Butter removes its extension data. The old trial site database is deleted once.
 
 ## What it sends
 
@@ -28,4 +34,4 @@ your messages.
 
 Questions: open an issue at <https://github.com/SimianW/butter/issues>.
 
-Last updated: 2026-11-02.
+Last updated: 2026-11-03.

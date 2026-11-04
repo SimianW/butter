@@ -40,6 +40,14 @@ Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install
 
 Current version: **0.1.0-alpha.10** ([changelog](CHANGELOG.md)).
 
+## Local storage and privacy
+
+Butter stores settings, layout numbers and typography, hashed message/conversation ids, and content/layout
+digests locally in the extension, partitioned by a SHA-256 account hash. No chat text, auth tokens or
+cookies are saved; unknown accounts cannot access saved layouts. Layouts expire after 30 days with
+a 50 MB cap across accounts. Turning `butter.opts.layout` off clears all saved layouts and stops
+persisted reads/writes. [Clear instructions →](docs/development.md#layout-storage-api)
+
 ## More
 
 - [How it works](docs/how-it-works.md): what it changes, privacy, known trade-offs
