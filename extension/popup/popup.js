@@ -76,7 +76,8 @@ let prefs = ButterStatus.normalize(),
   clearState = 'idle',
   clearTimer,
   // Bumped by every live settings change, so a slower startup read cannot overwrite it.
-  settingsRevision = 0;
+  settingsRevision = 0,
+  failuresRevision = 0;
 const root = document.getElementById('popup');
 const scheme = matchMedia('(prefers-color-scheme: dark)');
 const theme = () => {
@@ -216,6 +217,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     if (prefs.opts.layout) refreshUsage();
   }
   if (area === 'session' && changes.butterFailures) {
+    failuresRevision++;
     failures = changes.butterFailures.newValue || {};
     render();
   }
@@ -238,13 +240,14 @@ async function poll() {
     render();
   }
 }
-const startupRevision = settingsRevision;
+const startupRevision = settingsRevision,
+  startupFailures = failuresRevision;
 Promise.all([
   chrome.storage.local.get('butter'),
   chrome.storage.session.get('butterFailures'),
 ]).then(([local, session]) => {
   if (settingsRevision === startupRevision) prefs = ButterStatus.normalize(local.butter);
-  failures = session.butterFailures || {};
+  if (failuresRevision === startupFailures) failures = session.butterFailures || {};
   render();
   poll();
   refreshUsage();
