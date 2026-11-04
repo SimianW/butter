@@ -1,0 +1,220 @@
+[
+  {
+    "name": "Butter for ChatGPT",
+    "diagnostic": {
+      "turnDeferrals": 8,
+      "blockDeferrals": 1412,
+      "cachedSkipDeferrals": 932,
+      "examples": [
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 300,
+          "unready": 300,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 80,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 33,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 68,
+              "tag": "SPAN",
+              "display": "true"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 420,
+          "unready": 420,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 41,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 80,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 31,
+              "tag": "SPAN",
+              "display": "true"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 39,
+          "unready": 39,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 5,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 135,
+          "unready": 135,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 5,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 7,
+              "tag": "SPAN",
+              "display": "false"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 300,
+          "unready": 300,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 80,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 33,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 68,
+              "tag": "SPAN",
+              "display": "true"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 420,
+          "unready": 420,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 41,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 80,
+              "tag": "SPAN",
+              "display": "true"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 31,
+              "tag": "SPAN",
+              "display": "true"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 39,
+          "unready": 39,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 5,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            }
+          ]
+        },
+        {
+          "key": "<id>",
+          "state": "complete",
+          "sources": 135,
+          "unready": 135,
+          "unreadyExamples": [
+            {
+              "text": "<prompt text>",
+              "textLength": 5,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 10,
+              "tag": "SPAN",
+              "display": "false"
+            },
+            {
+              "text": "<prompt text>",
+              "textLength": 7,
+              "tag": "SPAN",
+              "display": "false"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

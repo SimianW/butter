@@ -1,0 +1,344 @@
+{
+  "label": "fixture",
+  "url": "<chat>",
+  "css": "<redacted>",
+  "rows": [
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 26106,
+      "turnTop": 0,
+      "turnH": 26106.28125,
+      "mdTop": 164,
+      "mdH": 25898.28125,
+      "lastBottom": 26062.28125,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 43.71875,
+      "itemSumH": 20858.28125,
+      "itemCount": 500,
+      "tags": "<redacted>",
+      "leanLen": 9658,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 12755,
+      "mdStripped": 9620,
+      "qLen": 69
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 29163,
+      "turnTop": 0,
+      "turnH": 29163.421875,
+      "mdTop": 112,
+      "mdH": 29007.421875,
+      "lastBottom": 29119.421875,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 43.578125,
+      "itemSumH": 23307.421875,
+      "itemCount": 570,
+      "tags": "<redacted>",
+      "leanLen": 11260,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 14837,
+      "mdStripped": 11247,
+      "qLen": 57
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 34868,
+      "turnTop": 0,
+      "turnH": 34867.875,
+      "mdTop": 112,
+      "mdH": 34711.875,
+      "lastBottom": 34823.875,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 44.125,
+      "itemSumH": 28031.875,
+      "itemCount": 670,
+      "tags": "<redacted>",
+      "leanLen": 13354,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 17736,
+      "mdStripped": 13352,
+      "qLen": 68
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default",
+        "horizontal-scroll-fade-mask"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 36895,
+      "turnTop": 0,
+      "turnH": 36895.078125,
+      "mdTop": 146.71875,
+      "mdH": 36704.359375,
+      "lastBottom": 36851.078125,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 43.921875,
+      "itemSumH": 29836.359375,
+      "itemCount": 678,
+      "tags": "<redacted>",
+      "leanLen": 13256,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 18997,
+      "mdStripped": 13238,
+      "qLen": 65
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 5494,
+      "turnTop": 0,
+      "turnH": 5494.125,
+      "mdTop": 138,
+      "mdH": 5312.125,
+      "lastBottom": 5450.125,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 43.875,
+      "itemSumH": 4332.125,
+      "itemCount": 86,
+      "tags": "<redacted>",
+      "leanLen": 3167,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 4162,
+      "mdStripped": 3170,
+      "qLen": 11
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 14895,
+      "turnTop": 0,
+      "turnH": 14894.609375,
+      "mdTop": 86,
+      "mdH": 14764.609375,
+      "lastBottom": 14850.609375,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 44.390625,
+      "itemSumH": 11684.609375,
+      "itemCount": 275,
+      "tags": "<redacted>",
+      "leanLen": 6703,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 8691,
+      "mdStripped": 6581,
+      "qLen": 13
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 208,
+      "turnTop": 0,
+      "turnH": 208,
+      "mdTop": 138,
+      "mdH": 26,
+      "lastBottom": 164,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 44,
+      "itemSumH": 26,
+      "itemCount": 1,
+      "tags": "<redacted>",
+      "leanLen": 18,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 22,
+      "mdStripped": 18,
+      "qLen": 4
+    },
+    {
+      "key": "<id>",
+      "state": [
+        null,
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "mdAnc": [
+        "DIV.MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+        "DIV.group flex min-w-0 flex-col",
+        "DIV.",
+        "DIV."
+      ],
+      "markers": [
+        "cursor-interaction",
+        "disabled:cursor-default",
+        "aria-disabled:cursor-default"
+      ],
+      "fade": 0,
+      "streamAttr": [
+        "data-talvt-turn-state=complete",
+        "data-state=closed"
+      ],
+      "rowH": 208,
+      "turnTop": 0,
+      "turnH": 208,
+      "mdTop": 138,
+      "mdH": 26,
+      "lastBottom": 164,
+      "gapMd": 0,
+      "gapTurn": 44,
+      "gapRow": 44,
+      "itemSumH": 26,
+      "itemCount": 1,
+      "tags": "<redacted>",
+      "leanLen": 25,
+      "leanCapped": false,
+      "visible": true,
+      "mdLen": 30,
+      "mdStripped": 26,
+      "qLen": 2
+    }
+  ]
+}

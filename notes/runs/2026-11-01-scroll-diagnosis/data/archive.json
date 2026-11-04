@@ -1,0 +1,23 @@
+{
+  "sourceDirectory": "butter-scroll-diagnosis",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-01T22:14:30.394669+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-01T22:14:30.394669+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-01T22:11:42.284830+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

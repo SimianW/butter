@@ -1,0 +1,122 @@
+[
+  {
+    "file": "01-normal-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 200960
+  },
+  {
+    "file": "02-problem-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 462,
+    "pixels": 224320
+  },
+  {
+    "file": "03-away-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 200960
+  },
+  {
+    "file": "04-paused-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 199040
+  },
+  {
+    "file": "05-confirm-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 154,
+    "pixels": 200960
+  },
+  {
+    "file": "06-cleared-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 198400
+  },
+  {
+    "file": "07-normal-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 200960
+  },
+  {
+    "file": "08-problem-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 462,
+    "pixels": 224320
+  },
+  {
+    "file": "09-en-memory-off-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 296,
+    "pixels": 195840
+  },
+  {
+    "file": "10-en-paused-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 286,
+    "pixels": 204800
+  },
+  {
+    "file": "11-melt-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 199040
+  },
+  {
+    "file": "12-melt-light.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 142,
+    "pixels": 199040
+  },
+  {
+    "file": "01-normal-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 139,
+    "pixels": 200960
+  },
+  {
+    "file": "02-problem-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 459,
+    "pixels": 224320
+  },
+  {
+    "file": "03-away-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 139,
+    "pixels": 200960
+  },
+  {
+    "file": "04-paused-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 6384,
+    "pixels": 199040
+  },
+  {
+    "file": "05-confirm-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 146,
+    "pixels": 200960
+  },
+  {
+    "file": "06-cleared-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 139,
+    "pixels": 198400
+  },
+  {
+    "file": "07-normal-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 139,
+    "pixels": 200960
+  },
+  {
+    "file": "08-problem-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 459,
+    "pixels": 224320
+  },
+  {
+    "file": "09-en-memory-off-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 293,
+    "pixels": 195840
+  },
+  {
+    "file": "10-en-paused-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 6674,
+    "pixels": 204800
+  },
+  {
+    "file": "11-melt-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 6384,
+    "pixels": 199040
+  },
+  {
+    "file": "12-melt-dark.png",
+    "pixelsDifferingByMoreThan8OutsideApprovedExceptions": 6384,
+    "pixels": 199040
+  }
+]

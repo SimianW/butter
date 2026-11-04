@@ -1,0 +1,964 @@
+{
+  "growth": [
+    {
+      "name": "growth-auto-transition-r1",
+      "maxTask": 912,
+      "maxLoaf": 974.2000000476837,
+      "block": 5668.9,
+      "maxFrame": 966.6000000000058,
+      "wallMs": 28294,
+      "finalMountMs": 27101.800000190735,
+      "startHeight": 94694,
+      "endHeight": 312992,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.53643798828125,
+      "embedderDeltaMiB": 245.52923583984375
+    },
+    {
+      "name": "growth-auto-transition-r2",
+      "maxTask": 918,
+      "maxLoaf": 972.2000000476837,
+      "block": 5549.9,
+      "maxFrame": 966.6999999999971,
+      "wallMs": 28212,
+      "finalMountMs": 27175.400000095367,
+      "startHeight": 94694,
+      "endHeight": 312992,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.62932205200195,
+      "embedderDeltaMiB": 245.63221740722656
+    },
+    {
+      "name": "growth-auto-transition-r3",
+      "maxTask": 951,
+      "maxLoaf": 997.4000000953674,
+      "block": 5933.4,
+      "maxFrame": 983.2999999999993,
+      "wallMs": 28279,
+      "finalMountMs": 27114.200000047684,
+      "startHeight": 94406,
+      "endHeight": 312704,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.7381706237793,
+      "embedderDeltaMiB": 245.38758850097656
+    },
+    {
+      "name": "growth-cache-transition-screen",
+      "maxTask": 253,
+      "maxLoaf": 888.2000000476837,
+      "block": 765.9,
+      "maxFrame": 866.5999999999985,
+      "wallMs": 12682,
+      "finalMountMs": 10174.5,
+      "startHeight": 312992,
+      "endHeight": 312992,
+      "beforeNodes": 127351,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 22.182567596435547,
+      "embedderDeltaMiB": 9.799453735351562
+    },
+    {
+      "name": "growth-normal-r1",
+      "maxTask": 1525,
+      "maxLoaf": 1608.7999999523163,
+      "block": 7937.5,
+      "maxFrame": 1599.800000000003,
+      "wallMs": 14299,
+      "finalMountMs": 12284.799999952316,
+      "startHeight": 90266,
+      "endHeight": 308564,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.421573638916016,
+      "embedderDeltaMiB": 247.10807037353516
+    },
+    {
+      "name": "growth-transition-r1",
+      "maxTask": 1351,
+      "maxLoaf": 1425,
+      "block": 7408.6,
+      "maxFrame": 1416.5999999999985,
+      "wallMs": 14306,
+      "finalMountMs": 12891.799999952316,
+      "startHeight": 90266,
+      "endHeight": 308564,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.425411224365234,
+      "embedderDeltaMiB": 244.6493682861328
+    },
+    {
+      "name": "growth-transition-r2",
+      "maxTask": 1366,
+      "maxLoaf": 1446.3999998569489,
+      "block": 7393.6,
+      "maxFrame": 1433.2999999999993,
+      "wallMs": 16120,
+      "finalMountMs": 14705.899999856949,
+      "startHeight": 90266,
+      "endHeight": 309758,
+      "beforeNodes": 44221,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 44.41487503051758,
+      "embedderDeltaMiB": 277.80965423583984
+    },
+    {
+      "name": "growth-transition-r3",
+      "maxTask": 1353,
+      "maxLoaf": 1432.7000000476837,
+      "block": 6768.0,
+      "maxFrame": 1416.699999999997,
+      "wallMs": 14359,
+      "finalMountMs": 12910.5,
+      "startHeight": 94694,
+      "endHeight": 312992,
+      "beforeNodes": 62387,
+      "afterNodes": 207410,
+      "heapDeltaMiB": 39.48782730102539,
+      "embedderDeltaMiB": 248.33506774902344
+    }
+  ],
+  "drag": [
+    {
+      "name": "best-grown-fast-r1",
+      "dragOrInputMs": 1670.3999512195587,
+      "p50": 33.30000000000291,
+      "p95": 83.39999999999418,
+      "max": 250,
+      "fullMax": 250,
+      "loaf": 4,
+      "blocked": 308.6,
+      "maxLoaf": 226.30000019073486,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 47,
+      "partialFrames": 4,
+      "captureFrames": 79,
+      "blankMs": 1216.6187763214111,
+      "partialMs": 66.66421890258789,
+      "blankOverlappingLoafMs": 282.5650985240936
+    },
+    {
+      "name": "best-grown-fast-r2",
+      "dragOrInputMs": 1372.800048828125,
+      "p50": 33.29999999998836,
+      "p95": 50,
+      "max": 66.59999999999127,
+      "fullMax": 333.3000000000029,
+      "loaf": 2,
+      "blocked": 31.3,
+      "maxLoaf": 346.2999999523163,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 51,
+      "partialFrames": 3,
+      "captureFrames": 67,
+      "blankMs": 1066.6241645812988,
+      "partialMs": 66.66398048400879,
+      "blankOverlappingLoafMs": 0
+    },
+    {
+      "name": "best-grown-fast-r3",
+      "dragOrInputMs": 1366.2999999523163,
+      "p50": 33.30000000000291,
+      "p95": 50.09999999999127,
+      "max": 83.30000000000291,
+      "fullMax": 183.40000000000873,
+      "loaf": 3,
+      "blocked": 215.0,
+      "maxLoaf": 188.30000019073486,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 47,
+      "partialFrames": 2,
+      "captureFrames": 76,
+      "blankMs": 1183.2833290100098,
+      "partialMs": 49.99899864196777,
+      "blankOverlappingLoafMs": 173.42632842063904
+    },
+    {
+      "name": "best-grown-slow-r1",
+      "dragOrInputMs": 12138.699951171875,
+      "p50": 16.69999999999709,
+      "p95": 33.39999999999418,
+      "max": 83.30000000000291,
+      "fullMax": 83.30000000000291,
+      "loaf": 3,
+      "blocked": 33.8,
+      "maxLoaf": 81.5,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 108,
+      "partialFrames": 10,
+      "captureFrames": 299,
+      "blankMs": 4983.139753341675,
+      "partialMs": 449.9788284301758,
+      "blankOverlappingLoafMs": 48.26699209213257
+    },
+    {
+      "name": "best-grown-slow-r2",
+      "dragOrInputMs": 12201.599902391434,
+      "p50": 16.69999999999709,
+      "p95": 33.39999999999418,
+      "max": 99.90000000000873,
+      "fullMax": 99.90000000000873,
+      "loaf": 5,
+      "blocked": 117.6,
+      "maxLoaf": 91.89999985694885,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 108,
+      "partialFrames": 10,
+      "captureFrames": 289,
+      "blankMs": 5049.784421920776,
+      "partialMs": 516.6442394256592,
+      "blankOverlappingLoafMs": 83.82511329650879
+    },
+    {
+      "name": "best-grown-slow-r3",
+      "dragOrInputMs": 12465.0,
+      "p50": 16.69999999999709,
+      "p95": 33.40000000000873,
+      "max": 466.6999999999971,
+      "fullMax": 466.6999999999971,
+      "loaf": 15,
+      "blocked": 1311.1,
+      "maxLoaf": 457.7999999523163,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 109,
+      "partialFrames": 15,
+      "captureFrames": 296,
+      "blankMs": 6333.07957649231,
+      "partialMs": 516.6425704956055,
+      "blankOverlappingLoafMs": 1736.7927432060242
+    },
+    {
+      "name": "control-final-fast-r1",
+      "dragOrInputMs": 6420.39990234375,
+      "p50": 33.29999999998836,
+      "p95": 1250,
+      "max": 4433.100000000006,
+      "fullMax": 4433.100000000006,
+      "loaf": 8,
+      "blocked": 5714.599999999999,
+      "maxLoaf": 4412,
+      "mounts": 6,
+      "unmounts": 8,
+      "mountBatches": 3,
+      "mountTimes": [
+        1840.4,
+        4541.8,
+        6305.9
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 23,
+      "partialFrames": 2,
+      "captureFrames": 58,
+      "blankMs": 1749.9330043792725,
+      "partialMs": 83.3289623260498,
+      "blankOverlappingLoafMs": 1389.8208856582642
+    },
+    {
+      "name": "control-final-fast-r2",
+      "dragOrInputMs": 6458.600048780441,
+      "p50": 33.30000000000291,
+      "p95": 1466.699999999997,
+      "max": 4216.400000000009,
+      "fullMax": 4216.400000000009,
+      "loaf": 7,
+      "blocked": 5701.5,
+      "maxLoaf": 4205.599999904633,
+      "mounts": 6,
+      "unmounts": 8,
+      "mountBatches": 3,
+      "mountTimes": [
+        2088.1,
+        4743.0,
+        6370.2
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 27,
+      "partialFrames": 2,
+      "captureFrames": 63,
+      "blankMs": 2033.249855041504,
+      "partialMs": 66.6651725769043,
+      "blankOverlappingLoafMs": 1612.9369626045227
+    },
+    {
+      "name": "control-final-fast-r3",
+      "dragOrInputMs": 1885.699951171875,
+      "p50": 33.30000000000291,
+      "p95": 1316.6000000000058,
+      "max": 1316.6000000000058,
+      "fullMax": 2383.300000000003,
+      "loaf": 6,
+      "blocked": 3635.3999999999996,
+      "maxLoaf": 2373.0999999046326,
+      "mounts": 5,
+      "unmounts": 7,
+      "mountBatches": 2,
+      "mountTimes": [
+        1746.6,
+        4246.2
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 26,
+      "partialFrames": 0,
+      "captureFrames": 44,
+      "blankMs": 4216.499090194702,
+      "partialMs": 0,
+      "blankOverlappingLoafMs": 3766.499898672104
+    },
+    {
+      "name": "control-grown-slow-r1",
+      "dragOrInputMs": 14239.300097465515,
+      "p50": 16.69999999999709,
+      "p95": 66.69999999999709,
+      "max": 3183.0999999999913,
+      "fullMax": 3183.0999999999913,
+      "loaf": 25,
+      "blocked": 8728.6,
+      "maxLoaf": 3174.600000143051,
+      "mounts": 8,
+      "unmounts": 10,
+      "mountBatches": 5,
+      "mountTimes": [
+        6410.2,
+        8535.9,
+        10915.6,
+        12539.2,
+        14139.5
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 56,
+      "partialFrames": 3,
+      "captureFrames": 168,
+      "blankMs": 9599.614381790161,
+      "partialMs": 166.65983200073242,
+      "blankOverlappingLoafMs": 7795.131873369217
+    },
+    {
+      "name": "control-grown-slow-r2",
+      "dragOrInputMs": 14124.299999952316,
+      "p50": 16.69999999999709,
+      "p95": 83.20000000001164,
+      "max": 3183.2999999999884,
+      "fullMax": 3183.2999999999884,
+      "loaf": 19,
+      "blocked": 8632.4,
+      "maxLoaf": 3156.7999999523163,
+      "mounts": 8,
+      "unmounts": 10,
+      "mountBatches": 5,
+      "mountTimes": [
+        6265.1,
+        8497.9,
+        10804.1,
+        12378.4,
+        13998.5
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 55,
+      "partialFrames": 6,
+      "captureFrames": 152,
+      "blankMs": 11299.54719543457,
+      "partialMs": 349.9870300292969,
+      "blankOverlappingLoafMs": 9118.246505260468
+    },
+    {
+      "name": "control-grown-slow-r3",
+      "dragOrInputMs": 14336.400097846985,
+      "p50": 16.69999999999709,
+      "p95": 83.30000000000291,
+      "max": 3349.800000000003,
+      "fullMax": 3349.800000000003,
+      "loaf": 23,
+      "blocked": 8856.3,
+      "maxLoaf": 3321.5999999046326,
+      "mounts": 8,
+      "unmounts": 10,
+      "mountBatches": 5,
+      "mountTimes": [
+        6485.6,
+        8673.1,
+        10869.4,
+        12516.0,
+        14239.7
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 62,
+      "partialFrames": 3,
+      "captureFrames": 162,
+      "blankMs": 11666.204929351807,
+      "partialMs": 166.66007041931152,
+      "blankOverlappingLoafMs": 9657.848691225052
+    },
+    {
+      "name": "hold-warm-fast-screen",
+      "dragOrInputMs": 2513.0000977516174,
+      "p50": 50,
+      "p95": 200,
+      "max": 983.3000000000029,
+      "fullMax": 983.3000000000029,
+      "loaf": 4,
+      "blocked": 1169.9,
+      "maxLoaf": 960.8000001907349,
+      "mounts": 0,
+      "unmounts": 0,
+      "mountBatches": 0,
+      "mountTimes": [],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 0,
+      "partialFrames": 0,
+      "captureFrames": 62,
+      "blankMs": 0,
+      "partialMs": 0,
+      "blankOverlappingLoafMs": 0
+    },
+    {
+      "name": "partial-fast-screen",
+      "dragOrInputMs": 5618.899951219559,
+      "p50": 33.30000000000291,
+      "p95": 1716.5999999999913,
+      "max": 2983.199999999997,
+      "fullMax": 2983.199999999997,
+      "loaf": 7,
+      "blocked": 4659.1,
+      "maxLoaf": 2957.5,
+      "mounts": 4,
+      "unmounts": 8,
+      "mountBatches": 3,
+      "mountTimes": [
+        2452.2,
+        3832.9,
+        5535.0
+      ],
+      "heightMin": 312992,
+      "heightMax": 312992,
+      "blankFrames": 32,
+      "partialFrames": 0,
+      "captureFrames": 62,
+      "blankMs": 5433.117866516113,
+      "partialMs": 0,
+      "blankOverlappingLoafMs": 4864.257158041
+    }
+  ],
+  "stream": [
+    {
+      "name": "control",
+      "rep": 1,
+      "block": 5748,
+      "maxKey": 476.3,
+      "maxFrame": 599.9,
+      "beforeNodes": 107729,
+      "afterNodes": 134768,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "endWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "postGrowth": null,
+      "factory": null,
+      "streamFastSkips": null
+    },
+    {
+      "name": "control",
+      "rep": 2,
+      "block": 5912,
+      "maxKey": 413.8,
+      "maxFrame": 616.6,
+      "beforeNodes": 107729,
+      "afterNodes": 134768,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "endWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "postGrowth": null,
+      "factory": null,
+      "streamFastSkips": null
+    },
+    {
+      "name": "control",
+      "rep": 3,
+      "block": 5804,
+      "maxKey": 408.5,
+      "maxFrame": 583.3,
+      "beforeNodes": 107732,
+      "afterNodes": 134771,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "endWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "postGrowth": null,
+      "factory": null,
+      "streamFastSkips": null
+    },
+    {
+      "name": "display",
+      "rep": 1,
+      "block": 17797,
+      "maxKey": 939.7,
+      "maxFrame": 766.6,
+      "beforeNodes": 270890,
+      "afterNodes": 297929,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 924,
+        "block": 1148
+      },
+      "endWindow": {
+        "maxLoaf": 53,
+        "block": 3
+      },
+      "postGrowth": null,
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": null
+    },
+    {
+      "name": "hidden",
+      "rep": 1,
+      "block": 43993,
+      "maxKey": 935.8,
+      "maxFrame": 1183.3,
+      "beforeNodes": 270919,
+      "afterNodes": 297929,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 914,
+        "block": 1291
+      },
+      "endWindow": {
+        "maxLoaf": 67,
+        "block": 17
+      },
+      "postGrowth": null,
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": null
+    },
+    {
+      "name": "quiet-shrink",
+      "rep": 1,
+      "block": 6438,
+      "maxKey": 671.5,
+      "maxFrame": 650,
+      "beforeNodes": 270893,
+      "afterNodes": 134743,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 658,
+        "block": 697
+      },
+      "endWindow": {
+        "maxLoaf": 64,
+        "block": 2
+      },
+      "postGrowth": {
+        "complete": true,
+        "wallMs": 13243,
+        "fromStreamEndMs": 17840.200000047684,
+        "range": {
+          "startIndex": 0,
+          "endIndex": 13
+        },
+        "n": 13,
+        "nodes": 234449,
+        "maxFrame": 1683.3,
+        "maxLoaf": 1702,
+        "block": 7328,
+        "fastSkips": 228
+      },
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": 228
+    },
+    {
+      "name": "quiet-shrink",
+      "rep": 2,
+      "block": 6520,
+      "maxKey": 652.2,
+      "maxFrame": 600,
+      "beforeNodes": 270889,
+      "afterNodes": 134739,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 640,
+        "block": 647
+      },
+      "endWindow": {
+        "maxLoaf": 57,
+        "block": 0
+      },
+      "postGrowth": {
+        "complete": true,
+        "wallMs": 14608,
+        "fromStreamEndMs": 19185.39999985695,
+        "range": {
+          "startIndex": 0,
+          "endIndex": 13
+        },
+        "n": 13,
+        "nodes": 234449,
+        "maxFrame": 1449.9,
+        "maxLoaf": 1454,
+        "block": 5991,
+        "fastSkips": 228
+      },
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": 228
+    },
+    {
+      "name": "quiet-shrink",
+      "rep": 3,
+      "block": 6925,
+      "maxKey": 648.8,
+      "maxFrame": 583.3,
+      "beforeNodes": 270886,
+      "afterNodes": 134736,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 644,
+        "block": 648
+      },
+      "endWindow": {
+        "maxLoaf": 53,
+        "block": 2
+      },
+      "postGrowth": {
+        "complete": true,
+        "wallMs": 14187,
+        "fromStreamEndMs": 18847.5,
+        "range": {
+          "startIndex": 0,
+          "endIndex": 13
+        },
+        "n": 13,
+        "nodes": 234449,
+        "maxFrame": 1399.9,
+        "maxLoaf": 1417,
+        "block": 6397,
+        "fastSkips": 228
+      },
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": 228
+    },
+    {
+      "name": "shrink",
+      "rep": 1,
+      "block": 7013,
+      "maxKey": 783.4,
+      "maxFrame": 750,
+      "beforeNodes": 270890,
+      "afterNodes": 134740,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 761,
+        "block": 795
+      },
+      "endWindow": {
+        "maxLoaf": 0,
+        "block": 0
+      },
+      "postGrowth": null,
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": null
+    },
+    {
+      "name": "shrink",
+      "rep": 2,
+      "block": 6973,
+      "maxKey": 844.5,
+      "maxFrame": 816.5,
+      "beforeNodes": 270890,
+      "afterNodes": 134740,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 823,
+        "block": 804
+      },
+      "endWindow": {
+        "maxLoaf": 52,
+        "block": 2
+      },
+      "postGrowth": null,
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": null
+    },
+    {
+      "name": "shrink",
+      "rep": 3,
+      "block": 6504,
+      "maxKey": 673.7,
+      "maxFrame": 649.9,
+      "beforeNodes": 270893,
+      "afterNodes": 134743,
+      "sha": "043dc8afaf8d",
+      "chunks": 189,
+      "startWindow": {
+        "maxLoaf": 660,
+        "block": 641
+      },
+      "endWindow": {
+        "maxLoaf": 66,
+        "block": 4
+      },
+      "postGrowth": null,
+      "factory": {
+        "assignments": 1,
+        "matched": true,
+        "called": true
+      },
+      "streamFastSkips": null
+    }
+  ],
+  "typing": [
+    {
+      "name": "typing-best-r1",
+      "maxTask": 949,
+      "maxLoaf": 1047.5999999046326,
+      "block": 2289.6,
+      "maxFrame": 1033.300000000003,
+      "worstKey": 998.2000000476837,
+      "keyP95": 44.5,
+      "worstWheelAck": 26,
+      "grows": 3,
+      "range": {
+        "startIndex": 4,
+        "endIndex": 12
+      }
+    },
+    {
+      "name": "typing-best-r2",
+      "maxTask": 612,
+      "maxLoaf": 650.8999998569489,
+      "block": 1214.6,
+      "maxFrame": 633.2999999999993,
+      "worstKey": 583.5999999046326,
+      "keyP95": 28.200000047683716,
+      "worstWheelAck": 23,
+      "grows": 2,
+      "range": {
+        "startIndex": 5,
+        "endIndex": 12
+      }
+    },
+    {
+      "name": "typing-best-r3",
+      "maxTask": 637,
+      "maxLoaf": 686.7999999523163,
+      "block": 1396.8999999999999,
+      "maxFrame": 666.6000000000058,
+      "worstKey": 612.4000000953674,
+      "keyP95": 40.200000047683716,
+      "worstWheelAck": 23,
+      "grows": 2,
+      "range": {
+        "startIndex": 5,
+        "endIndex": 12
+      }
+    },
+    {
+      "name": "typing-control-r1",
+      "maxTask": 138,
+      "maxLoaf": 141.5,
+      "block": 200.8,
+      "maxFrame": 116.70000000000073,
+      "worstKey": 147.80000019073486,
+      "keyP95": 56.90000009536743,
+      "worstWheelAck": 21,
+      "grows": 0,
+      "range": null
+    },
+    {
+      "name": "typing-control-r2",
+      "maxTask": 0,
+      "maxLoaf": 120.59999990463257,
+      "block": 8.4,
+      "maxFrame": 100,
+      "worstKey": 62,
+      "keyP95": 30.399999856948853,
+      "worstWheelAck": 19,
+      "grows": 0,
+      "range": null
+    },
+    {
+      "name": "typing-control-r3",
+      "maxTask": 54,
+      "maxLoaf": 102.39999985694885,
+      "block": 2.6,
+      "maxFrame": 83.29999999999927,
+      "worstKey": 39,
+      "keyP95": 32,
+      "worstWheelAck": 23,
+      "grows": 0,
+      "range": null
+    }
+  ],
+  "send": [
+    {
+      "name": "send-best-r1",
+      "landingMs": 1160.7000000476837,
+      "top": 272,
+      "intercepted": 1,
+      "replayDone": true
+    },
+    {
+      "name": "send-best-r2",
+      "landingMs": 1184.9000000953674,
+      "top": 272,
+      "intercepted": 1,
+      "replayDone": true
+    },
+    {
+      "name": "send-best-r3",
+      "landingMs": 1163.2999999523163,
+      "top": 272,
+      "intercepted": 1,
+      "replayDone": true
+    },
+    {
+      "name": "send-control-r1",
+      "landingMs": 2613.199999809265,
+      "top": 315,
+      "intercepted": 1,
+      "replayDone": true
+    },
+    {
+      "name": "send-control-r2",
+      "landingMs": 2705.7000000476837,
+      "top": 272,
+      "intercepted": 1,
+      "replayDone": true
+    },
+    {
+      "name": "send-control-r3",
+      "landingMs": 2940.800000190735,
+      "top": 292,
+      "intercepted": 1,
+      "replayDone": true
+    }
+  ],
+  "rail": [
+    {
+      "name": "rail-best-r1",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    },
+    {
+      "name": "rail-best-r2",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    },
+    {
+      "name": "rail-best-r3",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    },
+    {
+      "name": "rail-control-r1",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    },
+    {
+      "name": "rail-control-r2",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    },
+    {
+      "name": "rail-control-r3",
+      "pass": true,
+      "turnTop": 64,
+      "userTop": 116
+    }
+  ]
+}

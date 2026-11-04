@@ -1,0 +1,23 @@
+{
+  "declined": {
+    "settings": {
+      "enabled": true,
+      "lang": "zh",
+      "layoutConsent": "declined",
+      "opts": {
+        "container": true,
+        "cv": true,
+        "layout": false,
+        "older": true,
+        "rail": true,
+        "seek": true,
+        "throttle": true
+      }
+    },
+    "usage": {
+      "conversations": 0,
+      "bytes": 0
+    },
+    "rows": 0
+  }
+}

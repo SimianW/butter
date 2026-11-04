@@ -1,0 +1,34 @@
+# Mechanisms and falsifiable predictions
+
+Primary sources are local captures of ChatGPT's running code and browser traces, rather than external descriptions.
+
+1. **Turn-only CSS (`turn`).** Attribute selectors match synchronously during style/layout, independently of MutationObserver delivery. A bounded sheet can therefore give a previously seen remount `content-visibility:auto` and a numeric fallback before the collapsible ref runs. Prediction: offscreen turn cost decreases, but forcing a descendant's width and landing inside a long turn may still require its contents. The canonical screen records computed CV/intrinsic size while the fresh turn has no Butter seen mark. The turn-only screen does not eliminate multi-second frames.
+2. **Turn-specific generic block CSS (`generic`).** The same turn selectors qualify a shared direct-block selector. Prediction: smaller layout work, but the default block fallback does not preserve long-answer geometry. The first warm screen grows the chat from about 313k to about 600k px. It is a correctness failure, not a usable smooth-scroll result.
+3. **Insertion-time exact cache (`hook`).** Wrapped `Node.appendChild`/`insertBefore` see the completed detached turn subtree before it enters the connected tree. The wrapper restores inline turn and block fallback sizes. The recorded restoration hits have `connected:false`; later width probes show inline CV and no seen mark. This is direct evidence that the hook beats the in-commit layout. It reduces layout time, but first-layout math measurements can be stale; the warm screen preserves height yet still has a 1433 ms worst frame.
+4. **Readiness-guarded insertion (`hook-ready`).** Reject untypeset math and RO notifications for skipped elements. Readiness is checked once per turn per RO batch. This tests whether inaccurate cold measurements explain the insertion arm's height deficit.
+5. **Before-read restoration (`read-hook`).** A narrow user-text `clientWidth` getter wrapper restores exact cached sizes for newly mounted turns before calling the original native getter. The native return is preserved. This avoids intercepting every DOM insertion, but depends on the current DOM shape.
+6. **Deferred initial ref (`defer-hook`).** The primary collapsible source registers a ResizeObserver (`w(e)`) *before* calling `y(e,e.clientWidth)`. Its measurement helper returns null immediately when width is nonpositive. A once-per-element zero only for the pinned call site and a known completed remount therefore defers this initial measurement to the already registered RO. Every other read calls the native getter. This is a diagnostic private-implementation dependency, not a generic supported browser hook. It is tested independently and cannot be recommended without its geometry/collapse and streaming results.
+
+The source excerpt is `collapsible-text-source.txt` (bundle 396705.cd1656e9ad.js, line 43, around column 527912). It also reads `getComputedStyle` and, when collapsedLineCount is present, `scrollHeight`; returning a cached nonzero width alone does not remove those later forcing opportunities.
+
+The virtualizer source retains turn-height estimates in React state/refs and measures mounted turn bounds synchronously in layout effects plus a shared ResizeObserver. Eliminating this one width read is not sufficient proof that all synchronous layout disappears. The trace is the arbiter.
+
+All prototypes cap numeric caches at 64 turn keys. Keys are canonical conversation ID plus stable turn/message identity. Current width gating uses exact viewport width, so same-viewport sidebar/content-column changes are an explicit unsupported case until stronger synchronous width guarding is designed. A changed message ID or block count declines restoration. No DOM element is stored in cache entries; connected observer targets are released when removed.
+
+## Evidence from repeated guarded runs
+
+The final read-hook arm uses one completion/readiness check per turn per ResizeObserver batch, and does not intercept DOM insertions. Its twelve-run matrix keeps the original overscan behavior. The warmed fast native forced layouts above 100 ms are 166/154 ms, 209/154 ms, and 163/148 ms, versus control's roughly 1.2–1.5 second forcing events in fast screens. Worst frames remain 1000–1283 ms. The residual cost is therefore not correctly described as one unchanged multi-second Layout. The exact later trace tables preserve native layout, style and sampled non-layout categories; CPU sample categories are estimates and are not added to LoAF as an exact decomposition.
+
+Cold fast repetition 2 lacks the same ready block coverage and contains 1059 and 1744 ms forced layouts. Fail-closed misses restore correctness by retaining the native path, which also retains its latency. Warming cannot establish cold-cache coverage for arbitrary unseen history.
+
+The original turn-only warm screen logs a measured question inside a 36,895 px turn at approximately -56k px from the viewport top. Computed CV is auto with the remembered fallback, but the native descendant width read forces an 888 ms Layout. This independently demonstrates that outer-turn CV is not enough even when that measured turn is offscreen; the read can require its subtree.
+
+## Deferred-ref screen
+
+The deferred arm recorded four deferred initial refs in the cold screen, zero slow native width reads, and native Layout maxima of 120 ms cold and 151 ms warm, now forced by the virtualizer bounds-measurement helper `ea` rather than the collapsible width ref. Worst frames were still 900/1100 ms, blank time 967/1400 ms, and cold input ended at 301049 px instead of the bottom. It is pruned as an invasive source-coupled arm that still leaves roughly-second stalls/blanking; streaming, slow drag, landing and memory are unmeasured for it. This supports the conclusion that suppressing that ref alone is not a complete drag fix.
+
+## Viewport inside one long turn
+
+`diagnostic-turn.json` explicitly samples top 15000 px inside the first 33919.359375 px turn: turn top is -14916 px relative to the scroller, bottom 19003.359375 px, 673 direct answer blocks, all math typeset. Its outer turn necessarily intersects the viewport. The final return step in this first diagnostic was pulled to top 20 px by an existing rail anchor, so it is not used as a direct remount-latency measurement. The repeated native-drag matrix releases rail alignment using genuine wheel input; the final inline-style diagnostic does likewise.
+
+The final guarded diagnostic returns to scrollTop 15000 after unmount/remount, inside the first 33919.359375 px turn. All 655 restored nonzero-height block styles remain present among 673 direct blocks after settling; total height is 312992 px, and no math source is untypeset. Thus React did not erase those inline styles in this measured remount. This is a measured lifecycle case, not a guarantee for future React style updates.

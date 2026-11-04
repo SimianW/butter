@@ -1,0 +1,246 @@
+{
+  "a": [
+    {
+      "s": ".hd",
+      "top": 0,
+      "h": 68.890625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".hd>div",
+      "top": 16,
+      "h": 46.890625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".hd svg",
+      "top": 16.890625,
+      "h": 48,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".word",
+      "top": 16,
+      "h": 27.890625,
+      "font": "31px / 27.9px \"Bagel Fat One\", Nunito, system-ui, sans-serif",
+      "lineHeight": "27.9px",
+      "display": "block"
+    },
+    {
+      "s": ".ver",
+      "top": 48.890625,
+      "h": 14,
+      "font": "800 10px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".master",
+      "top": 80.890625,
+      "h": 78,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".k",
+      "top": 96.890625,
+      "h": 25,
+      "font": "900 16px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".s",
+      "top": 124.890625,
+      "h": 18,
+      "font": "700 12px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".label",
+      "top": 182.890625,
+      "h": 17,
+      "font": "900 11px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".list",
+      "top": 207.890625,
+      "h": 346.65625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".row",
+      "top": 209.890625,
+      "h": 63.09375,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".use",
+      "top": 515.546875,
+      "h": 25,
+      "font": "",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".ft",
+      "top": 572.546875,
+      "h": 55,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".lang",
+      "top": 586.546875,
+      "h": 25,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".links",
+      "top": 590.046875,
+      "h": 18,
+      "font": "800 12px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    }
+  ],
+  "b": [
+    {
+      "s": ".hd",
+      "top": 0,
+      "h": 68.890625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".hd>div",
+      "top": 16,
+      "h": 46.890625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".hd svg",
+      "top": 16.890625,
+      "h": 48,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".word",
+      "top": 16,
+      "h": 27.890625,
+      "font": "31px / 27.9px \"Bagel Fat One\", Nunito, system-ui, sans-serif",
+      "lineHeight": "27.9px",
+      "display": "block"
+    },
+    {
+      "s": ".ver",
+      "top": 48.890625,
+      "h": 14,
+      "font": "800 10px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".master",
+      "top": 80.890625,
+      "h": 78,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".k",
+      "top": 96.890625,
+      "h": 25,
+      "font": "900 16px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".s",
+      "top": 124.890625,
+      "h": 18,
+      "font": "700 12px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".label",
+      "top": 182.890625,
+      "h": 17,
+      "font": "900 11px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".list",
+      "top": 207.890625,
+      "h": 346.65625,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "block"
+    },
+    {
+      "s": ".row",
+      "top": 209.890625,
+      "h": 63.09375,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".use",
+      "top": 515.546875,
+      "h": 25,
+      "font": "",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".ft",
+      "top": 572.546875,
+      "h": 55,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".lang",
+      "top": 586.546875,
+      "h": 25,
+      "font": "13px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    },
+    {
+      "s": ".links",
+      "top": 590.046875,
+      "h": 18,
+      "font": "800 12px Nunito, \"PingFang SC\", \"Microsoft YaHei\", system-ui, sans-serif",
+      "lineHeight": "normal",
+      "display": "flex"
+    }
+  ]
+}

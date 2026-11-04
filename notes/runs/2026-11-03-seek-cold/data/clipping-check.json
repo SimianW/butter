@@ -1,0 +1,350 @@
+[
+  {
+    "name": "semantic-classic-cold-fast-r1.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-classic-cold-fast-r2.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-classic-cold-fast-r3.json",
+    "height": 291.0403907962097,
+    "offset": 213,
+    "visibleEstimateHeight": 26.040390796209692,
+    "firstNeedleIndex": 0,
+    "minNewlineY": 0,
+    "approxWrappedY": 0,
+    "semanticError": -0.234375
+  },
+  {
+    "name": "semantic-classic-cold-slow-r1.json",
+    "height": 290.9763827644643,
+    "offset": 201,
+    "visibleEstimateHeight": 37.97638276446429,
+    "firstNeedleIndex": 23,
+    "minNewlineY": 78,
+    "approxWrappedY": 78,
+    "semanticError": -0.390625
+  },
+  {
+    "name": "semantic-classic-cold-slow-r2.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-classic-cold-slow-r3.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-overlay-cold-fast-r1.json",
+    "height": 291.0403907962097,
+    "offset": 212,
+    "visibleEstimateHeight": 27.040390796209692,
+    "firstNeedleIndex": 0,
+    "minNewlineY": 0,
+    "approxWrappedY": 0,
+    "semanticError": -0.453125
+  },
+  {
+    "name": "semantic-overlay-cold-fast-r2.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-overlay-cold-fast-r3.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-overlay-cold-slow-r1.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-overlay-cold-slow-r2.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "semantic-overlay-cold-slow-r3.json",
+    "height": 290.9763827644643,
+    "offset": 200,
+    "visibleEstimateHeight": 38.97638276446429,
+    "firstNeedleIndex": 74,
+    "minNewlineY": 208,
+    "approxWrappedY": 208,
+    "semanticError": -0.390625
+  },
+  {
+    "name": "stored-classic-cold-fast-r1.json",
+    "height": 291.62106193072947,
+    "offset": 192,
+    "visibleEstimateHeight": 47.62106193072947,
+    "firstNeedleIndex": 273,
+    "minNewlineY": 962,
+    "approxWrappedY": 962,
+    "semanticError": 0.34375
+  },
+  {
+    "name": "stored-classic-cold-fast-r2.json",
+    "height": 291.62106193072947,
+    "offset": 192,
+    "visibleEstimateHeight": 47.62106193072947,
+    "firstNeedleIndex": 273,
+    "minNewlineY": 962,
+    "approxWrappedY": 962,
+    "semanticError": 0.34375
+  },
+  {
+    "name": "stored-classic-cold-fast-r3.json",
+    "height": 291.62106193072947,
+    "offset": 191,
+    "visibleEstimateHeight": 48.62106193072947,
+    "firstNeedleIndex": 324,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066,
+    "semanticError": 0.34375
+  },
+  {
+    "name": "stored-classic-cold-slow-r1.json",
+    "height": 291.62106193072947,
+    "offset": 207,
+    "visibleEstimateHeight": 32.62106193072947,
+    "firstNeedleIndex": 276,
+    "minNewlineY": 936,
+    "approxWrappedY": 936,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "stored-classic-cold-slow-r2.json",
+    "height": 291.62106193072947,
+    "offset": 192,
+    "visibleEstimateHeight": 47.62106193072947,
+    "firstNeedleIndex": 273,
+    "minNewlineY": 962,
+    "approxWrappedY": 962,
+    "semanticError": 0.34375
+  },
+  {
+    "name": "stored-classic-cold-slow-r3.json",
+    "height": 291.62106193072947,
+    "offset": 192,
+    "visibleEstimateHeight": 47.62106193072947,
+    "firstNeedleIndex": 273,
+    "minNewlineY": 962,
+    "approxWrappedY": 962,
+    "semanticError": 0.34375
+  },
+  {
+    "name": "stored-overlay-cold-fast-r1.json",
+    "height": 291.62106193072947,
+    "offset": 207,
+    "visibleEstimateHeight": 32.62106193072947,
+    "firstNeedleIndex": 276,
+    "minNewlineY": 936,
+    "approxWrappedY": 936,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "stored-overlay-cold-fast-r2.json",
+    "height": 291.62106193072947,
+    "offset": 207,
+    "visibleEstimateHeight": 32.62106193072947,
+    "firstNeedleIndex": 276,
+    "minNewlineY": 936,
+    "approxWrappedY": 936,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "stored-overlay-cold-fast-r3.json",
+    "height": 291.5714059903377,
+    "offset": 201,
+    "visibleEstimateHeight": 38.57140599033772,
+    "firstNeedleIndex": 49,
+    "minNewlineY": 130,
+    "approxWrappedY": 130,
+    "semanticError": -0.390625
+  },
+  {
+    "name": "stored-overlay-cold-slow-r1.json",
+    "height": 291.6355449133437,
+    "offset": 213,
+    "visibleEstimateHeight": 26.635544913343722,
+    "firstNeedleIndex": 4,
+    "minNewlineY": 0,
+    "approxWrappedY": 0,
+    "semanticError": -0.453125
+  },
+  {
+    "name": "stored-overlay-cold-slow-r2.json",
+    "height": 291.62106193072947,
+    "offset": 207,
+    "visibleEstimateHeight": 32.62106193072947,
+    "firstNeedleIndex": 276,
+    "minNewlineY": 936,
+    "approxWrappedY": 936,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "stored-overlay-cold-slow-r3.json",
+    "height": 291.62106193072947,
+    "offset": 207,
+    "visibleEstimateHeight": 32.62106193072947,
+    "firstNeedleIndex": 276,
+    "minNewlineY": 936,
+    "approxWrappedY": 936,
+    "semanticError": -0.03125
+  },
+  {
+    "name": "v2-classic-cold-fast-r1.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806
+  },
+  {
+    "name": "v2-classic-cold-fast-r2.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806
+  },
+  {
+    "name": "v2-classic-cold-fast-r3.json",
+    "height": 291.0403907962097,
+    "offset": 213,
+    "visibleEstimateHeight": 26.040390796209692,
+    "firstNeedleIndex": 0,
+    "minNewlineY": 0,
+    "approxWrappedY": 0
+  },
+  {
+    "name": "v2-classic-cold-slow-r1.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806
+  },
+  {
+    "name": "v2-classic-cold-slow-r2.json",
+    "height": 291.0259373696865,
+    "offset": 207,
+    "visibleEstimateHeight": 32.02593736968652,
+    "firstNeedleIndex": 249,
+    "minNewlineY": 806,
+    "approxWrappedY": 806
+  },
+  {
+    "name": "v2-classic-cold-slow-r3.json",
+    "height": 295.3268641479385,
+    "offset": 217,
+    "visibleEstimateHeight": 26.326864147938522,
+    "firstNeedleIndex": 30,
+    "minNewlineY": 208,
+    "approxWrappedY": 208
+  },
+  {
+    "name": "v2-overlay-cold-fast-r1.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066
+  },
+  {
+    "name": "v2-overlay-cold-fast-r2.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066
+  },
+  {
+    "name": "v2-overlay-cold-fast-r3.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066
+  },
+  {
+    "name": "v2-overlay-cold-slow-r1.json",
+    "height": 295.3268641479385,
+    "offset": 216,
+    "visibleEstimateHeight": 27.326864147938522,
+    "firstNeedleIndex": 21,
+    "minNewlineY": 156,
+    "approxWrappedY": 156
+  },
+  {
+    "name": "v2-overlay-cold-slow-r2.json",
+    "height": 291.0259373696865,
+    "offset": 206,
+    "visibleEstimateHeight": 33.02593736968652,
+    "firstNeedleIndex": 300,
+    "minNewlineY": 1066,
+    "approxWrappedY": 1066
+  },
+  {
+    "name": "v2-overlay-cold-slow-r3.json",
+    "height": 290.9763827644643,
+    "offset": 200,
+    "visibleEstimateHeight": 38.97638276446429,
+    "firstNeedleIndex": 74,
+    "minNewlineY": 208,
+    "approxWrappedY": 208
+  }
+]

@@ -1,0 +1,444 @@
+{
+  "alpha9": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": null
+  },
+  "alpha10": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": null
+  },
+  "head-prev": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest": {
+    "n": 5,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest-seek-off": {
+    "n": 3,
+    "butterOff": [
+      "seek"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true,
+          "seek": false
+        }
+      }
+    }
+  },
+  "latest-layout-off": {
+    "n": 3,
+    "butterOff": [
+      "layout"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": false
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  },
+  "latest-rail-off": {
+    "n": 3,
+    "butterOff": [
+      "rail"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true,
+          "rail": false
+        }
+      }
+    }
+  },
+  "latest-offscreen-old": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  },
+  "latest-unrendered-skip": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest-cache-mo-defer": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest-cache-defer": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest-fix": {
+    "n": 3,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "bis-noseek": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  },
+  "bis-nocache": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  },
+  "bis-nohistory": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "bis-noconsent": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix2-unrendered": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix2": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-noblockro": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-nocvevent": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-noclientwidth": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  },
+  "lc-nochardata": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix3-unrendered": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix3": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-noro": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-nomainmo": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix4-unrendered": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix4": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "lc-mo-childlist": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "fix5": {
+    "n": 2,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      },
+      "butterLayoutMigrated": true
+    }
+  }
+}

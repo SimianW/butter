@@ -1,0 +1,87 @@
+{
+  "mockup": "~/.t3/worktrees/butter/t3-54326eed/mockups/seek-preview.html",
+  "method": "Manually compared private four-panel contact sheets against the approved mockup source, checking seen, stored-cold, unseen, and cold released-loading states. Screenshot appearance is supported by the recorded DOM facts; screenshots cannot establish animation duration.",
+  "cells": [
+    {
+      "cell": "1440-light-classic",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "1440-light-overlay",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "1440-dark-classic",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "1440-dark-overlay",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "800-light-classic",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "800-light-overlay",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "800-dark-classic",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    },
+    {
+      "cell": "800-dark-overlay",
+      "states": [
+        "seen drag",
+        "stored-cold drag",
+        "truly unseen drag",
+        "released loading"
+      ],
+      "finding": "Muted preview, formula placeholder boxes, expanded active rail and question card, no top badge. Unknown geometry begins with its question and alone carries the unseen suffix/bottom fade. Released loading keeps the preview and shows spinner/loading text."
+    }
+  ],
+  "limitations": "The mockup is light mode; dark captures keep the existing dark palette. Narrow captures naturally have a more overlapping rail card. The 120 ms fade and busy-tick animation are code/test checks, not a claim established by a still image. Some early captures contain a local replay draft; final cleanup clears it and verifies emptiness after reload. Raw screenshots remain private."
+}

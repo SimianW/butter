@@ -1,0 +1,43 @@
+{
+  "sourceDirectory": "butter-math-box",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-04T03:57:05.062872+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T03:57:05.062872+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-before-ats.json",
+      "archivedAs": "data/drag-before-ats.json",
+      "sourceMtimeUTC": "2026-11-04T03:54:13.208352+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-after-ats.json",
+      "archivedAs": "data/drag-after-ats.json",
+      "sourceMtimeUTC": "2026-11-04T03:54:45.524640+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-after-fixture.json",
+      "archivedAs": "data/drag-after-fixture.json",
+      "sourceMtimeUTC": "2026-11-04T03:56:04.071336+00:00"
+    },
+    {
+      "sourceRelativePath": "stored-ats.json",
+      "archivedAs": "data/stored-ats.json",
+      "sourceMtimeUTC": "2026-11-04T03:32:32.387337+00:00"
+    },
+    {
+      "sourceRelativePath": "stored-ats2.json",
+      "archivedAs": "data/stored-ats2.json",
+      "sourceMtimeUTC": "2026-11-04T03:34:26.483298+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

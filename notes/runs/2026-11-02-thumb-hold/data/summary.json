@@ -1,0 +1,258 @@
+[
+  {
+    "run": "control-1",
+    "heightBefore": 88342,
+    "heightHeld": [
+      121945,
+      121997
+    ],
+    "thumbStepHeld": 0.09,
+    "topStepHeld": 0,
+    "holdPages": 1,
+    "postPages": 6,
+    "releaseHeight": [
+      121945
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": 23647.9,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      29227
+    ],
+    "firstReleasedRequestMs": 12064,
+    "fullHeightAfterReleaseMs": 23664.0
+  },
+  {
+    "run": "control-2",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770
+    ],
+    "thumbStepHeld": 0.01,
+    "topStepHeld": 1,
+    "holdPages": 0,
+    "postPages": 7,
+    "releaseHeight": [
+      92770
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": 24674.4,
+    "natural": {
+      "all": false,
+      "ticks": 5
+    },
+    "topHeld": [
+      314,
+      315
+    ],
+    "firstReleasedRequestMs": 12065,
+    "fullHeightAfterReleaseMs": 24678.8
+  },
+  {
+    "run": "control-4",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepHeld": 211.45,
+    "topStepHeld": 29227,
+    "holdPages": 1,
+    "postPages": 6,
+    "releaseHeight": [
+      121945
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": 23387.2,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0,
+      29227
+    ],
+    "firstReleasedRequestMs": 12065,
+    "fullHeightAfterReleaseMs": 23399.6
+  },
+  {
+    "run": "control-5",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepHeld": 211.45,
+    "topStepHeld": 29227,
+    "holdPages": 1,
+    "postPages": 6,
+    "releaseHeight": [
+      121945
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": 23069.0,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0,
+      29227
+    ],
+    "firstReleasedRequestMs": 12074,
+    "fullHeightAfterReleaseMs": 23079.7
+  },
+  {
+    "run": "control-6",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepHeld": 211.45,
+    "topStepHeld": 29227,
+    "holdPages": 1,
+    "postPages": 6,
+    "releaseHeight": [
+      121945
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": 22980.5,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0,
+      29227
+    ],
+    "firstReleasedRequestMs": 12060,
+    "fullHeightAfterReleaseMs": 22990.6
+  },
+  {
+    "run": "hold-1",
+    "heightBefore": 88260,
+    "heightHeld": [
+      92770
+    ],
+    "thumbStepHeld": 0.0,
+    "topStepHeld": 0,
+    "holdPages": 0,
+    "postPages": 7,
+    "releaseHeight": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepRelease": 211.45,
+    "topStepRelease": 29227,
+    "releaseMaxTask": 1073,
+    "fullAfterReleaseMs": 23392.9,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0
+    ],
+    "firstReleasedRequestMs": 4,
+    "fullHeightAfterReleaseMs": 23405.0
+  },
+  {
+    "run": "hold-2",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770
+    ],
+    "thumbStepHeld": 0.0,
+    "topStepHeld": 0,
+    "holdPages": 0,
+    "postPages": 7,
+    "releaseHeight": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepRelease": 211.45,
+    "topStepRelease": 29227,
+    "releaseMaxTask": 1054,
+    "fullAfterReleaseMs": 22975.1,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0
+    ],
+    "firstReleasedRequestMs": 2,
+    "fullHeightAfterReleaseMs": 22985.6
+  },
+  {
+    "run": "hold-3",
+    "heightBefore": 92770,
+    "heightHeld": [
+      92770
+    ],
+    "thumbStepHeld": 0.0,
+    "topStepHeld": 0,
+    "holdPages": 0,
+    "postPages": 7,
+    "releaseHeight": [
+      92770,
+      121945,
+      121997
+    ],
+    "thumbStepRelease": 211.45,
+    "topStepRelease": 29227,
+    "releaseMaxTask": 1087,
+    "fullAfterReleaseMs": 22992.5,
+    "natural": {
+      "all": false,
+      "ticks": 6
+    },
+    "topHeld": [
+      0
+    ],
+    "firstReleasedRequestMs": 6,
+    "fullHeightAfterReleaseMs": 23003.3
+  },
+  {
+    "run": "hold-wheel",
+    "heightBefore": 92770,
+    "heightHeld": [],
+    "thumbStepHeld": 0,
+    "topStepHeld": 0,
+    "holdPages": 7,
+    "postPages": 0,
+    "releaseHeight": [
+      312992
+    ],
+    "thumbStepRelease": 0.0,
+    "topStepRelease": 0,
+    "releaseMaxTask": 0,
+    "fullAfterReleaseMs": -3083.9,
+    "natural": {
+      "all": true,
+      "ticks": 12
+    },
+    "topHeld": [],
+    "firstReleasedRequestMs": null,
+    "fullHeightAfterReleaseMs": 13.9
+  }
+]

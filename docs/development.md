@@ -24,7 +24,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 - Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 12 states in both themes at 320 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references);
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
-- Version consistency: `python3 scripts/check-version.py`.
+- Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
@@ -39,6 +39,8 @@ Run `npm ci` to install the pinned development formatter, then `npm run format` 
 ## Release
 
 `python3 scripts/package.py` builds the zip. Version rules are in [AGENTS.md](../AGENTS.md).
+For testing, `python3 scripts/package.py --test <tag>` builds `dist/butter-<version_name>+<tag>.<N>.zip` without changing the source manifest or consuming an alpha number (tag: `[a-z0-9-]+`; numbering starts at 1 per base version and tag).
+Test zips retain the base Chrome numeric version; remove the previous install before loading one unpacked.
 
 ## Layout storage API
 

@@ -1,0 +1,44 @@
+{
+  "medians": {
+    "overlay": {
+      "base": 1190.4499999284744,
+      "current": 1198.4499999284744,
+      "difference": 8.0
+    },
+    "classic": {
+      "base": 1018,
+      "current": 1052,
+      "difference": 34
+    }
+  },
+  "state": {
+    "warmABRuns": 18,
+    "darkRecheckRuns": 18,
+    "blankRuns": 12,
+    "heldMounts": 0,
+    "emptyFrames": 0,
+    "anchorMaxAbsPx": 0.484375,
+    "allCurrentBuildsMatchSnapshot": true,
+    "repoMatchesSnapshot": true,
+    "warmMediansMs": {
+      "overlay": {
+        "base": 1190.4499999284744,
+        "current": 1198.4499999284744,
+        "currentMinusBaseMs": 8.0
+      },
+      "classic": {
+        "base": 1018,
+        "current": 1052,
+        "currentMinusBaseMs": 34
+      }
+    },
+    "unitTestsPassed": 114
+  },
+  "zip": {
+    "zip": "(not archived)",
+    "bytes": 84758,
+    "sha256": "defa20f603c0bb1c4ddc48cdea44c5e7f8de4269e83f6f8da0d56075fb78ab01",
+    "version": "0.1.0.10",
+    "version_name": "0.1.0-alpha.10+seekstored.3"
+  }
+}

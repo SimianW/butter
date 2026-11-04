@@ -1,0 +1,109 @@
+{
+  "before": {
+    "t": 8719.099999904633,
+    "top": 87430,
+    "height": 88342,
+    "client": 912,
+    "width": 1238,
+    "offsetWidth": 1258,
+    "rect": {
+      "x": 341,
+      "y": 0,
+      "width": 1258,
+      "height": 912
+    },
+    "turns": [
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>"
+    ],
+    "nodes": 62397,
+    "katex": 894
+  },
+  "after": {
+    "t": 15664,
+    "top": 29227,
+    "height": 121946,
+    "client": 912,
+    "width": 1238,
+    "offsetWidth": 1258,
+    "rect": {
+      "x": 341,
+      "y": 0,
+      "width": 1258,
+      "height": 912
+    },
+    "turns": [
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>"
+    ],
+    "nodes": 80105,
+    "katex": 1148
+  },
+  "events": [
+    {
+      "type": "pointermove",
+      "t": 8726.599999904633,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 892,
+      "buttons": 0,
+      "offsetX": 1252
+    },
+    {
+      "type": "mousemove",
+      "t": 8730.799999952316,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 892,
+      "buttons": 0,
+      "offsetX": 1252
+    },
+    {
+      "type": "pointerdown",
+      "t": 8740.200000047684,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 892,
+      "buttons": 1,
+      "offsetX": 1252
+    },
+    {
+      "type": "mousedown",
+      "t": 8741.099999904633,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 892,
+      "buttons": 1,
+      "offsetX": 1252
+    },
+    {
+      "type": "blur",
+      "t": 8742.799999952316,
+      "target": "ProseMirror ProseMirror-focused"
+    },
+    {
+      "type": "pointerup",
+      "t": 15159.299999952316,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 18,
+      "buttons": 0,
+      "offsetX": 1252
+    },
+    {
+      "type": "mouseup",
+      "t": 15159.5,
+      "target": "thread-scroll-container peer/transcript overflow-x-hidden overflow-y-auto overscroll-y-contain browser:overscroll-y-auto group-has-[[data-expanded-composer]]/thread-scroll-layout:overflow-y-hidden [overflow-anchor:none] [scroll-padding-bottom:var(--thread-scroll-padding-bottom,0px)] outline-none h-full electron:[scrollbar-gutter:stable_both-edges] [&:has([data-thread-scroll-footer='true']:focus-within)]:[scroll-padding-bottom:0px] flex flex-col pt-(--thread-content-top-inset) [--thread-sticky-header-top:calc(var(--spacing)*8)] browser:[--thread-sticky-header-top:var(--thread-content-top-inset,0px)]",
+      "x": 1593,
+      "y": 18,
+      "buttons": 0,
+      "offsetX": 1252
+    }
+  ]
+}

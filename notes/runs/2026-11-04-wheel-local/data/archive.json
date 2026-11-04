@@ -1,0 +1,38 @@
+{
+  "sourceDirectory": "butter-wheel-local",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-04T05:00:40.089792+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T05:00:40.089792+00:00"
+    },
+    {
+      "sourceRelativePath": "table.md",
+      "archivedAs": "data/table.md",
+      "sourceMtimeUTC": "2026-11-04T04:58:44.673569+00:00"
+    },
+    {
+      "sourceRelativePath": "runs-table.md",
+      "archivedAs": "data/runs-table.md",
+      "sourceMtimeUTC": "2026-11-04T04:59:25.761265+00:00"
+    },
+    {
+      "sourceRelativePath": "results.json",
+      "archivedAs": "data/results.json",
+      "sourceMtimeUTC": "2026-11-04T04:58:44.671979+00:00"
+    },
+    {
+      "sourceRelativePath": "results.json",
+      "archivedAs": "data/per-run-metrics.csv",
+      "transformation": "One scalar metric row per repetition; no per-frame samples or captured text."
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

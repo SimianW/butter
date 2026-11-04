@@ -1,0 +1,28 @@
+{
+  "sourceDirectory": "butter-popup-build",
+  "dateBasis": "UTC modification time of REPORT.md",
+  "primarySourceMtimeUTC": "2026-11-04T01:08:35.404419+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "REPORT.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T01:08:35.404419+00:00"
+    },
+    {
+      "sourceRelativePath": "pixel-comparison.json",
+      "archivedAs": "data/pixel-comparison.json",
+      "sourceMtimeUTC": "2026-11-04T01:02:57.691546+00:00"
+    },
+    {
+      "sourceRelativePath": "quick-geometry.json",
+      "archivedAs": "data/quick-geometry.json",
+      "sourceMtimeUTC": "2026-11-04T00:58:30.011600+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

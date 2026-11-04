@@ -1,0 +1,47 @@
+# Butter: idle mounting and streaming evacuation experiment
+
+**Preliminary result: no tested design meets the seamless-background target. Follow-up measurements are still running.** A loadable MV3 prototype can retain the whole active conversation and substantially reduce subsequent native-drag remount stalls. It cannot make a giant turn's first commit imperceptible. Content-visibility activation remains a separate blanking problem. Do not ship this experiment as a seamless native-scrollbar fix.
+
+The final measured tables, selected MP4s, verification and recommendation are generated in report.md. This draft retains the interpretation being tested while the matrix runs.
+
+## Scope
+
+Work is isolated to `(not archived)`, except the explicitly required snap-readable copies and shared lab state. No tracked Butter source, package, version or release changed. `git fetch origin && git checkout --detach origin/main` landed at 4dc4f1c rather than 79774e7 because main advanced; `git diff 79774e7 HEAD -- extension` is empty for the frozen setup HEAD. The shared remote-tracking ref advanced later; it does not change the copied control. The control extension is therefore the released alpha.9 code. No real message was sent.
+
+Read the four requested earlier reports in full before design. Reused their full-history response cache, fail-closed fetch replay, independent browser-context write firewall, native minimum-thumb input, LoAF/rAF/DOM probes, and original 189-chunk benchmark schedule. The preview tool reported unavailable; the explicitly supplied headed CDP lab was used. The task was performed without subagents.
+
+## What was tried
+
+1. **Ordinary staged range growth:** one extra turn per step, nearest to the viewport first. Establishes the current cold per-turn cost and a red-capable 100 ms task gate.
+2. **React transition growth:** the same one-turn state updates in a real transition lane. Render work can yield; the commit's descendant width read and forced layout still cannot. Corrected the adapter to update both the state queue and the virtualizer's native scroll-state ref; the first state-only screen was invalid because scrolling discarded its retention.
+3. **Provisional fixed-height turn, progressively activate answer blocks:** insert the background turn with the virtualizer's known outer height; start its blocks hidden; activate at most four blocks, with a 6 ms requested budget, per idle callback. Each actual block can exceed that budget. V1 restored already-prepared blocks to auto; V2 kept prepared blocks hidden at their measured sizes until final conversion, and pinned outer visibility during work. Both exceeded the latency target. They were deliberately stopped and never promoted as geometry-correct full solutions.
+4. **Transitions plus the previous remembered-height hook**, then **transitions plus its source-pinned deferred initial ref**: warmed screens only, explicitly inheriting the previous cache's content-width and cold-coverage limitations. They test whether complementary mechanisms can remove the remaining big task, not whether an uncorrected cache is safe to ship.
+5. **Dynamic streaming evacuation:** compare dropping back to the native near-viewport range against retaining all turns while hiding extras with content-visibility:hidden and exact turn fallbacks. Hidden retention uses the shippable factory hook so app send-placement updates cannot silently reduce it to the control window. Audits sample actual range/node/hidden counts during the replay.
+The first shrink implementation polled scroller geometry during streaming; a follow-up removes those avoidable reads and early-returns the default overscan helper before visibility checks. Its replay is measured separately, rather than assuming that simpler code necessarily improves the result.
+6. **Paint readiness:** warmed full retention with ordinary Butter CV, then lift CV only while the actual native scrollbar is held. Count enable and release frames. Also measure a native drag beginning while retention is incomplete.
+
+## Method
+
+The long chat has 12 questions, around 207,410 active elements when fully mounted and 312,992 px calibrated total height at the lab width. Native fast input uses 60 moves over a requested 1.2 seconds; slow input uses 120 over 12 seconds. Inputs are submitted independently of main-thread stalls. Worst-frame and LoAF include recovery after release. The full-history warm calibration traverses twice, and drag capture asserts a near-top starting scroll position. Early assembled-history shortcut drags that started elsewhere are excluded and replaced. Growth itself is deliberately measured cold; its height corrections are reported, not hidden by this drag calibration.
+
+Blank time is the prior central-rectangle low-ink screencast heuristic, holding each sampled image by its presentation timestamp. It is not a count of every display refresh or proof of GPU missing tiles. Ordinary whitespace can resemble incomplete content; selected contact sheets are inspected and MP4s preserve the visual evidence. Key-to-paint uses key timestamp through rAF plus a queued task, an approximation to presented paint. The typing collision probe explicitly timestamps CDP input at submission, so its latency includes waiting behind a busy main thread. Continuous input pauses future growth; pauses allow another step and exercise the race with a commit already running.
+
+Cold growth requests are forced by the harness at the same bounded step schedule to compare individual commit costs. The ordinary prototype waits for a visible document, no streaming, the idle interval and inter-step gap. The typing probe uses that real idle/input gate. GC-normalized memory is paired before/after growth. Lifecycle DOM-node counts with the broad scroll probe can retain observer targets, so they are not used alone as proof of a prototype leak or successful full release; the separate chat-switch probe avoids that instrumentation. No CPU speed multiplier is applied. These are small sequential samples from one software-composited Linux Chromium lab and one unusually math-heavy conversation, not cross-device guarantees or confidence intervals.
+
+## Mechanism, lifecycle and bounds
+
+See production-mechanism.md. The current app uses ESM Rspack chunks, without an exposed webpack chunk-push global. The unpacked extension's temporary module-registration setter matched and invoked a locally packaged, exact-source factory replacement. It changes four overscan sites, scoped through the controller's committed scroller WeakMap; the active adapter owns the sole eligible instance. This was exercised by the real extension, not a CDP rewrite. It also passes unknown/missing factory and setting fallback fixtures.
+
+Idle range changes use a separately exact-source-pinned component and validated state queue/ref/layout shape. They preserve native return values and rendering ownership. No guessed block heights or remembered-height prototype is included in extension-best. The expansion is gated by both CV and older switches. The prototype refuses growth above 24 entries and reserves 50,000 nodes before stepping against a 300,000-active-node budget. This is a soft conservative bound, not a guaranteed per-turn or byte-memory cap. A single unseen turn can exceed the reserve. Chat-switch cleanup drops adapter ownership and attempts native-range eviction of the previous instance; actual SPA versus full-navigation coverage is recorded separately.
+
+## Why the target still fails
+
+Scheduling is not subdivision. Idle callbacks and transitions change when work starts; a synchronous native layout/React commit already in progress is not cancelable by a later key or wheel event. The measured long tasks remain well above the must-have 100 ms bound. The block experiments reduce the granularity of layout attempts, but individual blocks, style recalculation, RO work and GC still create visible stalls, while completion slows to tens of seconds per turn. The warmed cache experiments cannot establish cold geometry and inherit a known exact-content-width gap.
+
+Once every turn is mounted, dragging no longer pays repeated full turn construction. It can nevertheless scroll into CV-skipped content before rendering catches up. Lifting all mounted CV while held removes those blanks at the cost of a new activation/release stall. That does not satisfy seamless native dragging. A partially prepared drag still needs the native fallback for its unmounted destinations and remains slow.
+
+Dynamic streaming protection must be judged by the actual retained DOM and transition costs. The early hidden screen is excluded because its range had already shrunk before send. Final hidden and shrink replay samples include actual-range audits, the full answer hash and 189-chunk count; no low streaming total is credited to hidden retention unless the extra turns truly remain present.
+
+## Reproduction
+
+README.md explains phase/journal/gate/matrix scripts. All commands and actual output are in commands-and-output.md and logs/, raw metrics in results.json and the individual JSON/trace files, exact deployed extension copies in builds-used/, rejected source variants in extension-staged-v1/, extension-staged-v2/, extension-cache/ and extension-deferred/. EXCLUSIONS.md identifies failed setup and deliberately pruned samples. The best unpacked prototype has its own short EXPERIMENT.md.

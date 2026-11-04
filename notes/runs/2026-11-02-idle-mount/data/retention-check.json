@@ -1,0 +1,292 @@
+{
+  "before": {
+    "t": 23927,
+    "top": 307652,
+    "height": 308564,
+    "client": 912,
+    "width": 1238,
+    "offsetWidth": 1258,
+    "rect": {
+      "x": 341,
+      "y": 0,
+      "width": 1258,
+      "height": 912
+    },
+    "turns": [
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>"
+    ],
+    "nodes": 207410,
+    "katex": 2901
+  },
+  "after": {
+    "t": 26976.599999904633,
+    "top": 1800,
+    "height": 308564,
+    "client": 912,
+    "width": 1238,
+    "offsetWidth": 1258,
+    "rect": {
+      "x": 341,
+      "y": 0,
+      "width": 1258,
+      "height": 912
+    },
+    "turns": [
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>"
+    ],
+    "nodes": 207410,
+    "katex": 2901
+  },
+  "dump": {
+    "config": {
+      "mode": "transition",
+      "stream": "shrink",
+      "paint": "none",
+      "idleMs": 3000,
+      "gapMs": 1500,
+      "maxTurns": 24,
+      "maxNodes": 260000,
+      "auto": false
+    },
+    "steps": [
+      {
+        "kind": "grow",
+        "t": 10927.399999856949,
+        "from": {
+          "startIndex": 7,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 6,
+          "endIndex": 12
+        },
+        "dispatchMs": 0.2999999523162842
+      },
+      {
+        "kind": "grow",
+        "t": 13065.299999952316,
+        "from": {
+          "startIndex": 6,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 5,
+          "endIndex": 12
+        },
+        "dispatchMs": 0.09999990463256836
+      },
+      {
+        "kind": "grow",
+        "t": 14870.799999952316,
+        "from": {
+          "startIndex": 5,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 4,
+          "endIndex": 12
+        },
+        "dispatchMs": 0.09999990463256836
+      },
+      {
+        "kind": "grow",
+        "t": 16679.5,
+        "from": {
+          "startIndex": 4,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 3,
+          "endIndex": 12
+        },
+        "dispatchMs": 0.09999990463256836
+      },
+      {
+        "kind": "grow",
+        "t": 18488,
+        "from": {
+          "startIndex": 3,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 2,
+          "endIndex": 12
+        },
+        "dispatchMs": 0
+      },
+      {
+        "kind": "grow",
+        "t": 20297.599999904633,
+        "from": {
+          "startIndex": 2,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 1,
+          "endIndex": 12
+        },
+        "dispatchMs": 0.09999990463256836
+      },
+      {
+        "kind": "grow",
+        "t": 22108.599999904633,
+        "from": {
+          "startIndex": 1,
+          "endIndex": 12
+        },
+        "to": {
+          "startIndex": 0,
+          "endIndex": 12
+        },
+        "dispatchMs": 0
+      }
+    ],
+    "events": [
+      {
+        "type": "evacuate",
+        "t": 9684,
+        "reason": "chat-switch"
+      }
+    ],
+    "errors": [],
+    "ready": true,
+    "streaming": false,
+    "renderer": {
+      "keys": [
+        "bundleType",
+        "version",
+        "rendererPackageName",
+        "currentDispatcherRef",
+        "reconcilerVersion"
+      ],
+      "dispatcher": [
+        "H",
+        "A",
+        "T",
+        "S"
+      ]
+    },
+    "range": {
+      "distanceFromBottomPx": 0,
+      "renderedRange": {
+        "startIndex": 0,
+        "endIndex": 12
+      },
+      "turnKeys": [
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>"
+      ],
+      "viewportHeightPx": 912
+    },
+    "layout": {
+      "bottomOffsetsPx": [
+        274403,
+        235109,
+        210366,
+        177862,
+        143233,
+        117167,
+        87992,
+        54306,
+        20354,
+        15107,
+        220,
+        0
+      ],
+      "collapseEmptyRows": false,
+      "gapKeys": {},
+      "gapsBeforePx": [
+        0,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "heightsPx": [
+        33919,
+        39282,
+        24731,
+        32492,
+        34617,
+        26054,
+        29163,
+        33674,
+        33940,
+        5235,
+        14875,
+        208
+      ],
+      "topOffsetsPx": [
+        0,
+        33931,
+        73225,
+        97968,
+        130472,
+        165101,
+        191167,
+        220342,
+        254028,
+        287980,
+        293227,
+        308114
+      ],
+      "totalHeightPx": 308322,
+      "turnIndexByKey": {},
+      "turnKeys": [
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>",
+        "<id>"
+      ]
+    },
+    "activeNodes": 207410,
+    "hidden": 0
+  }
+}

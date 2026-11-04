@@ -3,8 +3,12 @@
 ## Versioning
 
 Versions follow SemVer 2.0.0 pre-release naming. The alpha builds of `X.Y.Z` are `X.Y.Z-alpha`,
-`X.Y.Z-alpha.1`, `X.Y.Z-alpha.2`, … Each build handed to the user or released bumps the alpha
-number; the user decides when `X.Y.Z` itself moves.
+`X.Y.Z-alpha.1`, `X.Y.Z-alpha.2`, … Each released build bumps the alpha number; the user decides
+when `X.Y.Z` itself moves.
+
+A test build (a package handed to the user to try, not released) takes no alpha number: build it
+with `python3 scripts/package.py --test <tag>`, which names it `<version_name>+<tag>.<N>` inside
+the zip only. `extension/manifest.json` never carries a `+` version.
 
 `extension/manifest.json` carries the version twice, because Chrome accepts only one to four
 dot-separated integers in `version` and orders updates by it alone:
@@ -34,3 +38,13 @@ GitHub tags and releases are `v<version_name>`; alpha builds are marked as prere
 Builds before 0.1.0-alpha.5 were renamed on 2026-11-01. Commit messages from before then still use
 the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and 0.0.2-alpha.N is
 0.1.0-alpha.N.
+
+## Workflow
+
+- Every change reaches `main` through a PR, merged only after a sol-loop review (the `sol-loop`
+  skill) returns APPROVE on the final diff. Reviewers also check the diff against
+  [CODING_STANDARDS.md](CODING_STANDARDS.md).
+- Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
+  fixtures.
+- Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
+  Strip private data first; the rules are in [notes/runs/README.md](notes/runs/README.md).

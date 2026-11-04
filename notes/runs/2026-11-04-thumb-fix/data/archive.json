@@ -1,0 +1,38 @@
+{
+  "sourceDirectory": "butter-thumb-fix",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-04T18:29:34.596477+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T18:29:34.596477+00:00"
+    },
+    {
+      "sourceRelativePath": "before-overlay.json",
+      "archivedAs": "data/before-overlay.json",
+      "sourceMtimeUTC": "2026-11-04T18:27:38.441507+00:00"
+    },
+    {
+      "sourceRelativePath": "after-overlay.json",
+      "archivedAs": "data/after-overlay.json",
+      "sourceMtimeUTC": "2026-11-04T18:28:00.158688+00:00"
+    },
+    {
+      "sourceRelativePath": "before-classic.json",
+      "archivedAs": "data/before-classic.json",
+      "sourceMtimeUTC": "2026-11-04T18:28:22.369874+00:00"
+    },
+    {
+      "sourceRelativePath": "after-classic.json",
+      "archivedAs": "data/after-classic.json",
+      "sourceMtimeUTC": "2026-11-04T18:28:43.503050+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

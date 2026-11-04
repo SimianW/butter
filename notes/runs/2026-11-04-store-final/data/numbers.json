@@ -1,0 +1,64 @@
+{
+  "version": {
+    "value": "0.1.0-alpha.11",
+    "source": "Released ZIP manifest"
+  },
+  "benchmark": {
+    "source": "User-supplied v1 figures: median of 5 lab runs, build just before 0.1.0-alpha.11, against no extension. User states alpha.11 is equal or better; not independently rebenchmarked in this graphics task.",
+    "runs": "5",
+    "footnote": "Lab measurements, long math chat, median of 5 runs. Your numbers depend on your machine."
+  },
+  "frozen": {
+    "label": "Page frozen while an answer streams",
+    "without": "75 s",
+    "butter": "13 s",
+    "source": "User-supplied v1 figures: median of 5 lab runs, build just before 0.1.0-alpha.11, against no extension. User states alpha.11 is equal or better; not independently rebenchmarked in this graphics task."
+  },
+  "frames": {
+    "label": "Slowest 5% of frames while it streams",
+    "without": "300 ms",
+    "butter": "50 ms",
+    "source": "User-supplied v1 figures: median of 5 lab runs, build just before 0.1.0-alpha.11, against no extension. User states alpha.11 is equal or better; not independently rebenchmarked in this graphics task."
+  },
+  "drag": {
+    "label": "Frame time while you drag (p95)",
+    "without": "3.1 s",
+    "butter": "33 ms",
+    "source": "User-supplied v1 figures: median of 5 lab runs, build just before 0.1.0-alpha.11, against no extension. User states alpha.11 is equal or better; not independently rebenchmarked in this graphics task."
+  },
+  "typing": {
+    "label": "Slowest keystroke in a long chat",
+    "without": "5.4 s",
+    "butter": "under 1 s",
+    "source": "User-supplied v1 figures: median of 5 lab runs, build just before 0.1.0-alpha.11, against no extension. User states alpha.11 is equal or better; not independently rebenchmarked in this graphics task."
+  },
+  "privacy": {
+    "expiryDays": "30",
+    "source": "Approved mockup privacy copy; released extension/storage/layout-worker.js:18 sets TTL to 30 days."
+  },
+  "captureNumbers": {
+    "source": "Authentic screenshots of the English first exchange in lab2 ats12, captured 2026-11-04 with released 0.1.0-alpha.11. These embedded pixels are unchanged source content, not performance measurements.",
+    "details": [
+      {
+        "value": "Today 1:02 AM",
+        "source": "ChatGPT timestamp visible in chat, rail and typing captures; omitted by the real held seek preview"
+      },
+      {
+        "value": "1 / 12",
+        "source": "Real hover card: first question out of the 12 questions in ats12"
+      },
+      {
+        "value": "Question 1 of 12",
+        "source": "Real Butter seek card while CDP holds the scrollbar drag"
+      },
+      {
+        "value": "<prompt text>",
+        "source": "Existing English ChatGPT answer about <prompt text>; not edited"
+      },
+      {
+        "value": "V0.1.0 · ALPHA 11",
+        "source": "Real released popup version badge from manifest version_name"
+      }
+    ]
+  }
+}

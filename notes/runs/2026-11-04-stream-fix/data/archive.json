@@ -1,0 +1,30 @@
+{
+  "sourceDirectory": "butter-stream-fix",
+  "dateBasis": "UTC modification time of table.md",
+  "primarySourceMtimeUTC": "2026-11-04T18:34:18.673806+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "table.md",
+      "archivedAs": "data/table.md",
+      "sourceMtimeUTC": "2026-11-04T18:34:18.673806+00:00"
+    },
+    {
+      "sourceRelativePath": "arms.json",
+      "archivedAs": "data/arms.json",
+      "sourceMtimeUTC": "2026-11-04T18:34:18.673322+00:00"
+    },
+    {
+      "sourcePatterns": [
+        "raw/stream/*/rep-*.json"
+      ],
+      "archivedAs": "data/run-timings.csv",
+      "transformation": "Derived scalar timings/counts only; no captured text, identifiers or per-frame samples."
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

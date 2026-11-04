@@ -1,0 +1,48 @@
+{
+  "sourceDirectory": "butter-cache-v2",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T02:41:36.184145+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T02:41:36.184145+00:00"
+    },
+    {
+      "sourceRelativePath": "streaming-table.md",
+      "archivedAs": "data/streaming-table.md",
+      "sourceMtimeUTC": "2026-11-02T01:59:38.369292+00:00"
+    },
+    {
+      "sourceRelativePath": "diagnosis-notes.md",
+      "archivedAs": "data/diagnosis-notes.md",
+      "sourceMtimeUTC": "2026-11-02T01:10:50.875871+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-02T02:37:55.420013+00:00"
+    },
+    {
+      "sourceRelativePath": "layout-compatibility.json",
+      "archivedAs": "data/layout-compatibility.json",
+      "sourceMtimeUTC": "2026-11-02T01:34:16.935456+00:00"
+    },
+    {
+      "sourceRelativePath": "cache-status.json",
+      "archivedAs": "data/cache-status.json",
+      "sourceMtimeUTC": "2026-11-02T02:17:12.830983+00:00"
+    },
+    {
+      "sourceRelativePath": "gate-diagnostic.json",
+      "archivedAs": "data/gate-diagnostic.json",
+      "sourceMtimeUTC": "2026-11-02T01:42:40.454241+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

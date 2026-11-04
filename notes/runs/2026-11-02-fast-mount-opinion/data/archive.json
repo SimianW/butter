@@ -1,0 +1,33 @@
+{
+  "sourceDirectory": "butter-fast-mount-opinion",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T20:58:32.813697+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T20:58:32.813697+00:00"
+    },
+    {
+      "sourceRelativePath": "control-warm-fast-r2-trace-audit.json",
+      "archivedAs": "data/control-warm-fast-r2-trace-audit.json",
+      "sourceMtimeUTC": "2026-11-02T20:58:10.630185+00:00"
+    },
+    {
+      "sourceRelativePath": "read-hook-warm-fast-r3-trace-audit.json",
+      "archivedAs": "data/read-hook-warm-fast-r3-trace-audit.json",
+      "sourceMtimeUTC": "2026-11-02T20:58:07.066808+00:00"
+    },
+    {
+      "sourceRelativePath": "expand-idle-trace-audit.json",
+      "archivedAs": "data/expand-idle-trace-audit.json",
+      "sourceMtimeUTC": "2026-11-02T20:58:04.313338+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

@@ -1,0 +1,481 @@
+{
+  "result": [
+    {
+      "name": "light-zh-1440",
+      "path": "(not archived)",
+      "actual": {
+        "width": "300px",
+        "height": "176px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "300px",
+        "height": "176px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 1110,
+          "y": 742,
+          "width": 300,
+          "height": 176,
+          "top": 742,
+          "right": 1410,
+          "bottom": 918,
+          "left": 1110
+        },
+        "composer": {
+          "x": 362.5,
+          "y": 924,
+          "width": 768,
+          "height": 52,
+          "top": 924,
+          "right": 1130.5,
+          "bottom": 976,
+          "left": 362.5
+        },
+        "rail": {
+          "x": 1440,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 1440,
+          "bottom": 0,
+          "left": 1440
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": false,
+        "rootTheme": "chatgpt-theme light",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.zh-CN.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "不用了",
+          "好的"
+        ]
+      }
+    },
+    {
+      "name": "dark-zh-1440",
+      "path": "(not archived)",
+      "actual": {
+        "width": "300px",
+        "height": "176px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(38, 33, 27)",
+        "color": "rgb(230, 220, 198)",
+        "boxShadow": "rgb(13, 11, 8) 0px 4px 0px 0px, rgba(0, 0, 0, 0.4) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "300px",
+        "height": "176px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(38, 33, 27)",
+        "color": "rgb(230, 220, 198)",
+        "boxShadow": "rgb(13, 11, 8) 0px 4px 0px 0px, rgba(0, 0, 0, 0.4) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 1110,
+          "y": 742,
+          "width": 300,
+          "height": 176,
+          "top": 742,
+          "right": 1410,
+          "bottom": 918,
+          "left": 1110
+        },
+        "composer": {
+          "x": 362.5,
+          "y": 924,
+          "width": 768,
+          "height": 52,
+          "top": 924,
+          "right": 1130.5,
+          "bottom": 976,
+          "left": 362.5
+        },
+        "rail": {
+          "x": 1440,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 1440,
+          "bottom": 0,
+          "left": 1440
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": true,
+        "rootTheme": "chatgpt-theme dark",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.zh-CN.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "不用了",
+          "好的"
+        ]
+      }
+    },
+    {
+      "name": "light-en-1440",
+      "path": "(not archived)",
+      "actual": {
+        "width": "300px",
+        "height": "192px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "300px",
+        "height": "192px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 1110,
+          "y": 726,
+          "width": 300,
+          "height": 192,
+          "top": 726,
+          "right": 1410,
+          "bottom": 918,
+          "left": 1110
+        },
+        "composer": {
+          "x": 362.5,
+          "y": 924,
+          "width": 768,
+          "height": 52,
+          "top": 924,
+          "right": 1130.5,
+          "bottom": 976,
+          "left": 362.5
+        },
+        "rail": {
+          "x": 1440,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 1440,
+          "bottom": 0,
+          "left": 1440
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": false,
+        "rootTheme": "chatgpt-theme light",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "No thanks",
+          "Sounds good"
+        ]
+      }
+    },
+    {
+      "name": "light-zh-700",
+      "path": "(not archived)",
+      "actual": {
+        "width": "668px",
+        "height": "158px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "668px",
+        "height": "158px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 16,
+          "y": 760,
+          "width": 668,
+          "height": 158,
+          "top": 760,
+          "right": 684,
+          "bottom": 918,
+          "left": 16
+        },
+        "composer": {
+          "x": 30,
+          "y": 924,
+          "width": 640,
+          "height": 52,
+          "top": 924,
+          "right": 670,
+          "bottom": 976,
+          "left": 30
+        },
+        "rail": {
+          "x": 700,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 700,
+          "bottom": 0,
+          "left": 700
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": false,
+        "rootTheme": "chatgpt-theme light",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.zh-CN.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "不用了",
+          "好的"
+        ]
+      }
+    },
+    {
+      "name": "dark-zh-700",
+      "path": "(not archived)",
+      "actual": {
+        "width": "668px",
+        "height": "158px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(38, 33, 27)",
+        "color": "rgb(230, 220, 198)",
+        "boxShadow": "rgb(13, 11, 8) 0px 4px 0px 0px, rgba(0, 0, 0, 0.4) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "668px",
+        "height": "158px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(38, 33, 27)",
+        "color": "rgb(230, 220, 198)",
+        "boxShadow": "rgb(13, 11, 8) 0px 4px 0px 0px, rgba(0, 0, 0, 0.4) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 16,
+          "y": 760,
+          "width": 668,
+          "height": 158,
+          "top": 760,
+          "right": 684,
+          "bottom": 918,
+          "left": 16
+        },
+        "composer": {
+          "x": 30,
+          "y": 924,
+          "width": 640,
+          "height": 52,
+          "top": 924,
+          "right": 670,
+          "bottom": 976,
+          "left": 30
+        },
+        "rail": {
+          "x": 700,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 700,
+          "bottom": 0,
+          "left": 700
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": true,
+        "rootTheme": "chatgpt-theme dark",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.zh-CN.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "不用了",
+          "好的"
+        ]
+      }
+    },
+    {
+      "name": "light-en-700",
+      "path": "(not archived)",
+      "actual": {
+        "width": "668px",
+        "height": "156px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "reference": {
+        "width": "668px",
+        "height": "156px",
+        "paddingTop": "14px",
+        "paddingRight": "14px",
+        "paddingBottom": "12px",
+        "borderTopWidth": "2px",
+        "borderRadius": "16px",
+        "backgroundColor": "rgb(255, 253, 246)",
+        "color": "rgb(27, 23, 15)",
+        "boxShadow": "rgb(27, 23, 15) 0px 4px 0px 0px, rgba(0, 0, 0, 0.14) 0px 12px 28px 0px"
+      },
+      "metrics": {
+        "rect": {
+          "x": 16,
+          "y": 762,
+          "width": 668,
+          "height": 156,
+          "top": 762,
+          "right": 684,
+          "bottom": 918,
+          "left": 16
+        },
+        "composer": {
+          "x": 30,
+          "y": 924,
+          "width": 640,
+          "height": 52,
+          "top": 924,
+          "right": 670,
+          "bottom": 976,
+          "left": 30
+        },
+        "rail": {
+          "x": 700,
+          "y": 0,
+          "width": 0,
+          "height": 0,
+          "top": 0,
+          "right": 700,
+          "bottom": 0,
+          "left": 700
+        },
+        "fonts": [
+          {
+            "family": "ButterConsentNunito",
+            "status": "loaded"
+          }
+        ],
+        "hidden": false,
+        "theme": false,
+        "rootTheme": "chatgpt-theme light",
+        "links": [
+          {
+            "href": "https://github.com/<account>/butter/blob/main/PRIVACY.md",
+            "target": "_blank"
+          }
+        ],
+        "buttons": [
+          "No thanks",
+          "Sounds good"
+        ]
+      }
+    }
+  ],
+  "errors": [
+    "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "label": "after-classic",
+  "mode": "classic",
+  "id": "<redacted>",
+  "consent": "granted",
+  "geo": {
+    "left": 53,
+    "top": 0,
+    "right": 1599,
+    "bottom": 912,
+    "ow": 1546,
+    "cw": 1526,
+    "ch": 912,
+    "sh": 21352,
+    "st": 6312,
+    "cl": 10
+  },
+  "press": {
+    "x": 1589,
+    "y": 293.4717122517797
+  },
+  "mid": {
+    "seeking": true,
+    "host": {
+      "left": 63,
+      "right": 1589,
+      "width": 1526,
+      "top": 52,
+      "bottom": 828,
+      "opacity": "1"
+    },
+    "scrollerRight": 1599,
+    "clientWidth": 1526,
+    "offsetWidth": 1546,
+    "lastPress": {
+      "t": 12459.400000095367,
+      "type": "pointerdown",
+      "onScroller": true,
+      "kind": "classic",
+      "x": 1536,
+      "w": 1526,
+      "ow": 1546
+    },
+    "layerLeft": "0px",
+    "stripCovered": [
+      false,
+      false,
+      true
+    ],
+    "firstItemLeft": 442,
+    "estLeft": null
+  }
+}

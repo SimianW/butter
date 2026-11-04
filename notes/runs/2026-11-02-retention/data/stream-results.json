@@ -1,0 +1,254 @@
+[
+  {
+    "arm": "a6",
+    "n": 3,
+    "blocks": [
+      21933,
+      22655,
+      22209
+    ],
+    "medianBlockMs": 22209,
+    "worstKeyMs": 618.1,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      183955,
+      183955,
+      183955
+    ],
+    "nodesAfter": [
+      210994,
+      210994,
+      210994
+    ]
+  },
+  {
+    "arm": "aall-p1",
+    "n": 3,
+    "blocks": [
+      42856,
+      37105,
+      37530
+    ],
+    "medianBlockMs": 37530,
+    "worstKeyMs": 1023.7,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270855,
+      270858,
+      270858
+    ],
+    "nodesAfter": [
+      297894,
+      297897,
+      297897
+    ]
+  },
+  {
+    "arm": "aall-p3",
+    "n": 3,
+    "blocks": [
+      41413,
+      42620,
+      42539
+    ],
+    "medianBlockMs": 42539,
+    "worstKeyMs": 815.3,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270854,
+      270854,
+      270854
+    ],
+    "nodesAfter": [
+      297893,
+      297893,
+      297893
+    ]
+  },
+  {
+    "arm": "aall-phold",
+    "n": 3,
+    "blocks": [
+      40404,
+      36660,
+      42436
+    ],
+    "medianBlockMs": 40404,
+    "worstKeyMs": 824.8,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270855,
+      270858,
+      270855
+    ],
+    "nodesAfter": [
+      297894,
+      297897,
+      297894
+    ]
+  },
+  {
+    "arm": "activeall",
+    "n": 3,
+    "blocks": [
+      36635,
+      52132,
+      41310
+    ],
+    "medianBlockMs": 41310,
+    "worstKeyMs": 1056.3,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270857,
+      274994,
+      270853
+    ],
+    "nodesAfter": [
+      297896,
+      302033,
+      297892
+    ]
+  },
+  {
+    "arm": "control",
+    "n": 3,
+    "blocks": [
+      5693,
+      5532,
+      5427
+    ],
+    "medianBlockMs": 5532,
+    "worstKeyMs": 393.1,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      107665,
+      107665,
+      107664
+    ],
+    "nodesAfter": [
+      134704,
+      134704,
+      134703
+    ]
+  },
+  {
+    "arm": "global-hiddenall",
+    "n": 1,
+    "blocks": [
+      40685
+    ],
+    "medianBlockMs": 40685,
+    "worstKeyMs": 922,
+    "sha": [
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270853
+    ],
+    "nodesAfter": [
+      297892
+    ]
+  },
+  {
+    "arm": "globalall",
+    "n": 3,
+    "blocks": [
+      41246,
+      41480,
+      38442
+    ],
+    "medianBlockMs": 41246,
+    "worstKeyMs": 1081.5,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      270853,
+      270854,
+      270857
+    ],
+    "nodesAfter": [
+      297892,
+      297893,
+      297896
+    ]
+  },
+  {
+    "arm": "hidden-direct",
+    "n": 3,
+    "blocks": [
+      40937,
+      42404,
+      37144
+    ],
+    "medianBlockMs": 40937,
+    "worstKeyMs": 857.3,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      415781,
+      415781,
+      415781
+    ],
+    "nodesAfter": [
+      442820,
+      442820,
+      442820
+    ]
+  },
+  {
+    "arm": "scope2",
+    "n": 3,
+    "blocks": [
+      5580,
+      7418,
+      5503
+    ],
+    "medianBlockMs": 5580,
+    "worstKeyMs": 422.9,
+    "sha": [
+      "043dc8afaf8d",
+      "043dc8afaf8d",
+      "043dc8afaf8d"
+    ],
+    "nodesBefore": [
+      107668,
+      107580,
+      107664
+    ],
+    "nodesAfter": [
+      134707,
+      134619,
+      134703
+    ]
+  }
+]
