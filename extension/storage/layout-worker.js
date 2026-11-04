@@ -17,12 +17,17 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
 const codec = ButterLayoutCodec;
 const TTL = 30 * 24 * 60 * 60 * 1000,
   CAP = 50_000_000;
-let enabled = true,
+let enabled = false,
+  consent = 'pending',
   settingsVersion = 0,
   queue = Promise.resolve(),
   opened;
 const settingsReady = chrome.storage.local.get('butter').then(({ butter }) => {
-  if (!settingsVersion) enabled = butter?.opts?.layout !== false;
+  if (!settingsVersion) {
+    const settings = ButterStatus.normalize(butter);
+    enabled = settings.opts.layout;
+    consent = settings.layoutConsent;
+  }
 });
 const request = (r) =>
   new Promise((ok, no) => {
@@ -123,7 +128,8 @@ async function reconcile(rows, now) {
 async function handle(message) {
   await settingsReady;
   const op = message.type;
-  if (op === 'butter-layout-clear') return clear(message.requestId);
+  if (op === 'butter-layout-clear')
+    return consent === 'pending' ? { conversations: 0, bytes: 0 } : clear(message.requestId);
   if (!enabled)
     return op === 'butter-layout-usage' ? { conversations: 0, bytes: 0 } : { records: [] };
   if (
@@ -202,10 +208,12 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local' || !changes.butter) return;
   settingsVersion++;
-  enabled = changes.butter.newValue?.opts?.layout !== false;
-  if (!enabled) serial(clear);
+  const settings = ButterStatus.normalize(changes.butter.newValue);
+  enabled = settings.opts.layout;
+  consent = settings.layoutConsent;
+  if (!enabled && consent !== 'pending') serial(clear);
 });
 serial(async () => {
   await settingsReady;
-  if (!enabled) await clear();
+  if (!enabled && consent !== 'pending') await clear();
 });

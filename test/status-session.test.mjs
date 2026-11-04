@@ -91,7 +91,10 @@ test('settings probes merge seek and layout failures into their groups and clear
       },
     },
     chrome: {
-      storage: { local: { get: async () => ({}) }, onChanged: { addListener() {} } },
+      storage: {
+        local: { get: async () => ({ butter: { layoutConsent: 'granted' } }) },
+        onChanged: { addListener() {} },
+      },
       runtime: {
         onMessage: { addListener: (fn) => (receive = fn) },
         sendMessage: (m) => record(m.states),

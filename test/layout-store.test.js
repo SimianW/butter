@@ -265,7 +265,7 @@ test('layout evidence stays neutral until exercised, fails on unavailable storag
   const probe = () => {
     facts = {};
     f.event('butter-status-request');
-    return status.classify(facts).layout;
+    return status.classify(facts, { layoutConsent: 'granted' }).layout;
   };
   assert.equal(probe(), 'idle');
   await new Promise(setImmediate);
@@ -278,12 +278,12 @@ test('layout evidence stays neutral until exercised, fails on unavailable storag
   f.storage.account();
   await f.api.setTexts(conv, texts);
   assert.equal(probe(), 'fail');
-  let failures = status.updateFailures({}, status.classify(facts));
+  let failures = status.updateFailures({}, status.classify(facts, { layoutConsent: 'granted' }));
   assert.deepEqual(failures, { layout: { layout: true } });
   available = true;
   await f.api.setTexts(conv, texts);
   assert.equal(probe(), 'ok');
-  failures = status.updateFailures(failures, status.classify(facts));
+  failures = status.updateFailures(failures, status.classify(facts, { layoutConsent: 'granted' }));
   assert.deepEqual(failures, {});
   f.api.record('t', record);
   available = false;

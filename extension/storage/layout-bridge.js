@@ -1,12 +1,23 @@
 // ISOLATED world. Only compact geometry and hashes cross into extension storage.
 (() => {
   let enabled = false,
-    settingsVersion = 0;
+    settingsVersion = 0,
+    consent = 'pending',
+    migrationReady = false,
+    migrated = false;
   const emit = (detail) =>
     document.dispatchEvent(
       new CustomEvent('butter-layout-response', { detail: JSON.stringify(detail) }),
     );
   const announce = () => emit({ state: true, enabled });
+  const migrate = () => {
+    if (!migrationReady || migrated || consent === 'pending') return;
+    migrated = true;
+    // Delete, never read/import the legacy cache, after the consent choice. A blocked delete
+    // is retried on a subsequent visit.
+    const r = indexedDB.deleteDatabase('butter-seek-cold-geometry-v1');
+    r.onsuccess = () => chrome.storage.local.set({ butterLayoutMigrated: true });
+  };
   document.addEventListener('butter-layout-request', async (e) => {
     let m;
     try {
@@ -46,19 +57,25 @@
     if (area !== 'local') return;
     if (changes.butter) {
       settingsVersion++;
-      enabled = changes.butter.newValue?.opts?.layout !== false;
+      const settings = ButterStatus.normalize(changes.butter.newValue);
+      enabled = settings.opts.layout;
+      consent = settings.layoutConsent;
       announce();
+      migrate();
     }
     if (changes.butterLayoutCleared) emit({ cleared: true });
   });
   chrome.storage.local
     .get(['butter', 'butterLayoutMigrated'])
     .then(({ butter, butterLayoutMigrated }) => {
-      if (!settingsVersion) enabled = butter?.opts?.layout !== false;
+      if (!settingsVersion) {
+        const settings = ButterStatus.normalize(butter);
+        enabled = settings.opts.layout;
+        consent = settings.layoutConsent;
+      }
       announce();
-      if (butterLayoutMigrated) return;
-      // Delete, never open/read the trial site's database. A blocked delete is retried next visit.
-      const r = indexedDB.deleteDatabase('butter-seek-cold-geometry-v1');
-      r.onsuccess = () => chrome.storage.local.set({ butterLayoutMigrated: true });
+      migrationReady = true;
+      migrated = !!butterLayoutMigrated;
+      migrate();
     });
 })();

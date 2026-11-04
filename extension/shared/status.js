@@ -7,8 +7,12 @@
     opts: {
       ...value?.opts,
       ...Object.fromEntries(keys.map((k) => [k, value?.opts?.[k] !== false])),
+      layout: value?.layoutConsent === 'granted' && value?.opts?.layout !== false,
     },
     lang: value?.lang === 'zh' ? 'zh' : 'en',
+    layoutConsent: ['granted', 'declined'].includes(value?.layoutConsent)
+      ? value.layoutConsent
+      : 'pending',
   });
   const classify = (facts = {}, value) => {
     const settings = normalize(value);
@@ -39,8 +43,14 @@
     const next = normalize(value),
       on = !groupOn(value, group);
     for (const key of groups[group]) next.opts[key] = on;
+    if (group === 'layout' && on) next.layoutConsent = 'granted';
     return next;
   };
+  const chooseLayout = (value, granted) => ({
+    ...normalize(value),
+    layoutConsent: granted ? 'granted' : 'declined',
+    opts: { ...normalize(value).opts, layout: granted },
+  });
   // Keep evidence per failed feature inside each group. An unrelated success cannot erase it.
   const updateFailures = (previous = {}, states = {}) => {
     const next = {};
@@ -63,6 +73,7 @@
     classify,
     groupOn,
     toggleGroup,
+    chooseLayout,
     updateFailures,
     masterState,
   };

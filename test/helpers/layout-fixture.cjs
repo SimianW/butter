@@ -3,12 +3,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const codec = require('../../extension/seek/layout-codec.js');
 const crypto = require('node:crypto').webcrypto;
-function workerFixture({ cap, now = Date.now(), initialLayout } = {}) {
+function workerFixture({
+  cap,
+  now = Date.now(),
+  initialLayout = true,
+  initialSettings = { layoutConsent: 'granted', opts: { layout: initialLayout } },
+} = {}) {
   const disk = new Map(),
     state = new Map(),
     changes = [],
     events = [],
-    settings = initialLayout === undefined ? {} : { butter: { opts: { layout: initialLayout } } };
+    settings = { butter: initialSettings };
   let listener, changed;
   const counters = { opens: 0, reads: 0, writes: 0 };
   const database = {
@@ -84,6 +89,7 @@ function workerFixture({ cap, now = Date.now(), initialLayout } = {}) {
   const ctx = {
     importScripts() {},
     ButterLayoutCodec: codec,
+    ButterStatus: require('../../extension/shared/status.js'),
     crypto,
     chrome,
     TextEncoder,
@@ -125,8 +131,12 @@ function workerFixture({ cap, now = Date.now(), initialLayout } = {}) {
         if (!handled) resolve(undefined);
       }),
     setting: (layout) => {
-      settings.butter = { opts: { layout } };
+      settings.butter = { layoutConsent: 'granted', opts: { layout } };
       changed({ butter: { newValue: settings.butter } }, 'local');
+    },
+    changeSettings: (butter) => {
+      settings.butter = butter;
+      changed({ butter: { newValue: butter } }, 'local');
     },
     advance: (ms) => (now += ms),
   };

@@ -47,7 +47,10 @@ try {
     await page.evaluate(() => refreshUsage());
   }
   // Initialize the database through its public API before seeding.
-  await page.evaluate(() => refreshUsage());
+  await page.evaluate(async () => {
+    await chrome.storage.local.set({ butter: { layoutConsent: 'granted' } });
+    await refreshUsage();
+  });
   let cases = [
     ['01-normal', {}], ['02-problem', { broken: true }], ['03-away', { away: true }],
     ['04-paused', { paused: true }], ['05-confirm', { clear: 'confirm' }], ['06-cleared', { clear: 'done' }],
@@ -72,7 +75,7 @@ try {
     await page.evaluate(async config => {
       clearTimeout(clearTimer); clearState = 'idle';
       fixtureConnected = !config.away;
-      const value = ButterStatus.normalize({ enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false } });
+      const value = ButterStatus.normalize({ layoutConsent: 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false } });
       await chrome.storage.session.set({ butterFailures: config.broken ? { rail: { rail: true } } : {} });
       await chrome.storage.local.set({ butter: value });
       await poll();

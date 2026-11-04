@@ -15,9 +15,10 @@
       "matches": ["https://chatgpt.com/*"],
       "css": ["stream/containment.css"],
       "js": [
-        "storage/layout-bridge.js",
         "shared/status.js",
+        "storage/layout-bridge.js",
         "shared/settings.js",
+        "consent/layout-consent.js",
         "seek/seek-meta.js",
         "rail/rail.js",
         "stream/offscreen.js"
@@ -51,5 +52,12 @@
   },
   "background": {
     "service_worker": "storage/layout-worker.js"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup/fonts/nunito-latin.woff2"],
+      "matches": ["https://chatgpt.com/*"],
+      "use_dynamic_url": true
+    }
+  ]
 }

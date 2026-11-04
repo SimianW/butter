@@ -42,7 +42,7 @@ test('seek follows the master and seek switches independently of the rail and ot
     ctx,
   );
   await Promise.resolve();
-  assert.equal(attrs.get('data-butter-off'), 'rail');
+  assert.equal(attrs.get('data-butter-off'), 'rail layout');
   assert.equal(attrs.has('data-butter-disabled'), false);
   changed({ butter: { newValue: { enabled: false } } }, 'local');
   assert.equal(attrs.has('data-butter-disabled'), true);

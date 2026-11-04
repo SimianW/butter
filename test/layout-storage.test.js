@@ -185,7 +185,7 @@ test('compact encoding round-trips the same numeric fixture and dictionary-encod
   assert.ok(codec.bytes(packed) < codec.bytes(source) / 2);
 });
 test('trial site database is deleted once without reading it, and a blocked delete is retried', async () => {
-  const saved = {},
+  const saved = { butter: { layoutConsent: 'granted' } },
     events = {},
     deletes = [];
   const chrome = {
@@ -199,6 +199,7 @@ test('trial site database is deleted once without reading it, and a blocked dele
   const run = () =>
     vm.runInNewContext(source, {
       chrome,
+      ButterStatus: require('../extension/shared/status.js'),
       CustomEvent: class {},
       document: { addEventListener: (n, fn) => (events[n] = fn), dispatchEvent() {} },
       indexedDB: {
@@ -366,7 +367,9 @@ test('bridge retries the same put after worker termination before or after commi
     let calls = 0;
     const chrome = {
       storage: {
-        local: { get: async () => ({ butterLayoutMigrated: true }) },
+        local: {
+          get: async () => ({ butterLayoutMigrated: true, butter: { layoutConsent: 'granted' } }),
+        },
         onChanged: { addListener() {} },
       },
       runtime: {
@@ -386,6 +389,7 @@ test('bridge retries the same put after worker termination before or after commi
       fs.readFileSync(require.resolve('../extension/storage/layout-bridge.js'), 'utf8'),
       {
         chrome,
+        ButterStatus: require('../extension/shared/status.js'),
         CustomEvent: class {
           constructor(type, options) {
             this.type = type;

@@ -23,6 +23,7 @@ const T = {
       ['list', '问题导航条', '右侧列出你问过的问题，点一下就跳过去'],
       ['db', '记住长对话的布局', '再次打开时跳转更快，会占用一些存储空间'],
     ],
+    pending: '还没开启 · 打开开关即表示同意',
     clear: '清除',
     confirm: '确定清除全部？',
     cancel: '取消',
@@ -45,6 +46,7 @@ const T = {
       ['list', 'Question rail', 'Your questions on the right; click one to jump'],
       ['db', 'Remember long-chat layouts', 'Faster jumps when you come back; uses some storage'],
     ],
+    pending: 'Not on yet · turning it on means you agree',
     clear: 'Clear',
     confirm: 'Clear all?',
     cancel: 'Cancel',
@@ -132,7 +134,7 @@ function render() {
       const key = groupKeys[i],
         bad = broken.includes(key),
         on = ButterStatus.groupOn(prefs, key);
-      return `<div class="row ${bad ? 'broken' : ''}"><span class="ic" aria-hidden="true">${svg(ic)}</span><div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div></div>${switchButton(key, on, n, true)}${key === 'layout' && on ? `<div class="use">${usageRow(t)}</div>` : ''}</div>`;
+      return `<div class="row ${bad ? 'broken' : ''}"><span class="ic" aria-hidden="true">${svg(ic)}</span><div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div>${key === 'layout' && prefs.layoutConsent === 'pending' ? `<div class="pend"><i aria-hidden="true"></i>${t.pending}</div>` : ''}</div>${switchButton(key, on, n, true)}${key === 'layout' && on ? `<div class="use">${usageRow(t)}</div>` : ''}</div>`;
     })
     .join('');
   const html = `<div class="hd">${pat}<div><div class="word">Butter</div><div class="ver">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</div></div></div>
@@ -147,6 +149,7 @@ function render() {
 const layoutRequest = (request) =>
   ButterPopup.layoutRequest((message) => chrome.runtime.sendMessage(message), request);
 async function refreshUsage() {
+  if (!prefs.opts.layout) return;
   try {
     usage = await layoutRequest({ version: 1, type: 'butter-layout-usage' });
     usageAvailable = true;
