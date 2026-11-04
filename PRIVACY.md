@@ -9,8 +9,9 @@ saves the text of your chats, has no server, and sends nothing to anyone.
 
 ## What Butter reads
 
-Butter reads the following while a ChatGPT tab is open. It keeps this in that tab's memory only, and
-it is gone when you close or leave the chat.
+Butter reads the following while a ChatGPT tab is open. It keeps this only in that tab's memory, until
+you close or reload the tab; some of it can stay there while you move between chats in the same tab.
+None of it is written to disk or sent.
 
 - **The conversation on screen.** Question and answer text, and message and conversation ids, from
   the page and from the responses ChatGPT already loads. Butter uses them to draw the question rail,
@@ -21,7 +22,9 @@ it is gone when you close or leave the chat.
 - **How the chat is laid out on screen:** heights and positions of messages, fonts and widths.
 - **Key presses, clicks and scrollbar holds on ChatGPT.** Butter reacts to Enter and the send button
   to adjust scrolling before a question is sent, and to scrollbar holds to delay loading earlier
-  messages. It does not record or log them.
+  messages. To tell whether the scrollbar preview works, it keeps a short rolling list of recent
+  scrollbar drags in the tab's memory: when you pressed and let go, where the pointer was, and how the
+  drag ended. This list is never saved or sent, and it is gone when the tab closes.
 
 Butter never reads passwords, sign-in tokens, cookies or payment details, and it does not run on any
 other website.
@@ -39,19 +42,27 @@ viewed, Butter saves:
 - one-way SHA-256 hashes of your account id, the conversation id and the message ids;
 - a SHA-256 hash of the question and answer text, used only to notice when an answer was edited or
   regenerated, so an out-of-date layout is never reused;
+- a SHA-256 hash of the layout settings it was measured under (window and column width, screen
+  scale, font, theme and ChatGPT's page version), so it is reused only when none of these changed;
 - when it was saved and when it was last used.
 
 No chat text and no raw id is saved. A hash cannot be turned back into the text or id it came from,
 but it is not encryption: it stays the same for the same input, so it works as a label for that
 account, conversation or message.
 
-Each saved layout is deleted 30 days after it was saved. All saved layouts together are limited to
-50 MB; when that is reached, the ones used least recently are deleted first.
+Each saved layout expires 30 days after it was saved. Butter stops using it at once and deletes it
+from disk the next time it reads or writes saved layouts, so a browser that is not used for a while
+can keep expired layouts until then. All saved layouts together are limited to 50 MB; when that is
+reached, the ones used least recently are deleted first.
 
 Butter also keeps a few small bookkeeping values that contain no chat or account information, such
 as a counter and the ids of recent "clear" requests, so that a clear is never undone by a late write.
 
-**3. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
+**3. Feature status,** in Chrome's session storage (`chrome.storage.session`): which of the four
+feature groups recently failed to work, so the popup can warn you. It contains no chat or account
+information, and is cleared when that feature works again or when you quit Chrome.
+
+**4. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
 database once, without reading it.
 
 ## How to delete saved data
