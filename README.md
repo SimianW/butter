@@ -40,13 +40,13 @@ Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install
 
 Current version: **0.1.0-alpha.10** ([changelog](CHANGELOG.md)).
 
-## Local storage and privacy
+## Privacy
 
-Butter stores settings, layout numbers and typography, hashed message/conversation ids, and content/layout
-digests locally in the extension, partitioned by a SHA-256 account hash. No chat text, auth tokens or
-cookies are saved; unknown accounts cannot access saved layouts. Layouts expire after 30 days with
-a 50 MB cap across accounts. Turning `butter.opts.layout` off clears all saved layouts and stops
-persisted reads/writes. [Clear instructions →](docs/development.md#layout-storage-api)
+Butter runs only on chatgpt.com and never sends anything anywhere. It never saves the text of your
+chats. It saves your settings and, while "Remember long-chat layouts" is on, the sizes and positions
+of answers you have viewed, labelled with one-way hashes instead of ids. Saved layouts expire after
+30 days, are capped at 50 MB, and can be cleared from the popup.
+[Full privacy policy →](PRIVACY.md)
 
 ## More
 
