@@ -334,7 +334,13 @@
   // Capture is essential: the fetch-level `send` notification arrives after placement starts.
   const COMPOSER_INPUT = '.ProseMirror[contenteditable="true"]';
   const SEND_BUTTON = '[data-testid="send-button"], #composer-submit-button, button[type="submit"]';
+  // The pre-jump belongs to the "smoother scrolling" group (older + seek), not to the rail switch.
+  const scrollingOff = () => {
+    const off = document.documentElement?.getAttribute('data-butter-off')?.split(' ') || [];
+    return off.includes('older') || off.includes('seek');
+  };
   const beforeSend = (composer) => {
+    if (scrollingOff()) return;
     if (!composer?.textContent.trim() || !sc?.isConnected || !sc.clientHeight) return;
     cancelJump();
     const bottom = sc.scrollHeight - sc.clientHeight;

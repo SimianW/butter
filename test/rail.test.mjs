@@ -435,6 +435,20 @@ for (const trigger of ['Enter', 'click']) {
   });
 }
 
+test('the scrolling group switch also turns off the send pre-jump', () => {
+  for (const off of ['seek', 'older', 'older seek']) {
+    const nav = setup();
+    nav.document.documentElement.setAttribute('data-butter-off', off);
+    nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+    nav.window.emit('click', { target: nav.sendButton });
+    assert.equal(nav.scroller.scrollTop, 0, `pre-jump must stay off when ${off} is off`);
+  }
+  const nav = setup();
+  nav.document.documentElement.setAttribute('data-butter-off', 'rail');
+  nav.window.emit('keydown', { key: 'Enter', target: nav.composer });
+  assert.equal(nav.scroller.scrollTop, 3200, 'the rail switch does not control the pre-jump');
+});
+
 test('near-bottom sends and non-send key events preserve the thread position', () => {
   const nav = setup();
   for (const event of [
