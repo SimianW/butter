@@ -1,0 +1,14 @@
+{
+  "changedFactoryPassThrough": true,
+  "changedFactoryTimeoutCleanup": true,
+  "missingFactoryCleanup": true,
+  "exactFactoryMatched": true,
+  "exactFactoryCleanup": true,
+  "budgets": [
+    2,
+    1000,
+    2,
+    2,
+    2
+  ]
+}

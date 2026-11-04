@@ -1,0 +1,5095 @@
+{
+  "generatedAt": "2026-11-04T13:09:00.702624+00:00",
+  "provenance": {
+    "hashDefinition": "file-index hash = SHA-256 of canonical JSON {relative path: per-file SHA-256}, sorted keys, no whitespace",
+    "none": {
+      "source": "No extension loaded (LAB_EXTENSIONS empty). butter-blank-head (alpha.7) NOT used.",
+      "fileIndexSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "files": 0
+    },
+    "alpha9": {
+      "source": "~/snap/chromium/common/butter-bench-final-alpha9 (copied; byte-identical to (not archived))",
+      "version_name": "0.1.0-alpha.9",
+      "fileIndexSha256": "15fc9231ce78656ee6f70a7f3a7d436fa022b60ec2c4b69f0d92e6cb2f4cbe3b",
+      "files": 16,
+      "lab1ArchivedIndexSha256": "15fc9231ce78656ee6f70a7f3a7d436fa022b60ec2c4b69f0d92e6cb2f4cbe3b"
+    },
+    "latest": {
+      "source": "~/butter-wip/butter-0.1.0-alpha.10+next.2.zip (root butter/); commit 6e8362305f0a68097458436351c9920a4645f12a, branch t3/seek-preview, worktree ~/.t3/worktrees/butter/t3-6cf413cf",
+      "version_name": "0.1.0-alpha.10+next.2",
+      "zipSha256": "ea647a8e8e9e2fc04ebe01d388ec9e591cf0ab03d1ce8286a9a26435fb6ea2ee",
+      "fileIndexSha256": "ee2900c350950c753a5b796144175343cc7825561bea18247ead2e836a156d44",
+      "files": 32
+    },
+    "stagingDirs": {
+      "alpha9": "~/snap/chromium/common/butter-bench-lab2-alpha9",
+      "latest": "~/snap/chromium/common/butter-bench-lab2-latest"
+    }
+  },
+  "env": {
+    "chromium": {
+      "protocolVersion": "1.3",
+      "product": "Chrome/156.0.8078.47",
+      "revision": "1d17a2e2ee147bb7d6ae2ab6abdb3a2510c17775",
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "jsVersion": "15.6.75.19"
+    },
+    "os": {
+      "type": "Linux",
+      "release": "7.0.0-38-generic",
+      "arch": "x64",
+      "cpus": [
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz",
+        "Intel(R) Core(TM) i5-10400 CPU at 2.90GHz"
+      ],
+      "memory": 16527523840
+    },
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 32902,
+          "deviceId": 39880,
+          "vendorString": "Google Inc. (Mesa)",
+          "deviceString": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2)",
+          "driverVendor": "Mesa",
+          "driverVersion": "25.2.8"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_OPENGL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_logic_op GL_ANGLE_memory_size GL_ANGLE_multiview_multisample GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_texture_rectangle GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clear_texture GL_EXT_clip_control GL_EXT_clip_cull_distance GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_multisample_compatibility GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_sRGB_write_control GL_EXT_shader_texture_lod GL_EXT_shadow_samplers GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_NV_polygon_mode GL_NV_read_depth GL_NV_read_stencil GL_NV_shader_noperspective_interpolation GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_vertex_array_object GL_OVR_multiview GL_OVR_multiview2 ",
+        "glImplementationParts": "(gl=egl-angle,angle=opengl)",
+        "glRenderer": "ANGLE (Mesa, llvmpipe (LLVM 20.1.2 256 bits), OpenGL 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2)",
+        "glResetNotificationStrategy": 33377,
+        "glVendor": "Google Inc. (Mesa)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1 git hash: unknown hash)",
+        "glWsExtensions": "EGL_KHR_create_context EGL_KHR_get_all_proc_addresses EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_create_context_backwards_compatible EGL_KHR_create_context_no_error EGL_NOK_texture_from_pixmap EGL_KHR_reusable_sync EGL_ANGLE_context_virtualization EGL_ANGLE_memory_usage_report ",
+        "glWsVendor": "Google Inc. (Mesa)",
+        "glWsVersion": "1.5 (ANGLE 2.1 git hash: unknown hash)",
+        "hardwareSupportsVulkan": false,
+        "inProcessGpu": false,
+        "initializationTime": 0.053622,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "4",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "None",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "disabled_software",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "disabled_software",
+        "multiple_raster_threads": "disabled_off",
+        "opengl": "disabled_off",
+        "rasterization": "disabled_software",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "disabled_software",
+        "video_encode": "disabled_software",
+        "vulkan": "disabled_off",
+        "webgl": "disabled_off",
+        "webgpu": "disabled_off",
+        "webgpu_on_vk_via_gl_interop": "disabled_off",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 1000,
+      "deviceScaleFactor": 1,
+      "theme": "light"
+    },
+    "date": "2026-11-04T09:04:02.161Z",
+    "timezone": "America/Toronto",
+    "requestedLocalDate": "2026-11-03",
+    "hashDefinition": "SHA-256 of canonical JSON mapping relative file paths to per-file SHA-256, sorted by path; latest zip hash also retained"
+  },
+  "fixtures": {
+    "math-nine": {
+      "originalSha256": "359b4fe33317cb357e4f6646f3dc443dd6338241e53897039349c23fa239d345",
+      "lab2Sha256": "8cb3a11f9dc9cbfa220a616d3f44ea04de9b546238aa6fc4d5471694db5d5631",
+      "convIdReplacements": 1,
+      "gizmoReplacements": 26,
+      "messageContentAndIdsIdentical": true,
+      "ownerSetToNull": true
+    },
+    "seek-twelve": {
+      "originalSha256": "8423f0f1f29abb62a5182da5c69147e9db009ce1eab57a75be796dbe7abeb2ed",
+      "lab2Sha256": "ede36643e99cc3e92a3325bb981b3fa5dff277e777286e53aa0aff0569ce305a",
+      "convIdReplacements": 1,
+      "gizmoReplacements": 29,
+      "messageContentAndIdsIdentical": true,
+      "ownerSetToNull": true
+    },
+    "recording": {
+      "originalSha256": "36b773bf0733ff3f4df3856157834243bfdcf886af1fbc2f0600631d251ca05c",
+      "lab2Sha256": "d694ed376d1558211972b5d9ab7c67cfb6953dd3072fc1e625956ae5df38c809",
+      "convIdReplacements": 27,
+      "gizmoReplacements": 15,
+      "chunks": 189,
+      "chunkTimingIdentical": true
+    },
+    "substitution": {
+      "<entry-1>": "<id>",
+      "<project>": "<project>",
+      "why": "lab2 (account 2) cannot open account 1 conversation/project IDs: the app GETs /backend-api/conversation/<id> (404) and /backend-api/gizmos/<project> (403) and redirects to /. Only these two ID strings were replaced; message ids, text and chunk timing unchanged.",
+      "owner": "<redacted>"
+    }
+  },
+  "metrics": [
+    {
+      "id": "<redacted>",
+      "scenario": "1. Open a long chat",
+      "metric": "Navigation → first readable text",
+      "unit": "ms",
+      "definition": "performance.now() at the first rAF where visible message text is inside the reading area; nine-question frozen fixture served locally.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 3521.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3638.800000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4269.700000047684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3575,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3574.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 3604.5999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3640.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 3641.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3529.5999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3606.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 3566.0999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3577.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 3636.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3562.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3496.0999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 3575,
+        "alpha9": 3606.2999999523163,
+        "latest": 3566.0999999046326
+      },
+      "min": {
+        "none": 3521.7000000476837,
+        "alpha9": 3529.5999999046326,
+        "latest": 3496.0999999046326
+      },
+      "max": {
+        "none": 4269.700000047684,
+        "alpha9": 3641.899999856949,
+        "latest": 3636.2999999523163
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "1. Open a long chat",
+      "metric": "Navigation → settled",
+      "unit": "ms",
+      "definition": "First readable, no long task for 1500 ms, and no pending math markers.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 11122.100000143051,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 12084.300000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 12636.299999952316,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 11363.600000143051,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 11397.700000047684,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 8464.099999904633,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 8466.099999904633,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 8654.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 11081,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 8525.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 8669.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 9026.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 8689.199999809265,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 8472.900000095367,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 8363.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 11397.700000047684,
+        "alpha9": 8525.5,
+        "latest": 8669.5
+      },
+      "min": {
+        "none": 11122.100000143051,
+        "alpha9": 8464.099999904633,
+        "latest": 8363.899999856949
+      },
+      "max": {
+        "none": 12636.299999952316,
+        "alpha9": 11081,
+        "latest": 9026.5
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Main-thread blocked time (sum of LoAF blockingDuration)",
+      "unit": "ms",
+      "definition": "Sum of long-animation-frame blockingDuration from Enter until 5 s after the last chunk; 189-chunk local SSE replay into the nine-question chat, with periodic wheel and two typing bursts.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 75176,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 74872,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 81167,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 85381,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 74775,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 8544,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 9060,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7977,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7536,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7454,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 12751,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 13037,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 13101,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 12907,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 12774,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 75176,
+        "alpha9": 7977,
+        "latest": 12907
+      },
+      "min": {
+        "none": 74775,
+        "alpha9": 7454,
+        "latest": 12751
+      },
+      "max": {
+        "none": 85381,
+        "alpha9": 9060,
+        "latest": 13101
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Longest freeze (longest long animation frame)",
+      "unit": "ms",
+      "definition": "Longest LoAF duration over the same window.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 2547,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2622,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5598,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7521,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2562,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 679,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 689,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 729,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 712,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 698,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1318,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1321,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1367,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1428,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1318,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 2622,
+        "alpha9": 698,
+        "latest": 1321
+      },
+      "min": {
+        "none": 2547,
+        "alpha9": 679,
+        "latest": 1318
+      },
+      "max": {
+        "none": 7521,
+        "alpha9": 729,
+        "latest": 1428
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Frame time p95 during replay",
+      "unit": "ms",
+      "definition": "p95 of rAF intervals over the same window.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 300,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 300,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 316.6,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 300.1,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 300,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 33.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 33.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 33.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 33.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 33.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 300,
+        "alpha9": 33.4,
+        "latest": 50
+      },
+      "min": {
+        "none": 300,
+        "alpha9": 33.3,
+        "latest": 50
+      },
+      "max": {
+        "none": 316.6,
+        "alpha9": 33.4,
+        "latest": 50
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Longest main-thread task at stream completion",
+      "unit": "ms",
+      "definition": "Longest PerformanceObserver \"longtask\" entry starting between 50 ms before and 5000 ms after the replay closed its stream (last chunk enqueued). No synthetic input runs in this window. 0 means no task over 50 ms.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 1159,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1128,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1146,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1228,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1204,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 558,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 567,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 605,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 589,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 578,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1127,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1141,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1190,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1236,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1131,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 1159,
+        "alpha9": 578,
+        "latest": 1141
+      },
+      "min": {
+        "none": 1128,
+        "alpha9": 558,
+        "latest": 1127
+      },
+      "max": {
+        "none": 1228,
+        "alpha9": 605,
+        "latest": 1236
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Longest long animation frame at stream completion",
+      "unit": "ms",
+      "definition": "Longest LoAF starting in the same completion window.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 1462,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1425,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1444,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1528,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1491,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 679,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 689,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 729,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 712,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 698,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1318,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1321,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1367,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1428,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1318,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 1462,
+        "alpha9": 698,
+        "latest": 1321
+      },
+      "min": {
+        "none": 1425,
+        "alpha9": 679,
+        "latest": 1318
+      },
+      "max": {
+        "none": 1528,
+        "alpha9": 729,
+        "latest": 1428
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "2. Streaming a recorded answer",
+      "metric": "Final answer SHA-256",
+      "unit": "sha256",
+      "definition": "SHA-256 of the last assistant message textContent after completion.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": null
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": null
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": null
+      },
+      "distinct": {
+        "none": [
+          "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68"
+        ],
+        "alpha9": [
+          "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68"
+        ],
+        "latest": [
+          "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68"
+        ]
+      }
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Slowest keydown → next frame",
+      "unit": "ms",
+      "definition": "Keydown timeStamp → rAF+setTimeout after it; only keydowns while the replay is active (two 10-letter bursts at 120 ms + 10 Backspaces each).",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 2215,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 304.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 388.1,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 304.1,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 280,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 190.9,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 191.9,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 185.9,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 197.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 193,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 220.9,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 222.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 220.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 222.7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 236.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 304.4,
+        "alpha9": 191.9,
+        "latest": 222.5
+      },
+      "min": {
+        "none": 280,
+        "alpha9": 185.9,
+        "latest": 220.3
+      },
+      "max": {
+        "none": 2215,
+        "alpha9": 197.5,
+        "latest": 236.3
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Keydown → next frame p95",
+      "unit": "ms",
+      "definition": "Same events, p95.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 1087.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 297.2,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 326.6,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 296.7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 271.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 184.6,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 185.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 179.4,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 185.7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 186.6,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 207.8,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 213,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 214.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 205.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 230.3,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 297.2,
+        "alpha9": 185.4,
+        "latest": 213
+      },
+      "min": {
+        "none": 271.5,
+        "alpha9": 179.4,
+        "latest": 205.3
+      },
+      "max": {
+        "none": 1087.3,
+        "alpha9": 186.6,
+        "latest": 230.3
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Input dispatch delay p95",
+      "unit": "ms",
+      "definition": "Keydown timeStamp → capture listener entry, p95.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 164.10000014305115,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 10.899999856948853,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 12.799999952316284,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 11.599999904632568,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 11.899999856948853,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 6.800000190734863,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 6.700000047683716,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7.299999952316284,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 6.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 6.099999904632568,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 8.100000143051147,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 8.200000047683716,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 8.899999856948853,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 8.199999809265137,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 13.400000095367432,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 11.899999856948853,
+        "alpha9": 6.700000047683716,
+        "latest": 8.200000047683716
+      },
+      "min": {
+        "none": 10.899999856948853,
+        "alpha9": 6.099999904632568,
+        "latest": 8.100000143051147
+      },
+      "max": {
+        "none": 164.10000014305115,
+        "alpha9": 7.299999952316284,
+        "latest": 13.400000095367432
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Slowest keydown → next frame",
+      "unit": "ms",
+      "definition": "54 characters at 80 ms spacing in the settled nine-question chat.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 7418.200000047684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 6546.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5447,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2944.300000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2802.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 371.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 421.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 616.9000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 335.60000014305115,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 428.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 468.7999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 460.39999985694885,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 722.4000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 467.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 460.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 5447,
+        "alpha9": 421.7000000476837,
+        "latest": 467.2000000476837
+      },
+      "min": {
+        "none": 2802.2999999523163,
+        "alpha9": 335.60000014305115,
+        "latest": 460.39999985694885
+      },
+      "max": {
+        "none": 7418.200000047684,
+        "alpha9": 616.9000000953674,
+        "latest": 722.4000000953674
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Keydown → next frame p95",
+      "unit": "ms",
+      "definition": "Same, p95.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 2629.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 270.89999985694885,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 261.59999990463257,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 142.70000004768372,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2747.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 161.40000009536743,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 162,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 161.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 156.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 164,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 192.70000004768372,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 383.40000009536743,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 354.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 189.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 188.10000014305115,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 270.89999985694885,
+        "alpha9": 161.5,
+        "latest": 192.70000004768372
+      },
+      "min": {
+        "none": 142.70000004768372,
+        "alpha9": 156.5,
+        "latest": 188.10000014305115
+      },
+      "max": {
+        "none": 2747.7000000476837,
+        "alpha9": 164,
+        "latest": 383.40000009536743
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Input dispatch delay p95",
+      "unit": "ms",
+      "definition": "Keydown timeStamp → capture listener entry, p95.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 19.40000009536743,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 19.700000047683716,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 21.800000190734863,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2.5999999046325684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 19.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 2,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 4.099999904632568,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2.200000047683716,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2.3000001907348633,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2.200000047683716,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 2,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4.6000001430511475,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2.5999999046325684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3.1000001430511475,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 19.5,
+        "alpha9": 2.200000047683716,
+        "latest": 3
+      },
+      "min": {
+        "none": 2.5999999046325684,
+        "alpha9": 2,
+        "latest": 2
+      },
+      "max": {
+        "none": 21.800000190734863,
+        "alpha9": 4.099999904632568,
+        "latest": 4.6000001430511475
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Frame time p95",
+      "unit": "ms",
+      "definition": "8000 px wheel steps, 16 ms apart, bottom → top → bottom; both ends verified.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 166.6999999999971,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 183.3000000000029,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 166.6999999999971,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 166.70000000000437,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 166.8000000000029,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 150.09999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 183.29999999999563,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 150.00000000000364,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 150,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 133.29999999999927,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 150,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 133.3000000000029,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 150,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 150.09999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 166.70000000000437,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 166.70000000000437,
+        "alpha9": 150.00000000000364,
+        "latest": 150
+      },
+      "min": {
+        "none": 166.6999999999971,
+        "alpha9": 133.29999999999927,
+        "latest": 133.3000000000029
+      },
+      "max": {
+        "none": 183.3000000000029,
+        "alpha9": 183.29999999999563,
+        "latest": 166.70000000000437
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Longest frame",
+      "unit": "ms",
+      "definition": "Same traversal, longest rAF interval.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 3416.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3416.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 3366.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3416.600000000006,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3483.100000000006,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 2583.199999999997,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2566.600000000002,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2583.2000000000007,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2616.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2616.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1866.6000000000022,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2716.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2483.2999999999993,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2366.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2499.899999999998,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 3416.5,
+        "alpha9": 2583.2000000000007,
+        "latest": 2483.2999999999993
+      },
+      "min": {
+        "none": 3366.5,
+        "alpha9": 2566.600000000002,
+        "latest": 1866.6000000000022
+      },
+      "max": {
+        "none": 3483.100000000006,
+        "alpha9": 2616.5999999999985,
+        "latest": 2716.5
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): never opened",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 3233.2999999999956,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3216.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 3083.199999999997,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2816.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2949.9000000000015,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 1366.6000000000004,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1900,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1466.6000000000004,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1316.6000000000004,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1700,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 16.80000000000109,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 116.59999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 33.29999999999927,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 100,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 33.399999999999636,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 3083.199999999997,
+        "alpha9": 1466.6000000000004,
+        "latest": 33.399999999999636
+      },
+      "min": {
+        "none": 2816.5999999999985,
+        "alpha9": 1316.6000000000004,
+        "latest": 16.80000000000109
+      },
+      "max": {
+        "none": 3233.2999999999956,
+        "alpha9": 1900,
+        "latest": 116.59999999999854
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): never opened",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "min": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "max": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): never opened",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 130.60009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 164.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 141.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 135.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 164.60009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 131.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 219.7001953125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 118.10009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 127.60009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 395.400146484375,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 10523.099999904633,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 4487.799999952316,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4590.200000047684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 10383.699999809265,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 4637.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 141.300048828125,
+        "alpha9": 131.5,
+        "latest": 4637.5
+      },
+      "min": {
+        "none": 130.60009765625,
+        "alpha9": 118.10009765625,
+        "latest": 4487.799999952316
+      },
+      "max": {
+        "none": 164.60009765625,
+        "alpha9": 395.400146484375,
+        "latest": 10523.099999904633
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen this session",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 166.59999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 166.6999999999971,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 166.59999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 166.59999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 183.39999999999418,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 999.9000000000015,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 999.9000000000015,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1199.9000000000015,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1000,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1149.9000000000015,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 16.80000000000291,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 16.80000000000291,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 16.80000000000291,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 16.80000000000291,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 16.80000000000291,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 166.59999999999854,
+        "alpha9": 1000,
+        "latest": 16.80000000000291
+      },
+      "min": {
+        "none": 166.59999999999854,
+        "alpha9": 999.9000000000015,
+        "latest": 16.80000000000291
+      },
+      "max": {
+        "none": 183.39999999999418,
+        "alpha9": 1199.9000000000015,
+        "latest": 16.80000000000291
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen this session",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "min": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "max": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen this session",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 54.60009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 52.599853515625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 55.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 53.400146484375,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 55.10009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 232.599853515625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 223.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 257.60009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 233.2998046875,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 260.7001953125,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1752.4000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1004.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 1686.5999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1470,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1003.4000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 54.60009765625,
+        "alpha9": 233.2998046875,
+        "latest": 1470
+      },
+      "min": {
+        "none": 52.599853515625,
+        "alpha9": 223.300048828125,
+        "latest": 1003.4000000953674
+      },
+      "max": {
+        "none": 55.300048828125,
+        "alpha9": 260.7001953125,
+        "latest": 1752.4000000953674
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen in an earlier session",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 83.29999999999927,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 33.399999999999636,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 66.60000000000036,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 50.099999999998545,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 50.099999999998545
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 33.399999999999636
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 83.29999999999927
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen in an earlier session",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): seen in an earlier session",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "classic scrollbar thumb drag on the 12-question fixture (60 moves over 1.2 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 2692.300000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1859.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2978.5999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2424.800000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 1790.7999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 2424.800000190735
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 1790.7999999523163
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 2978.5999999046326
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): never opened",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 33.39999999999782,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 50.100000000000364,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 66.60000000000218,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 66.60000000000036,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 16.700000000000728,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 16.700000000000728,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 33.400000000001455,
+        "alpha9": 50.100000000000364,
+        "latest": 16.799999999999272
+      },
+      "min": {
+        "none": 33.39999999999782,
+        "alpha9": 50,
+        "latest": 16.700000000000728
+      },
+      "max": {
+        "none": 33.400000000001455,
+        "alpha9": 66.60000000000218,
+        "latest": 16.799999999999272
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): never opened",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "min": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "max": {
+        "none": 7,
+        "alpha9": 7,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): never opened",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 121.599853515625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 116.699951171875,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 119.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 114.699951171875,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 114.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 223.300048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 227.10009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 221.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 221,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 254.89990234375,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 4562.399999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 4847,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4828,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 4861,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 4677.900000095367,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 116.699951171875,
+        "alpha9": 223.300048828125,
+        "latest": 4828
+      },
+      "min": {
+        "none": 114.5,
+        "alpha9": 221,
+        "latest": 4562.399999856949
+      },
+      "max": {
+        "none": 121.599853515625,
+        "alpha9": 254.89990234375,
+        "latest": 4861
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen this session",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 33.39999999999418,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 33.39999999999418,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 33.39999999999418,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 33.400000000001455,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 50.099999999998545,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 50.10000000000582,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 50.10000000000582,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 50.099999999998545,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 50.099999999998545,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 16.700000000004366,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 16.799999999995634,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 16.700000000004366,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 16.799999999995634,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 16.700000000004366,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 33.39999999999418,
+        "alpha9": 50.099999999998545,
+        "latest": 16.700000000004366
+      },
+      "min": {
+        "none": 33.39999999999418,
+        "alpha9": 50.099999999998545,
+        "latest": 16.700000000004366
+      },
+      "max": {
+        "none": 33.400000000001455,
+        "alpha9": 50.10000000000582,
+        "latest": 16.799999999995634
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen this session",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 5,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "min": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "max": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen this session",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 50,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 49,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 57.89990234375,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 48,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 47.199951171875,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 129.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 128.800048828125,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 130.2998046875,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 132,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 126.10009765625,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 2394.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 1894.9000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2361.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1560.8999998569489,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2264.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 49,
+        "alpha9": 129.5,
+        "latest": 2264.2999999523163
+      },
+      "min": {
+        "none": 47.199951171875,
+        "alpha9": 126.10009765625,
+        "latest": 1560.8999998569489
+      },
+      "max": {
+        "none": 57.89990234375,
+        "alpha9": 132,
+        "latest": 2394.2999999523163
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen in an earlier session",
+      "metric": "Frame time p95 while thumb held",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 16.799999999999272,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 16.799999999999272
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 16.799999999999272
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 16.799999999999272
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen in an earlier session",
+      "metric": "Turn mounts while thumb held",
+      "unit": "count",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): seen in an earlier session",
+      "metric": "Release → readable",
+      "unit": "ms",
+      "definition": "overlay scrollbar thumb drag on the 12-question fixture (120 moves over 12 s). Latest: shipped seek diagnostic readable time; none/alpha9: two consecutive frames with visible text. Destinations can differ by build; do not read release→readable as an equal-destination comparison.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 4405.599999904633,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3831.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4127.700000047684,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2361.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 4161.899999856949,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 4127.700000047684
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 2361.7000000476837
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 4405.599999904633
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): cold",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 1,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 1
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): warm",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (classic): stored",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): cold",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): warm",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "6. Scrollbar drag (overlay): stored",
+      "metric": "Seek hit its internal deadline (1 = yes)",
+      "unit": "count",
+      "definition": "latest only: the shipped seek session reported timedOut; the run is kept and its release→readable is the actual time text became readable.",
+      "na": [
+        "none",
+        "alpha9"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 0,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 0,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "min": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "max": {
+        "none": null,
+        "alpha9": null,
+        "latest": 0
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Click → first question readable",
+      "unit": "ms",
+      "definition": "Click on the first rail tick until [t01] sits within 8 px of the 64 px inset with no busy/warp state.",
+      "na": [
+        "none"
+      ],
+      "runs": {
+        "none": [],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 3961.600000143051,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3960.2000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4008.4000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3857.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3908.800000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 1962.9000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2545.7999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2612.4000000953674,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3240.600000143051,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3262.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 0,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": null,
+        "alpha9": 3960.2000000476837,
+        "latest": 2612.4000000953674
+      },
+      "min": {
+        "none": null,
+        "alpha9": 3857.7000000476837,
+        "latest": 1962.9000000953674
+      },
+      "max": {
+        "none": null,
+        "alpha9": 4008.4000000953674,
+        "latest": 3262.7000000476837
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Enter → new question visible",
+      "unit": "ms",
+      "definition": "From the earlier half of the chat; Enter triggers the local SSE replay (no server write); new question inside the readable viewport.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 18979.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 10597,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 19216.800000190735,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 10640.299999952316,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 12164.299999952316,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 3908.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 3871.2999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4052.7999999523163,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 3885.7000000476837,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 3929.199999809265,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 4071,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 4080,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 4059.600000143051,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 4060.0999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 4051.5999999046326,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 12164.299999952316,
+        "alpha9": 3908.2999999523163,
+        "latest": 4060.0999999046326
+      },
+      "min": {
+        "none": 10597,
+        "alpha9": 3871.2999999523163,
+        "latest": 4051.5999999046326
+      },
+      "max": {
+        "none": 19216.800000190735,
+        "alpha9": 4052.7999999523163,
+        "latest": 4080
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Frame time p95 while earlier pages load",
+      "unit": "ms",
+      "definition": "Locally paginated nine-question fixture, 50 ms per page GET; upward 8000 px wheel steps until [t01] loads.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 50.100000000000364,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 83.20000000000073,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 166.60000000000036,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 50.100000000000364,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 50.100000000000364,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 66.60000000000036,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 83.30000000000109,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 83.30000000000109,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 116.70000000000073,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 100,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 99.89999999999964,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 116.59999999999854,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 83.30000000000109,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 116.60000000000036,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 166.6999999999989,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 50.100000000000364,
+        "alpha9": 83.30000000000109,
+        "latest": 116.59999999999854
+      },
+      "min": {
+        "none": 50.100000000000364,
+        "alpha9": 66.60000000000036,
+        "latest": 83.30000000000109
+      },
+      "max": {
+        "none": 166.60000000000036,
+        "alpha9": 116.70000000000073,
+        "latest": 166.6999999999989
+      },
+      "distinct": null
+    },
+    {
+      "id": "<redacted>",
+      "scenario": "<prompt text>",
+      "metric": "Longest frame while earlier pages load",
+      "unit": "ms",
+      "definition": "Same.",
+      "na": [],
+      "runs": {
+        "none": [
+          {
+            "rep": 1,
+            "value": 7083,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 7166.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 7149.700000000001,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 7066.299999999999,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 7116.299999999999,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "alpha9": [
+          {
+            "rep": 1,
+            "value": 2266.600000000002,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2266.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2316.600000000002,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2349.899999999998,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2316.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ],
+        "latest": [
+          {
+            "rep": 1,
+            "value": 2349.899999999998,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 2,
+            "value": 2316.5999999999985,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 3,
+            "value": 2316.5,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 4,
+            "value": 2333.2999999999993,
+            "raw": "(not archived)",
+            "status": "ok"
+          },
+          {
+            "rep": 5,
+            "value": 2333.300000000003,
+            "raw": "(not archived)",
+            "status": "ok"
+          }
+        ]
+      },
+      "n": {
+        "none": 5,
+        "alpha9": 5,
+        "latest": 5
+      },
+      "median": {
+        "none": 7116.299999999999,
+        "alpha9": 2316.5999999999985,
+        "latest": 2333.2999999999993
+      },
+      "min": {
+        "none": 7066.299999999999,
+        "alpha9": 2266.5999999999985,
+        "latest": 2316.5
+      },
+      "max": {
+        "none": 7166.5,
+        "alpha9": 2349.899999999998,
+        "latest": 2349.899999999998
+      },
+      "distinct": null
+    }
+  ],
+  "excludedAttempts": [
+    {
+      "at": "20261104T092238Z",
+      "build": "latest",
+      "rep": 0,
+      "mode": "classic",
+      "kind": "seek",
+      "attempt": "s2",
+      "reason": "cold failure: AssertionError [ERR_ASSERTION]: Seek must become readable"
+    },
+    {
+      "at": "20261104T100025Z",
+      "build": "alpha9",
+      "rep": 2,
+      "mode": "classic",
+      "kind": "nonstream",
+      "attempt": "1",
+      "reason": "rate limit or usage notice during capture (see rate-limit.jsonl)"
+    },
+    {
+      "at": "20261104T102803Z",
+      "build": "none",
+      "rep": 2,
+      "mode": "classic",
+      "kind": "nonstream",
+      "attempt": "1",
+      "reason": "rate limit or usage notice during capture (see rate-limit.jsonl)"
+    }
+  ],
+  "rateLimitEvents": [
+    {
+      "at": "2026-11-04T10:00:25.381Z",
+      "tag": "(not archived)",
+      "build": "alpha9",
+      "rep": "2",
+      "mode": "classic",
+      "status": 429,
+      "url": "https://chatgpt.com/backend-api/conversations"
+    },
+    {
+      "at": "2026-11-04T10:00:25.382Z",
+      "tag": "(not archived)",
+      "build": "alpha9",
+      "rep": "2",
+      "mode": "classic",
+      "status": 429,
+      "url": "https://chatgpt.com/backend-api/conversations"
+    },
+    {
+      "at": "2026-11-04T10:28:03.115Z",
+      "tag": "(not archived)",
+      "build": "none",
+      "rep": "2",
+      "mode": "classic",
+      "status": 429,
+      "url": "https://chatgpt.com/backend-api/conversations"
+    },
+    {
+      "at": "2026-11-04T10:28:03.127Z",
+      "tag": "(not archived)",
+      "build": "none",
+      "rep": "2",
+      "mode": "classic",
+      "status": 429,
+      "url": "https://chatgpt.com/backend-api/conversations"
+    }
+  ]
+}

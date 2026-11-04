@@ -1,0 +1,68 @@
+{
+  "sourceDirectory": "butter-remount",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T16:24:42.603775+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T16:24:42.603775+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-table.md",
+      "archivedAs": "data/drag-table.md",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.421299+00:00"
+    },
+    {
+      "sourceRelativePath": "cost-table.md",
+      "archivedAs": "data/cost-table.md",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.523361+00:00"
+    },
+    {
+      "sourceRelativePath": "stream-table.md",
+      "archivedAs": "data/stream-table.md",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.421462+00:00"
+    },
+    {
+      "sourceRelativePath": "metric-definitions.md",
+      "archivedAs": "data/metric-definitions.md",
+      "sourceMtimeUTC": "2026-11-02T16:24:42.542742+00:00"
+    },
+    {
+      "sourceRelativePath": "prototype-limitations.md",
+      "archivedAs": "data/prototype-limitations.md",
+      "sourceMtimeUTC": "2026-11-02T15:55:18.735915+00:00"
+    },
+    {
+      "sourceRelativePath": "mechanisms.md",
+      "archivedAs": "data/mechanisms.md",
+      "sourceMtimeUTC": "2026-11-02T16:24:32.699466+00:00"
+    },
+    {
+      "sourceRelativePath": "pruned-generic-stream.md",
+      "archivedAs": "data/pruned-generic-stream.md",
+      "sourceMtimeUTC": "2026-11-02T15:18:02.199211+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-results.json",
+      "archivedAs": "data/drag-results.json",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.328774+00:00"
+    },
+    {
+      "sourceRelativePath": "stream-results.json",
+      "archivedAs": "data/stream-results.json",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.359529+00:00"
+    },
+    {
+      "sourceRelativePath": "cost-results.json",
+      "archivedAs": "data/cost-results.json",
+      "sourceMtimeUTC": "2026-11-02T16:22:13.522713+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "sourceDirectory": "butter-idle-mount",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T21:30:55.953915+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T21:30:55.953915+00:00"
+    },
+    {
+      "sourceRelativePath": "report-draft.md",
+      "archivedAs": "data/report-draft.md",
+      "sourceMtimeUTC": "2026-11-02T22:21:01.857353+00:00"
+    },
+    {
+      "sourceRelativePath": "tables.md",
+      "archivedAs": "data/tables.md",
+      "sourceMtimeUTC": "2026-11-02T22:20:33.113236+00:00"
+    },
+    {
+      "sourceRelativePath": "coverage.md",
+      "archivedAs": "data/coverage.md",
+      "sourceMtimeUTC": "2026-11-02T21:24:07.118525+00:00"
+    },
+    {
+      "sourceRelativePath": "EXCLUSIONS.md",
+      "archivedAs": "data/EXCLUSIONS.md",
+      "sourceMtimeUTC": "2026-11-02T22:02:25.601160+00:00"
+    },
+    {
+      "sourceRelativePath": "metric-definitions.md",
+      "archivedAs": "data/metric-definitions.md",
+      "sourceMtimeUTC": "2026-11-02T22:18:02.775084+00:00"
+    },
+    {
+      "sourceRelativePath": "screen-rejected.md",
+      "archivedAs": "data/screen-rejected.md",
+      "sourceMtimeUTC": "2026-11-02T20:22:51.961573+00:00"
+    },
+    {
+      "sourceRelativePath": "hidden-pruning.md",
+      "archivedAs": "data/hidden-pruning.md",
+      "sourceMtimeUTC": "2026-11-02T21:13:48.967761+00:00"
+    },
+    {
+      "sourceRelativePath": "production-mechanism.md",
+      "archivedAs": "data/production-mechanism.md",
+      "sourceMtimeUTC": "2026-11-02T22:26:44.164401+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-02T21:36:06.592239+00:00"
+    },
+    {
+      "sourceRelativePath": "results.json",
+      "archivedAs": "data/results.json",
+      "sourceMtimeUTC": "2026-11-02T22:10:42.973126+00:00"
+    },
+    {
+      "sourceRelativePath": "retention-check.json",
+      "archivedAs": "data/retention-check.json",
+      "sourceMtimeUTC": "2026-11-02T20:31:52.357252+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-endpoints.json",
+      "archivedAs": "data/drag-endpoints.json",
+      "sourceMtimeUTC": "2026-11-02T22:18:02.774741+00:00"
+    },
+    {
+      "sourceRelativePath": "mechanism-tests.json",
+      "archivedAs": "data/mechanism-tests.json",
+      "sourceMtimeUTC": "2026-11-02T21:39:36.849793+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

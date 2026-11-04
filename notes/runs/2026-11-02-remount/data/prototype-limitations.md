@@ -1,0 +1,14 @@
+# Prototype limitations to resolve before production
+
+- Conversation UUID handles project-slug aliases. The initial path-scoped screen was excluded.
+- Numeric block heights can be stale while math or fonts finish. The v1 hook shows a cold height deficit; full traversal fixes it in its warm screen. Readiness and skipped-state guards are tested separately.
+- Viewport-width equality is weaker than exact content-column width. Same-window sidebar/responsive changes require a synchronous CSS width guard or invalidation seam; a later RO callback alone cannot protect an earlier in-commit layout.
+- Stable turn key alone does not distinguish regeneration. The hook also requires the same assistant message ID and block count. The turn-only CSS prototype has a weaker identity guard and is unsuitable for branching without extending its selector identity.
+- Inline styles can be overwritten by React on a subsequent update. Warm/during-drag audits report how many remain. This prototype does not fight React's property writes or reapply styles in a global style setter.
+- `content-visibility:auto` can still need to activate/paint content after the compositor arrives. Lower layout cost is not proof that blank content disappears.
+- Main-world hooks on browser prototypes are private-integration risks. The insertion hook changes every append/insert call's JS entry path; the read hook changes every Element clientWidth access's JS entry path. Native receiver, return values and exceptions are preserved except for the explicitly isolated deferred-ref diagnostic.
+- Deferred-ref diagnostic intentionally returns zero once only from the exact pinned ref call on known completed remounts. It relies on the source's early-return behavior and already-attached RO. A source/bundle mismatch declines the deferral. It can temporarily change collapse state before the accurate observer notification. This requires collapse-specific regression coverage before any product decision.
+- The cache holds strings/numbers for at most 64 turns. Connected targets are observed until removal, when they are released. The prototype does not persist across reloads; cold misses retain the original behavior.
+- The raw page/trace/video artifacts include authenticated chat UI/text and remain local under `/tmp`.
+
+- The conservative whole-turn math-readiness gate can discard an unchanged paragraph's initial ResizeObserver notification while sibling math is still untypeset. Later RO batches can leave only partial block-height coverage. Unknown blocks keep native layout, so this is a cache-coverage/latency failure rather than invented geometry. Streaming audits distinguish sparse four-block restoration from roughly 982-block restoration. A more selective collector could improve cold coverage, but that improvement was not measured; full-coverage warmed runs still retain about-second frames and blanking.

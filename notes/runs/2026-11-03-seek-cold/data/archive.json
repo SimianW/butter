@@ -1,0 +1,58 @@
+{
+  "sourceDirectory": "butter-seek-cold",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-03T11:08:18.325419+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-03T11:08:18.325419+00:00"
+    },
+    {
+      "sourceRelativePath": "blank-preview-fix.md",
+      "archivedAs": "data/blank-preview-fix.md",
+      "sourceMtimeUTC": "2026-11-03T11:08:18.015523+00:00"
+    },
+    {
+      "sourceRelativePath": "review-fix-r1.md",
+      "archivedAs": "data/review-fix-r1.md",
+      "sourceMtimeUTC": "2026-11-03T11:42:30.931924+00:00"
+    },
+    {
+      "sourceRelativePath": "HYPOTHESES.md",
+      "archivedAs": "data/HYPOTHESES.md",
+      "sourceMtimeUTC": "2026-11-03T10:03:03.628777+00:00"
+    },
+    {
+      "sourceRelativePath": "results.json",
+      "archivedAs": "data/results.json",
+      "sourceMtimeUTC": "2026-11-03T10:05:28.776566+00:00"
+    },
+    {
+      "sourceRelativePath": "blank-preview-results.json",
+      "archivedAs": "data/blank-preview-results.json",
+      "sourceMtimeUTC": "2026-11-03T11:08:18.140483+00:00"
+    },
+    {
+      "sourceRelativePath": "estimate-results.json",
+      "archivedAs": "data/estimate-results.json",
+      "sourceMtimeUTC": "2026-11-03T07:12:46.223730+00:00"
+    },
+    {
+      "sourceRelativePath": "clipping-check.json",
+      "archivedAs": "data/clipping-check.json",
+      "sourceMtimeUTC": "2026-11-03T08:40:26.323703+00:00"
+    },
+    {
+      "sourceRelativePath": "review-fix-r1-results.json",
+      "archivedAs": "data/review-fix-r1-results.json",
+      "sourceMtimeUTC": "2026-11-03T11:42:30.655020+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

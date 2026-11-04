@@ -1,0 +1,179 @@
+{
+  "pending": {
+    "usage": {
+      "conversations": 0,
+      "bytes": 0
+    },
+    "cache": {
+      "ready": false,
+      "loads": 0,
+      "hits": 0,
+      "writes": 0,
+      "bytes": 0,
+      "rejected": {},
+      "errors": 0,
+      "entries": 0,
+      "pending": 0
+    },
+    "worker": {
+      "opened": false,
+      "databases": []
+    }
+  },
+  "liveChoice": {
+    "enabled": true,
+    "lang": "zh",
+    "layoutConsent": "granted",
+    "opts": {
+      "container": true,
+      "cv": true,
+      "layout": true,
+      "older": true,
+      "rail": true,
+      "seek": true,
+      "throttle": true
+    }
+  },
+  "granted": {
+    "usage": {
+      "conversations": 1,
+      "bytes": 354993
+    },
+    "cache": {
+      "ready": true,
+      "loads": 1,
+      "hits": 0,
+      "writes": 15,
+      "bytes": 349487,
+      "rejected": {},
+      "errors": 0,
+      "entries": 12,
+      "pending": 0
+    }
+  },
+  "stored": {
+    "readableMs": 1393.2000000476837,
+    "heldMounts": 0,
+    "destination": {
+      "turn": 6,
+      "offset": 118,
+      "known": true,
+      "stored": true,
+      "layout": true
+    },
+    "landingErrorPx": 0,
+    "timedOut": false,
+    "semantic": {
+      "attempts": 1,
+      "matched": false,
+      "fallback": true,
+      "clamped": false,
+      "lastError": 0,
+      "anchorVisible": false,
+      "previewY": 52
+    },
+    "top": 93677,
+    "facts": {
+      "throttle": {
+        "configured": true,
+        "available": true,
+        "matched": false,
+        "engaged": false
+      },
+      "older": {
+        "exercised": false,
+        "engaged": false,
+        "failed": false
+      },
+      "rail": {
+        "parsed": true
+      },
+      "layout": {
+        "exercised": true,
+        "engaged": true,
+        "failed": false
+      },
+      "seek": {
+        "exercised": true,
+        "failed": false,
+        "engaged": true
+      }
+    }
+  },
+  "declined": {
+    "settings": {
+      "enabled": true,
+      "lang": "zh",
+      "layoutConsent": "declined",
+      "opts": {
+        "container": true,
+        "cv": true,
+        "layout": false,
+        "older": true,
+        "rail": true,
+        "seek": true,
+        "throttle": true
+      }
+    },
+    "usage": {
+      "conversations": 0,
+      "bytes": 0
+    },
+    "rows": 0
+  },
+  "firstQuestion": {
+    "readableMs": 5320.299999952316,
+    "heldMounts": 0,
+    "destination": {
+      "turn": 0,
+      "offset": -52,
+      "known": false,
+      "stored": false,
+      "layout": false
+    },
+    "landingErrorPx": 0,
+    "timedOut": false,
+    "top": 84,
+    "facts": {
+      "throttle": {
+        "configured": true,
+        "available": true,
+        "matched": false,
+        "engaged": false
+      },
+      "older": {
+        "exercised": false,
+        "engaged": false,
+        "failed": false
+      },
+      "rail": {
+        "parsed": true
+      },
+      "layout": {
+        "exercised": false,
+        "engaged": false,
+        "failed": false
+      },
+      "seek": {
+        "exercised": true,
+        "failed": false,
+        "engaged": true
+      }
+    }
+  },
+  "masterOff": true,
+  "popupGrant": {
+    "enabled": true,
+    "lang": "en",
+    "layoutConsent": "granted",
+    "opts": {
+      "container": true,
+      "cv": true,
+      "layout": true,
+      "older": true,
+      "rail": true,
+      "seek": true,
+      "throttle": true
+    }
+  }
+}

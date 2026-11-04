@@ -1,0 +1,237 @@
+{
+  "path": "(not archived)",
+  "pid": 3974061,
+  "tid": 1,
+  "largest_tasks": [
+    {
+      "task_ms": 2120.244,
+      "ts": 1705134379155,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 6.414,
+        "Layout": 1308.379,
+        "ParseHTML": 160.825,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 1308.379,
+      "style_max_ms": 6.414,
+      "sampled_outside_events_ms": {
+        "Other": 133.01,
+        "React-leaf": 54.552,
+        "KaTeX-stack": 54.224,
+        "DOM-innerHTML": 54.34,
+        "GC": 52.393,
+        "DOM-remove": 262.498
+      },
+      "top_leaves": [
+        [
+          "removeChild",
+          "",
+          262.498
+        ],
+        [
+          "set innerHTML",
+          "",
+          54.34
+        ],
+        [
+          "(garbage collector)",
+          "",
+          52.393
+        ],
+        [
+          "clearTimeout",
+          "",
+          25.041
+        ],
+        [
+          "appendChild",
+          "",
+          24.528
+        ],
+        [
+          "sh",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          16.749
+        ],
+        [
+          "setTimeout",
+          "",
+          9.707
+        ],
+        [
+          "querySelectorAll",
+          "",
+          7.821
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "removeChild > sh > sp > sh > sy > sk > sy > sk > sy",
+          262.498
+        ],
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          54.34
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          20.69
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          3.838
+        ]
+      ]
+    },
+    {
+      "task_ms": 1932.728,
+      "ts": 1705130375904,
+      "events_ms": {
+        "Layerize": 0.003,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.007
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 1932.488
+      },
+      "top_leaves": [
+        [
+          "(program)",
+          "",
+          1932.291
+        ],
+        [
+          "requestAnimationFrame",
+          "",
+          0.197
+        ]
+      ],
+      "DOM_stacks": []
+    },
+    {
+      "task_ms": 1089.078,
+      "ts": 1705133049237,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 17.25,
+        "Layout": 638.7,
+        "ParseHTML": 53.14,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 638.7,
+      "style_max_ms": 17.25,
+      "sampled_outside_events_ms": {
+        "Other": 43.837,
+        "React-leaf": 37.539,
+        "KaTeX-stack": 5.67,
+        "DOM-innerHTML": 30.241,
+        "GC": 0.309,
+        "DOM-remove": 249.761
+      },
+      "top_leaves": [
+        [
+          "removeChild",
+          "",
+          249.761
+        ],
+        [
+          "set innerHTML",
+          "",
+          30.241
+        ],
+        [
+          "sh",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          22.976
+        ],
+        [
+          "clearTimeout",
+          "",
+          7.976
+        ],
+        [
+          "appendChild",
+          "",
+          7.909
+        ],
+        [
+          "querySelectorAll",
+          "",
+          2.905
+        ],
+        [
+          "setTimeout",
+          "",
+          2.829
+        ],
+        [
+          "setAttribute",
+          "",
+          2.328
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "removeChild > sh > sp > sh > sy > sk > sy > sk > sy",
+          249.761
+        ],
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          30.241
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          6.41
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          1.499
+        ]
+      ]
+    },
+    {
+      "task_ms": 798.415,
+      "ts": 1705138356862,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 8.811,
+        "GC": 789.601
+      },
+      "top_leaves": [
+        [
+          "(garbage collector)",
+          "",
+          789.601
+        ],
+        [
+          "(program)",
+          "",
+          8.5
+        ],
+        [
+          "set dynamicId",
+          "",
+          0.311
+        ]
+      ],
+      "DOM_stacks": []
+    }
+  ]
+}

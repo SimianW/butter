@@ -1,0 +1,55 @@
+{
+  "sourceDirectory": "butter-stream-diag",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-04T17:20:22.664606+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T17:20:22.664606+00:00"
+    },
+    {
+      "sourceRelativePath": "main-table.md",
+      "archivedAs": "data/main-table.md",
+      "sourceMtimeUTC": "2026-11-04T17:19:32.334694+00:00"
+    },
+    {
+      "sourceRelativePath": "stream-render.md",
+      "archivedAs": "data/stream-render.md",
+      "sourceMtimeUTC": "2026-11-04T17:19:32.334769+00:00"
+    },
+    {
+      "sourceRelativePath": "completion-render.md",
+      "archivedAs": "data/completion-render.md",
+      "sourceMtimeUTC": "2026-11-04T17:19:32.334823+00:00"
+    },
+    {
+      "sourceRelativePath": "script-table.md",
+      "archivedAs": "data/script-table.md",
+      "sourceMtimeUTC": "2026-11-04T17:19:32.334888+00:00"
+    },
+    {
+      "sourceRelativePath": "table.md",
+      "archivedAs": "data/table.md",
+      "sourceMtimeUTC": "2026-11-04T17:18:53.029649+00:00"
+    },
+    {
+      "sourceRelativePath": "arms.json",
+      "archivedAs": "data/arms.json",
+      "sourceMtimeUTC": "2026-11-04T17:18:53.026441+00:00"
+    },
+    {
+      "sourcePatterns": [
+        "raw/stream/*/rep-*.json"
+      ],
+      "archivedAs": "data/run-timings.csv",
+      "transformation": "Derived scalar timings/counts only; no captured text, identifiers or per-frame samples."
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "head": {
+    "loafBlockMs": 3607,
+    "p95": 16.8,
+    "keyMax": 357.5,
+    "busyPct": 38.5,
+    "loafMaxMs": 581
+  },
+  "change": {
+    "loafBlockMs": 12173,
+    "p95": 33.4,
+    "keyMax": 428.9,
+    "busyPct": 47,
+    "loafMaxMs": 1249
+  }
+}

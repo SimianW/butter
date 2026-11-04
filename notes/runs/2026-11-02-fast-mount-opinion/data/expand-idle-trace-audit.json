@@ -1,0 +1,545 @@
+{
+  "path": "(not archived)",
+  "pid": 2976925,
+  "tid": 1,
+  "largest_tasks": [
+    {
+      "task_ms": 1907.494,
+      "ts": 1661033902635,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 1907.363
+      },
+      "top_leaves": [
+        [
+          "(program)",
+          "",
+          1903.154
+        ],
+        [
+          "querySelectorAll",
+          "",
+          3.506
+        ],
+        [
+          "state",
+          "scrollbar-detail-probe.js",
+          0.31
+        ],
+        [
+          "",
+          "",
+          0.238
+        ],
+        [
+          "P.start",
+          "scrollbar-detail-probe.js",
+          0.155
+        ]
+      ],
+      "DOM_stacks": []
+    },
+    {
+      "task_ms": 1166.633,
+      "ts": 1661044178928,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 727.721,
+        "Layout": 206.756,
+        "ParseHTML": 87.222,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 206.756,
+      "style_max_ms": 727.721,
+      "sampled_outside_events_ms": {
+        "Other": 41.081,
+        "React-leaf": 16.067,
+        "KaTeX-stack": 15.8,
+        "DOM-innerHTML": 45.898,
+        "GC": 4.563
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          45.898
+        ],
+        [
+          "appendChild",
+          "",
+          12.483
+        ],
+        [
+          "(garbage collector)",
+          "",
+          4.563
+        ],
+        [
+          "setAttribute",
+          "",
+          3.149
+        ],
+        [
+          "querySelectorAll",
+          "",
+          2.906
+        ],
+        [
+          "o1",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          2.79
+        ],
+        [
+          "T",
+          "https://chatgpt.com/cdn/assets/76629.3763f756a5.js",
+          2.514
+        ],
+        [
+          "rB",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          2.139
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          45.898
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          10.018
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          2.465
+        ]
+      ]
+    },
+    {
+      "task_ms": 835.568,
+      "ts": 1661040128858,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 529.273,
+        "Layout": 140.99,
+        "ParseHTML": 56.35,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 140.99,
+      "style_max_ms": 529.273,
+      "sampled_outside_events_ms": {
+        "Other": 29.676,
+        "React-leaf": 13.406,
+        "KaTeX-stack": 18.759,
+        "DOM-innerHTML": 31.22,
+        "GC": 5.473
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          31.22
+        ],
+        [
+          "appendChild",
+          "",
+          8.229
+        ],
+        [
+          "(garbage collector)",
+          "",
+          5.473
+        ],
+        [
+          "rB",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          2.007
+        ],
+        [
+          "(program)",
+          "",
+          1.872
+        ],
+        [
+          "setTimeout",
+          "",
+          1.86
+        ],
+        [
+          "setAttribute",
+          "",
+          1.829
+        ],
+        [
+          "querySelectorAll",
+          "",
+          1.654
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          31.22
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          6.162
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          2.067
+        ]
+      ]
+    },
+    {
+      "task_ms": 815.432,
+      "ts": 1661042162398,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 498.566,
+        "Layout": 146.893,
+        "ParseHTML": 58.925,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 146.893,
+      "style_max_ms": 498.566,
+      "sampled_outside_events_ms": {
+        "Other": 32.333,
+        "React-leaf": 13.269,
+        "KaTeX-stack": 6.483,
+        "DOM-innerHTML": 29.856,
+        "GC": 3.969
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          29.856
+        ],
+        [
+          "appendChild",
+          "",
+          8.551
+        ],
+        [
+          "(garbage collector)",
+          "",
+          3.969
+        ],
+        [
+          "setAttribute",
+          "",
+          2.973
+        ],
+        [
+          "setTimeout",
+          "",
+          2.512
+        ],
+        [
+          "T",
+          "https://chatgpt.com/cdn/assets/76629.3763f756a5.js",
+          2.313
+        ],
+        [
+          "querySelectorAll",
+          "",
+          1.89
+        ],
+        [
+          "rB",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          1.862
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          29.856
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          6.546
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          2.005
+        ]
+      ]
+    },
+    {
+      "task_ms": 771.082,
+      "ts": 1661038128753,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 426.04,
+        "Layout": 162.172,
+        "ParseHTML": 51.223,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 162.172,
+      "style_max_ms": 426.04,
+      "sampled_outside_events_ms": {
+        "Other": 41.419,
+        "React-leaf": 17.515,
+        "GC": 10.332,
+        "KaTeX-stack": 26.831,
+        "DOM-innerHTML": 27.506
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          27.506
+        ],
+        [
+          "(garbage collector)",
+          "",
+          10.332
+        ],
+        [
+          "appendChild",
+          "",
+          7.519
+        ],
+        [
+          "setTimeout",
+          "",
+          3.678
+        ],
+        [
+          "o1",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          3.407
+        ],
+        [
+          "setAttribute",
+          "",
+          2.602
+        ],
+        [
+          "(program)",
+          "",
+          2.563
+        ],
+        [
+          "querySelectorAll",
+          "",
+          2.4
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          27.506
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          5.676
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          1.843
+        ]
+      ]
+    },
+    {
+      "task_ms": 626.243,
+      "ts": 1661048129347,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 421.905,
+        "Layout": 101.736,
+        "ParseHTML": 38.603,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 101.736,
+      "style_max_ms": 421.905,
+      "sampled_outside_events_ms": {
+        "Other": 21.999,
+        "React-leaf": 10.154,
+        "DOM-innerHTML": 17.833,
+        "KaTeX-stack": 11.209,
+        "GC": 0.978
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          17.833
+        ],
+        [
+          "appendChild",
+          "",
+          6.009
+        ],
+        [
+          "setTimeout",
+          "",
+          2.207
+        ],
+        [
+          "N",
+          "https://chatgpt.com/cdn/assets/async/990054.722dc53ff6.js",
+          1.738
+        ],
+        [
+          "rB",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          1.706
+        ],
+        [
+          "o1",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          1.406
+        ],
+        [
+          "querySelectorAll",
+          "",
+          1.4
+        ],
+        [
+          "",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          1.282
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          17.833
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          4.47
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          1.539
+        ]
+      ]
+    },
+    {
+      "task_ms": 347.76,
+      "ts": 1661056266373,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 0.306,
+        "GC": 347.538
+      },
+      "top_leaves": [
+        [
+          "(garbage collector)",
+          "",
+          347.538
+        ],
+        [
+          "(program)",
+          "",
+          0.306
+        ]
+      ],
+      "DOM_stacks": []
+    },
+    {
+      "task_ms": 257.053,
+      "ts": 1661046695803,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 188.55,
+        "Layout": 27.596,
+        "ParseHTML": 9.498,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 27.596,
+      "style_max_ms": 188.55,
+      "sampled_outside_events_ms": {
+        "Other": 15.472,
+        "React-leaf": 6.951,
+        "GC": 0.507,
+        "DOM-innerHTML": 5.55,
+        "KaTeX-stack": 2.426
+      },
+      "top_leaves": [
+        [
+          "set innerHTML",
+          "",
+          5.55
+        ],
+        [
+          "setTimeout",
+          "",
+          2.673
+        ],
+        [
+          "appendChild",
+          "",
+          1.686
+        ],
+        [
+          "setAttribute",
+          "",
+          1.236
+        ],
+        [
+          "(program)",
+          "",
+          1.176
+        ],
+        [
+          "rB",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          0.887
+        ],
+        [
+          "",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          0.78
+        ],
+        [
+          "",
+          "https://chatgpt.com/cdn/assets/617936.75de056fef.js",
+          0.765
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          5.55
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          0.93
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          0.756
+        ]
+      ]
+    }
+  ]
+}

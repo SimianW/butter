@@ -1,0 +1,63 @@
+{
+  "sourceDirectory": "butter-retention",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T09:24:37.649543+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T09:24:37.649543+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-table.md",
+      "archivedAs": "data/drag-table.md",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.047103+00:00"
+    },
+    {
+      "sourceRelativePath": "cost-table.md",
+      "archivedAs": "data/cost-table.md",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.096569+00:00"
+    },
+    {
+      "sourceRelativePath": "stream-table.md",
+      "archivedAs": "data/stream-table.md",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.122057+00:00"
+    },
+    {
+      "sourceRelativePath": "geometry-table.md",
+      "archivedAs": "data/geometry-table.md",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.143907+00:00"
+    },
+    {
+      "sourceRelativePath": "methodology.md",
+      "archivedAs": "data/methodology.md",
+      "sourceMtimeUTC": "2026-11-02T08:42:47.552255+00:00"
+    },
+    {
+      "sourceRelativePath": "strict-rejection.md",
+      "archivedAs": "data/strict-rejection.md",
+      "sourceMtimeUTC": "2026-11-02T07:45:17.254386+00:00"
+    },
+    {
+      "sourceRelativePath": "drag-results.json",
+      "archivedAs": "data/drag-results.json",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.046704+00:00"
+    },
+    {
+      "sourceRelativePath": "stream-results.json",
+      "archivedAs": "data/stream-results.json",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.049892+00:00"
+    },
+    {
+      "sourceRelativePath": "cost-results.json",
+      "archivedAs": "data/cost-results.json",
+      "sourceMtimeUTC": "2026-11-02T09:20:32.096378+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

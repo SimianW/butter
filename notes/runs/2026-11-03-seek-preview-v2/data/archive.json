@@ -1,0 +1,28 @@
+{
+  "sourceDirectory": "butter-seek-preview-v2",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-03T05:53:15.526989+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-03T05:53:15.526989+00:00"
+    },
+    {
+      "sourceRelativePath": "results.json",
+      "archivedAs": "data/results.json",
+      "sourceMtimeUTC": "2026-11-03T05:53:15.484403+00:00"
+    },
+    {
+      "sourceRelativePath": "pre-release-results.json",
+      "archivedAs": "data/pre-release-results.json",
+      "sourceMtimeUTC": "2026-11-03T04:30:26.438679+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "focusUnchanged": true,
+  "clearance": {
+    "card": 760,
+    "composer": 776
+  },
+  "railAboveCard": {
+    "above": true,
+    "cardZ": "19",
+    "railZ": "20"
+  },
+  "composerEmpty": true
+}

@@ -1,0 +1,5 @@
+# Strict-six negative result
+
+The source experiment replaced the virtualizer state helper's covering-range retention rule with `c=i`, to shrink to the computed range even if the old range already covered it. This parsed, loaded full 12-question history, and retained seven turns at the top. However, it failed to complete the warm traversal after more than 216 seconds. A diagnostic during the hang reported scrollTop 20, unchanged height 312992, seven active turns / 145137 active elements, and roughly 111% renderer CPU and 22.6% host-memory usage reported by `ps` (host RAM 15761 MiB). This is not a valid performance sample; it is an unstable change to ChatGPT's private window/geometry synchronization. The run was terminated, browser restored, and no streaming repeats of this rejected mechanism were run.
+
+Raw sources/output: `strict-six.sh`, `patch.mjs` `STRICT=1` branch, `logs/strict-progress.log`, `logs/phase-strict-six-v2.log`, and `logs/a6-strict-warm-fast-r1.log`. The ordinary overscan-six results preserve ChatGPT's range rule and remain valid. Do not describe warmed ordinary six as an evicting retention cap; it retained all 12 turns in this chat.

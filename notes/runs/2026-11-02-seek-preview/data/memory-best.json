@@ -1,0 +1,178 @@
+{
+  "heap": {
+    "usedSize": 172352892,
+    "totalSize": 238440448,
+    "embedderHeapUsedSize": 147465216,
+    "backingStorageSize": 36915463
+  },
+  "dom": "<redacted>",
+  "preview": {
+    "data": {
+      "arm": "best",
+      "events": [],
+      "updates": [],
+      "sessions": [],
+      "geometry": [
+        {
+          "id": "<redacted>",
+          "top": -158.3125,
+          "h": 348.9810152694106,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 202.6685152694106,
+          "h": 380.8113665501424,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 595.4798818195529,
+          "h": 271.0367112431128,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 878.5165930626658,
+          "h": 325.24014552963826,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1215.7567385923041,
+          "h": 334.63879437312016,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1562.3955329654243,
+          "h": 250.57852966488926,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1824.9740626303137,
+          "h": 291.0259373696865,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 2128,
+          "h": 34867.875,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 37007.875,
+          "h": 36895.078125,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 73914.953125,
+          "h": 5494.125,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 79421.078125,
+          "h": 14894.609375,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 94327.6875,
+          "h": 208,
+          "known": true
+        }
+      ],
+      "bytes": 406136,
+      "active": false,
+      "hasPrev": false,
+      "totalChars": 162478,
+      "pending": false,
+      "model": [
+        {
+          "id": "<redacted>",
+          "top": -158.3125,
+          "h": 348.9810152694106,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 202.6685152694106,
+          "h": 380.8113665501424,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 595.4798818195529,
+          "h": 271.0367112431128,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 878.5165930626658,
+          "h": 325.24014552963826,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1215.7567385923041,
+          "h": 334.63879437312016,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1562.3955329654243,
+          "h": 250.57852966488926,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 1824.9740626303137,
+          "h": 291.0259373696865,
+          "known": false
+        },
+        {
+          "id": "<redacted>",
+          "top": 2128,
+          "h": 34867.875,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 37007.875,
+          "h": 36895.078125,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 73914.953125,
+          "h": 5494.125,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 79421.078125,
+          "h": 14894.609375,
+          "known": true
+        },
+        {
+          "id": "<redacted>",
+          "top": 94327.6875,
+          "h": 208,
+          "known": true
+        }
+      ]
+    },
+    "nodes": 17
+  },
+  "afterClearHeap": {
+    "usedSize": 172018068,
+    "totalSize": 191516672,
+    "embedderHeapUsedSize": 147464992,
+    "backingStorageSize": 36915463
+  },
+  "reclaimedJSBytes": 334824
+}

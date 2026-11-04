@@ -1,0 +1,26 @@
+{
+  "hashDefinition": "file-index hash = SHA-256 of canonical JSON {relative path: per-file SHA-256}, sorted keys, no whitespace",
+  "none": {
+    "source": "No extension loaded (LAB_EXTENSIONS empty). butter-blank-head (alpha.7) NOT used.",
+    "fileIndexSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "files": 0
+  },
+  "alpha9": {
+    "source": "~/snap/chromium/common/butter-bench-final-alpha9 (copied; byte-identical to (not archived))",
+    "version_name": "0.1.0-alpha.9",
+    "fileIndexSha256": "15fc9231ce78656ee6f70a7f3a7d436fa022b60ec2c4b69f0d92e6cb2f4cbe3b",
+    "files": 16,
+    "lab1ArchivedIndexSha256": "15fc9231ce78656ee6f70a7f3a7d436fa022b60ec2c4b69f0d92e6cb2f4cbe3b"
+  },
+  "latest": {
+    "source": "~/butter-wip/butter-0.1.0-alpha.10+next.2.zip (root butter/); commit 6e8362305f0a68097458436351c9920a4645f12a, branch t3/seek-preview, worktree ~/.t3/worktrees/butter/t3-6cf413cf",
+    "version_name": "0.1.0-alpha.10+next.2",
+    "zipSha256": "ea647a8e8e9e2fc04ebe01d388ec9e591cf0ab03d1ce8286a9a26435fb6ea2ee",
+    "fileIndexSha256": "ee2900c350950c753a5b796144175343cc7825561bea18247ead2e836a156d44",
+    "files": 32
+  },
+  "stagingDirs": {
+    "alpha9": "~/snap/chromium/common/butter-bench-lab2-alpha9",
+    "latest": "~/snap/chromium/common/butter-bench-lab2-latest"
+  }
+}

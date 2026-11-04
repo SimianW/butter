@@ -1,0 +1,1384 @@
+{
+  "memory": [
+    {
+      "state": {
+        "t": 33184.59999990463,
+        "top": 1800,
+        "height": 309747,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 184757460,
+          "totalSize": 192958464,
+          "embedderHeapUsedSize": 196551144,
+          "backingStorageSize": 36782134
+        }
+      },
+      "name": "memory-control-r1"
+    },
+    {
+      "state": {
+        "t": 33099.09999990463,
+        "top": 1800,
+        "height": 309747,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 186028244,
+          "totalSize": 212750336,
+          "embedderHeapUsedSize": 202764888,
+          "backingStorageSize": 36808468
+        }
+      },
+      "name": "memory-control-r2"
+    },
+    {
+      "state": {
+        "t": 36938.40000009537,
+        "top": 1800,
+        "height": 312709,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 188181496,
+          "totalSize": 216027136,
+          "embedderHeapUsedSize": 205776576,
+          "backingStorageSize": 36761642
+        }
+      },
+      "name": "memory-control-r3"
+    },
+    {
+      "state": {
+        "t": 36940.90000009537,
+        "top": 1800,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 198390320,
+          "totalSize": 207511552,
+          "embedderHeapUsedSize": 204523872,
+          "backingStorageSize": 36821615
+        }
+      },
+      "name": "memory-read-hook-r1"
+    },
+    {
+      "state": {
+        "t": 40430.299999952316,
+        "top": 1800,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 197788916,
+          "totalSize": 217997312,
+          "embedderHeapUsedSize": 212630576,
+          "backingStorageSize": 36847608
+        }
+      },
+      "name": "memory-read-hook-r2"
+    },
+    {
+      "state": {
+        "t": 42616.09999990463,
+        "top": 1800,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 112153,
+        "katex": 1526
+      },
+      "memory": {
+        "dom": "<redacted>",
+        "heap": {
+          "usedSize": 190620024,
+          "totalSize": 196763648,
+          "embedderHeapUsedSize": 204402416,
+          "backingStorageSize": 36776398
+        }
+      },
+      "name": "memory-read-hook-r3"
+    }
+  ],
+  "send": [
+    {
+      "label": "send",
+      "before": {
+        "t": 38294.700000047684,
+        "top": 1900,
+        "height": 312709,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 44337,
+        "top": 312443,
+        "height": 313583,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 40332.40000009537,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 38318,
+          "duration": 2109,
+          "navigationId": 5147,
+          "attribution": [
+            {}
+          ]
+        },
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 40427.299999952316,
+          "duration": 112,
+          "navigationId": 5147,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 38321.700000047684,
+          "top": 310885,
+          "height": 312709,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 38434.10000014305,
+          "top": 310885,
+          "height": 313256,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 315
+      },
+      "metrics": {
+        "LayoutCount": 16,
+        "RecalcStyleCount": 282,
+        "LayoutDuration": 0.281047,
+        "RecalcStyleDuration": 1.285293,
+        "DevToolsCommandDuration": 0.02129700000000001,
+        "ScriptDuration": 0.762973,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.1415119999999996,
+        "TaskOtherDuration": 0.790902
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 38431.60000014305,
+            "top": 310885
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 38431.60000014305,
+            "top": 310885
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-control-r1"
+    },
+    {
+      "label": "send",
+      "before": {
+        "t": 40578.59999990463,
+        "top": 1900,
+        "height": 312709,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 46646.699999809265,
+        "top": 312443,
+        "height": 313583,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 42627.09999990463,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 40602.39999985695,
+          "duration": 2120,
+          "navigationId": 3630,
+          "attribution": [
+            {}
+          ]
+        },
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 42723.299999952316,
+          "duration": 109,
+          "navigationId": 3630,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 40605.59999990463,
+          "top": 310885,
+          "height": 312709,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 40721.299999952316,
+          "top": 310885,
+          "height": 313256,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 315
+      },
+      "metrics": {
+        "LayoutCount": 17,
+        "RecalcStyleCount": 280,
+        "LayoutDuration": 0.370448,
+        "RecalcStyleDuration": 1.214747,
+        "DevToolsCommandDuration": 0.020781999999999967,
+        "ScriptDuration": 0.749853,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.1763890000000004,
+        "TaskOtherDuration": 0.820559
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 40718.39999985695,
+            "top": 310885
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 40718.39999985695,
+            "top": 310885
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-control-r2"
+    },
+    {
+      "label": "send",
+      "before": {
+        "t": 40636.40000009537,
+        "top": 1900,
+        "height": 312992,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 46448.40000009537,
+        "top": 312626,
+        "height": 313723,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 42442,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 40661.10000014305,
+          "duration": 1880,
+          "navigationId": 2806,
+          "attribution": [
+            {}
+          ]
+        },
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 42541.5,
+          "duration": 103,
+          "navigationId": 2806,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 40664.300000190735,
+          "top": 311168,
+          "height": 312992,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 40774.90000009537,
+          "top": 311168,
+          "height": 313539,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 272
+      },
+      "metrics": {
+        "LayoutCount": 17,
+        "RecalcStyleCount": 281,
+        "LayoutDuration": 0.246103,
+        "RecalcStyleDuration": 1.193487,
+        "DevToolsCommandDuration": 0.02107199999999998,
+        "ScriptDuration": 0.651001,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.869585,
+        "TaskOtherDuration": 0.7579220000000001
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 40771.90000009537,
+            "top": 311168
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 40771.90000009537,
+            "top": 311168
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-control-r3"
+    },
+    {
+      "label": "send",
+      "before": {
+        "t": 36340.39999985695,
+        "top": 1900,
+        "height": 309765,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 42513,
+        "top": 312613,
+        "height": 313730,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 38472.39999985695,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 36363.39999985695,
+          "duration": 2211,
+          "navigationId": 3147,
+          "attribution": [
+            {}
+          ]
+        },
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 38574.799999952316,
+          "duration": 155,
+          "navigationId": 3147,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 36366.5,
+          "top": 307941,
+          "height": 309765,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 36482.199999809265,
+          "top": 307941,
+          "height": 310312,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 292
+      },
+      "metrics": {
+        "LayoutCount": 21,
+        "RecalcStyleCount": 284,
+        "LayoutDuration": 0.365178,
+        "RecalcStyleDuration": 1.278848,
+        "DevToolsCommandDuration": 0.019246999999999986,
+        "ScriptDuration": 0.791141,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.23748,
+        "TaskOtherDuration": 0.7830659999999999
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 36479.5,
+            "top": 307941
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 36479.5,
+            "top": 307941
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-read-hook-r1"
+    },
+    {
+      "label": "send",
+      "before": {
+        "t": 35219.59999990463,
+        "top": 1900,
+        "height": 309747,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 41089.799999952316,
+        "top": 312595,
+        "height": 313712,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 37066.59999990463,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 35243.5,
+          "duration": 1911,
+          "navigationId": 6083,
+          "attribution": [
+            {}
+          ]
+        },
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 37155,
+          "duration": 156,
+          "navigationId": 6083,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 35246.799999952316,
+          "top": 307923,
+          "height": 309747,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 35361.59999990463,
+          "top": 307923,
+          "height": 310294,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 292
+      },
+      "metrics": {
+        "LayoutCount": 22,
+        "RecalcStyleCount": 287,
+        "LayoutDuration": 0.2511,
+        "RecalcStyleDuration": 1.2165650000000001,
+        "DevToolsCommandDuration": 0.01988200000000001,
+        "ScriptDuration": 0.66142,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.924123,
+        "TaskOtherDuration": 0.775156
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 35358.89999985695,
+            "top": 307923
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 35358.89999985695,
+            "top": 307923
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-read-hook-r2"
+    },
+    {
+      "label": "send",
+      "before": {
+        "t": 41051.59999990463,
+        "top": 1900,
+        "height": 312992,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "after": {
+        "t": 46892.699999809265,
+        "top": 312626,
+        "height": 313723,
+        "client": 912,
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "behavior": "auto"
+      },
+      "mounts": [
+        {
+          "t": 42980.09999990463,
+          "add": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "remove": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ]
+        }
+      ],
+      "tasks": [
+        {
+          "name": "self",
+          "entryType": "longtask",
+          "startTime": 41071.09999990463,
+          "duration": 2002,
+          "navigationId": 5052,
+          "attribution": [
+            {}
+          ]
+        }
+      ],
+      "mutations": 27,
+      "submitTiming": [
+        {
+          "kind": "main-capture",
+          "t": 41074,
+          "top": 311168,
+          "height": 312992,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        },
+        {
+          "kind": "send",
+          "t": 41186.799999952316,
+          "top": 311168,
+          "height": 313539,
+          "client": 912,
+          "turns": [
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>",
+            "<id>"
+          ],
+          "behavior": "auto"
+        }
+      ],
+      "newUser": {
+        "top": 272
+      },
+      "metrics": {
+        "LayoutCount": 29,
+        "RecalcStyleCount": 291,
+        "LayoutDuration": 0.260992,
+        "RecalcStyleDuration": 1.253241,
+        "DevToolsCommandDuration": 0.019597000000000003,
+        "ScriptDuration": 0.668697,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.829064,
+        "TaskOtherDuration": 0.6265370000000001
+      },
+      "blocked": [],
+      "replay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 41183.799999952316,
+            "top": 311168
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": false
+      },
+      "finalReplay": {
+        "intercepted": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation",
+            "method": "POST",
+            "t": 41183.799999952316,
+            "top": 311168
+          }
+        ],
+        "blocked": [
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          },
+          {
+            "url": "https://chatgpt.com/backend-api/f/conversation/prepare",
+            "method": "POST"
+          }
+        ],
+        "done": true
+      },
+      "name": "send-read-hook-r3"
+    }
+  ],
+  "rail": [
+    {
+      "before": {
+        "t": 37350,
+        "top": 312069,
+        "height": 312981,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312981,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6260,
+      "name": "rail-control-r1"
+    },
+    {
+      "before": {
+        "t": 37215.799999952316,
+        "top": 312069,
+        "height": 312981,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312981,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6236,
+      "name": "rail-control-r2"
+    },
+    {
+      "before": {
+        "t": 41106.200000047684,
+        "top": 311940,
+        "height": 312852,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312852,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6244,
+      "name": "rail-control-r3"
+    },
+    {
+      "before": {
+        "t": 41099.5,
+        "top": 312080,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312992,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6127,
+      "name": "rail-read-hook-r1"
+    },
+    {
+      "before": {
+        "t": 44597.09999990463,
+        "top": 312080,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312992,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6120,
+      "name": "rail-read-hook-r2"
+    },
+    {
+      "before": {
+        "t": 46771.59999990463,
+        "top": 312080,
+        "height": 312992,
+        "client": 912,
+        "width": 1238,
+        "offsetWidth": 1258,
+        "rect": {
+          "x": 341,
+          "y": 0,
+          "width": 1258,
+          "height": 912
+        },
+        "turns": [
+          "<id>",
+          "<id>",
+          "<id>",
+          "<id>"
+        ],
+        "nodes": 44221,
+        "katex": 594
+      },
+      "after": {
+        "top": 20,
+        "height": 312992,
+        "turnTop": 64,
+        "userTop": 116,
+        "key": "<id>",
+        "railFirst": "<redacted>",
+        "busy": 0
+      },
+      "firstKey": "<id>",
+      "pass": true,
+      "ms": 6123,
+      "name": "rail-read-hook-r3"
+    }
+  ]
+}

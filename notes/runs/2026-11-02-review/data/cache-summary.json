@@ -1,0 +1,21 @@
+{
+  "url": "<chat>",
+  "styles": [
+    {
+      "groups": 6,
+      "rules": 1623
+    }
+  ],
+  "scrollers": [
+    {
+      "visible": false,
+      "turns": 5,
+      "marked": 918
+    },
+    {
+      "visible": true,
+      "turns": 5,
+      "marked": 1399
+    }
+  ]
+}

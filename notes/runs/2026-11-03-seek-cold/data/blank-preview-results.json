@@ -1,0 +1,167 @@
+{
+  "runs": [
+    {
+      "run": "blank-before-tall",
+      "warm": false,
+      "frames": 128,
+      "emptyFrames": 27,
+      "heldMounts": 0,
+      "renderP95Ms": 1.3999998569488525,
+      "renderMaxMs": 2.5999999046325684,
+      "fallbackUpdates": 0,
+      "buildPath": "(not archived)",
+      "realContent": null,
+      "semantic": null
+    },
+    {
+      "run": "blank-fixed-tall-cold",
+      "warm": false,
+      "frames": 128,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "renderP95Ms": 3.299999952316284,
+      "renderMaxMs": 3.9000000953674316,
+      "fallbackUpdates": 27,
+      "buildPath": "(not archived)",
+      "realContent": null,
+      "semantic": null
+    },
+    {
+      "run": "blank-fixed-tall-warm",
+      "warm": true,
+      "frames": 129,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "renderP95Ms": 5.199999809265137,
+      "renderMaxMs": 7.599999904632568,
+      "fallbackUpdates": 16,
+      "buildPath": "(not archived)",
+      "realContent": {
+        "question": 5,
+        "mounted": true,
+        "chars": 56649
+      },
+      "semantic": {
+        "attempts": 1,
+        "matched": true,
+        "clamped": false,
+        "lastError": 0,
+        "anchorVisible": true,
+        "previewY": 80
+      }
+    },
+    {
+      "run": "blank-fixed-normal-cold",
+      "warm": false,
+      "frames": 128,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "renderP95Ms": 3.8999998569488525,
+      "renderMaxMs": 7.5,
+      "fallbackUpdates": 0,
+      "buildPath": "(not archived)",
+      "realContent": {
+        "question": 5,
+        "mounted": true,
+        "chars": 4600
+      },
+      "semantic": null
+    }
+  ],
+  "package": {
+    "version": "0.1.0.10",
+    "version_name": "0.1.0-alpha.10+seekpreview.3",
+    "zipBytes": 82807,
+    "zipSHA256": "0fb3b3a35daa06a430f438a64854066777f499122777a737bc428ea065b7fa44",
+    "files": {
+      "cold-core.js": "17f9bab249402569848200d4ce08c7c424df97ca19cfc98dc2cff4dd0b599c09",
+      "popup.css": "7e6b84b44eb4e2f9ae80213aeed8b01aae5b3e10810662c432f27b7709b812b7",
+      "butter-nav.js": "45ad49c2e28f0e7bd27cc75219e2585360719f98420f5fd3440000b46ac108f8",
+      "butter-settings.js": "53c1729b29c5e304d6f60ebf08263ace957fc41ccc10f136b5738d564f5c3762",
+      "butter-cv.js": "cd1243d88d912ec2a6f541f1562d0106dde0912b1586a16b3199748bc4199798",
+      "butter.css": "128610c02669438cbd028ed836a05f754999cd8262e516fb74a66a85f4e3d451",
+      "popup.js": "7920e7fde92ef21df5f6586538296906da8a5d2dfdb745229c32ddf9debf416b",
+      "config.js": "735ad147fbea9744c0e79d1083158308b006838034cf82351132404f2cd07a7a",
+      "seek-core.js": "2aa16dab23c9872625d1a73b87d28246adb3b0f0c2455144371f11ef72ddcdda",
+      "cold-store.js": "44601b31ad77077b905cb082419bcb98ceaa12ca20344d8eabe9ca3351e37e7c",
+      "butter-main.js": "ae59ae344475adc85dcc82e1b5f8aba51c3f54592c1e65f70815e4f1355a27b1",
+      "cold-options.js": "ae1770f4891d89e0f98d4dadcd246bf805d6952b2b57db56a0904e448da14fac",
+      "seek-preview.js": "ac573c24f253842aa7aa6fcecdef9c48062c207f36398dbaacb445c931e11af2",
+      "height-cache.js": "de05d443c0603a51f2ace589b8b3cfbf8ba8e8a402c6ec08b3a218901052e7d2",
+      "manifest.json": "1a95c21e01a5a2fd9aaad257b41ba90f60146f854c0ec271032ac938b489498d",
+      "popup.html": "d355424dd047e3905991238ebff37fb79ba0633cdddfc622d3816ba6630345b9",
+      "butter-status.js": "994da165d6ae0bdca6ed68f4bee78fa7828a789822b3cc18302d1a7f511791bf",
+      "visible-audit.js": "6f2a820954a8798ff39831c10d5b09dd400a438f7784a5f6614caa1ca72a9e1c",
+      "butter-nav-main.js": "0ee64f961a9d133a2b23985724d71c70e8182c29b33f7616f092c46a8ccc29f9",
+      "icons/icon-16.png": "8b33b91ad495d0c4be8f12383431b6c9d01a152b2f70569413f45415dc386fb1",
+      "icons/icon-32.png": "acde5e64b29f0fc6b9343861ae852862c9552a14ac1ff95e6464b7d6c69f35b5",
+      "icons/icon-48.png": "78a7c6d694f6ccd78f34d8b9b2ceef9b0994d5a79ef9241df618d6efb956bef1",
+      "icons/icon-128.png": "158f17d6f6a2a28930c1c46f24ae603d24b17e626120195645b0899635b76a79"
+    },
+    "sourceArm": "stored",
+    "nativeStateWriterIncluded": false,
+    "runtimeSmokeTest": {
+      "passed": true,
+      "run": "stored-overlay-package-runtime-smoke",
+      "buildPath": "(not archived)",
+      "sourceFilesMatchZip": true,
+      "heldMounts": 0,
+      "destinationKnown": false,
+      "destinationStored": false,
+      "semantic": {
+        "attempts": 1,
+        "matched": false,
+        "fallback": true,
+        "clamped": false,
+        "lastError": 0,
+        "anchorVisible": false,
+        "previewY": 52
+      },
+      "screenTurnMatches": true,
+      "releaseReadableMs": 5771.5,
+      "allVisibleAnchorMaxPx": 29130,
+      "declaredPathsChecked": 22,
+      "platform": "Linux headed Chromium; native Windows and macOS behavior unverified"
+    },
+    "zipVerifiedAfterRuntime": true,
+    "blankPreviewRegression": {
+      "passed": true,
+      "oldEmptyFrames": 27,
+      "newHeldFrames": 385,
+      "newEmptyFrames": 0,
+      "heldMounts": 0,
+      "runs": [
+        {
+          "run": "blank-fixed-tall-cold",
+          "heldFrames": 128,
+          "emptyFrames": 0,
+          "heldMounts": 0,
+          "compiledJSMatch": true,
+          "packagedFilesMatch": null
+        },
+        {
+          "run": "blank-fixed-tall-warm",
+          "heldFrames": 129,
+          "emptyFrames": 0,
+          "heldMounts": 0,
+          "compiledJSMatch": true,
+          "packagedFilesMatch": true
+        },
+        {
+          "run": "blank-fixed-normal-cold",
+          "heldFrames": 128,
+          "emptyFrames": 0,
+          "heldMounts": 0,
+          "compiledJSMatch": true,
+          "packagedFilesMatch": true
+        }
+      ],
+      "warmRealContent": {
+        "question": 5,
+        "mounted": true,
+        "chars": 56649
+      },
+      "warmSemanticErrorPx": 0
+    }
+  }
+}

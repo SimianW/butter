@@ -1,0 +1,101 @@
+{
+  "label": "drag-after-fixture",
+  "url": "<chat>",
+  "settledFormulas": 14736,
+  "maxRatio": 0.5797872340425532,
+  "tallest": [
+    {
+      "h": 268,
+      "lim": 632,
+      "rows": 8,
+      "tex": "<prompt text>",
+      "texLength": 40
+    },
+    {
+      "h": 218,
+      "lim": 376,
+      "rows": 4,
+      "tex": "<prompt text>",
+      "texLength": 40
+    },
+    {
+      "h": 218,
+      "lim": 376,
+      "rows": 4,
+      "tex": "<prompt text>",
+      "texLength": 40
+    },
+    {
+      "h": 218,
+      "lim": 376,
+      "rows": 4,
+      "tex": "<prompt text>",
+      "texLength": 40
+    },
+    {
+      "h": 218,
+      "lim": 376,
+      "rows": 4,
+      "tex": "<prompt text>",
+      "texLength": 40
+    }
+  ],
+  "overLimit": [],
+  "rejected": {
+    "math-pending": 19,
+    "zero-block": 7,
+    "skipped": 2
+  },
+  "records": 101,
+  "holds": [
+    {
+      "f": 0.95,
+      "active": true,
+      "items": 29,
+      "maxBox": 116,
+      "boxes": 10
+    },
+    {
+      "f": 0.8,
+      "active": true,
+      "items": 31,
+      "maxBox": 115,
+      "boxes": 12
+    },
+    {
+      "f": 0.62,
+      "active": true,
+      "items": 30,
+      "maxBox": 185,
+      "boxes": 9
+    },
+    {
+      "f": 0.45,
+      "active": true,
+      "items": 29,
+      "maxBox": 90,
+      "boxes": 14
+    },
+    {
+      "f": 0.3,
+      "active": true,
+      "items": 29,
+      "maxBox": 108,
+      "boxes": 6
+    },
+    {
+      "f": 0.15,
+      "active": true,
+      "items": 33,
+      "maxBox": 103,
+      "boxes": 15
+    },
+    {
+      "f": 0.05,
+      "active": true,
+      "items": 32,
+      "maxBox": 113,
+      "boxes": 10
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "path": "(not archived)",
+  "pid": 3940944,
+  "tid": 1,
+  "largest_tasks": [
+    {
+      "task_ms": 1943.913,
+      "ts": 1703844578015,
+      "events_ms": {
+        "Layerize": 0.003,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.008
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 1943.599
+      },
+      "top_leaves": [
+        [
+          "(program)",
+          "",
+          1943.397
+        ],
+        [
+          "requestAnimationFrame",
+          "",
+          0.202
+        ]
+      ],
+      "DOM_stacks": []
+    },
+    {
+      "task_ms": 1128.683,
+      "ts": 1703847952750,
+      "events_ms": {
+        "Layerize": 1.586,
+        "UpdateLayoutTree": 76.1,
+        "Layout": 159.509,
+        "ParseHTML": 139.153,
+        "Paint": 1.654,
+        "PrePaint": 1.582
+      },
+      "layout_max_ms": 147.543,
+      "style_max_ms": 28.772,
+      "sampled_outside_events_ms": {
+        "Other": 169.44,
+        "React-leaf": 68.419,
+        "KaTeX-stack": 29.159,
+        "DOM-innerHTML": 51.296,
+        "GC": 16.582,
+        "DOM-remove": 379.807
+      },
+      "top_leaves": [
+        [
+          "removeChild",
+          "",
+          379.807
+        ],
+        [
+          "set innerHTML",
+          "",
+          51.296
+        ],
+        [
+          "querySelectorAll",
+          "",
+          33.938
+        ],
+        [
+          "sh",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          31.432
+        ],
+        [
+          "clearTimeout",
+          "",
+          24.963
+        ],
+        [
+          "appendChild",
+          "",
+          20.176
+        ],
+        [
+          "(garbage collector)",
+          "",
+          16.582
+        ],
+        [
+          "(program)",
+          "",
+          13.611
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "removeChild > sh > sp > sh > sy > sk > sy > sk > sy",
+          379.807
+        ],
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lY > lH",
+          51.296
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lY > lH > lK > ",
+          16.486
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          3.69
+        ]
+      ]
+    },
+    {
+      "task_ms": 625.341,
+      "ts": 1703853258114,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 0.0,
+        "Layout": 0.0,
+        "ParseHTML": 0.0,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 0.0,
+      "style_max_ms": 0.0,
+      "sampled_outside_events_ms": {
+        "Other": 6.628,
+        "GC": 611.52
+      },
+      "top_leaves": [
+        [
+          "(garbage collector)",
+          "",
+          611.52
+        ],
+        [
+          "(program)",
+          "",
+          6.311
+        ],
+        [
+          "set dynamicId",
+          "",
+          0.317
+        ]
+      ],
+      "DOM_stacks": []
+    },
+    {
+      "task_ms": 612.204,
+      "ts": 1703847258705,
+      "events_ms": {
+        "Layerize": 0.0,
+        "UpdateLayoutTree": 20.785,
+        "Layout": 162.75,
+        "ParseHTML": 56.728,
+        "Paint": 0.0,
+        "PrePaint": 0.0
+      },
+      "layout_max_ms": 162.75,
+      "style_max_ms": 20.785,
+      "sampled_outside_events_ms": {
+        "Other": 56.771,
+        "React-leaf": 36.401,
+        "KaTeX-stack": 15.254,
+        "DOM-innerHTML": 18.579,
+        "DOM-remove": 226.5
+      },
+      "top_leaves": [
+        [
+          "removeChild",
+          "",
+          226.5
+        ],
+        [
+          "sh",
+          "https://chatgpt.com/cdn/assets/226913.a6f571e7d4.js",
+          23.055
+        ],
+        [
+          "set innerHTML",
+          "",
+          18.579
+        ],
+        [
+          "querySelectorAll",
+          "",
+          11.454
+        ],
+        [
+          "appendChild",
+          "",
+          8.465
+        ],
+        [
+          "clearTimeout",
+          "",
+          4.802
+        ],
+        [
+          "watch",
+          "chrome-extension://cfeeiileaeknokebjaffadjgfjfkkimo/remount-prototype.js",
+          3.701
+        ],
+        [
+          "observe",
+          "",
+          3.683
+        ]
+      ],
+      "DOM_stacks": [
+        [
+          "removeChild > sh > sp > sh > sy > sk > sy > sk > sy",
+          226.5
+        ],
+        [
+          "set innerHTML > ud > up >  > lS > lk > lu > lQ > T",
+          18.579
+        ],
+        [
+          "appendChild >  > lS > lk > lu > lQ > T > (root)",
+          6.942
+        ],
+        [
+          "appendChild > sr > sr > sw > sk > sy > sk > sy > sk",
+          1.523
+        ]
+      ]
+    }
+  ]
+}

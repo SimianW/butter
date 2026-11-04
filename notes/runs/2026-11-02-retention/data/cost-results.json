@@ -1,0 +1,394 @@
+[
+  {
+    "arm": "a2",
+    "expandN": 3,
+    "expandBlockMs": [
+      0,
+      0,
+      0
+    ],
+    "expandWorstFrameMs": [
+      16.80000000000291,
+      16.80000000000291,
+      16.80000000000291
+    ],
+    "expandWorstLoafMs": [
+      0,
+      0,
+      0
+    ],
+    "visibleElements": [
+      112153,
+      112153,
+      112153
+    ],
+    "gcNodes": [
+      366028,
+      366025,
+      366019
+    ],
+    "jsMiB": [
+      178.02221298217773,
+      178.07504272460938,
+      180.66861724853516
+    ],
+    "embedderMiB": [
+      187.02745819091797,
+      187.19024658203125,
+      188.0045928955078
+    ],
+    "delta": [
+      {
+        "nodes": 0,
+        "jsMiB": 0.056270599365234375,
+        "embedderMiB": -0.27616119384765625
+      },
+      {
+        "nodes": 0,
+        "jsMiB": 0.0598602294921875,
+        "embedderMiB": -0.21675872802734375
+      },
+      {
+        "nodes": 0,
+        "jsMiB": 0.057018280029296875,
+        "embedderMiB": -0.04622650146484375
+      }
+    ],
+    "sendN": 3,
+    "sendLandingMs": [
+      2503.7999999523163,
+      2882.0,
+      2523.2999999523163
+    ],
+    "sendTopPx": [
+      272,
+      272,
+      272
+    ],
+    "sendLocalPosts": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "arm": "a3",
+    "expandN": 1,
+    "expandBlockMs": [
+      0
+    ],
+    "expandWorstFrameMs": [
+      16.80000000000291
+    ],
+    "expandWorstLoafMs": [
+      0
+    ],
+    "visibleElements": [
+      112153
+    ],
+    "gcNodes": [
+      366025
+    ],
+    "jsMiB": [
+      176.3055534362793
+    ],
+    "embedderMiB": [
+      187.6723403930664
+    ],
+    "delta": [
+      {
+        "nodes": -3327,
+        "jsMiB": 0.058124542236328125,
+        "embedderMiB": -2.8265228271484375
+      }
+    ],
+    "sendN": 0,
+    "sendLandingMs": [],
+    "sendTopPx": [],
+    "sendLocalPosts": []
+  },
+  {
+    "arm": "a4",
+    "expandN": 1,
+    "expandBlockMs": [
+      0
+    ],
+    "expandWorstFrameMs": [
+      16.80000000000291
+    ],
+    "expandWorstLoafMs": [
+      0
+    ],
+    "visibleElements": [
+      112153
+    ],
+    "gcNodes": [
+      366025
+    ],
+    "jsMiB": [
+      176.57133865356445
+    ],
+    "embedderMiB": [
+      187.48765563964844
+    ],
+    "delta": [
+      {
+        "nodes": -3327,
+        "jsMiB": 0.057819366455078125,
+        "embedderMiB": -2.6726913452148438
+      }
+    ],
+    "sendN": 0,
+    "sendLandingMs": [],
+    "sendTopPx": [],
+    "sendLocalPosts": []
+  },
+  {
+    "arm": "a6",
+    "expandN": 3,
+    "expandBlockMs": [
+      1305.9,
+      1351,
+      1347.5
+    ],
+    "expandWorstFrameMs": [
+      1349.9999999999964,
+      1399.9000000000015,
+      1383.300000000003
+    ],
+    "expandWorstLoafMs": [
+      1356.2000000476837,
+      1401.2000000476837,
+      1397.7000000476837
+    ],
+    "visibleElements": [
+      145137,
+      145137,
+      145137
+    ],
+    "gcNodes": [
+      366270,
+      366262,
+      366267
+    ],
+    "jsMiB": [
+      186.90171813964844,
+      189.35009002685547,
+      186.50498962402344
+    ],
+    "embedderMiB": [
+      215.9130096435547,
+      221.07015228271484,
+      219.43370056152344
+    ],
+    "delta": [
+      {
+        "nodes": -3085,
+        "jsMiB": 8.66562271118164,
+        "embedderMiB": 29.343727111816406
+      },
+      {
+        "nodes": -3085,
+        "jsMiB": 8.712947845458984,
+        "embedderMiB": 29.046096801757812
+      },
+      {
+        "nodes": 242,
+        "jsMiB": 8.653846740722656,
+        "embedderMiB": 31.550880432128906
+      }
+    ],
+    "sendN": 3,
+    "sendLandingMs": [
+      2818.5999999046326,
+      2780.2000000476837,
+      2765.899999856949
+    ],
+    "sendTopPx": [
+      272,
+      272,
+      272
+    ],
+    "sendLocalPosts": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "arm": "aall",
+    "expandN": 3,
+    "expandBlockMs": [
+      3560.7000000000003,
+      3655.8,
+      3620.6
+    ],
+    "expandWorstFrameMs": [
+      3516.5,
+      3566.5999999999985,
+      3583.199999999997
+    ],
+    "expandWorstLoafMs": [
+      3506.7999999523163,
+      3562.0999999046326,
+      3570.0999999046326
+    ],
+    "visibleElements": [
+      207410,
+      207410,
+      207410
+    ],
+    "gcNodes": [
+      449336,
+      456758,
+      449336
+    ],
+    "jsMiB": [
+      204.80983352661133,
+      206.5403938293457,
+      204.66674423217773
+    ],
+    "embedderMiB": [
+      294.2929229736328,
+      296.75782775878906,
+      293.9287872314453
+    ],
+    "delta": [
+      {
+        "nodes": 79984,
+        "jsMiB": 26.65475082397461,
+        "embedderMiB": 103.59681701660156
+      },
+      {
+        "nodes": 83311,
+        "jsMiB": 26.700443267822266,
+        "embedderMiB": 107.6236801147461
+      },
+      {
+        "nodes": 79984,
+        "jsMiB": 26.782451629638672,
+        "embedderMiB": 103.8158187866211
+      }
+    ],
+    "sendN": 3,
+    "sendLandingMs": [
+      1454.7000000476837,
+      1444.0,
+      1490.7000000476837
+    ],
+    "sendTopPx": [
+      272,
+      272,
+      272
+    ],
+    "sendLocalPosts": [
+      1,
+      1,
+      1
+    ]
+  },
+  {
+    "arm": "aall-p1",
+    "expandN": 0,
+    "expandBlockMs": [],
+    "expandWorstFrameMs": [],
+    "expandWorstLoafMs": [],
+    "visibleElements": [],
+    "gcNodes": [],
+    "jsMiB": [],
+    "embedderMiB": [],
+    "delta": [],
+    "sendN": 0,
+    "sendLandingMs": [],
+    "sendTopPx": [],
+    "sendLocalPosts": []
+  },
+  {
+    "arm": "aall-p3",
+    "expandN": 0,
+    "expandBlockMs": [],
+    "expandWorstFrameMs": [],
+    "expandWorstLoafMs": [],
+    "visibleElements": [],
+    "gcNodes": [],
+    "jsMiB": [],
+    "embedderMiB": [],
+    "delta": [],
+    "sendN": 0,
+    "sendLandingMs": [],
+    "sendTopPx": [],
+    "sendLocalPosts": []
+  },
+  {
+    "arm": "aall-phold",
+    "expandN": 3,
+    "expandBlockMs": [
+      3639.9,
+      3549.2999999999997,
+      3659.2
+    ],
+    "expandWorstFrameMs": [
+      3600,
+      3499.7999999999956,
+      3616.5
+    ],
+    "expandWorstLoafMs": [
+      3587.0999999046326,
+      3495.2999999523163,
+      3603.5
+    ],
+    "visibleElements": [
+      207410,
+      207410,
+      207410
+    ],
+    "gcNodes": [
+      449333,
+      449338,
+      449341
+    ],
+    "jsMiB": [
+      206.75278091430664,
+      204.65757751464844,
+      204.65526962280273
+    ],
+    "embedderMiB": [
+      294.4722595214844,
+      294.69005584716797,
+      294.17591094970703
+    ],
+    "delta": [
+      {
+        "nodes": 83313,
+        "jsMiB": 26.72455596923828,
+        "embedderMiB": 106.56556701660156
+      },
+      {
+        "nodes": 83313,
+        "jsMiB": 26.718894958496094,
+        "embedderMiB": 107.12846374511719
+      },
+      {
+        "nodes": 79986,
+        "jsMiB": 26.766368865966797,
+        "embedderMiB": 103.78016662597656
+      }
+    ],
+    "sendN": 3,
+    "sendLandingMs": [
+      1455.0999999046326,
+      1417.7000000476837,
+      1620.6000001430511
+    ],
+    "sendTopPx": [
+      272,
+      272,
+      272
+    ],
+    "sendLocalPosts": [
+      1,
+      1,
+      1
+    ]
+  }
+]

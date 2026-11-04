@@ -1,0 +1,258 @@
+{
+  "message": "<id>",
+  "before": {
+    "owner": "<redacted>",
+    "answer": {
+      "width": 768,
+      "height": 36683.984375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "math": {
+      "width": 768,
+      "height": 62.359375,
+      "display": "flow-root",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "katex": {
+      "width": 768,
+      "height": 30.359375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "auto hidden"
+    },
+    "wide": [
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 234,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      }
+    ]
+  },
+  "ownerContainer": {
+    "owner": "<redacted>",
+    "answer": {
+      "width": 768,
+      "height": 36683.984375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "math": {
+      "width": 768,
+      "height": 62.359375,
+      "display": "flow-root",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "katex": {
+      "width": 768,
+      "height": 30.359375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "auto hidden"
+    },
+    "wide": [
+      {
+        "width": 768,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 234,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      }
+    ]
+  },
+  "mathContainer": {
+    "owner": "<redacted>",
+    "answer": {
+      "width": 768,
+      "height": 36683.984375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "math": {
+      "width": 768,
+      "height": 62.359375,
+      "display": "flow-root",
+      "contain": "none",
+      "containerType": "inline-size",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "visible"
+    },
+    "katex": {
+      "width": 768,
+      "height": 30.359375,
+      "display": "block",
+      "contain": "none",
+      "containerType": "normal",
+      "marginTop": "0px",
+      "marginBottom": "0px",
+      "overflow": "auto hidden"
+    },
+    "wide": [
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 973,
+        "height": 343.3125,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      },
+      {
+        "width": 768,
+        "height": 234,
+        "display": "block",
+        "contain": "none",
+        "containerType": "normal",
+        "marginTop": "16px",
+        "marginBottom": "0px",
+        "overflow": "visible"
+      }
+    ]
+  }
+}

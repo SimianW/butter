@@ -1,0 +1,97 @@
+{
+  "variant": "all",
+  "state": {
+    "t": 41040.60000014305,
+    "top": 20,
+    "height": 312992,
+    "client": 912,
+    "width": 1238,
+    "offsetWidth": 1258,
+    "rect": {
+      "x": 341,
+      "y": 0,
+      "width": 1258,
+      "height": 912
+    },
+    "turns": [
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>",
+      "<id>"
+    ],
+    "nodes": 207410,
+    "katex": 2901
+  },
+  "beforeGC": {
+    "dom": "<redacted>",
+    "heap": {
+      "usedSize": 305326328,
+      "totalSize": 461127680,
+      "embedderHeapUsedSize": 576360776,
+      "backingStorageSize": 37027221
+    }
+  },
+  "afterGC": {
+    "dom": "<redacted>",
+    "heap": {
+      "usedSize": 219292932,
+      "totalSize": 260849664,
+      "embedderHeapUsedSize": 297506008,
+      "backingStorageSize": 36744403
+    }
+  },
+  "processes": [
+    {
+      "type": "renderer",
+      "id": "<redacted>",
+      "cpuTime": 0.05,
+      "status": {
+        "VmRSS": "119816 kB",
+        "RssAnon": "26872 kB",
+        "RssFile": "92176 kB",
+        "VmSwap": "0 kB"
+      }
+    },
+    {
+      "type": "renderer",
+      "id": "<redacted>",
+      "cpuTime": 0.01,
+      "status": {
+        "VmRSS": "80616 kB",
+        "RssAnon": "20288 kB",
+        "RssFile": "59916 kB",
+        "VmSwap": "0 kB"
+      }
+    },
+    {
+      "type": "renderer",
+      "id": "<redacted>",
+      "cpuTime": 1685.5,
+      "status": {
+        "VmRSS": "1093836 kB",
+        "RssAnon": "925624 kB",
+        "RssFile": "147668 kB",
+        "VmSwap": "0 kB"
+      }
+    },
+    {
+      "type": "renderer",
+      "id": "<redacted>",
+      "cpuTime": 0.76,
+      "status": {
+        "VmRSS": "149260 kB",
+        "RssAnon": "48036 kB",
+        "RssFile": "100568 kB",
+        "VmSwap": "0 kB"
+      }
+    }
+  ]
+}

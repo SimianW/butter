@@ -1,0 +1,57 @@
+{
+  "passed": true,
+  "scope": [
+    "S1",
+    "S2",
+    "S3"
+  ],
+  "regressionTests": {
+    "oldPass": 0,
+    "oldFail": 3,
+    "fixedPass": 3,
+    "fixedFail": 0,
+    "fullPass": 58,
+    "fullFail": 0
+  },
+  "smokes": [
+    {
+      "name": "review-r1-post-send",
+      "heldFrames": 128,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "packagedFilesMatch": true
+    },
+    {
+      "name": "review-r1-blank-tall-cold",
+      "heldFrames": 128,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "packagedFilesMatch": true
+    },
+    {
+      "name": "review-r1-blank-tall-warm",
+      "heldFrames": 129,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "packagedFilesMatch": true
+    },
+    {
+      "name": "review-r1-blank-normal-cold",
+      "heldFrames": 128,
+      "emptyFrames": 0,
+      "heldMounts": 0,
+      "packagedFilesMatch": true
+    }
+  ],
+  "postSend": {
+    "chunks": 189,
+    "writeInvalidations": 1,
+    "historyAfterWrite": 0,
+    "storedRecords": 0,
+    "warmLayoutTurns": 7,
+    "sourceAbsentThroughoutDrag": true,
+    "networkConversationWrites": 0
+  },
+  "zipSHA256": "f624959643a8aacf2ba8225457cf98ebe566926c66ca52d6ced5a8cdcb17ee05",
+  "version_name": "0.1.0-alpha.10+seekpreview.3"
+}

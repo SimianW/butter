@@ -1,0 +1,1520 @@
+[
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "control-cold-fast-r1",
+    "worstFrame": 2299.9000000000015,
+    "loafBlockMs": 3378.5,
+    "blankMs": 3816.514730453491,
+    "blankFrames": 19,
+    "captureFrames": 53,
+    "forcedOver100Ms": [
+      595.387,
+      1343.213
+    ],
+    "layoutTotalMs": 2130.431,
+    "styleTotalMs": 263.025,
+    "heightMin": 309765,
+    "heightMax": 312999,
+    "heightBefore": 309765,
+    "heightAfter": 312999,
+    "heightChanges": [
+      {
+        "t": 39742.7,
+        "top": 312087,
+        "h": 312999,
+        "client": 912
+      }
+    ],
+    "backward": [],
+    "mounts": 5,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 2,
+    "name": "control-cold-fast-r2",
+    "worstFrame": 4033.199999999997,
+    "loafBlockMs": 6162.099999999999,
+    "blankMs": 649.975061416626,
+    "blankFrames": 12,
+    "captureFrames": 44,
+    "forcedOver100Ms": [
+      1300.069,
+      1500.075,
+      1366.217
+    ],
+    "layoutTotalMs": 4423.399,
+    "styleTotalMs": 322.074,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 7,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 3,
+    "name": "control-cold-fast-r3",
+    "worstFrame": 2416.7000000000044,
+    "loafBlockMs": 3544.5,
+    "blankMs": 1599.938154220581,
+    "blankFrames": 19,
+    "captureFrames": 49,
+    "forcedOver100Ms": [
+      608.552,
+      1411.291
+    ],
+    "layoutTotalMs": 2244.547,
+    "styleTotalMs": 281.767,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 40292.9,
+        "from": 63697,
+        "to": 58359
+      }
+    ],
+    "mounts": 5,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 1,
+    "name": "control-cold-slow-r1",
+    "worstFrame": 3966.5,
+    "loafBlockMs": 12873.5,
+    "blankMs": 8716.315031051636,
+    "blankFrames": 45,
+    "captureFrames": 123,
+    "forcedOver100Ms": [
+      662.016,
+      937.555,
+      1607.691,
+      1225.586,
+      1361.474,
+      2266.32,
+      1093.747
+    ],
+    "layoutTotalMs": 10014.134,
+    "styleTotalMs": 1162.077,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 47165.5,
+        "from": 200344,
+        "to": 177568
+      },
+      {
+        "t": 51348.6,
+        "from": 306031,
+        "to": 286458
+      }
+    ],
+    "mounts": 12,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 2,
+    "name": "control-cold-slow-r2",
+    "worstFrame": 2383.300000000003,
+    "loafBlockMs": 9234.1,
+    "blankMs": 9249.635219573975,
+    "blankFrames": 46,
+    "captureFrames": 125,
+    "forcedOver100Ms": [
+      686.781,
+      1057.918,
+      1657.528,
+      1173.01,
+      1314.236
+    ],
+    "layoutTotalMs": 6824.26,
+    "styleTotalMs": 1054.997,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 48928.3,
+        "from": 164402,
+        "to": 135935
+      },
+      {
+        "t": 50811.5,
+        "from": 218491,
+        "to": 182551
+      }
+    ],
+    "mounts": 9,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 3,
+    "name": "control-cold-slow-r3",
+    "worstFrame": 2316.600000000006,
+    "loafBlockMs": 10082.300000000001,
+    "blankMs": 8224.52449798584,
+    "blankFrames": 43,
+    "captureFrames": 123,
+    "forcedOver100Ms": [
+      623.926,
+      1042.321,
+      755.966,
+      1472.791,
+      1862.019,
+      1212.266
+    ],
+    "layoutTotalMs": 7697.343,
+    "styleTotalMs": 687.84,
+    "heightMin": 309747,
+    "heightMax": 312992,
+    "heightBefore": 309747,
+    "heightAfter": 312992,
+    "heightChanges": [
+      {
+        "t": 44612.2,
+        "top": 177835,
+        "h": 309758,
+        "client": 912
+      },
+      {
+        "t": 45878.8,
+        "top": 211297,
+        "h": 312972,
+        "client": 912
+      },
+      {
+        "t": 50245.3,
+        "top": 312060,
+        "h": 312992,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 45878.8,
+        "from": 244759,
+        "to": 211297
+      }
+    ],
+    "mounts": 9,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "control-warm-fast-r1",
+    "worstFrame": 2216.600000000006,
+    "loafBlockMs": 4339.299999999999,
+    "blankMs": 4949.802875518799,
+    "blankFrames": 29,
+    "captureFrames": 60,
+    "forcedOver100Ms": [
+      1237.042,
+      1320.842
+    ],
+    "layoutTotalMs": 2944.092,
+    "styleTotalMs": 168.571,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 69398.8,
+        "from": 48040,
+        "to": 43057
+      }
+    ],
+    "mounts": 6,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 2,
+    "name": "control-warm-fast-r2",
+    "worstFrame": 2233.199999999997,
+    "loafBlockMs": 3450.7000000000003,
+    "blankMs": 3999.838352203369,
+    "blankFrames": 26,
+    "captureFrames": 48,
+    "forcedOver100Ms": [
+      638.7,
+      1308.379
+    ],
+    "layoutTotalMs": 2305.345,
+    "styleTotalMs": 154.31,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 68842,
+        "from": 48040,
+        "to": 43057
+      },
+      {
+        "t": 68958.7,
+        "from": 74017,
+        "to": 68679
+      },
+      {
+        "t": 69042.1,
+        "from": 99638,
+        "to": 94655
+      },
+      {
+        "t": 69275.4,
+        "from": 161912,
+        "to": 140916
+      }
+    ],
+    "mounts": 5,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 3,
+    "name": "control-warm-fast-r3",
+    "worstFrame": 3716.5,
+    "loafBlockMs": 4995.1,
+    "blankMs": 5549.7801303863525,
+    "blankFrames": 28,
+    "captureFrames": 63,
+    "forcedOver100Ms": [
+      659.691,
+      1045.173,
+      1372.297
+    ],
+    "layoutTotalMs": 3392.533,
+    "styleTotalMs": 181.493,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 66521.8,
+        "from": 84337,
+        "to": 74017
+      }
+    ],
+    "mounts": 6,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 1,
+    "name": "control-warm-slow-r1",
+    "worstFrame": 1749.9000000000087,
+    "loafBlockMs": 7664.099999999999,
+    "blankMs": 8482.99503326416,
+    "blankFrames": 51,
+    "captureFrames": 165,
+    "forcedOver100Ms": [
+      749.703,
+      1077.891,
+      968.531,
+      865.3,
+      1154.038
+    ],
+    "layoutTotalMs": 5565.538,
+    "styleTotalMs": 677.692,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 6,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 2,
+    "name": "control-warm-slow-r2",
+    "worstFrame": 2716.5999999999913,
+    "loafBlockMs": 10516.7,
+    "blankMs": 7649.696826934814,
+    "blankFrames": 53,
+    "captureFrames": 164,
+    "forcedOver100Ms": [
+      748.06,
+      1099.673,
+      975.819,
+      1176.54,
+      2207.521,
+      1104.975
+    ],
+    "layoutTotalMs": 8081.061,
+    "styleTotalMs": 720.6560000000001,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 69143.6,
+        "from": 171875,
+        "to": 166894
+      },
+      {
+        "t": 73026.9,
+        "from": 301049,
+        "to": 265108
+      }
+    ],
+    "mounts": 9,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "control",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 3,
+    "name": "control-warm-slow-r3",
+    "worstFrame": 1816.5999999999913,
+    "loafBlockMs": 7788.5,
+    "blankMs": 9232.957124710083,
+    "blankFrames": 57,
+    "captureFrames": 164,
+    "forcedOver100Ms": [
+      778.415,
+      1119.606,
+      992.713,
+      861.116,
+      1178.704
+    ],
+    "layoutTotalMs": 5714.4439999999995,
+    "styleTotalMs": 685.184,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 6,
+    "restored": null,
+    "blocksRestored": null,
+    "deferred": 0
+  },
+  {
+    "arm": "defer-hook",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "defer-hook-cold-fast-r1",
+    "worstFrame": 899.9000000000015,
+    "loafBlockMs": 1480.0,
+    "blankMs": 966.6287899017334,
+    "blankFrames": 12,
+    "captureFrames": 32,
+    "forcedOver100Ms": [
+      120.255
+    ],
+    "layoutTotalMs": 192.972,
+    "styleTotalMs": 479.634,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 49957.3,
+        "from": 312080,
+        "to": 301049
+      }
+    ],
+    "mounts": 5,
+    "restored": 4,
+    "blocksRestored": 1458,
+    "deferred": 4
+  },
+  {
+    "arm": "defer-hook",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "defer-hook-warm-fast-r1",
+    "worstFrame": 1099.9000000000015,
+    "loafBlockMs": 1952.1000000000001,
+    "blankMs": 1399.9416828155518,
+    "blankFrames": 24,
+    "captureFrames": 53,
+    "forcedOver100Ms": [
+      111.731,
+      150.658
+    ],
+    "layoutTotalMs": 591.399,
+    "styleTotalMs": 288.692,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 6,
+    "restored": 16,
+    "blocksRestored": 7870,
+    "deferred": 16
+  },
+  {
+    "arm": "generic",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "generic-cold-fast-r1",
+    "worstFrame": 1649.9000000000015,
+    "loafBlockMs": 2520.0,
+    "blankMs": 3033.2131385803223,
+    "blankFrames": 24,
+    "captureFrames": 56,
+    "forcedOver100Ms": [
+      213.765,
+      239.758,
+      151.271
+    ],
+    "layoutTotalMs": 912.38,
+    "styleTotalMs": 467.063,
+    "heightMin": 309747,
+    "heightMax": 332116,
+    "heightBefore": 309747,
+    "heightAfter": 329713,
+    "heightChanges": [
+      {
+        "t": 40577.8,
+        "top": 331204,
+        "h": 332116,
+        "client": 912
+      },
+      {
+        "t": 40661.1,
+        "top": 330054,
+        "h": 330966,
+        "client": 912
+      },
+      {
+        "t": 40744.5,
+        "top": 329340,
+        "h": 330252,
+        "client": 912
+      },
+      {
+        "t": 40777.8,
+        "top": 329164,
+        "h": 330076,
+        "client": 912
+      },
+      {
+        "t": 40794.5,
+        "top": 328989,
+        "h": 329901,
+        "client": 912
+      },
+      {
+        "t": 40811.1,
+        "top": 328895,
+        "h": 329807,
+        "client": 912
+      },
+      {
+        "t": 40844.5,
+        "top": 328801,
+        "h": 329713,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 40661.1,
+        "from": 331204,
+        "to": 330054
+      },
+      {
+        "t": 40744.5,
+        "from": 330054,
+        "to": 329340
+      },
+      {
+        "t": 40777.8,
+        "from": 329340,
+        "to": 329164
+      },
+      {
+        "t": 40794.5,
+        "from": 329164,
+        "to": 328989
+      }
+    ],
+    "mounts": 6,
+    "restored": 0,
+    "blocksRestored": 0,
+    "deferred": 0
+  },
+  {
+    "arm": "generic",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "generic-warm-fast-r1",
+    "worstFrame": 866.6000000000058,
+    "loafBlockMs": 2045.5,
+    "blankMs": 2149.9128341674805,
+    "blankFrames": 22,
+    "captureFrames": 48,
+    "forcedOver100Ms": [
+      129.236,
+      155.169
+    ],
+    "layoutTotalMs": 956.542,
+    "styleTotalMs": 362.952,
+    "heightMin": 576486,
+    "heightMax": 616154,
+    "heightBefore": 589823,
+    "heightAfter": 611051,
+    "heightChanges": [
+      {
+        "t": 68357.7,
+        "top": 108784,
+        "h": 587395,
+        "client": 912
+      },
+      {
+        "t": 68407.7,
+        "top": 168291,
+        "h": 585151,
+        "client": 912
+      },
+      {
+        "t": 68457.7,
+        "top": 136135,
+        "h": 582721,
+        "client": 912
+      },
+      {
+        "t": 68524.4,
+        "top": 169824,
+        "h": 581268,
+        "client": 912
+      },
+      {
+        "t": 68557.7,
+        "top": 223914,
+        "h": 578835,
+        "client": 912
+      },
+      {
+        "t": 69091.1,
+        "top": 231426,
+        "h": 576486,
+        "client": 912
+      },
+      {
+        "t": 70074.3,
+        "top": 524068,
+        "h": 590204,
+        "client": 912
+      },
+      {
+        "t": 70624.3,
+        "top": 524068,
+        "h": 589054,
+        "client": 912
+      },
+      {
+        "t": 70907.6,
+        "top": 524068,
+        "h": 616154,
+        "client": 912
+      },
+      {
+        "t": 71024.3,
+        "top": 524068,
+        "h": 614100,
+        "client": 912
+      },
+      {
+        "t": 71074.3,
+        "top": 524068,
+        "h": 612885,
+        "client": 912
+      },
+      {
+        "t": 71107.6,
+        "top": 524068,
+        "h": 612155,
+        "client": 912
+      },
+      {
+        "t": 71140.9,
+        "top": 524068,
+        "h": 611637,
+        "client": 912
+      },
+      {
+        "t": 71174.3,
+        "top": 524068,
+        "h": 611395,
+        "client": 912
+      },
+      {
+        "t": 71207.6,
+        "top": 524068,
+        "h": 611227,
+        "client": 912
+      },
+      {
+        "t": 71224.2,
+        "top": 524068,
+        "h": 611133,
+        "client": 912
+      },
+      {
+        "t": 71257.6,
+        "top": 524068,
+        "h": 611051,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 68457.7,
+        "from": 168291,
+        "to": 136135
+      },
+      {
+        "t": 70074.3,
+        "from": 575574,
+        "to": 524068
+      }
+    ],
+    "mounts": 7,
+    "restored": 0,
+    "blocksRestored": 0,
+    "deferred": 0
+  },
+  {
+    "arm": "hook",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "hook-cold-fast-r1",
+    "worstFrame": 983.2999999999956,
+    "loafBlockMs": 1709.6,
+    "blankMs": 2149.9133110046387,
+    "blankFrames": 18,
+    "captureFrames": 41,
+    "forcedOver100Ms": [
+      184.801,
+      146.385
+    ],
+    "layoutTotalMs": 430.977,
+    "styleTotalMs": 384.359,
+    "heightMin": 307392,
+    "heightMax": 307392,
+    "heightBefore": 307392,
+    "heightAfter": 307392,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 37229.5,
+        "from": 107985,
+        "to": 87715
+      }
+    ],
+    "mounts": 5,
+    "restored": 12,
+    "blocksRestored": 4702,
+    "deferred": 0
+  },
+  {
+    "arm": "hook-ready",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "hook-ready-cold-fast-r1",
+    "worstFrame": 2266.5999999999985,
+    "loafBlockMs": 4134.599999999999,
+    "blankMs": 4716.47834777832,
+    "blankFrames": 12,
+    "captureFrames": 34,
+    "forcedOver100Ms": [
+      821.286,
+      947.612,
+      106.548
+    ],
+    "layoutTotalMs": 2180.017,
+    "styleTotalMs": 578.867,
+    "heightMin": 309747,
+    "heightMax": 312992,
+    "heightBefore": 309747,
+    "heightAfter": 312992,
+    "heightChanges": [
+      {
+        "t": 39026.6,
+        "top": 150015,
+        "h": 309758,
+        "client": 912
+      },
+      {
+        "t": 40976.5,
+        "top": 311708,
+        "h": 312972,
+        "client": 912
+      },
+      {
+        "t": 43243.1,
+        "top": 311728,
+        "h": 312992,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 39026.6,
+        "from": 165158,
+        "to": 150015
+      }
+    ],
+    "mounts": 7,
+    "restored": 3,
+    "blocksRestored": 1022,
+    "deferred": 0
+  },
+  {
+    "arm": "hook-ready",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "hook-ready-warm-fast-r1",
+    "worstFrame": 1099.8999999999942,
+    "loafBlockMs": 1916.3,
+    "blankMs": 2599.896192550659,
+    "blankFrames": 25,
+    "captureFrames": 44,
+    "forcedOver100Ms": [
+      173.428,
+      155.632
+    ],
+    "layoutTotalMs": 699.038,
+    "styleTotalMs": 197.557,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 65338.6,
+        "from": 63698,
+        "to": 58359
+      }
+    ],
+    "mounts": 5,
+    "restored": 15,
+    "blocksRestored": 7230,
+    "deferred": 0
+  },
+  {
+    "arm": "hook",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "hook-warm-fast-r1",
+    "worstFrame": 1433.300000000003,
+    "loafBlockMs": 2207.7,
+    "blankMs": 2799.8898029327393,
+    "blankFrames": 27,
+    "captureFrames": 54,
+    "forcedOver100Ms": [
+      169.734,
+      131.961,
+      148.99
+    ],
+    "layoutTotalMs": 775.023,
+    "styleTotalMs": 223.995,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 6,
+    "restored": 16,
+    "blocksRestored": 7870,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "read-hook-cold-fast-r1",
+    "worstFrame": 1150,
+    "loafBlockMs": 1938.3,
+    "blankMs": 2483.2329750061035,
+    "blankFrames": 16,
+    "captureFrames": 41,
+    "forcedOver100Ms": [
+      124.915,
+      157.566
+    ],
+    "layoutTotalMs": 335.539,
+    "styleTotalMs": 607.255,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 6,
+    "restored": 5,
+    "blocksRestored": 2000,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 2,
+    "name": "read-hook-cold-fast-r2",
+    "worstFrame": 2449.9000000000015,
+    "loafBlockMs": 5266.3,
+    "blankMs": 3449.8610496520996,
+    "blankFrames": 20,
+    "captureFrames": 51,
+    "forcedOver100Ms": [
+      159.796,
+      1058.676,
+      1743.566
+    ],
+    "layoutTotalMs": 3190.44,
+    "styleTotalMs": 628.042,
+    "heightMin": 309765,
+    "heightMax": 312992,
+    "heightBefore": 309765,
+    "heightAfter": 312992,
+    "heightChanges": [
+      {
+        "t": 37676.2,
+        "top": 312067,
+        "h": 312979,
+        "client": 912
+      },
+      {
+        "t": 40126.1,
+        "top": 290950,
+        "h": 312992,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 36859.6,
+        "from": 73251,
+        "to": 67969
+      },
+      {
+        "t": 37009.6,
+        "from": 124316,
+        "to": 103890
+      },
+      {
+        "t": 40126.1,
+        "from": 312067,
+        "to": 290950
+      },
+      {
+        "t": 42392.7,
+        "from": 290950,
+        "to": 286680
+      }
+    ],
+    "mounts": 7,
+    "restored": 3,
+    "blocksRestored": 1022,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 3,
+    "name": "read-hook-cold-fast-r3",
+    "worstFrame": 1566.5,
+    "loafBlockMs": 2219.4,
+    "blankMs": 2633.2268714904785,
+    "blankFrames": 16,
+    "captureFrames": 46,
+    "forcedOver100Ms": [
+      172.88,
+      137.282,
+      190.127
+    ],
+    "layoutTotalMs": 695.0360000000001,
+    "styleTotalMs": 378.746,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 41995,
+        "from": 63697,
+        "to": 58359
+      }
+    ],
+    "mounts": 6,
+    "restored": 5,
+    "blocksRestored": 2000,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 1,
+    "name": "read-hook-cold-slow-r1",
+    "worstFrame": 800,
+    "loafBlockMs": 6577.3,
+    "blankMs": 10332.925081253052,
+    "blankFrames": 92,
+    "captureFrames": 162,
+    "forcedOver100Ms": [
+      182.744,
+      178.585,
+      151.71,
+      166.354,
+      123.764,
+      243.178,
+      241.457,
+      130.153,
+      169.717,
+      133.506,
+      182.843
+    ],
+    "layoutTotalMs": 4297.349,
+    "styleTotalMs": 1126.028,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 45939.3,
+        "from": 133088,
+        "to": 120277
+      },
+      {
+        "t": 48505.9,
+        "from": 200700,
+        "to": 187532
+      },
+      {
+        "t": 50605.8,
+        "from": 257279,
+        "to": 241978
+      },
+      {
+        "t": 51972.4,
+        "from": 283257,
+        "to": 275427
+      }
+    ],
+    "mounts": 13,
+    "restored": 12,
+    "blocksRestored": 5895,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 2,
+    "name": "read-hook-cold-slow-r2",
+    "worstFrame": 849.8999999999942,
+    "loafBlockMs": 4951.5,
+    "blankMs": 8816.320180892944,
+    "blankFrames": 92,
+    "captureFrames": 215,
+    "forcedOver100Ms": [
+      183.87,
+      215.123,
+      240.121,
+      182.901,
+      187.092
+    ],
+    "layoutTotalMs": 3858.919,
+    "styleTotalMs": 1588.017,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 46978.3,
+        "from": 151236,
+        "to": 143763
+      },
+      {
+        "t": 50794.8,
+        "from": 251942,
+        "to": 239131
+      },
+      {
+        "t": 51811.5,
+        "from": 267955,
+        "to": 267599
+      }
+    ],
+    "mounts": 7,
+    "restored": 6,
+    "blocksRestored": 2640,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "cold",
+    "kind": "slow",
+    "rep": 3,
+    "name": "read-hook-cold-slow-r3",
+    "worstFrame": 866.5999999999985,
+    "loafBlockMs": 5685.9,
+    "blankMs": 9299.637079238892,
+    "blankFrames": 82,
+    "captureFrames": 198,
+    "forcedOver100Ms": [
+      187.216,
+      219.886,
+      262.558,
+      157.846,
+      141.313,
+      186.576,
+      140.417,
+      184.186
+    ],
+    "layoutTotalMs": 4096.22,
+    "styleTotalMs": 1387.288,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 46511.6,
+        "from": 125615,
+        "to": 123124
+      },
+      {
+        "t": 50211.4,
+        "from": 236640,
+        "to": 218491
+      },
+      {
+        "t": 52344.6,
+        "from": 277918,
+        "to": 275427
+      }
+    ],
+    "mounts": 9,
+    "restored": 8,
+    "blocksRestored": 3346,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "read-hook-warm-fast-r1",
+    "worstFrame": 999.9000000000015,
+    "loafBlockMs": 1794.2,
+    "blankMs": 2566.565752029419,
+    "blankFrames": 29,
+    "captureFrames": 50,
+    "forcedOver100Ms": [
+      166.164,
+      153.705
+    ],
+    "layoutTotalMs": 738.104,
+    "styleTotalMs": 171.002,
+    "heightMin": 312949,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312949,
+    "heightChanges": [
+      {
+        "t": 65133.4,
+        "top": 311681,
+        "h": 312949,
+        "client": 912
+      }
+    ],
+    "backward": [],
+    "mounts": 5,
+    "restored": 15,
+    "blocksRestored": 7230,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 2,
+    "name": "read-hook-warm-fast-r2",
+    "worstFrame": 1283.3999999999942,
+    "loafBlockMs": 2109.1,
+    "blankMs": 2699.892997741699,
+    "blankFrames": 23,
+    "captureFrames": 42,
+    "forcedOver100Ms": [
+      209.347,
+      153.536
+    ],
+    "layoutTotalMs": 623.0600000000001,
+    "styleTotalMs": 203.884,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 65042.7,
+        "from": 48040,
+        "to": 43057
+      },
+      {
+        "t": 65092.8,
+        "from": 63697,
+        "to": 53378
+      },
+      {
+        "t": 65359.4,
+        "from": 130597,
+        "to": 125615
+      }
+    ],
+    "mounts": 5,
+    "restored": 15,
+    "blocksRestored": 7230,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 3,
+    "name": "read-hook-warm-fast-r3",
+    "worstFrame": 1133.2999999999884,
+    "loafBlockMs": 1764.4,
+    "blankMs": 1216.6190147399902,
+    "blankFrames": 29,
+    "captureFrames": 52,
+    "forcedOver100Ms": [
+      162.75,
+      147.543
+    ],
+    "layoutTotalMs": 543.183,
+    "styleTotalMs": 237.793,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 65663.5,
+        "from": 104976,
+        "to": 99638
+      }
+    ],
+    "mounts": 5,
+    "restored": 15,
+    "blocksRestored": 7230,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 1,
+    "name": "read-hook-warm-slow-r1",
+    "worstFrame": 833.3999999999942,
+    "loafBlockMs": 5352.900000000001,
+    "blankMs": 9049.64017868042,
+    "blankFrames": 93,
+    "captureFrames": 202,
+    "forcedOver100Ms": [
+      169.054,
+      162.639,
+      267.108,
+      132.37,
+      132.257,
+      129.462,
+      140.676,
+      176.557,
+      138.589,
+      198.049
+    ],
+    "layoutTotalMs": 3557.7509999999997,
+    "styleTotalMs": 945.929,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 70942.8,
+        "from": 231658,
+        "to": 216000
+      },
+      {
+        "t": 72359.4,
+        "from": 256923,
+        "to": 252298
+      },
+      {
+        "t": 74409.3,
+        "from": 312080,
+        "to": 303895
+      }
+    ],
+    "mounts": 10,
+    "restored": 20,
+    "blocksRestored": 9309,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 2,
+    "name": "read-hook-warm-slow-r2",
+    "worstFrame": 849.8999999999942,
+    "loafBlockMs": 4177.9,
+    "blankMs": 7599.697113037109,
+    "blankFrames": 102,
+    "captureFrames": 227,
+    "forcedOver100Ms": [
+      172.231,
+      163.458,
+      256.765,
+      133.199,
+      186.788
+    ],
+    "layoutTotalMs": 3398.914,
+    "styleTotalMs": 1004.931,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 73576,
+        "from": 231658,
+        "to": 223473
+      },
+      {
+        "t": 74225.9,
+        "from": 244824,
+        "to": 234149
+      }
+    ],
+    "mounts": 6,
+    "restored": 16,
+    "blocksRestored": 7870,
+    "deferred": 0
+  },
+  {
+    "arm": "read-hook",
+    "state": "warm",
+    "kind": "slow",
+    "rep": 3,
+    "name": "read-hook-warm-slow-r3",
+    "worstFrame": 783.3000000000029,
+    "loafBlockMs": 4261.5,
+    "blankMs": 7883.016109466553,
+    "blankFrames": 98,
+    "captureFrames": 214,
+    "forcedOver100Ms": [
+      165.646,
+      156.968,
+      230.076,
+      101.214,
+      230.264,
+      179.895
+    ],
+    "layoutTotalMs": 3124.012,
+    "styleTotalMs": 1054.077,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [
+      {
+        "t": 74036.6,
+        "from": 205681,
+        "to": 187533
+      },
+      {
+        "t": 76186.5,
+        "from": 249450,
+        "to": 241978
+      }
+    ],
+    "mounts": 8,
+    "restored": 18,
+    "blocksRestored": 9104,
+    "deferred": 0
+  },
+  {
+    "arm": "turn",
+    "state": "cold",
+    "kind": "fast",
+    "rep": 1,
+    "name": "turn-cold-fast-r1",
+    "worstFrame": 2283.2000000000044,
+    "loafBlockMs": 3318.5,
+    "blankMs": 3749.847888946533,
+    "blankFrames": 19,
+    "captureFrames": 49,
+    "forcedOver100Ms": [
+      587.497,
+      831.91,
+      101.686
+    ],
+    "layoutTotalMs": 1688.696,
+    "styleTotalMs": 633.847,
+    "heightMin": 309765,
+    "heightMax": 309785,
+    "heightBefore": 309765,
+    "heightAfter": 309785,
+    "heightChanges": [
+      {
+        "t": 41164.3,
+        "top": 308873,
+        "h": 309785,
+        "client": 912
+      }
+    ],
+    "backward": [
+      {
+        "t": 37597.7,
+        "from": 73252,
+        "to": 63038
+      },
+      {
+        "t": 37764.4,
+        "from": 114103,
+        "to": 108820
+      }
+    ],
+    "mounts": 5,
+    "restored": 0,
+    "blocksRestored": 0,
+    "deferred": 0
+  },
+  {
+    "arm": "turn",
+    "state": "warm",
+    "kind": "fast",
+    "rep": 1,
+    "name": "turn-warm-fast-r1",
+    "worstFrame": 2316.600000000006,
+    "loafBlockMs": 3483.8,
+    "blankMs": 3933.1769943237305,
+    "blankFrames": 22,
+    "captureFrames": 47,
+    "forcedOver100Ms": [
+      644.163,
+      888.343,
+      103.762
+    ],
+    "layoutTotalMs": 1951.153,
+    "styleTotalMs": 583.8879999999999,
+    "heightMin": 312992,
+    "heightMax": 312992,
+    "heightBefore": 312992,
+    "heightAfter": 312992,
+    "heightChanges": [],
+    "backward": [],
+    "mounts": 5,
+    "restored": 0,
+    "blocksRestored": 0,
+    "deferred": 0
+  }
+]

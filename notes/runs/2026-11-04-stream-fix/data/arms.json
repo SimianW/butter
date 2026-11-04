@@ -1,0 +1,39 @@
+{
+  "alpha9": {
+    "n": 5,
+    "butterOff": [
+      "None"
+    ],
+    "storage": null
+  },
+  "final": {
+    "n": 5,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  },
+  "latest": {
+    "n": 5,
+    "butterOff": [
+      "None"
+    ],
+    "storage": {
+      "butter": {
+        "enabled": true,
+        "layoutConsent": "granted",
+        "opts": {
+          "layout": true
+        }
+      }
+    }
+  }
+}

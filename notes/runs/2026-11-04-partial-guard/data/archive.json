@@ -1,0 +1,38 @@
+{
+  "sourceDirectory": "butter-partial-guard",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-04T05:10:47.543360+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-04T05:10:47.543360+00:00"
+    },
+    {
+      "sourceRelativePath": "probe-ats.json",
+      "archivedAs": "data/probe-ats.json",
+      "sourceMtimeUTC": "2026-11-04T04:59:24.565257+00:00"
+    },
+    {
+      "sourceRelativePath": "probe-fixture.json",
+      "archivedAs": "data/probe-fixture.json",
+      "sourceMtimeUTC": "2026-11-04T05:04:26.614450+00:00"
+    },
+    {
+      "sourceRelativePath": "probe-psd.json",
+      "archivedAs": "data/probe-psd.json",
+      "sourceMtimeUTC": "2026-11-04T05:06:15.862272+00:00"
+    },
+    {
+      "sourceRelativePath": "probe-outlook.json",
+      "archivedAs": "data/probe-outlook.json",
+      "sourceMtimeUTC": "2026-11-04T05:08:37.474354+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

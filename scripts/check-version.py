@@ -39,7 +39,12 @@ def check(root):
     name = manifest.get("version_name")
     version = manifest.get("version")
     match = VERSION_NAME.fullmatch(name) if isinstance(name, str) else None
-    if not match:
+    if isinstance(name, str) and "+" in name:
+        errors.append(
+            "extension/manifest.json: version_name must not contain '+' test-build metadata; "
+            "keep the base version in source and use scripts/package.py --test <tag>"
+        )
+    elif not match:
         errors.append(
             f"extension/manifest.json: version_name {name!r} must be X.Y.Z, X.Y.Z-alpha, or X.Y.Z-alpha.N (SemVer)"
         )

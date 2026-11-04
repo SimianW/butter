@@ -1,0 +1,38 @@
+{
+  "sourceDirectory": "butter-scrollbar",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T03:36:15.747081+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T03:36:15.747081+00:00"
+    },
+    {
+      "sourceRelativePath": "tables.md",
+      "archivedAs": "data/tables.md",
+      "sourceMtimeUTC": "2026-11-02T03:34:07.993526+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-02T03:32:14.831159+00:00"
+    },
+    {
+      "sourceRelativePath": "memory-all.json",
+      "archivedAs": "data/memory-all.json",
+      "sourceMtimeUTC": "2026-11-02T03:23:00.749690+00:00"
+    },
+    {
+      "sourceRelativePath": "memory-control.json",
+      "archivedAs": "data/memory-control.json",
+      "sourceMtimeUTC": "2026-11-02T03:22:19.176364+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "prototype-clean": {
+    "triggerToFinal": 3081.7000000476837,
+    "maxLoAF": 2490.300000190735,
+    "keydown": 2386.7000000476837,
+    "forcedStyleLayout": 1578.6,
+    "newUserTop": 292
+  },
+  "skip-clean": {
+    "triggerToFinal": 1910.7000000476837,
+    "maxLoAF": 1285.9000000953674,
+    "keydown": 1156.3999998569489,
+    "forcedStyleLayout": 370.7,
+    "newUserTop": 15339
+  },
+  "skip-clean-2": {
+    "triggerToFinal": 2255.100000143051,
+    "maxLoAF": 1571.7999999523163,
+    "keydown": 1439.1999998092651,
+    "forcedStyleLayout": 443.1,
+    "newUserTop": 15339
+  },
+  "baseline-dom": {
+    "triggerToFinal": 11588.0,
+    "maxLoAF": 2906.4000000953674,
+    "keydown": 661.8999998569489,
+    "forcedStyleLayout": 338.4,
+    "newUserTop": 3517
+  }
+}

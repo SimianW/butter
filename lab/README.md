@@ -5,26 +5,24 @@ Everything used to measure Butter for ChatGPT. The method and results are in
 
 ## Browser (`lab`)
 
-Headed Chromium on a virtual display, viewable in a web browser over noVNC, scriptable over CDP.
-Linux only (Xvfb, snap Chromium). On Windows or macOS, measure with
-[`measure-console.js`](measure-console.js) in DevTools instead, or start Chrome yourself with
-`--remote-debugging-port=9222 --user-data-dir=<new profile>` and run the harness scripts without
-`EXT=` (they then use whatever extensions that Chrome has loaded).
+The live lab runs outside the repo: two headed Chromium instances, one per ChatGPT account, with
+locks, fixtures and a send guard. Its README, `~/.local/share/chatgpt-lab/README.md`, is the source
+of truth (it is kept out of the repo because it holds account chat URLs). Read it before any lab run.
+Before starting a run, take a lock and wait for it, rather than polling `lock.d` yourself:
 
-- Control: `lab start|stop|restart|status|restart-browser`
-- Load unpacked extensions: `LAB_EXTENSIONS=/abs/ext-a,/abs/ext-b lab restart-browser`
-  (snap Chromium can't read hidden directories in `$HOME`).
-- View: `http://<LAB_WEB_HOST>:6080/vnc.html?autoconnect=1&resize=scale`. `LAB_WEB_HOST` defaults
-  to 127.0.0.1; set it to a Tailscale or LAN address to view from another machine.
-- Log in to ChatGPT yourself through the viewer; the profile keeps the login.
+```sh
+B=~/.local/share/chatgpt-lab/bin
+LAB=$($B/lab-lock acquire --lab auto --owner <task> --wait 1800 [--perf])   # --perf for timing runs
+# ... run, then $B/lab-restore --lab "$LAB" --owner <task>
+$B/lab-lock release --lab "$LAB" --owner <task>
+```
 
-| Piece | Where |
-|---|---|
-| Browser | `/snap/bin/chromium` (sandbox on), profile `~/snap/chromium/common/chatgpt-lab-profile`, CDP on 127.0.0.1:9222 |
-| Display | Xvfb :99, 1600x1000 |
-| VNC | x11vnc on 127.0.0.1:5999, password file `$LAB_HOME/vncpass` |
-| Web | noVNC + websockify from `$LAB_HOME/novnc` and `$LAB_HOME/venv` |
-| Logs / pids | `$LAB_HOME/log`, `$LAB_HOME/run` (`LAB_HOME` defaults to `~/.local/share/chatgpt-lab`) |
+Scripts can import `lib/lab.mjs` or `lib/lab.py` from `~/.local/share/chatgpt-lab/` instead. The `lab` script in this folder is the original
+single-lab launcher, kept for setting up a lab on a new machine.
+
+Not on this Linux box: on Windows or macOS, measure with [`measure-console.js`](measure-console.js)
+in DevTools, or start Chrome with `--remote-debugging-port=9222 --user-data-dir=<new profile>` and
+run the harness scripts without `EXT=`.
 
 ## Harness (`harness/`)
 

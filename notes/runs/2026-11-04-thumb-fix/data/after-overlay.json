@@ -1,0 +1,53 @@
+{
+  "label": "after-overlay",
+  "mode": "overlay",
+  "id": "<redacted>",
+  "consent": "granted",
+  "geo": {
+    "left": 53,
+    "top": 0,
+    "right": 1599,
+    "bottom": 912,
+    "ow": 1546,
+    "cw": 1546,
+    "ch": 912,
+    "sh": 21352,
+    "st": 6312,
+    "cl": 0
+  },
+  "press": {
+    "x": 1594,
+    "y": 289.0790558261521
+  },
+  "mid": {
+    "seeking": true,
+    "host": {
+      "left": 53,
+      "right": 1583,
+      "width": 1530,
+      "top": 52,
+      "bottom": 828,
+      "opacity": "1"
+    },
+    "scrollerRight": 1599,
+    "clientWidth": 1546,
+    "offsetWidth": 1546,
+    "lastPress": {
+      "t": 12736.600000143051,
+      "type": "pointerdown",
+      "onScroller": true,
+      "kind": "overlay",
+      "x": 1541,
+      "w": 1546,
+      "ow": 1546
+    },
+    "layerLeft": "0px",
+    "stripCovered": [
+      false,
+      false,
+      false
+    ],
+    "firstItemLeft": null,
+    "estLeft": 442
+  }
+}

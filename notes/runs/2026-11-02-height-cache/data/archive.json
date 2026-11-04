@@ -1,0 +1,38 @@
+{
+  "sourceDirectory": "butter-height-cache",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T00:02:34.606437+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T00:02:34.606437+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-02T00:02:01.109056+00:00"
+    },
+    {
+      "sourceRelativePath": "height-details.json",
+      "archivedAs": "data/height-details.json",
+      "sourceMtimeUTC": "2026-11-01T23:35:43.289688+00:00"
+    },
+    {
+      "sourceRelativePath": "resize-cache.json",
+      "archivedAs": "data/resize-cache.json",
+      "sourceMtimeUTC": "2026-11-01T23:50:56.898332+00:00"
+    },
+    {
+      "sourceRelativePath": "resize-prejump.json",
+      "archivedAs": "data/resize-prejump.json",
+      "sourceMtimeUTC": "2026-11-01T23:55:42.768616+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}

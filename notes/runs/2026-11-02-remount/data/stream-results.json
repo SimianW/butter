@@ -1,0 +1,638 @@
+[
+  {
+    "arm": "control",
+    "file": "(not archived)",
+    "variant": "control",
+    "rep": 1,
+    "wallMs": 124891,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107664,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134703,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 52.8,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 616.6,
+    "jankPct": 2.1,
+    "loafBlockMs": 5187,
+    "loafMaxMs": 626,
+    "loafCount": 288,
+    "keyP50": 92.1,
+    "keyP95": 165,
+    "keyMax": 380.5,
+    "wheelP95": 81,
+    "busyPct": 40.5,
+    "stylePct": 12.8,
+    "scriptPct": 7.9,
+    "layoutPct": 0.7,
+    "seenMarks": 2043,
+    "blockAdds": 1163,
+    "cdp": {
+      "TaskDuration": 50.597,
+      "ScriptDuration": 9.812,
+      "LayoutDuration": 0.864,
+      "RecalcStyleDuration": 16.019,
+      "LayoutCount": 1232,
+      "RecalcStyleCount": 7225
+    }
+  },
+  {
+    "arm": "control",
+    "file": "(not archived)",
+    "variant": "control",
+    "rep": 2,
+    "wallMs": 125071,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107665,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134704,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 52.4,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 616.6,
+    "jankPct": 2.2,
+    "loafBlockMs": 5459,
+    "loafMaxMs": 626,
+    "loafCount": 309,
+    "keyP50": 92.4,
+    "keyP95": 162.9,
+    "keyMax": 394.9,
+    "wheelP95": 73,
+    "busyPct": 41.1,
+    "stylePct": 12.9,
+    "scriptPct": 8.2,
+    "layoutPct": 0.7,
+    "seenMarks": 2041,
+    "blockAdds": 1167,
+    "cdp": {
+      "TaskDuration": 51.432,
+      "ScriptDuration": 10.313,
+      "LayoutDuration": 0.881,
+      "RecalcStyleDuration": 16.111,
+      "LayoutCount": 1226,
+      "RecalcStyleCount": 7175
+    }
+  },
+  {
+    "arm": "control",
+    "file": "(not archived)",
+    "variant": "control",
+    "rep": 3,
+    "wallMs": 125003,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107668,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134707,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 52.5,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 583.3,
+    "jankPct": 2.3,
+    "loafBlockMs": 5724,
+    "loafMaxMs": 598,
+    "loafCount": 313,
+    "keyP50": 96.9,
+    "keyP95": 164.9,
+    "keyMax": 402.6,
+    "wheelP95": 78,
+    "busyPct": 40.7,
+    "stylePct": 13.3,
+    "scriptPct": 8.1,
+    "layoutPct": 0.7,
+    "seenMarks": 2050,
+    "blockAdds": 1168,
+    "cdp": {
+      "TaskDuration": 50.875,
+      "ScriptDuration": 10.111,
+      "LayoutDuration": 0.85,
+      "RecalcStyleDuration": 16.649,
+      "LayoutCount": 1229,
+      "RecalcStyleCount": 7144
+    }
+  },
+  {
+    "arm": "generic-inert",
+    "file": "(not archived)",
+    "variant": "generic-inert",
+    "rep": 1,
+    "wallMs": 125049,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107663,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134702,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 394,
+      "published": 393
+    },
+    "fps": 52,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 583.2,
+    "jankPct": 2.4,
+    "loafBlockMs": 6212,
+    "loafMaxMs": 595,
+    "loafCount": 319,
+    "keyP50": 90.9,
+    "keyP95": 164.9,
+    "keyMax": 382.9,
+    "wheelP95": 84,
+    "busyPct": 42.3,
+    "stylePct": 13.7,
+    "scriptPct": 8,
+    "layoutPct": 0.7,
+    "seenMarks": 2048,
+    "blockAdds": 1169,
+    "cdp": {
+      "TaskDuration": 52.895,
+      "ScriptDuration": 10.046,
+      "LayoutDuration": 0.869,
+      "RecalcStyleDuration": 17.175,
+      "LayoutCount": 1230,
+      "RecalcStyleCount": 7128
+    }
+  },
+  {
+    "arm": "generic-inert",
+    "file": "(not archived)",
+    "variant": "generic-inert",
+    "rep": 2,
+    "wallMs": 125021,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107661,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134700,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 394,
+      "published": 393
+    },
+    "fps": 51.6,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 600,
+    "jankPct": 2.8,
+    "loafBlockMs": 6557,
+    "loafMaxMs": 615,
+    "loafCount": 337,
+    "keyP50": 94.7,
+    "keyP95": 163.9,
+    "keyMax": 428.3,
+    "wheelP95": 78,
+    "busyPct": 42.9,
+    "stylePct": 14.4,
+    "scriptPct": 8.1,
+    "layoutPct": 0.7,
+    "seenMarks": 2042,
+    "blockAdds": 1174,
+    "cdp": {
+      "TaskDuration": 53.657,
+      "ScriptDuration": 10.143,
+      "LayoutDuration": 0.896,
+      "RecalcStyleDuration": 17.979,
+      "LayoutCount": 1269,
+      "RecalcStyleCount": 7066
+    }
+  },
+  {
+    "arm": "generic-inert",
+    "file": "(not archived)",
+    "variant": "generic-inert",
+    "rep": 3,
+    "wallMs": 125003,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107665,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134704,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 394,
+      "published": 393
+    },
+    "fps": 52,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 583.3,
+    "jankPct": 2.6,
+    "loafBlockMs": 6105,
+    "loafMaxMs": 603,
+    "loafCount": 319,
+    "keyP50": 88.3,
+    "keyP95": 161.2,
+    "keyMax": 390.6,
+    "wheelP95": 78,
+    "busyPct": 41.9,
+    "stylePct": 13.9,
+    "scriptPct": 7.9,
+    "layoutPct": 0.7,
+    "seenMarks": 2049,
+    "blockAdds": 1176,
+    "cdp": {
+      "TaskDuration": 52.41,
+      "ScriptDuration": 9.829,
+      "LayoutDuration": 0.867,
+      "RecalcStyleDuration": 17.428,
+      "LayoutCount": 1245,
+      "RecalcStyleCount": 7114
+    }
+  },
+  {
+    "arm": "read-hook",
+    "file": "(not archived)",
+    "variant": "read-hook",
+    "rep": 1,
+    "wallMs": 124941,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107668,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134707,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 51.9,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 633.3,
+    "jankPct": 2.7,
+    "loafBlockMs": 6325,
+    "loafMaxMs": 647,
+    "loafCount": 330,
+    "keyP50": 90.3,
+    "keyP95": 176,
+    "keyMax": 380.8,
+    "wheelP95": 84,
+    "busyPct": 42.6,
+    "stylePct": 14.1,
+    "scriptPct": 7.9,
+    "layoutPct": 0.7,
+    "seenMarks": 2049,
+    "blockAdds": 1175,
+    "cdp": {
+      "TaskDuration": 53.25,
+      "ScriptDuration": 9.908,
+      "LayoutDuration": 0.905,
+      "RecalcStyleDuration": 17.588,
+      "LayoutCount": 1248,
+      "RecalcStyleCount": 7144
+    }
+  },
+  {
+    "arm": "read-hook",
+    "file": "(not archived)",
+    "variant": "read-hook",
+    "rep": 2,
+    "wallMs": 125037,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107665,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134704,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 54.6,
+    "p50": 16.7,
+    "p95": 33.2,
+    "maxFrame": 550,
+    "jankPct": 1.1,
+    "loafBlockMs": 3246,
+    "loafMaxMs": 569,
+    "loafCount": 228,
+    "keyP50": 73.6,
+    "keyP95": 157.7,
+    "keyMax": 299.7,
+    "wheelP95": 67,
+    "busyPct": 40.5,
+    "stylePct": 9.7,
+    "scriptPct": 7.8,
+    "layoutPct": 0.6,
+    "seenMarks": 1323,
+    "blockAdds": 1178,
+    "cdp": {
+      "TaskDuration": 50.628,
+      "ScriptDuration": 9.77,
+      "LayoutDuration": 0.788,
+      "RecalcStyleDuration": 12.174,
+      "LayoutCount": 1238,
+      "RecalcStyleCount": 7455
+    }
+  },
+  {
+    "arm": "read-hook",
+    "file": "(not archived)",
+    "variant": "read-hook",
+    "rep": 3,
+    "wallMs": 125052,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107668,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134707,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 395,
+      "published": 394
+    },
+    "fps": 52.4,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 583.4,
+    "jankPct": 2.3,
+    "loafBlockMs": 5647,
+    "loafMaxMs": 592,
+    "loafCount": 318,
+    "keyP50": 104.7,
+    "keyP95": 172.7,
+    "keyMax": 387.6,
+    "wheelP95": 74,
+    "busyPct": 42.1,
+    "stylePct": 13.3,
+    "scriptPct": 7.9,
+    "layoutPct": 0.7,
+    "seenMarks": 2046,
+    "blockAdds": 1177,
+    "cdp": {
+      "TaskDuration": 52.709,
+      "ScriptDuration": 9.901,
+      "LayoutDuration": 0.875,
+      "RecalcStyleDuration": 16.576,
+      "LayoutCount": 1242,
+      "RecalcStyleCount": 7168
+    }
+  },
+  {
+    "arm": "turn",
+    "file": "(not archived)",
+    "variant": "turn",
+    "rep": 1,
+    "wallMs": 125001,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107663,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134702,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 396,
+      "published": 395
+    },
+    "fps": 52.2,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 583.2,
+    "jankPct": 2.5,
+    "loafBlockMs": 5777,
+    "loafMaxMs": 602,
+    "loafCount": 324,
+    "keyP50": 96.5,
+    "keyP95": 190.7,
+    "keyMax": 354.2,
+    "wheelP95": 80,
+    "busyPct": 44.7,
+    "stylePct": 13.2,
+    "scriptPct": 7.9,
+    "layoutPct": 0.7,
+    "seenMarks": 1320,
+    "blockAdds": 1171,
+    "cdp": {
+      "TaskDuration": 55.867,
+      "ScriptDuration": 9.93,
+      "LayoutDuration": 0.882,
+      "RecalcStyleDuration": 16.461,
+      "LayoutCount": 1240,
+      "RecalcStyleCount": 7135
+    }
+  },
+  {
+    "arm": "turn",
+    "file": "(not archived)",
+    "variant": "turn",
+    "rep": 2,
+    "wallMs": 125010,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107662,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134701,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 394,
+      "published": 393
+    },
+    "fps": 52.1,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 616.7,
+    "jankPct": 2.4,
+    "loafBlockMs": 5973,
+    "loafMaxMs": 622,
+    "loafCount": 304,
+    "keyP50": 108.5,
+    "keyP95": 178.8,
+    "keyMax": 361.6,
+    "wheelP95": 77,
+    "busyPct": 44.6,
+    "stylePct": 12.9,
+    "scriptPct": 8.2,
+    "layoutPct": 0.7,
+    "seenMarks": 1323,
+    "blockAdds": 1169,
+    "cdp": {
+      "TaskDuration": 55.722,
+      "ScriptDuration": 10.196,
+      "LayoutDuration": 0.848,
+      "RecalcStyleDuration": 16.096,
+      "LayoutCount": 1223,
+      "RecalcStyleCount": 7125
+    }
+  },
+  {
+    "arm": "turn",
+    "file": "(not archived)",
+    "variant": "turn",
+    "rep": 3,
+    "wallMs": 124893,
+    "answer": {
+      "chars": 21448,
+      "katex": 420,
+      "sha": "043dc8afaf8d"
+    },
+    "before": {
+      "nodes": 107666,
+      "turns": 9,
+      "katex": 1488
+    },
+    "after": {
+      "nodes": 134705,
+      "turns": 10,
+      "katex": 1909
+    },
+    "chunksSent": 189,
+    "butter": {
+      "smootherFrames": 392,
+      "published": 391
+    },
+    "fps": 52.1,
+    "p50": 16.7,
+    "p95": 33.3,
+    "maxFrame": 616.6,
+    "jankPct": 2.5,
+    "loafBlockMs": 5878,
+    "loafMaxMs": 623,
+    "loafCount": 319,
+    "keyP50": 91.5,
+    "keyP95": 193,
+    "keyMax": 370.2,
+    "wheelP95": 80,
+    "busyPct": 44.8,
+    "stylePct": 12.8,
+    "scriptPct": 8.3,
+    "layoutPct": 0.7,
+    "seenMarks": 1320,
+    "blockAdds": 1161,
+    "cdp": {
+      "TaskDuration": 55.981,
+      "ScriptDuration": 10.307,
+      "LayoutDuration": 0.86,
+      "RecalcStyleDuration": 16.042,
+      "LayoutCount": 1232,
+      "RecalcStyleCount": 7139
+    }
+  }
+]

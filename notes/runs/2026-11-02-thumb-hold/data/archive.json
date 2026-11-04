@@ -1,0 +1,78 @@
+{
+  "sourceDirectory": "butter-thumb-hold",
+  "dateBasis": "UTC modification time of report.md",
+  "primarySourceMtimeUTC": "2026-11-02T05:55:02.755446+00:00",
+  "files": [
+    {
+      "sourceRelativePath": "report.md",
+      "archivedAs": "report.md",
+      "sourceMtimeUTC": "2026-11-02T05:55:02.755446+00:00"
+    },
+    {
+      "sourceRelativePath": "summary.json",
+      "archivedAs": "data/summary.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.194672+00:00"
+    },
+    {
+      "sourceRelativePath": "release-visual-shift.json",
+      "archivedAs": "data/release-visual-shift.json",
+      "sourceMtimeUTC": "2026-11-02T05:50:23.901689+00:00"
+    },
+    {
+      "sourceRelativePath": "native-events.json",
+      "archivedAs": "data/native-events.json",
+      "sourceMtimeUTC": "2026-11-02T05:36:14.998765+00:00"
+    },
+    {
+      "sourceRelativePath": "control-6-timeline.json",
+      "archivedAs": "data/control-6-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.183371+00:00"
+    },
+    {
+      "sourceRelativePath": "control-4-timeline.json",
+      "archivedAs": "data/control-4-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.178029+00:00"
+    },
+    {
+      "sourceRelativePath": "control-1-timeline.json",
+      "archivedAs": "data/control-1-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.171345+00:00"
+    },
+    {
+      "sourceRelativePath": "hold-2-timeline.json",
+      "archivedAs": "data/hold-2-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.189696+00:00"
+    },
+    {
+      "sourceRelativePath": "control-5-timeline.json",
+      "archivedAs": "data/control-5-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.180719+00:00"
+    },
+    {
+      "sourceRelativePath": "control-2-timeline.json",
+      "archivedAs": "data/control-2-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.174659+00:00"
+    },
+    {
+      "sourceRelativePath": "hold-1-timeline.json",
+      "archivedAs": "data/hold-1-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.187054+00:00"
+    },
+    {
+      "sourceRelativePath": "hold-wheel-timeline.json",
+      "archivedAs": "data/hold-wheel-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.194384+00:00"
+    },
+    {
+      "sourceRelativePath": "hold-3-timeline.json",
+      "archivedAs": "data/hold-3-timeline.json",
+      "sourceMtimeUTC": "2026-11-02T05:51:23.192347+00:00"
+    }
+  ],
+  "transformations": [
+    "Privacy scrub of personal identifiers, credentials and captured text; short content digests removed.",
+    "Dropped per-frame samples, captured UI audits and large raw bundles; retained summary metrics.",
+    "Missing local artifact links are marked not archived; other filenames identify original evidence only.",
+    "Stack separators and scoped package display names normalized; source diffs omitted where redundant with the measured result."
+  ]
+}
