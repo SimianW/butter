@@ -70,3 +70,69 @@ test('missing, whitespace-only, question-only and shifted beyond-end source neve
       assert.ok(core.previewExcerpt(t, offset).text.trim());
   }
 });
+
+test('display formula height limit grows with TeX rows and ignores mixed text', () => {
+  const item = (text, h) => ({ text, h, math: [{ start: 0, end: text.length, display: true }] });
+  const one = item('y_{n+1}^{(4)}=1.2340', 0);
+  const cases = item('\\begin{cases}a=0\\\\b=0\\\\c=0\\\\d=0\\end{cases}', 0);
+  assert.equal(core.displayMathLimit(one), 184);
+  assert.equal(core.displayMathLimit(cases), 376);
+  assert.equal(core.displayMathLimit({ ...one, text: 'value ' + one.text }), Infinity);
+  assert.equal(core.displayMathLimit({ text: 'paragraph', math: [] }), Infinity);
+  // Settled sizes from the lab math chats pass; the formula box from the user video does not.
+  assert.equal(core.validateSnapshot(snap([{ ...cases, h: 268 }])), null);
+  assert.equal(core.validateSnapshot(snap([{ ...one, h: 65 }])), null);
+  assert.equal(core.validateSnapshot(snap([{ ...one, h: 1400 }])), 'math-height');
+  function snap(items) {
+    return {
+      complete: true,
+      mathReady: true,
+      h: 500,
+      blocks: [500],
+      items: items.map((it) => ({ top: 0, ...it })),
+    };
+  }
+});
+
+test('a snapshot taken while ChatGPT reveals the answer is never authoritative', () => {
+  const settled = {
+    conv: 'c',
+    complete: true,
+    mathReady: true,
+    h: 1500,
+    blocks: [52, 1250],
+    items: [
+      { top: 120, h: 52, text: 'The first lines of the answer.', math: [] },
+      { top: 190, h: 1250, text: 'The rest of the answer.', math: [] },
+    ],
+  };
+  const partial = { ...settled, revealing: true, blocks: [52], items: settled.items.slice(0, 1) };
+  assert.equal(core.validateSnapshot(partial), 'revealing');
+  assert.equal(core.mergeRecord(null, partial, 1).entry, null);
+  // The settled snapshot of the same answer is accepted and replaces the rejected state.
+  assert.equal(core.validateSnapshot({ ...settled, revealing: false }), null);
+  const { entry, reason } = core.mergeRecord(core.mergeRecord(null, partial, 1).entry, settled, 2);
+  assert.equal(reason, null);
+  assert.equal(entry.items.length, 2);
+  // A revealing snapshot never replaces a settled record.
+  const kept = core.mergeRecord(entry, partial, 3);
+  assert.equal(kept.reason, 'revealing');
+  assert.equal(kept.entry, entry);
+});
+
+test('a snapshot holding a never-rendered placeholder block is not authoritative', () => {
+  const ok = {
+    conv: 'c',
+    complete: true,
+    mathReady: true,
+    h: 500,
+    blocks: [33],
+    items: [{ top: 0, h: 65 }],
+  };
+  assert.equal(core.validateSnapshot({ ...ok, placeholder: true }), 'placeholder');
+  assert.equal(core.validateSnapshot(ok), null);
+  const settled = core.mergeRecord(null, ok, 1).entry;
+  const r = core.mergeRecord(settled, { ...ok, placeholder: true, blocks: [120] }, 2);
+  assert.equal(r.reason, 'placeholder');
+  assert.equal(r.entry, settled);
+});

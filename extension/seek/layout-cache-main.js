@@ -19,8 +19,11 @@
   const live = new Set(),
     meta = new WeakMap(),
     skipped = new WeakSet(),
+    stale = new WeakSet(), // queued for a record that has not succeeded yet
+    verified = new WeakMap(), // turn element -> the entry its last successful record produced
     contentH = new WeakMap(),
-    leanCache = new WeakMap();
+    leanCache = new WeakMap(),
+    applied = new WeakSet(); // turns restore() gave their recorded sizes
   const BLOCK = '[data-markdown-text-style="assistant-message"] > :not([data-wide-block]):not(hr)';
   const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1] || null;
@@ -477,6 +480,11 @@
     !t.querySelector('[data-talvt-turn-state="in_progress"]') &&
     (t.matches('[data-talvt-turn-state="complete"]') ||
       !!t.querySelector('[data-talvt-turn-state="complete"]'));
+  // ChatGPT's markdown renderer reveals a streamed answer gradually. Only while it does so does it
+  // render the revealed prefix instead of the full text, and only then does its markdown root carry
+  // .AdaptiveStreaming (hashed: AdaptiveStreaming-xxxxxx). The turn may already read complete, so a
+  // snapshot then holds just the first paragraphs of the answer.
+  const revealing = (t) => !!t.querySelector('[class*="AdaptiveStreaming"]');
   const mathReady = (t) =>
     [...t.querySelectorAll('[data-math-source]')].every((e) => e.querySelector('.katex'));
   const identity = (t) =>
@@ -484,6 +492,20 @@
     t
       .querySelector('[data-chatgpt-selection-message-id]')
       ?.getAttribute('data-chatgpt-selection-message-id');
+  const offList = () =>
+    (document.documentElement?.getAttribute?.('data-butter-off') || '').split(/\s+/);
+  const disabled = () => !!document.documentElement?.hasAttribute?.('data-butter-disabled');
+  const cvOff = () => disabled() || offList().includes('cv');
+  // Records serve the seek preview, the layout store and remount restore (a cv feature).
+  const needed = () => {
+    const off = offList();
+    return !disabled() && !(off.includes('seek') && off.includes('cv') && off.includes('layout'));
+  };
+  // Fast wheel scrolling crosses the content-visibility boundary constantly. A block coming back
+  // into view re-queues its turn only when this element's last record is gone or replaced, or the
+  // turn changed since: DOM changes (message, blocks), size changes and resizes all queue the turn,
+  // which marks it stale. Re-measuring an unchanged turn forced layout of every item inside the
+  // scroll frames, and even a DOM check per event costs ms on a long turn, so this one is O(1).
   document.addEventListener(
     'contentvisibilityautostatechange',
     (e) => {
@@ -491,7 +513,8 @@
       else {
         skipped.delete(e.target);
         const t = e.target.closest?.('[data-turn-key]');
-        if (t && meta.has(t)) queue(t);
+        if (t && meta.has(t) && (stale.has(t) || verified.get(t) !== turns.get(t.dataset.turnKey)))
+          queue(t);
       }
     },
     true,
@@ -573,67 +596,213 @@
     });
 
   const scWidths = new WeakMap();
-  const pending = new Set();
-  let idle = 0;
+  const pending = new Set(),
+    recheck = new WeakSet(),
+    changes = new WeakMap(); // turn element -> queue count, so a measure in slices sees changes
+  // Measuring reads layout for every item of a turn. It runs only in idle time, in slices of SLICE
+  // items between checks of the idle deadline, so a turn first seen while the page scrolls is
+  // recorded while it is still rendered, without taking a scroll frame. Turns already recorded are
+  // never queued just for coming back into view (see the content-visibility listener above), and a
+  // remounted copy of a recorded, unchanged turn adopts its record instead of measuring again.
+  const SLICE = 24,
+    RESERVE = 1; // ms of the idle period left alone
+  let idle = 0,
+    job = null;
+  const schedule = () => {
+    if (idle) return;
+    idle = globalThis.requestIdleCallback ? requestIdleCallback(work) : setTimeout(work, 0);
+  };
   const queue = (t) => {
     pending.add(t);
-    if (!idle) idle = requestAnimationFrame(flush);
+    stale.add(t);
+    changes.set(t, (changes.get(t) || 0) + 1);
+    schedule();
   };
-  function flush() {
+  function work(deadline) {
     idle = 0;
     if (globalThis.__butterSeeking?.()) {
-      idle = requestAnimationFrame(flush);
+      idle = setTimeout(() => {
+        idle = 0;
+        schedule();
+      }, 100);
       return;
     }
-    const sc = scroller();
-    const batch = [...pending];
-    pending.clear();
-    const layout = batch.length && document.documentElement ? persistence.refreshLayout(sc) : null;
-    for (const t of batch) record(t, sc, layout);
+    run(deadline?.timeRemaining ? () => deadline.timeRemaining() : () => Infinity);
+    if (job || pending.size) schedule();
   }
-  function record(t, sc, layout) {
-    if (
-      document.documentElement?.hasAttribute('data-butter-disabled') ||
-      !t.isConnected ||
-      !sc ||
-      !sc.contains(t)
-    )
-      return;
-    const key = t.dataset.turnKey,
-      c = conv();
+  function run(left) {
+    while (left() > RESERVE) {
+      if (!job) {
+        const t = pending.values().next().value;
+        if (!t) return;
+        pending.delete(t);
+        job = begin(t, scroller());
+        continue;
+      }
+      if (step(job, left)) job = null;
+    }
+  }
+  // Everything still queued, now (a seek press, tests).
+  const measure = () => run(() => Infinity);
+  // A turn's geometry box. A display: contents block (ChatGPT's widgets, e.g. a learning card) has
+  // no box of its own: its children's boxes stand in, or it would read as 0 px and at the page top.
+  const box = (el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width || r.height || !el.getClientRects || el.getClientRects().length) return r;
+    let top = Infinity,
+      bottom = -Infinity,
+      left = Infinity,
+      right = -Infinity;
+    for (let c = el.firstElementChild; c; c = c.nextElementSibling) {
+      const x = box(c);
+      if (!x.width && !x.height) continue;
+      top = Math.min(top, x.top);
+      left = Math.min(left, x.left);
+      bottom = Math.max(bottom, x.top + x.height);
+      right = Math.max(right, x.left + x.width);
+    }
+    return top === Infinity ? r : { top, left, width: right - left, height: bottom - top };
+  };
+  const boxless = (el) => !!el.getClientRects && el.getClientRects().length === 0;
+  // A block skipped by the streaming rule before it ever rendered is only its placeholder size
+  // (contain-intrinsic-size 120px: a display formula read as 152 px). stream/offscreen.js marks a
+  // block data-butter-seen only once it has rendered at its real size.
+  const placeholder = (b, t) => {
+    if (!skipped.has(b) || b.hasAttribute?.('data-butter-seen') || applied.has(t)) return false;
+    if (getComputedStyle(b).contentVisibility === 'auto') return true;
+    skipped.delete(b); // no longer content-visibility: auto, so no event said it stopped skipping
+    return false;
+  };
+  function reject(t, reason) {
+    S.rejected[reason] = (S.rejected[reason] || 0) + 1;
+    // The class going away is not observed, and an answer revealed in full by then may not
+    // resize or mutate again, so look once more shortly after.
+    if (reason === 'revealing' && !recheck.has(t)) {
+      recheck.add(t);
+      setTimeout(() => {
+        recheck.delete(t);
+        queue(t);
+      }, 500);
+    }
+    if (reason === 'zero-block')
+      S.lastZero = [...t.querySelectorAll(BLOCK)]
+        .filter((b) => !(contentH.get(b) > 0))
+        .slice(0, 8)
+        .map((b) => ({ tag: b.tagName, observed: contentH.get(b) ?? null }));
+  }
+  const timed = (fn) => {
     const t0 = performance.now();
-    const isComplete = complete(t),
-      ready = isComplete && mathReady(t),
-      isSkipped = skipped.has(t);
-    let snap = { conv: c, complete: isComplete, mathReady: ready, skipped: isSkipped };
-    if (isComplete && ready && !isSkipped) {
-      const row = t.parentElement,
-        rr = row.getBoundingClientRect(),
-        tr = t.getBoundingClientRect(),
-        sr = sc.getBoundingClientRect();
-      // Register blocks that appeared after the turn was first seen; a
-      // block without an observed size makes this snapshot non-authoritative (RO re-queues the turn).
-      const els = [...t.querySelectorAll(BLOCK)];
-      for (const b of els) register(b, t);
-      const blocks = els.map((b) => contentH.get(b) ?? 0);
-      const items = [...t.querySelectorAll(ITEMS)].map((el) => {
-        const r = el.getBoundingClientRect();
-        let text = leanCache.get(el);
-        if (text == null) {
-          text = lean(el, r.height);
-          leanCache.set(el, text);
-        }
+    const out = fn();
+    const ms = performance.now() - t0;
+    S.recordMs += ms;
+    S.recordMax = Math.max(S.recordMax, ms);
+    return out;
+  };
+  // Starts a measure of t: the cheap checks, then the item list. Returns the job, or null when the
+  // snapshot is rejected (or the record adopted) without reading any item.
+  function begin(t, sc) {
+    if (!needed() || !t.isConnected || !sc || !sc.contains(t)) return null;
+    return timed(() => {
+      const key = t.dataset.turnKey,
+        c = conv();
+      const isComplete = complete(t),
+        isRevealing = isComplete && revealing(t),
+        ready = isComplete && mathReady(t),
+        isSkipped = skipped.has(t);
+      const snap = {
+        conv: c,
+        complete: isComplete,
+        revealing: isRevealing,
+        mathReady: ready,
+        skipped: isSkipped,
+      };
+      let els;
+      if (isComplete && !isRevealing && ready && !isSkipped) {
+        els = [...t.querySelectorAll(BLOCK)];
+        // Register blocks that appeared after the turn was first seen; a block without an observed
+        // size makes this snapshot non-authoritative (RO re-queues the turn).
+        for (const b of els) register(b, t);
+        snap.placeholder = els.some((b) => placeholder(b, t));
+      }
+      const prev = turns.get(key);
+      if (!core.validateSnapshot({ ...snap, h: 1, blocks: [1] })) {
+        if (adopt(t, prev, c, els)) return null;
         return {
-          top: r.top - rr.top,
-          h: r.height,
-          left: r.left - sr.left - sc.clientLeft,
-          w: r.width,
-          user: el.matches('[data-user-message-bubble]'),
-          css: styleKey(el),
-          text: text.text,
-          math: text.math,
+          t,
+          sc,
+          key,
+          c,
+          snap,
+          els,
+          changes: changes.get(t),
+          all: [...t.querySelectorAll(ITEMS)],
+          items: [],
         };
-      });
+      }
+      finish({ t, sc, key, c, snap }, null);
+      return null;
+    });
+  }
+  // ChatGPT remounts turns as they scroll in and out. A new element for a recorded message, at the
+  // recorded width with the recorded turn, row and block sizes, is the same layout: no measure.
+  function adopt(t, prev, c, els) {
+    if (!prev?.ready || prev.fromStorage || prev.conv !== c || verified.get(t) === prev)
+      return false;
+    const row = t.parentElement;
+    if (
+      prev.msg !== identity(t) ||
+      prev.vw !== innerWidth ||
+      prev.h !== contentH.get(t) ||
+      prev.blocks.length !== els.length ||
+      els.some((b, i) => prev.blocks[i] !== contentH.get(b)) ||
+      prev.rowH !== row?.getBoundingClientRect().height
+    )
+      return false;
+    S.adopted = (S.adopted || 0) + 1;
+    stale.delete(t);
+    verified.set(t, prev);
+    return true;
+  }
+  // Reads the next items of a job until the idle deadline. Returns true when the job is done.
+  function step(j, left) {
+    const { t, sc } = j;
+    if (changes.get(t) !== j.changes || !t.isConnected || skipped.has(t)) return true; // re-queued, gone or skipped (stale: queued again on reveal)
+    if (!needed()) return true; // seek, cv and layout turned off since begin()
+    return timed(() => {
+      const rr = t.parentElement.getBoundingClientRect(),
+        sr = sc.getBoundingClientRect();
+      do {
+        for (const end = Math.min(j.all.length, j.items.length + SLICE); j.items.length < end; ) {
+          const el = j.all[j.items.length];
+          const r = box(el);
+          let text = leanCache.get(el);
+          if (text == null) {
+            text = lean(el, r.height);
+            leanCache.set(el, text);
+          }
+          j.items.push({
+            top: r.top - rr.top,
+            h: r.height,
+            left: r.left - sr.left - sc.clientLeft,
+            w: r.width,
+            user: el.matches('[data-user-message-bubble]'),
+            css: styleKey(el),
+            text: text.text,
+            math: text.math,
+          });
+        }
+      } while (j.items.length < j.all.length && left() > RESERVE);
+      if (j.items.length < j.all.length) return false;
+      finish(j, rr);
+      return true;
+    });
+  }
+  function finish(j, rr) {
+    const { t, sc, key, c } = j;
+    let snap = j.snap,
+      layout = null;
+    if (rr) {
+      const tr = t.getBoundingClientRect();
       const { vw, sw } = __butterLayoutCheck.layoutFingerprint({
         vw: innerWidth,
         sw: sc.clientWidth,
@@ -648,36 +817,29 @@
         vw,
         sw,
         msg: identity(t),
-        blocks,
-        items,
+        blocks: j.els.map((b) => contentH.get(b) ?? (boxless(b) ? box(b).height : 0)),
+        items: j.items,
       };
+      layout = document.documentElement ? persistence.refreshLayout(sc) : null;
     }
     if (snap.sw != null) scWidths.set(sc, snap.sw);
     const prev = turns.get(key);
-    const { entry, changed, reason } = core.mergeRecord(
+    const { entry, reason } = core.mergeRecord(
       prev?.conv === c ? prev : null,
       snap,
       performance.now(),
     );
-    if (reason) {
-      S.rejected[reason] = (S.rejected[reason] || 0) + 1;
-      if (reason === 'zero-block')
-        S.lastZero = [...t.querySelectorAll(BLOCK)]
-          .filter((b) => !(contentH.get(b) > 0))
-          .slice(0, 8)
-          .map((b) => ({ tag: b.tagName, observed: contentH.get(b) ?? null }));
-    } else {
+    if (reason) reject(t, reason);
+    else {
       if (prev?.ready) S.refreshes++;
       S.records++;
+      stale.delete(t);
+      verified.set(t, entry);
       turns.delete(key);
       turns.set(key, entry);
       persistence.record(key, entry, sc, layout);
     }
     while (turns.size > 64) turns.delete(turns.keys().next().value);
-    const ms = performance.now() - t0;
-    S.recordMs += ms;
-    S.recordMax = Math.max(S.recordMax, ms);
-    void changed;
   }
 
   const ro = new ResizeObserver((es) => {
@@ -700,8 +862,15 @@
   const watch = (t) => {
     if (meta.has(t) || !t.dataset.turnKey) return;
     live.add(t);
-    meta.set(t, { turn: t, blocks: new Set() });
+    // The record's rowH is the row's height; the row can grow outside the turn (no mutation inside
+    // [data-turn-key]), so observe it too or the record goes stale without a new reveal re-measure.
+    const row = t.parentElement;
+    meta.set(t, { turn: t, blocks: new Set(), row });
     ro.observe(t);
+    if (row && meta.get(row)?.turn !== t) {
+      meta.set(row, { turn: t }); // a remounted turn in a reused row takes the row over
+      ro.observe(row);
+    }
     for (const b of t.querySelectorAll(BLOCK)) register(b, t);
     S.observed++;
     queue(t);
@@ -738,6 +907,11 @@
         const e = turns.get(t.dataset.turnKey);
         if (e) e.removed = true;
         ro.unobserve(t);
+        const row = meta.get(t)?.row;
+        if (row && meta.get(row)?.turn === t) {
+          ro.unobserve(row);
+          meta.delete(row);
+        }
         for (const b of meta.get(t)?.blocks || []) {
           ro.unobserve(b);
           meta.get(b).observing = false;
@@ -763,8 +937,9 @@
     return e;
   };
   // Restore only when identity, width, completeness and every block size still agree.
+  // Inline content-visibility is the cv feature: with cv (or Butter) off, leave turns as they are.
   const restore = (t) => {
-    if (document.documentElement?.hasAttribute('data-butter-disabled')) return;
+    if (cvOff()) return;
     const e = currentEntry(t.dataset.turnKey, t.closest('.thread-scroll-container'));
     const bs = t.querySelectorAll(BLOCK);
     const why = core.canRestore(e, {
@@ -802,7 +977,23 @@
     if (S.hits.length < 200)
       S.hits.push({ t: performance.now(), key: t.dataset.turnKey, h: e.h, n });
   };
-  const applied = new WeakSet();
+  const unrestore = (t) => {
+    for (const el of [t, ...t.querySelectorAll(BLOCK)]) {
+      el.style.contentVisibility = '';
+      el.style.containIntrinsicSize = '';
+    }
+    applied.delete(t);
+  };
+  let wasNeeded = needed();
+  if (document.documentElement)
+    new MutationObserver(() => {
+      if (cvOff()) for (const t of live) if (applied.has(t)) unrestore(t);
+      if (needed() && !wasNeeded) for (const t of live) queue(t);
+      wasNeeded = needed();
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-butter-off', 'data-butter-disabled'],
+    });
   const d = Object.getOwnPropertyDescriptor(Element.prototype, 'clientWidth');
   if (d?.configurable && d.get)
     Object.defineProperty(Element.prototype, 'clientWidth', {
@@ -828,7 +1019,7 @@
   globalThis.__butterLayoutCache = {
     ...persistence,
     flush: () => persistence.flush(),
-    flushMeasurements: flush,
+    flushMeasurements: measure,
     get: (key, preparedScroller) => {
       const sc = preparedScroller || scroller();
       if (!preparedScroller && turns.get(key)?.fromStorage) persistence.refreshLayout(sc);
@@ -842,6 +1033,8 @@
     },
     // One synchronous consumer path: hydrate/adopt disk records, then validate every entry.
     prepare: (sc, ids) => {
+      // A press right after wheel scrolling: measure turns still waiting for the scroll to settle.
+      measure();
       const stored = persistence.records(sc);
       scWidths.set(sc, sc.clientWidth);
       for (const [id, e] of Object.entries(stored)) if (!turns.has(id)) turns.set(id, e);

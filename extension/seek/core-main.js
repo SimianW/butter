@@ -138,20 +138,40 @@
   }
 
   // ---- 3. Height-cache recording ----------------------------------------------------------------
-  // A snapshot is only authoritative when the turn is complete, its math has typeset, it is not
-  // content-visibility-skipped, it has at least one block, and every block has a non-zero size.
-  // Anything else keeps the previous authoritative record (never replaces it with zeros).
+  // A snapshot is only authoritative when the turn is complete, ChatGPT has finished revealing its
+  // text, its math has typeset, it is not content-visibility-skipped, no block is a never-rendered
+  // placeholder, it has at least one block, and every block has a non-zero size. Anything else keeps the previous authoritative record
+  // (never replaces it with zeros or with the first lines of an answer).
   function validateSnapshot(s) {
     if (!s) return 'missing';
     if (!s.complete) return 'incomplete';
+    if (s.revealing) return 'revealing';
     if (!s.mathReady) return 'math-pending';
     if (s.skipped) return 'skipped';
+    if (s.placeholder) return 'placeholder';
     if (!(s.h > 0) || !Number.isFinite(s.h)) return 'zero-turn';
     if (!s.blocks || !s.blocks.length) return 'no-blocks';
     if (s.blocks.some((h) => !(h > 0) || !Number.isFinite(h))) return 'zero-block';
     if (s.items && s.items.some((it) => !(it.h >= 0) || !Number.isFinite(it.top)))
       return 'bad-item';
+    if (s.items && s.items.some((it) => it.h > displayMathLimit(it))) return 'math-height';
     return null;
+  }
+  // A block that is only a display formula is as tall as its TeX rows, never a screenful. A snapshot
+  // of an answer that was only partly in the DOM (seen right after the answer streamed) ended at
+  // an early formula whose box spanned the rest of the turn; the preview drew it as one
+  // viewport-sized math box with the text around it missing. Such a snapshot is not authoritative.
+  // Every TeX row (`\\`, `\cr`) may add 64px; 120px covers padding and one tall row (fractions,
+  // limits, \boxed). Settled formulas measured in long math chats stay well inside this.
+  function displayMath(it) {
+    const m = it?.math?.length === 1 && it.math[0].display ? it.math[0] : null;
+    return m && it.text != null && it.text.trim() === it.text.slice(m.start, m.end).trim()
+      ? m
+      : null;
+  }
+  function displayMathLimit(it) {
+    if (!displayMath(it)) return Infinity;
+    return 120 + 64 * (1 + (it.text.match(/\\\\|\\cr(?![a-zA-Z])/g) || []).length);
   }
   function mergeRecord(prev, snap, now) {
     const reason = validateSnapshot(snap);
@@ -478,6 +498,8 @@
     sameSelection,
     createActivation,
     validateSnapshot,
+    displayMath,
+    displayMathLimit,
     mergeRecord,
     canRestore,
     coverage,

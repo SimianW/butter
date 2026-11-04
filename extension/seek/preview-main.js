@@ -407,11 +407,11 @@
           el.style.background = 'var(--bubble)';
           el.style.borderRadius = '18px';
         }
-        const math = it.math?.length === 1 && it.math[0].display ? it.math[0] : null;
-        if (math && it.text.trim() === it.text.slice(math.start, math.end).trim()) {
+        if (core.displayMath(it)) {
           el.className = 'it math display';
-          el.style.cssText +=
-            ';font:12px/1.5 ui-monospace,"SF Mono",Menlo,monospace;padding:0 12px;border-radius:8px;background:var(--math-bg);color:var(--math-fg)';
+          // Rows stored by earlier builds can still carry a formula box that spans the rest of its
+          // turn (see core.displayMathLimit); never draw more than one formula's worth of box.
+          el.style.cssText += `;font:12px/1.5 ui-monospace,"SF Mono",Menlo,monospace;padding:0 12px;border-radius:8px;background:var(--math-bg);color:var(--math-fg);height:${Math.min(it.h, core.displayMathLimit(it))}px`;
           const line = document.createElement('span');
           line.textContent = it.text.replace(/\s+/g, ' ');
           el.append(line);

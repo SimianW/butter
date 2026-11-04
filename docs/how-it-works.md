@@ -6,7 +6,7 @@ the whole conversation. Butter cuts that work in six places:
 | File | Change | Why |
 |---|---|---|
 | `stream/containment.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
-| `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
+| `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away, and are marked only once they have rendered (in view, or when the answer completes). | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
 | `rail/rail.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end first, then lets ChatGPT scroll the new question into place. Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
 | `stream/throttle-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
 | `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
@@ -23,12 +23,29 @@ the jumped-to question; scrolling yourself releases that alignment.
 While you hold and drag the thread's native scrollbar thumb, `seek/preview-main.js` stops its scroll
 notifications before ChatGPT's virtualizer sees them. The real turns move off screen and a lightweight
 text preview takes their place. `seek/layout-cache-main.js` records complete, typeset turns and their block
-positions; skipped, incomplete or zero-size snapshots never replace a good record. When a removed
+positions; skipped, incomplete or zero-size snapshots never replace a good record. Neither does a
+snapshot taken while ChatGPT still reveals a streamed answer (its markdown root carries
+`AdaptiveStreaming`, even after the turn reads complete): it would hold only the answer's first
+lines. Nor does one where a block that is only a display formula is taller than its TeX rows allow
+(120 px plus 64 px per row): that box belongs to an answer that was only partly in the page. When a removed
 turn mounts again at the same width with the same message and blocks, the cache restores its sizes
-before ChatGPT's first layout read.
+before ChatGPT's first layout read, as inline `content-visibility`, so only while the cv setting is on.
+Nor does one with a block that the streaming rule skipped before it ever rendered: ChatGPT does not
+scroll with the stream, so most of a long answer arrives below the fold, and such a block is only its
+120 px placeholder (a display formula reads 152 px). A widget wrapped in a `display: contents` block
+(learning cards, card rows in long answers) has no box of its own; its children's boxes give its size.
+Measuring a turn reads the layout of all its items, so it runs only in idle time, a slice of 24 items
+between checks of the idle deadline: a turn first seen during a fast scroll is recorded while it is
+still rendered, without taking a scroll frame (a seek press measures anything still waiting). A turn
+that is skipped or changes part-way through is dropped or started again. A turn coming back into
+view is measured again only if its record was dropped or replaced, or if the turn changed since
+(a DOM, size or window-width change); a remounted copy of a recorded message with the recorded turn,
+row and block sizes adopts the record without measuring. Nothing is measured while seek, cv and
+layout are all off.
 
 Seen text uses those recorded positions at half opacity. Display math becomes a single line of TeX
-in a placeholder of the recorded height. Stored geometry from a previous visit also counts as opened.
+in a placeholder of the recorded height, capped by the same TeX-row limit for rows stored by
+earlier builds. Stored geometry from a previous visit also counts as opened.
 A question without measured or stored layout previews from its
 beginning, with a bottom fade, and releasing lands at that question's start below the header.
 The history rail applies its normal lit band to the preview geometry through a `butter-seek-state`
