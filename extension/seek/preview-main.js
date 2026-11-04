@@ -4,6 +4,23 @@
     layoutCheck = globalThis.__butterLayoutCheck;
   if (!core) return;
   const S = { v: 2, events: [], updates: [], sessions: [], presses: [], active: false };
+  let seekFacts = {},
+    statusPath = location.pathname;
+  document.addEventListener('butter-status-request', () => {
+    if (statusPath !== location.pathname) {
+      statusPath = location.pathname;
+      seekFacts = {};
+    }
+    document.dispatchEvent(
+      new CustomEvent('butter-status-response', {
+        detail: JSON.stringify({ seek: seekFacts }),
+      }),
+    );
+  });
+  const seekOutcome = (facts) => {
+    statusPath = location.pathname;
+    seekFacts = facts;
+  };
   const conversations = new Map();
   let host,
     layer,
@@ -119,6 +136,7 @@
       queueMicrotask(() => globalThis.__butterLayoutCache?.setTexts(c, texts(c).byId));
   });
   document.addEventListener('butter-layout-account-change', () => {
+    seekOutcome({});
     conversations.clear();
     if (active || pendingCommit) finish('account-invalidation', false);
   });
@@ -543,12 +561,7 @@
       return;
     }
     const prep = prepare(s);
-    if (!prep) {
-      act.cancel();
-      candidate = null;
-      event('no-model');
-      return;
-    }
+    if (!prep) event('no-model');
     candidate = {
       t: performance.now(),
       sc: s,
@@ -558,7 +571,7 @@
       conv: conv(),
     };
     act.press({ t: candidate.t, kind: c.kind, scrollTop: s.scrollTop, selection: selection() });
-    event('candidate', { kind: c.kind, prepMs: prep.prepMs, layoutTurns: prep.layoutTurns });
+    event('candidate', { kind: c.kind, prepMs: prep?.prepMs, layoutTurns: prep?.layoutTurns });
   }
   function activate(e) {
     const c = candidate,
@@ -623,8 +636,22 @@
             candidate = null;
             return;
           }
+          seekOutcome({ exercised: true, engaged: false, failed: false });
+          if (!candidate.prep) {
+            seekFacts.failed = true;
+            act.cancel();
+            candidate = null;
+            return;
+          }
           e.stopImmediatePropagation();
-          activate(e);
+          try {
+            activate(e);
+          } catch {
+            seekFacts.failed = true;
+            finish('activation-failure', false);
+            act.cancel();
+            candidate = null;
+          }
         } else if (r === 'reject') {
           event('reject', { why: act.detail?.reason });
           candidate = null;
@@ -1046,6 +1073,13 @@
         } catch (err) {
           a.swapError = String(err);
         }
+        const failed =
+          a.timedOut || !Number.isFinite(a.landingErrorPx) || Math.abs(a.landingErrorPx) > 4;
+        seekOutcome({
+          exercised: true,
+          failed,
+          engaged: !failed && ['pointerup', 'mouseup'].includes(a.reason),
+        });
         event('reveal', { ms: now - a.end, error: a.landingErrorPx, timedOut: a.timedOut });
       } else requestAnimationFrame(ready);
     };

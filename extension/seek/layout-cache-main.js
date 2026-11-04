@@ -157,7 +157,22 @@
       account = null,
       diskEnabled = false,
       generation,
-      scope = 0;
+      scope = 0,
+      outcome = 'idle';
+    document.addEventListener('butter-status-request', () => {
+      const exercised = diskEnabled && !!account && outcome !== 'idle';
+      document.dispatchEvent(
+        new CustomEvent('butter-status-response', {
+          detail: JSON.stringify({
+            layout: {
+              exercised,
+              engaged: exercised && outcome === 'ok',
+              failed: exercised && outcome === 'fail',
+            },
+          }),
+        }),
+      );
+    });
     let loadedConv = null,
       loading = null,
       loadSerial = 0;
@@ -180,6 +195,7 @@
       });
     const retire = () => {
       scope++;
+      outcome = 'idle';
       loadSerial++;
       loading = null;
       memory.clear();
@@ -203,6 +219,7 @@
         S.loads++;
         if (result.error || !Number.isSafeInteger(result.generation) || result.generation < 0) {
           S.ready = false;
+          outcome = 'fail';
           S.errors++;
           return;
         }
@@ -212,6 +229,7 @@
         generation = result.generation;
         loadedConv = conv;
         S.ready = true;
+        outcome = 'ok';
         S.bytes = [...memory.values()].reduce((n, x) => n + ButterLayoutCodec.bytes(x), 0);
       })().finally(() => {
         if (sequence === loadSerial) loading = null;
@@ -416,7 +434,9 @@
             generation,
             records: writes,
           });
+          if (token !== scope || owner !== account || !diskEnabled) return;
           if (result.error) {
+            outcome = 'fail';
             S.errors++;
             if (token === scope && owner === account && diskEnabled) {
               for (const [turn, queued] of batch)
@@ -426,6 +446,7 @@
           } else if (token === scope && owner === account && diskEnabled) {
             for (const x of writes) memory.set(ButterLayoutCodec.key(x), x);
             S.writes += writes.length;
+            outcome = 'ok';
           }
         }
         S.bytes = [...memory.values()].reduce((n, x) => n + ButterLayoutCodec.bytes(x), 0);

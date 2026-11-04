@@ -1,12 +1,12 @@
 // Shared, pure settings normalization and probe classification. No browser APIs here.
 (() => {
-  const keys = ['container', 'cv', 'throttle', 'older', 'rail', 'seek'];
+  const keys = ['container', 'cv', 'throttle', 'older', 'rail', 'seek', 'layout'];
   const normalize = (value) => ({
     ...value,
     enabled: value?.enabled !== false,
     opts: {
       ...value?.opts,
-      ...Object.fromEntries([...keys, 'layout'].map((k) => [k, value?.opts?.[k] !== false])),
+      ...Object.fromEntries(keys.map((k) => [k, value?.opts?.[k] !== false])),
     },
     lang: value?.lang === 'zh' ? 'zh' : 'en',
   });

@@ -100,6 +100,8 @@
         failed: main.throttle?.available === false || main.throttle?.matched === false,
       },
       older: main.older,
+      seek: main.seek,
+      layout: main.layout,
       rail: {
         exercised: railExpected && now - chatSince > 5000,
         engaged: !!main.rail?.parsed && railReady,

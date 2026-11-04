@@ -527,7 +527,16 @@ test('WARM dispatch refreshes invalidated stored fingerprints before restore and
       __butterAnchorVisibleSwap: () => ({ items: 0 }),
     });
     f.ctx.performance.now = () => now;
-    f.ctx.document.dispatchEvent = () => {};
+    let probeFacts = {};
+    f.ctx.CustomEvent = class {
+      constructor(type, options = {}) {
+        this.type = type;
+        this.detail = options.detail;
+      }
+    };
+    f.ctx.document.dispatchEvent = (e) => {
+      if (e.type === 'butter-status-response') Object.assign(probeFacts, JSON.parse(e.detail));
+    };
     f.sc.isConnected = true;
     f.sc.dispatchEvent = () => {
       dispatched = true;
@@ -588,12 +597,19 @@ test('WARM dispatch refreshes invalidated stored fingerprints before restore and
       ),
       f.ctx,
     );
-    f.ctx.finishForTest('test');
+    f.ctx.finishForTest('pointerup');
     for (let i = 0; frames.length && i < 20; i++) {
       now += 16;
       frames.shift()();
     }
     assert.ok(f.ctx.testActive.readable, 'Readiness still completes');
+    f.event('butter-status-request');
+    const status = require('../extension/shared/status.js');
+    assert.equal(
+      status.classify(probeFacts).seek,
+      unstable ? 'fail' : 'ok',
+      'A normal release engages seek only when its landing succeeds',
+    );
     assert.equal(selections, 1, 'Warm and stored landings both select a visible anchor');
     assert.equal(
       lookups,

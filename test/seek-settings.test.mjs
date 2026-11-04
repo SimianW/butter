@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import status from '../extension/shared/status.js';
+import statusCore from '../extension/seek/core-main.js';
 
 test('seek follows the master and seek switches independently of the rail and other feature options', async () => {
   const attrs = new Map();
@@ -137,4 +138,80 @@ test('seek off marker prevents a trusted thumb press from preparing preview', ()
   for (const fn of events.pointerdown || [])
     fn({ type: 'pointerdown', timeStamp: 200, isTrusted: true, button: 0, target: {} });
   assert.equal(ctx.window.__seekDump().presses.length, 1);
+});
+
+test('a held thumb drag without a preview model fails, while clicks and rejected gestures stay neutral', () => {
+  const events = {},
+    emitted = [];
+  const on = (name, fn) => (events[name] ||= []).push(fn);
+  const sc = {
+    clientHeight: 500,
+    offsetHeight: 500,
+    clientWidth: 700,
+    offsetWidth: 700,
+    scrollHeight: 3000,
+    scrollTop: 100,
+    clientLeft: 0,
+    matches: () => true,
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    getBoundingClientRect: () => ({ left: 0, top: 0, width: 700, height: 500 }),
+  };
+  const ctx = {
+    __butterSeekCore: statusCore,
+    document: {
+      documentElement: {
+        hasAttribute: () => false,
+        getAttribute: () => '',
+        classList: { contains: () => false },
+      },
+      addEventListener: on,
+      dispatchEvent: (e) => emitted.push(e),
+    },
+    addEventListener: on,
+    window: {},
+    location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
+    performance: { now: () => 100 },
+    getSelection: () => null,
+    getComputedStyle: () => ({ direction: 'ltr' }),
+    setInterval: () => 1,
+    CustomEvent: class {
+      constructor(type, o = {}) {
+        this.type = type;
+        this.detail = o.detail;
+      }
+    },
+  };
+  vm.runInNewContext(
+    fs.readFileSync(new URL('../extension/seek/preview-main.js', import.meta.url), 'utf8'),
+    ctx,
+  );
+  const fire = (name, extra = {}) =>
+    (events[name] || []).forEach((fn) => fn({ type: name, timeStamp: 100, target: sc, ...extra }));
+  const probe = () => {
+    fire('butter-status-request');
+    return status.classify(JSON.parse(emitted.at(-1)?.detail || '{}')).seek;
+  };
+  const press = () =>
+    fire('pointerdown', {
+      isTrusted: true,
+      button: 0,
+      pointerType: 'mouse',
+      clientX: 698,
+      clientY: 100,
+    });
+  assert.equal(probe(), 'idle');
+  press();
+  fire('pointerup');
+  assert.equal(probe(), 'idle');
+  press();
+  fire('wheel');
+  sc.scrollTop += 100;
+  fire('scroll');
+  assert.equal(probe(), 'idle');
+  press();
+  sc.scrollTop += 100;
+  fire('scroll');
+  fire('pointerup');
+  assert.equal(probe(), 'fail');
 });

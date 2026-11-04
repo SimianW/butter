@@ -252,3 +252,44 @@ test('failed loads retain bounded measurements and recover on the next source up
   assert.equal(Object.keys(f.api.records(f.sc)).length, 256);
   assert.equal(f.disk.size, 256);
 });
+
+test('layout evidence stays neutral until exercised, fails on unavailable storage, and clears on recovery', async () => {
+  const f = fixture({ known: false });
+  const status = require('../extension/shared/status.js');
+  let facts;
+  const dispatch = f.ctx.document.dispatchEvent;
+  f.ctx.document.dispatchEvent = (e) => {
+    if (e.type === 'butter-status-response') Object.assign(facts, JSON.parse(e.detail));
+    dispatch(e);
+  };
+  const probe = () => {
+    facts = {};
+    f.event('butter-status-request');
+    return status.classify(facts).layout;
+  };
+  assert.equal(probe(), 'idle');
+  await new Promise(setImmediate);
+  const message = f.storage.worker.message;
+  let available = false;
+  f.storage.worker.message = (m) =>
+    !available ? Promise.resolve({ error: 'layout-storage' }) : message(m);
+  await f.api.setTexts(conv, texts);
+  assert.equal(probe(), 'idle', 'unknown account never fails');
+  f.storage.account();
+  await f.api.setTexts(conv, texts);
+  assert.equal(probe(), 'fail');
+  let failures = status.updateFailures({}, status.classify(facts));
+  assert.deepEqual(failures, { layout: { layout: true } });
+  available = true;
+  await f.api.setTexts(conv, texts);
+  assert.equal(probe(), 'ok');
+  failures = status.updateFailures(failures, status.classify(facts));
+  assert.deepEqual(failures, {});
+  f.api.record('t', record);
+  available = false;
+  await f.api.flush();
+  assert.equal(probe(), 'fail', 'a failed write supersedes an earlier successful load');
+  available = true;
+  await f.api.flush();
+  assert.equal(probe(), 'ok');
+});
