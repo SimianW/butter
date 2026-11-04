@@ -30,31 +30,8 @@ const record = {
 };
 function fixture() {
   const events = {},
-    disk = new Map(),
     resizeObservers = [];
-  const tx = () => {
-    const t = {};
-    t.objectStore = () => ({
-      getAll() {
-        const r = {};
-        queueMicrotask(() => r.onsuccess());
-        Object.defineProperty(r, 'result', { get: () => [...disk.values()] });
-        return r;
-      },
-      put(x) {
-        disk.set(x.key, x);
-        queueMicrotask(() => t.oncomplete());
-      },
-      delete(k) {
-        disk.delete(k);
-      },
-      clear() {
-        disk.clear();
-        queueMicrotask(() => t.oncomplete());
-      },
-    });
-    return t;
-  };
+
   let restoring = false,
     prematureReads = 0;
   class Element {
@@ -101,7 +78,6 @@ function fixture() {
     devicePixelRatio: 1,
     Element,
     performance: { now: () => 1 },
-    __butterLayoutOptions: { storage: true },
     __butterLayoutCheck: layoutCheck,
     __butterSeekCore: seek,
     TextEncoder,
@@ -123,14 +99,8 @@ function fixture() {
       observe() {}
     },
     getComputedStyle: () => ({ font: '16px system-ui' }),
-    indexedDB: {
-      open() {
-        const r = { result: { transaction: tx } };
-        queueMicrotask(() => r.onsuccess());
-        return r;
-      },
-    },
   };
+  const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
   ctx.window = ctx;
   vm.createContext(ctx);
   const load = (name) =>
@@ -141,21 +111,21 @@ function fixture() {
       ),
       ctx,
     );
-  load('seek/layout-store-main');
-  load('seek/height-cache-main');
+  load('seek/layout-cache-main');
+  storage.account();
   return {
     ctx,
     sc,
     turn,
     block,
-    disk,
+    disk: storage.worker.disk,
     load,
     resizeObservers,
     get prematureReads() {
       return prematureReads;
     },
-    store: ctx.__butterLayoutStore,
-    cache: ctx.__butterHeightCache,
+    store: ctx.__butterLayoutCache,
+    cache: ctx.__butterLayoutCache,
     event: (name, detail) => {
       for (const fn of events[name] || []) fn({ detail });
     },

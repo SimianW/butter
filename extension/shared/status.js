@@ -3,7 +3,7 @@
   const keys = ['container', 'cv', 'throttle', 'older', 'rail'];
   const normalize = (value) => ({
     enabled: value?.enabled !== false,
-    opts: Object.fromEntries(keys.map((k) => [k, value?.opts?.[k] !== false])),
+    opts: Object.fromEntries([...keys, 'layout'].map((k) => [k, value?.opts?.[k] !== false])),
     lang: value?.lang === 'zh' ? 'zh' : 'en',
   });
   const classify = (facts = {}, value) => {

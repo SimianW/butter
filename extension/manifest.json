@@ -15,6 +15,7 @@
       "matches": ["https://chatgpt.com/*"],
       "css": ["stream/containment.css"],
       "js": [
+        "storage/layout-bridge.js",
         "shared/status.js",
         "shared/settings.js",
         "seek/seek-meta.js",
@@ -32,20 +33,23 @@
         "seek/core-main.js",
         "seek/layout-check-main.js",
         "seek/anchor-main.js",
-        "seek/layout-store-main.js",
-        "seek/height-cache-main.js",
+        "seek/layout-codec.js",
+        "seek/layout-cache-main.js",
         "seek/preview-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"
     }
   ],
-  "permissions": ["storage"],
+  "permissions": ["storage", "unlimitedStorage"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
     }
+  },
+  "background": {
+    "service_worker": "storage/layout-worker.js"
   }
 }

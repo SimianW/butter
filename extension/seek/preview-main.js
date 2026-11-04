@@ -86,7 +86,7 @@
     }
     conversations.set(c, { messages: msgs, hasPrev: !!j.page_info?.has_previous_page });
     const source = texts(c).byId;
-    queueMicrotask(() => globalThis.__butterLayoutStore?.setTexts(c, source));
+    queueMicrotask(() => globalThis.__butterLayoutCache?.setTexts(c, source));
     while (conversations.size > 2) conversations.delete(conversations.keys().next().value);
     if (active?.conv === c) {
       event('data-during-hold', { before });
@@ -110,6 +110,15 @@
     const parent = data.messages.findIndex((x) => x.id === m.parent);
     if (parent >= 0) data.messages = data.messages.slice(0, parent + 1);
     data.messages.push({ id: m.item.id, role: 'user', text: m.item.q || '' });
+  });
+  document.addEventListener('butter-layout-account-ready', () => {
+    const c = conv();
+    if (conversations.has(c))
+      queueMicrotask(() => globalThis.__butterLayoutCache?.setTexts(c, texts(c).byId));
+  });
+  document.addEventListener('butter-layout-account-change', () => {
+    conversations.clear();
+    if (active || pendingCommit) finish('account-invalidation', false);
   });
   document.addEventListener('butter-seek-write', (e) => {
     conversations.delete(e.detail.conv || conv());
@@ -166,7 +175,7 @@
     const t0 = performance.now(),
       tx = texts(),
       fib = measured(s),
-      cache = globalThis.__butterHeightCache;
+      cache = globalThis.__butterLayoutCache;
     const ids = fib?.ids || Object.keys(tx.byId);
     if (!ids.length) return null;
     const sr = s.getBoundingClientRect(),
@@ -183,15 +192,7 @@
         if (g >= 0 && g < 64) gap = g;
       }
     }
-    const stored = globalThis.__butterLayoutStore?.records(s) || {};
-    const records = {};
-    if (cache)
-      for (const id of ids) {
-        const e = cache.get(id, s);
-        if (e) records[id] = e;
-      }
-    for (const [id, r] of Object.entries(stored)) if (!records[id]) records[id] = r;
-    cache?.adopt?.(stored, s);
+    const { records, storedTurns } = cache?.prepare(s, ids) || { records: {}, storedTurns: 0 };
     const model = core.buildModel({
       ids,
       measured: fib?.heights || {},
@@ -213,7 +214,7 @@
       model,
       previewModel,
       flat,
-      storedTurns: Object.keys(stored).length,
+      storedTurns,
       maxTop: s.scrollHeight - s.clientHeight,
       hasPrev: tx.hasPrev,
       gap,
@@ -1199,7 +1200,7 @@
       scriptMsMax: q(js, 1),
       eventToPaintMsP95: q(lat, 0.95),
       eventToPaintMsMax: q(lat, 1),
-      storage: globalThis.__butterLayoutStore?.dump(),
+      storage: globalThis.__butterLayoutCache?.dump(),
       cache: window.__heightCacheDump?.().stats
         ? (({
             observed,
@@ -1281,7 +1282,7 @@
     const ids = (s && measured(s)?.ids) || [];
     return {
       ids: ids.length,
-      ...(globalThis.__butterHeightCache?.coverage(ids) ?? {
+      ...(globalThis.__butterLayoutCache?.coverage(ids) ?? {
         covered: [],
         missing: ids.map((id) => ({ id, why: 'no-cache-module' })),
       }),

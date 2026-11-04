@@ -200,6 +200,24 @@
     return result;
   };
 
+  // Passive identity only: select user.id, hash immediately, never access credential fields.
+  let accountHash = null,
+    accountEpoch = 0;
+  const announceAccount = () =>
+    document.dispatchEvent(new CustomEvent('butter-account', { detail: accountHash }));
+  document.addEventListener('butter-account-request', announceAccount);
+  const observeAccount = async (j, epoch, pathname) => {
+    const id = pathname === '/api/auth/session' ? j?.user?.id : j?.id;
+    const next =
+      typeof id === 'string' && id.length > 0
+        ? [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+            .map((n) => n.toString(16).padStart(2, '0'))
+            .join('')
+        : null;
+    if (epoch !== accountEpoch) return;
+    accountHash = next;
+    announceAccount();
+  };
   let seekEpoch = 0;
   const of = window.fetch;
   window.fetch = function (input, init) {
@@ -243,6 +261,18 @@
       const method = (
         init?.method ?? (input instanceof Request ? input.method : 'GET')
       ).toUpperCase();
+      const identityURL = new URL(url, location.href);
+      if (
+        method === 'GET' &&
+        identityURL.origin === location.origin &&
+        ['/backend-api/me', '/api/auth/session'].includes(identityURL.pathname)
+      ) {
+        const epoch = ++accountEpoch;
+        res
+          .then((r) => (r.ok ? r.clone().json() : null))
+          .then((j) => observeAccount(j, epoch, identityURL.pathname))
+          .catch(() => {});
+      }
       const m = method === 'GET' && PAGE.exec(url);
       if (m)
         res

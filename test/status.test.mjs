@@ -25,7 +25,7 @@ test('individual and master switches override engagement and failure', () => {
 test('partial and missing storage values keep all defaults; English is default', () => {
   assert.deepEqual(status.normalize(), {
     enabled: true,
-    opts: Object.fromEntries(status.keys.map((k) => [k, true])),
+    opts: Object.fromEntries([...status.keys, 'layout'].map((k) => [k, true])),
     lang: 'en',
   });
   assert.equal(status.normalize({ lang: 'fr', opts: { rail: false } }).lang, 'en');

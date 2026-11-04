@@ -69,7 +69,11 @@ function fixture() {
   });
   item.closest = () => turn;
   sc.querySelectorAll = () => [turn];
-  const doc = { addEventListener: (n, fn) => (listeners[n] = fn), querySelectorAll: () => [sc] };
+  const doc = {
+    scripts: [],
+    addEventListener: (n, fn) => (listeners[n] = fn),
+    querySelectorAll: () => [sc],
+  };
   const context = {
     document: doc,
     location: { pathname: '/g/g-p-project/c/00000000-0000-0000-0000-000000000000' },
@@ -113,10 +117,15 @@ function fixture() {
       textAlign: 'left',
     }),
   };
+  context.crypto = require('node:crypto').webcrypto;
+  context.TextEncoder = TextEncoder;
+  context.setTimeout = () => 1;
+  context.clearTimeout = () => {};
+  context.queueMicrotask = queueMicrotask;
   context.window = context;
   vm.createContext(context);
   vm.runInContext(
-    fs.readFileSync(require.resolve('../extension/seek/height-cache-main.js'), 'utf8'),
+    fs.readFileSync(require.resolve('../extension/seek/layout-cache-main.js'), 'utf8'),
     context,
   );
   const flush = () => {
@@ -143,7 +152,7 @@ test('real recorder observes blocks inserted after the empty turn, before a late
   const f = fixture();
   f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
   f.flush();
-  assert.equal(f.context.__butterHeightCache.get('a'), null);
+  assert.equal(f.context.__butterLayoutCache.get('a'), null);
   f.blocks.push(f.item);
   f.mutation([{ target: f.turn, addedNodes: [f.item], removedNodes: [] }]);
   assert.ok(
@@ -156,15 +165,15 @@ test('real recorder observes blocks inserted after the empty turn, before a late
   ]);
   f.flush();
   assert.equal(
-    f.context.__butterHeightCache.get('a')?.blocks[0],
+    f.context.__butterLayoutCache.get('a')?.blocks[0],
     26,
     JSON.stringify(f.context.__heightCacheDump()),
   );
-  assert.equal(f.context.__butterHeightCache.get('a').turnOffset, 8);
-  assert.equal(f.context.__butterHeightCache.get('a').turnH, 480);
+  assert.equal(f.context.__butterLayoutCache.get('a').turnOffset, 8);
+  assert.equal(f.context.__butterLayoutCache.get('a').turnH, 480);
   f.resize([{ target: f.item, contentRect: { height: 80 } }]);
   f.flush();
-  assert.equal(f.context.__butterHeightCache.get('a').blocks[0], 80);
+  assert.equal(f.context.__butterLayoutCache.get('a').blocks[0], 80);
 });
 test('real recorder preserves the last positive size across zero/skipped notifications and pending math', () => {
   const f = fixture();
@@ -177,15 +186,15 @@ test('real recorder preserves the last positive size across zero/skipped notific
   f.flush();
   f.resize([{ target: f.item, contentRect: { height: 0 } }]);
   f.flush();
-  assert.equal(f.context.__butterHeightCache.get('a').blocks[0], 26);
+  assert.equal(f.context.__butterLayoutCache.get('a').blocks[0], 26);
   f.c.math = false;
   f.mutation([{ target: f.turn, addedNodes: [], removedNodes: [] }]);
   f.flush();
-  assert.equal(f.context.__butterHeightCache.get('a').blocks[0], 26);
+  assert.equal(f.context.__butterLayoutCache.get('a').blocks[0], 26);
   f.c.math = true;
   f.resize([{ target: f.item, contentRect: { height: 90 } }]);
   f.flush();
-  assert.equal(f.context.__butterHeightCache.get('a').blocks[0], 90);
+  assert.equal(f.context.__butterLayoutCache.get('a').blocks[0], 90);
 });
 test('removed streamed blocks stop being observed and can be observed again if reinserted', () => {
   const f = fixture();
@@ -211,7 +220,7 @@ test('restore applies cached sizes before any native geometry getter is read', (
     { target: f.item, contentRect: { height: 26 } },
   ]);
   f.flush();
-  f.context.__butterHeightCache.get('a').removed = true;
+  f.context.__butterLayoutCache.get('a').removed = true;
   f.nativeReads.length = 0;
   const bubble = Object.assign(new f.Element(), {
     firstElementChild: { classList: { contains: () => true } },
@@ -259,7 +268,7 @@ test('the recorder keeps inline and display TeX spans with measured display heig
     { target: f.item, contentRect: { height: 80 } },
   ]);
   f.flush();
-  const item = f.context.__butterHeightCache.get('a').items[0];
+  const item = f.context.__butterLayoutCache.get('a').items[0];
   assert.equal(item.text, 'value x^2\n\\frac{a}{b}');
   assert.equal(item.math.length, 2);
   assert.equal(item.text.slice(item.math[0].start, item.math[0].end), 'x^2');
@@ -290,7 +299,7 @@ test('height cache uses the shared fingerprint and preserves checkpoint width va
     f.context.innerWidth = vw;
     f.resize([{ target: f.turn, contentRect: { height: 500 } }]);
     f.flush();
-    const entry = f.context.__butterHeightCache.get('a');
+    const entry = f.context.__butterLayoutCache.get('a');
     assert.equal(entry.vw, vw);
     assert.equal(entry.sw, 768);
     assert.deepEqual(calls.at(-1), { vw, sw: 768 });

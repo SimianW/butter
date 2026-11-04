@@ -4,35 +4,10 @@ const test = require('node:test'),
   fs = require('node:fs'),
   native = require('node:crypto').webcrypto;
 const core = require('../extension/seek/layout-check-main.js');
-function fixture() {
+function fixture({ known = true } = {}) {
   const events = {},
-    disk = new Map(),
-    invalidated = [],
     control = { hold: false, release: null };
-  const tx = () => {
-    const t = {};
-    t.objectStore = () => ({
-      getAll() {
-        const r = {};
-        queueMicrotask(() => r.onsuccess?.());
-        Object.defineProperty(r, 'result', { get: () => [...disk.values()] });
-        return r;
-      },
-      put(x) {
-        disk.set(x.key, x);
-        queueMicrotask(() => t.oncomplete?.());
-      },
-      delete(k) {
-        disk.delete(k);
-        queueMicrotask(() => t.oncomplete?.());
-      },
-      clear() {
-        disk.clear();
-        queueMicrotask(() => t.oncomplete?.());
-      },
-    });
-    return t;
-  };
+
   const sc = { clientWidth: 1258, clientHeight: 900, querySelector: () => ({}) };
   const document = {
     scripts: [],
@@ -52,9 +27,11 @@ function fixture() {
     location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
     innerWidth: 1599,
     devicePixelRatio: 1,
-    __butterLayoutOptions: { storage: true },
+    __butterSeekCore: require('../extension/seek/core-main.js'),
+    Element: class {},
+    requestAnimationFrame: () => 1,
+    performance: { now: () => 1 },
     __butterLayoutCheck: core,
-    __butterHeightCache: { invalidate: (c) => invalidated.push(c) },
     __seek: { active: false },
     TextEncoder,
     Map,
@@ -82,29 +59,24 @@ function fixture() {
         },
       },
     },
-    indexedDB: {
-      open() {
-        const r = { result: { transaction: tx } };
-        queueMicrotask(() => r.onsuccess());
-        return r;
-      },
-    },
   };
+  const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
   ctx.window = ctx;
   vm.createContext(ctx);
   vm.runInContext(
     fs.readFileSync(
-      require('node:path').join(__dirname, '../extension/seek/layout-store-main.js'),
+      require('node:path').join(__dirname, '../extension/seek/layout-cache-main.js'),
       'utf8',
     ),
     ctx,
   );
+  if (known) storage.account();
   return {
     ctx,
-    api: ctx.__butterLayoutStore,
+    storage,
+    api: ctx.__butterLayoutCache,
     sc,
-    disk,
-    invalidated,
+    disk: storage.worker.disk,
     control,
     event: (name, detail) => {
       for (const fn of events[name] || []) fn({ detail });
@@ -149,7 +121,7 @@ test('mutation start invalidates stored and adopted geometry until fresh JSON ar
   f.api.record('t', record);
   await f.api.flush();
   f.event('butter-seek-write', { conv });
-  assert.deepEqual(f.invalidated, [conv]);
+  assert.equal(f.api.dump().rejected['mutation-invalidated'], 1);
   assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
   await f.api.setTexts(conv, texts);
   assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
@@ -184,4 +156,72 @@ test('layout store preserves the checkpoint fingerprint bytes', () => {
     '{' +
       '"schema":1,"sw":1258,"vw":1599,"dpr":1,"font":"16px system-ui","column":null,"theme":"[\\"light\\",null,null]","build":""}',
   );
+});
+
+test('MAIN cache performs no disk access until a passive account identity is known', async () => {
+  const f = fixture({ known: false });
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(f.storage.worker.counters.opens, 0);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+  f.storage.account();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.ok(f.disk.size > 0);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1);
+});
+test('account switches retire adopted entries and pending writes without crossing partitions', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.api.adopt(f.api.records(f.sc), f.sc);
+  assert.ok(f.api.get('t'));
+  f.api.record('t', record);
+  f.event('butter-account', 'b'.repeat(64));
+  assert.equal(f.api.get('t'), null);
+  await f.api.flush();
+  assert.equal(f.disk.size, 1);
+  await f.api.setTexts(conv, texts);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(f.disk.size, 2);
+  f.event('butter-account', 'a'.repeat(64));
+  await f.api.setTexts(conv, texts);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1);
+  assert.equal(new Set([...f.disk.values()].map((x) => x.account)).size, 2);
+});
+test('layout-off retires disk-backed entries but preserves the in-session warm cache', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.api.adopt(f.api.records(f.sc), f.sc);
+  f.api.adopt({ warm: { ...record, conv, ready: true } }, f.sc);
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  const counts = { ...f.storage.worker.counters };
+  assert.equal(f.api.get('t'), null);
+  assert.ok(f.api.get('warm'));
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+  assert.deepEqual(f.storage.worker.counters, counts);
+});
+
+test('merged prepare synchronously uses prefetched memory with no disk reads at drag time', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  const reads = f.storage.worker.counters.reads,
+    result = f.api.prepare(f.sc, ['t']);
+  assert.equal(typeof result.then, 'undefined');
+  assert.equal(result.storedTurns, 1);
+  assert.equal(result.records.t.items[0].text, 'answer');
+  assert.equal(f.storage.worker.counters.reads, reads);
+  f.ctx.getComputedStyle = () => ({ font: '20px serif' });
+  assert.equal(Object.keys(f.api.prepare(f.sc, ['t']).records).length, 0);
 });
