@@ -106,6 +106,11 @@
         failed: !main.rail?.parsed,
       },
     };
-    respond({ states: classify(facts, settings) });
+    const states = classify(facts, settings);
+    chrome.runtime.sendMessage({ type: 'butter-status-record', states }).then(
+      (failures) => respond({ states, failures }),
+      () => respond({ states }),
+    );
+    return true;
   });
 })();

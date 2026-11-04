@@ -34,8 +34,8 @@ beginning, with a bottom fade, and releasing lands at that question's start belo
 The history rail applies its normal lit band to the preview geometry through a `butter-seek-state`
 document event, excluding small tails behind the header or composer. Its existing card follows the
 lit question that fills most of the band and shows the question number and then loading progress. Preview
-continues to work with the rail switched off. It follows Butter's main switch and has no separate
-popup setting.
+continues to work with the rail switched off. It follows Butter's main switch and the popup's Smoother scrolling group (`opts.seek`),
+independently of the question rail.
 
 On release, the last native movement is coalesced and ChatGPT receives one destination scroll.
 The real turns remain transparent while the destination loads, including behind the header and

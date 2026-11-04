@@ -1,5 +1,19 @@
 // Extension-origin IndexedDB. A single queue serializes clears, LRU updates and quota eviction.
-importScripts('../seek/layout-codec.js');
+importScripts('../seek/layout-codec.js', '../shared/status.js');
+let statusQueue = Promise.resolve();
+chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if (sender.id !== chrome.runtime.id || message?.type !== 'butter-status-record') return;
+  statusQueue = statusQueue
+    .catch(() => {})
+    .then(async () => {
+      const { butterFailures } = await chrome.storage.session.get('butterFailures');
+      const failures = ButterStatus.updateFailures(butterFailures, message.states);
+      await chrome.storage.session.set({ butterFailures: failures });
+      return failures;
+    });
+  statusQueue.then(respond, () => respond({}));
+  return true;
+});
 const codec = ButterLayoutCodec;
 const TTL = 30 * 24 * 60 * 60 * 1000,
   CAP = 50_000_000;

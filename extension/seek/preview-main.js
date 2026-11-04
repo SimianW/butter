@@ -22,7 +22,9 @@
     S.events.push({ kind, t: performance.now(), ...more });
     if (S.events.length > 2000) S.events.splice(0, 500);
   };
-  const disabled = () => document.documentElement?.hasAttribute('data-butter-disabled');
+  const disabled = () =>
+    document.documentElement?.hasAttribute('data-butter-disabled') ||
+    document.documentElement?.getAttribute('data-butter-off')?.split(/\s+/).includes('seek');
   const railState = (a, state) => {
     const destination =
       a && core.previewQuestion(a.prep.model, a.lastTop ?? a.startTop, a.insetTop);
