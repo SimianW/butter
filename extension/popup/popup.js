@@ -1,154 +1,112 @@
-// Translations and Lucide SVG paths from the approved popup mockup (lucide-static 1.66.0).
-const ICON = '../icons/icon-128.png';
-const IC = {
-  sparkles:
-    '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/> <path d="M20 2v4"/> <path d="M22 4h-4"/> <circle cx="4" cy="20" r="2"/>',
+const I = {
+  zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  scroll: '<path d="M12 2v20"/><path d="m8 18 4 4 4-4"/><path d="m8 6 4-4 4 4"/>',
+  list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
   alert:
-    '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/> <path d="M12 9v4"/> <path d="M12 17h.01"/>',
-  pause:
-    '<circle cx="12" cy="12" r="10"/> <line x1="10" x2="10" y1="15" y2="9"/> <line x1="14" x2="14" y1="15" y2="9"/>',
-  chat: '<path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/> <path d="M7 11h10"/> <path d="M7 15h6"/> <path d="M7 7h8"/>',
-  right: '<path d="m9 18 6-6-6-6"/>',
-  left: '<path d="m15 18-6-6 6-6"/>',
-  log: '<path d="M15 12h-5"/> <path d="M15 8h-5"/> <path d="M19 17V5a2 2 0 0 0-2-2H4"/> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/>',
-  ext: '<path d="M15 3h6v6"/> <path d="M10 14 21 3"/> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
-  lang: '<path d="m5 8 6 6"/> <path d="m4 14 6-6 2-3"/> <path d="M2 5h12"/> <path d="M7 2h1"/> <path d="m22 22-5-10-5 10"/> <path d="M14 18h6"/>',
-  ok: '<circle cx="12" cy="12" r="10"/> <path d="m16 9-5.5 5.5L8 12"/>',
-  fail: '<circle cx="12" cy="12" r="10"/> <path d="m15 9-6 6"/> <path d="m9 9 6 6"/>',
-  wait: '<path d="M10.1 2.182a10 10 0 0 1 3.8 0"/> <path d="M13.9 21.818a10 10 0 0 1-3.8 0"/> <path d="M17.609 3.721a10 10 0 0 1 2.69 2.7"/> <path d="M2.182 13.9a10 10 0 0 1 0-3.8"/> <path d="M20.279 17.609a10 10 0 0 1-2.7 2.69"/> <path d="M21.818 10.1a10 10 0 0 1 0 3.8"/> <path d="M3.721 6.391a10 10 0 0 1 2.7-2.69"/> <path d="M6.391 20.279a10 10 0 0 1-2.69-2.7"/>',
-  off: '<path d="m2 2 20 20"/> <path d="M8.35 2.69A10 10 0 0 1 21.3 15.65"/> <path d="M19.08 19.08A10 10 0 1 1 4.92 4.92"/>',
+    '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
-const svg = (k) => `<svg class="i" viewBox="0 0 24 24">${IC[k]}</svg>`;
-
+const svg = (k) => `<svg viewBox="0 0 24 24">${I[k]}</svg>`;
 const T = {
-  en: {
-    items: [
-      ['Faster long-chat rendering', 'Streamed updates no longer restyle the whole chat'],
-      ['Skip off-screen content', "Messages out of view aren't laid out"],
-      ['Stream throttle', 'Answers redraw every 250 ms, not every frame'],
-      ['Load history in small batches', "2 turns per request, so typing doesn't stall"],
-      ['Question rail', 'Slim rail on the right: hover to preview, click to jump'],
-    ],
-    chip: { ok: 'Working', fail: 'Broken', wait: 'Not yet checked', off: 'Off', paused: 'Paused' },
-    cards: {
-      ok: ['All 5 working', 'This chat is running smooth'],
-      warn: ['1 of 5 broken', 'ChatGPT may have changed · Details'],
-      paused: ['Butter is paused', 'ChatGPT runs as is'],
-      away: ['Open a ChatGPT chat', 'Butter checks each one on chatgpt.com'],
-    },
-    enable: 'Enable on ChatGPT',
-    hintOn: 'Turn off to restore ChatGPT instantly',
-    hintOff: 'Takes effect immediately',
-    settings: 'Status & settings',
-    changelog: 'Changelog',
-    opt: 'Optimizations',
-    general: 'General',
-    language: 'Language',
-    note: 'Checked live on the current ChatGPT tab. Not yet checked: nothing has exercised it yet, e.g. the stream throttle waits for an answer to stream.',
-    banner: 'Butter is paused. Switch changes apply when you resume.',
-  },
   zh: {
-    items: [
-      ['长对话渲染加速', '避免每次输出时重算整段对话的样式'],
-      ['屏幕外内容跳过渲染', '看不见的消息不参与排版'],
-      ['流式输出限频', '回答每 250 ms 刷新一次，而不是每帧'],
-      ['分批加载历史消息', '每次只加载 2 轮，加载时不卡输入'],
-      ['问题导航条', '右侧细条，悬停预览、点击跳转'],
-    ],
-    chip: { ok: '正常', fail: '已失效', wait: '待验证', off: '已关闭', paused: '已暂停' },
-    cards: {
-      ok: ['5 项优化全部正常', '当前 ChatGPT 对话很顺滑'],
-      warn: ['1 项优化已失效', 'ChatGPT 可能更新了页面 · 查看详情'],
-      paused: ['Butter 已暂停', 'ChatGPT 按原样运行'],
-      away: ['打开 ChatGPT 对话', '在 chatgpt.com 上即可检测各项优化'],
+    on: '启用 Butter',
+    st: {
+      ok: '已在当前对话生效',
+      away: '打开一个 ChatGPT 对话即可生效',
+      paused: '已暂停 · ChatGPT 按原样运行',
     },
-    enable: '在 ChatGPT 上启用',
-    hintOn: '关闭后 ChatGPT 立即恢复原样',
-    hintOff: '打开后立即生效',
-    settings: '检测与设置',
-    changelog: '更新日志',
-    opt: '优化项',
-    general: '通用',
-    language: '语言',
-    note: '实时检测当前 ChatGPT 标签页。待验证：还没遇到能确认它的场景，比如流式限频要等一次回答输出。',
-    banner: 'Butter 已暂停。可以先调整单项开关，恢复后生效。',
+    label: '让 ChatGPT 更顺',
+    warn: '<b>问题导航条暂时不可用。</b>ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。',
+    groups: [
+      ['zap', '回答生成时更顺', '长回答输出时页面不卡'],
+      ['scroll', '长对话滚动更顺', '拖动滚动条时先显示预览，松手再加载'],
+      ['list', '问题导航条', '右侧列出你问过的问题，点一下就跳过去'],
+      ['db', '记住长对话的布局', '再次打开时跳转更快，会占用一些存储空间'],
+    ],
+    clear: '清除',
+    confirm: '确定清除全部？',
+    cancel: '取消',
+    cleared: '已清除',
+    bad: '暂不可用',
+    log: '更新日志',
+  },
+  en: {
+    on: 'Enable Butter',
+    st: {
+      ok: 'Working in this chat',
+      away: 'Open a ChatGPT chat to start',
+      paused: 'Paused · ChatGPT runs as is',
+    },
+    label: 'Make ChatGPT smoother',
+    warn: '<b>The question rail is unavailable for now.</b> ChatGPT may have changed its page; Butter resumes on its own.',
+    groups: [
+      ['zap', 'Smoother streaming', 'Long answers stream without lag'],
+      ['scroll', 'Smoother scrolling', 'Drag the scrollbar to preview; it loads when you let go'],
+      ['list', 'Question rail', 'Your questions on the right; click one to jump'],
+      ['db', 'Remember long-chat layouts', 'Faster jumps when you come back; uses some storage'],
+    ],
+    clear: 'Clear',
+    confirm: 'Clear all?',
+    cancel: 'Cancel',
+    cleared: 'Cleared',
+    bad: 'Unavailable',
+    log: 'Changelog',
   },
 };
-const CHIP_ICON = { ok: 'ok', fail: 'fail', wait: 'wait', off: 'off', paused: 'pause' };
-const chip = (t, k, text) =>
-  `<span class="chip ${k}">${svg(CHIP_ICON[k])}${text ?? t.chip[k]}</span>`;
+// y = 1.25 is the centre line of the card's 2.5 px bottom border; the outline leaves and rejoins it horizontally.
+const D =
+  'M0 1.25 C8 1.25 11 3 12 8 C13 13 14.5 15 17 15 C19.5 15 21 13 21.5 10 C22 7.5 23.5 6 26 6 C28.5 6 30 8 30 12 C30 18 31.5 21.5 35 21.5 C38.5 21.5 40 18.5 40 14 C40 7 44 1.25 52 1.25';
+const drip = `<svg class="drip" viewBox="0 0 56 24" aria-hidden="true">
+  <rect x="7" y="-0.5" width="38" height="3.2" style="fill:var(--butter)"/>
+  <path d="${D} Z" style="fill:var(--butter)"/>
+  <path d="${D}" style="fill:none;stroke:var(--edge)" stroke-width="2.5" stroke-linecap="round"/>
+  <circle class="drip-hi" cx="33" cy="16" r="1.6" fill="#fff"/></svg>`;
 
-const head = () =>
-  `<div class="hd"><img src="${ICON}" alt=""><div><div class="name">Butter</div><div class="ver">${chrome.runtime.getManifest().version_name}</div></div></div>`;
-const foot = (
-  t,
-) => `<div class="ft"><a href="#" data-page="settings">${t.settings}${svg('right')}</a>
-  <span class="links"><a target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/CHANGELOG.md">${svg('log')}${t.changelog}</a><a target="_blank" rel="noopener" href="https://github.com/SimianW/butter">${svg('ext')}GitHub</a></span></div>`;
+const pat =
+  '<svg aria-hidden="true" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><defs>    <linearGradient id="t1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6cc"/><stop offset="1" stop-color="#fde487"/></linearGradient>    <linearGradient id="l1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde07a"/><stop offset="1" stop-color="#f4c74a"/></linearGradient>    <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c23a"/><stop offset="1" stop-color="#e0a227"/></linearGradient>    <clipPath id="c1"><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z"/></clipPath></defs><g transform="translate(0 6)" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="64" cy="90" rx="50" ry="7" fill="rgb(27 23 15 / .12)"/><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="url(#r1)"/><g clip-path="url(#c1)"><path d="M0 0 L62 0 L62 128 L0 128 Z" fill="url(#l1)"/></g><path d="M19.65 37.97 Q14 40 19.6 42.1 L56.4 55.9 Q62 58 67.7 56 L108.3 41.96 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="url(#t1)"/><path d="M21.5 46.5 L55.5 59.5" stroke="#fff" stroke-opacity=".45" stroke-width="2"/><path d="M69 60 L106.5 47" stroke="#fff" stroke-opacity=".35" stroke-width="2"/><path d="M19.6 42.1 L56.4 55.9 Q62 58 67.7 56 L108.3 41.96 M62 59.5 L62 85.5" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="none" stroke="#1b170f" stroke-width="5"/><path d="M24 43.75 C27 46.5 28.5 51 29.5 57 C30.5 63 37.5 64 38 58 C38.3 54 39.5 51.5 42 50.75 L42 47.25 L24 40.25 Z" fill="#fde487"/><path d="M24 43.75 C27 46.5 28.5 51 29.5 57 C30.5 63 37.5 64 38 58 C38.3 54 39.5 51.5 42 50.75" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M72 54.54 C74 56 74.5 58.5 75 61 C75.6 64 80.4 64 80.6 60.6 C80.8 57.5 81.2 53.8 83 51.08 L83 47.6 L72 51.2 Z" fill="#fde487"/><path d="M72 54.54 C74 56 74.5 58.5 75 61 C75.6 64 80.4 64 80.6 60.6 C80.8 57.5 81.2 53.8 83 51.08" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M31.5 53 L32.3 57.5" stroke="#fff" stroke-width="2" stroke-opacity=".8"/><path d="M84 80.4 C87 81.5 88.5 84 88.5 89 L88.5 97 A4.75 4.75 0 0 0 98 97 L98 82 C98 78.5 98.8 76 100 74.85 L100 69.85 L84 75.4 Z" fill="#e8ad2e"/><path d="M84 80.4 C87 81.5 88.5 84 88.5 89 L88.5 97 A4.75 4.75 0 0 0 98 97 L98 82 C98 78.5 98.8 76 100 74.85" fill="none" stroke="#1b170f" stroke-width="5"/><path d="M91.6 86 L91.6 95.5" stroke="#fff" stroke-width="2.2" stroke-opacity=".85"/><path d="M25.5 41.2 C24 39.5 26 37.6 29 36.6 L39.5 32.8 C42.5 31.8 44.5 32.6 43.6 34.4 C43 35.6 41.6 36.3 40 36.9 L29.6 40.9 C27.8 41.6 26.4 41.9 25.5 41.2 Z" fill="#fff" fill-opacity=".92"/><circle cx="48" cy="32.2" r="1.9" fill="#fff" fill-opacity=".92"/></g></svg>';
 
-function home(t, kind) {
-  const cls = { ok: '', warn: 'warn', paused: 'muted', away: 'muted' }[kind];
-  const ic = { ok: 'sparkles', warn: 'alert', paused: 'pause', away: 'chat' }[kind];
-  let [big, sub] = t.cards[kind];
-  if (kind === 'warn')
-    big = prefs.lang === 'zh' ? `${broken} 项优化已失效` : `${broken} of 5 broken`;
-  if (kind === 'ok' && counts.ok !== 5) {
-    // Nothing broken, but not every item is confirmed: say so instead of "All 5 working".
-    const zh = prefs.lang === 'zh';
-    big = zh ? '未发现失效项' : 'Nothing broken';
-    sub = ['ok', 'wait', 'off']
-      .filter((k) => counts[k])
-      .map((k) => (zh ? `${counts[k]} 项${t.chip[k]}` : `${counts[k]} ${t.chip[k].toLowerCase()}`))
-      .join(' · ');
-  }
-  const on = prefs.enabled;
-  return `${head()}<button class="card ${cls}" data-page="settings"><span class="badge">${svg(ic)}</span><div><div class="big">${big}</div><div class="sub">${sub}</div></div><span class="chev">${svg('right')}</span></button>
-    <div class="sw-row"><div><div class="lbl">${t.enable}</div><div class="hint">${on ? t.hintOn : t.hintOff}</div></div>
-    <button class="switch ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${t.enable}" data-switch="master"></button></div>${foot(t)}`;
-}
-
-function settings(t, lang, states, paused) {
-  const counts = {};
-  states.forEach((s) => (counts[s] = (counts[s] || 0) + 1));
-  const tally = paused
-    ? ''
-    : `<div class="tally">${['ok', 'wait', 'fail', 'off']
-        .filter((k) => counts[k])
-        .map((k) => chip(t, k, `${counts[k]} ${t.chip[k]}`))
-        .join('')}</div>`;
-  const banner = paused ? `<div class="banner">${svg('pause')}<span>${t.banner}</span></div>` : '';
-  const rows = t.items
-    .map(([n, d], i) => {
-      const s = paused ? 'paused' : states[i];
-      const on = prefs.opts[ButterStatus.keys[i]];
-      return `<div class="item"><div class="txt"><div class="n">${n}</div><div class="d">${d}</div>
-      <div class="stat">${chip(t, s)}</div></div>
-      <button class="switch sm ${on ? 'on' : ''} ${paused ? 'dim' : ''}" role="switch" aria-checked="${on}" aria-label="${n}" data-switch="${ButterStatus.keys[i]}"></button></div>`;
-    })
-    .join('');
-  return `<div class="bar"><button class="back" data-page="home" aria-label="${lang === 'zh' ? '返回' : 'Back'}">${svg('left')}</button><span class="title">${t.settings}</span></div>
-    ${tally}${banner}<div class="list">${rows}</div>
-    ${paused ? '' : `<div class="note">${t.note}</div>`}
-    <div class="sec">${t.general}</div>
-    <div class="lang">${svg('lang')}<span class="lbl">${t.language}</span>
-      <span class="seg"><button data-lang="en" aria-pressed="${lang === 'en'}" class="${lang === 'en' ? 'on' : ''}">English</button><button data-lang="zh" aria-pressed="${lang === 'zh'}" class="${lang === 'zh' ? 'on' : ''}">中文</button></span></div>`;
-}
-
+const groupKeys = Object.keys(ButterStatus.groups);
 let prefs = ButterStatus.normalize(),
-  page = 'home',
-  states = {},
+  failures = {},
   connected = false,
-  broken = 0,
-  counts = {};
+  usage = { conversations: 0, bytes: 0 },
+  usageAvailable = true,
+  clearState = 'idle',
+  clearTimer;
 const root = document.getElementById('popup');
 const scheme = matchMedia('(prefers-color-scheme: dark)');
-const theme = () => root.classList.toggle('dark', scheme.matches);
+const theme = () => {
+  root.classList.toggle('dark', scheme.matches);
+  document.documentElement.classList.toggle('dark', scheme.matches);
+};
 scheme.addEventListener('change', theme);
 theme();
-
-// Preserve switch nodes, focus and transitions when a live status changes.
+const switchButton = (key, on, name, small = false) =>
+  `<button class="tg ${small ? 'sm' : ''} ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${name}" data-switch="${key}"></button>`;
+function usageRow(t) {
+  if (clearState === 'confirm' || clearState === 'clearing')
+    return `<span class="q">${t.confirm}</span><button class="pill danger" data-clear="confirm" ${clearState === 'clearing' ? 'disabled' : ''}>${t.clear}</button><button class="pill" data-clear="cancel" ${clearState === 'clearing' ? 'disabled' : ''}>${t.cancel}</button>`;
+  const done = clearState === 'done',
+    unavailable = !usageAvailable || clearState === 'error';
+  return `<span class="jar"><i style="width:${done || unavailable ? 0 : ButterPopup.usageFill(usage.bytes)}%"></i></span><span role="status">${done ? t.cleared : unavailable ? t.bad : ButterPopup.formatUsage(usage, prefs.lang)}</span>${done ? '' : `<button class="pill" data-clear="ask">${t.clear}</button>`}`;
+}
+function warning(t, broken) {
+  if (!broken.length) return '';
+  let text;
+  if (broken.length === 1 && broken[0] === 'rail') text = t.warn;
+  else {
+    const names = broken.map((k) => t.groups[groupKeys.indexOf(k)][1]);
+    text =
+      prefs.lang === 'zh'
+        ? `<b>${names.join('、')}暂时不可用。</b>ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。`
+        : `<b>${names.join(' and ')} ${names.length === 1 ? 'is' : 'are'} unavailable for now.</b> ChatGPT may have changed its page; Butter resumes on its own.`;
+  }
+  return `<div class="warn" role="status">${svg('alert')}<span>${text}</span></div>`;
+}
+// Preserve nodes so switches animate and keyboard focus survives live polling.
 function patch(old, next) {
-  if (!old || old.nodeType !== next.nodeType || old.nodeName !== next.nodeName) {
-    old?.replaceWith(next.cloneNode(true));
+  if (old.nodeType !== next.nodeType || old.nodeName !== next.nodeName) {
+    old.replaceWith(next.cloneNode(true));
     return;
   }
   if (old.nodeType === Node.TEXT_NODE) {
@@ -164,51 +122,97 @@ function patch(old, next) {
   before.slice(after.length).forEach((n) => n.remove());
 }
 function render() {
-  const t = T[prefs.lang];
+  const t = T[prefs.lang],
+    state = ButterStatus.masterState(prefs, connected),
+    paused = state === 'paused';
+  const broken = groupKeys.filter((k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused);
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
-  const values = ButterStatus.keys.map((k) =>
-    !prefs.opts[k] ? 'off' : states[k] === 'off' ? 'wait' : states[k] || 'wait',
-  );
-  broken = values.filter((s) => s === 'fail').length;
-  counts = {};
-  values.forEach((s) => (counts[s] = (counts[s] || 0) + 1));
-  const kind = !prefs.enabled ? 'paused' : !connected ? 'away' : broken ? 'warn' : 'ok';
+  const rows = t.groups
+    .map(([ic, n, d], i) => {
+      const key = groupKeys[i],
+        bad = broken.includes(key),
+        on = ButterStatus.groupOn(prefs, key);
+      return `<div class="row ${bad ? 'broken' : ''}"><span class="ic" aria-hidden="true">${svg(ic)}</span><div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div></div>${switchButton(key, on, n, true)}${key === 'layout' && on ? `<div class="use">${usageRow(t)}</div>` : ''}</div>`;
+    })
+    .join('');
+  const html = `<div class="hd">${pat}<div><div class="word">Butter</div><div class="ver">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</div></div></div>
+    <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status"><span class="dot ${state === 'away' ? 'hollow' : ''}"></span>${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
+    <div class="warning-slot">${warning(t, broken)}</div><div class="label">${t.label}</div><div class="list ${paused ? 'dim' : ''}">${rows}</div>
+    <div class="ft"><div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div><span class="links"><a target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/CHANGELOG.md">${t.log}</a><a target="_blank" rel="noopener" href="https://github.com/SimianW/butter">GitHub</a></span></div>`;
   const template = document.createElement('template');
-  template.innerHTML =
-    page === 'home' ? home(t, kind) : settings(t, prefs.lang, values, !prefs.enabled);
-  const wrapper = document.createElement('div');
-  wrapper.append(template.content);
-  patch(root.firstElementChild, wrapper);
-  if (!root.firstElementChild) root.append(wrapper);
+  template.innerHTML = `<div>${html}</div>`;
+  if (root.firstElementChild) patch(root.firstElementChild, template.content.firstElementChild);
+  else root.append(template.content);
 }
-async function save() {
-  render();
-  await chrome.storage.local.set({ butter: prefs });
-}
-root.addEventListener('click', (e) => {
-  const target = e.target.closest('[data-page], [data-switch], [data-lang]');
-  if (!target) return;
-  e.preventDefault();
-  if (target.dataset.page) {
-    page = target.dataset.page;
-    render();
-    root.scrollTop = 0;
-    root.querySelector(page === 'settings' ? '.back' : '.card')?.focus({ preventScroll: true });
-  } else if (target.dataset.switch) {
-    const key = target.dataset.switch;
-    if (key === 'master') prefs.enabled = !prefs.enabled;
-    else prefs.opts[key] = !prefs.opts[key];
-    save();
-  } else {
-    prefs.lang = target.dataset.lang;
-    save();
+const layoutRequest = (request) =>
+  ButterPopup.layoutRequest((message) => chrome.runtime.sendMessage(message), request);
+async function refreshUsage() {
+  try {
+    usage = await layoutRequest({ version: 1, type: 'butter-layout-usage' });
+    usageAvailable = true;
+  } catch {
+    usageAvailable = false;
   }
+  render();
+}
+async function clearLayouts() {
+  clearState = ButterPopup.clearFlow(clearState, 'confirm');
+  render();
+  try {
+    usage = await layoutRequest({
+      version: 1,
+      type: 'butter-layout-clear',
+      requestId: crypto.randomUUID(),
+    });
+    usageAvailable = true;
+    clearState = ButterPopup.clearFlow(clearState, 'success');
+    clearTimer = setTimeout(() => {
+      clearState = ButterPopup.clearFlow(clearState, 'timeout');
+      refreshUsage();
+    }, 2000);
+  } catch {
+    clearState = ButterPopup.clearFlow(clearState, 'error');
+  }
+  render();
+}
+let saveQueue = Promise.resolve();
+root.addEventListener('click', (e) => {
+  const target = e.target.closest('[data-switch], [data-lang], [data-clear]');
+  if (!target) return;
+  if (target.dataset.clear) {
+    if (target.dataset.clear === 'confirm') {
+      clearLayouts();
+      return;
+    }
+    clearState = ButterPopup.clearFlow(clearState, target.dataset.clear);
+    render();
+    root.querySelector(`[data-clear="${clearState === 'confirm' ? 'confirm' : 'ask'}"]`)?.focus();
+    return;
+  }
+  if (target.dataset.lang) prefs = { ...prefs, lang: target.dataset.lang };
+  else if (target.dataset.switch === 'master') prefs = { ...prefs, enabled: !prefs.enabled };
+  else {
+    prefs = ButterStatus.toggleGroup(prefs, target.dataset.switch);
+    if (target.dataset.switch === 'layout') {
+      clearState = 'idle';
+      clearTimeout(clearTimer);
+    }
+  }
+  render();
+  const value = structuredClone(prefs);
+  saveQueue = saveQueue.catch(() => {}).then(() => chrome.storage.local.set({ butter: value }));
 });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.butter) {
     prefs = ButterStatus.normalize(changes.butter.newValue);
     render();
+    if (prefs.opts.layout) refreshUsage();
   }
+  if (area === 'session' && changes.butterFailures) {
+    failures = changes.butterFailures.newValue || {};
+    render();
+  }
+  if (area === 'local' && changes.butterLayoutCleared) refreshUsage();
 });
 let polling = false;
 async function poll() {
@@ -216,23 +220,37 @@ async function poll() {
   polling = true;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    // A content-script response is the authority: tab URLs need extra permissions to read.
     const response = await chrome.tabs.sendMessage(tab.id, { type: 'butter-status' });
-    if (!response?.states) throw new Error('No Butter receiver');
-    states = response.states;
-    connected = true;
+    connected = !!response?.states;
+    if (response?.failures) failures = response.failures;
   } catch {
-    states = {};
     connected = false;
   } finally {
     polling = false;
     render();
   }
 }
-chrome.storage.local.get('butter').then((value) => {
-  prefs = ButterStatus.normalize(value.butter);
+Promise.all([
+  chrome.storage.local.get('butter'),
+  chrome.storage.session.get('butterFailures'),
+]).then(([local, session]) => {
+  prefs = ButterStatus.normalize(local.butter);
+  failures = session.butterFailures || {};
   render();
   poll();
+  refreshUsage();
 });
-const timer = setInterval(poll, 1000);
-addEventListener('pagehide', () => clearInterval(timer), { once: true });
+const timer = setInterval(() => {
+  poll();
+  if (prefs.opts.layout && clearState === 'idle') refreshUsage();
+}, 1000);
+addEventListener(
+  'pagehide',
+  () => {
+    clearInterval(timer);
+    clearTimeout(clearTimer);
+  },
+  { once: true },
+);
 render();

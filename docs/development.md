@@ -3,8 +3,8 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `popup/popup.css`, `popup/popup.js` | Toolbar popup, bundled Lucide SVGs and translations. |
-| `extension/shared/status.js` | Pure settings defaults and status classification, shared with the popup. |
+| `extension/popup/popup.html`, `popup/popup.css`, `popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
+| `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `docs/` | User docs, test report, media. |
 | `results/` | Result tables from every benchmark run, made by `lab/summarize.py`. |
@@ -21,9 +21,9 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` captures every mockup state;
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 12 states in both themes at 320 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references);
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
-  in an existing chat. Load `extension/` in the lab browser first (see `lab/README.md`).
+  in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Version consistency: `python3 scripts/check-version.py`.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
@@ -76,8 +76,31 @@ its original result; query usage again if subsequent measurements may already ha
 
 `butter.opts.layout` defaults to true in `ButterStatus.normalize`. Setting it false deletes layouts
 for all accounts and stops reads/writes; it is independent of the master optimization switch.
-The popup UI is unchanged in this step. Until its controls arrive, service worker DevTools can use
-`await handle({type: 'butter-layout-usage'})` and `await handle({type: 'butter-layout-clear'})`.
+The popup shows usage below Remember long-chat layouts and confirms Clear inline.
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can
 save again while the setting is on. Set the option false for a persistent opt-out.
+
+## Popup settings and status
+
+The four switches map to `container + cv + throttle` (streaming), `older + seek` (scrolling),
+`rail`, and `layout`. A switch is on only when all its keys are on; toggling writes every key
+in that group. Normalization defaults the new `seek` key to true and preserves saved values
+and unknown settings. All settings continue to apply live.
+
+The master status says working when the active tab's content script answers, open a chat when
+no receiver answers, and paused when disabled. Feature probes have neutral internal evidence
+until exercised; neutral evidence has no popup badge. Exercised failures are merged by the
+worker into `chrome.storage.session.butterFailures`, keyed by group and failed feature. Switching
+chats or disabling a setting preserves them; successful engagement of the failed feature removes
+its record. Browser shutdown clears session records. The worker serializes probe merges so
+concurrent tabs cannot overwrite each other's failures.
+
+Send pre-jump is in `rail/rail.js` but its existing `beforeSend` handler does not test `railOff`;
+it continues independently of the rail setting. Latest-question prediction belongs to the rail
+presentation and is hidden with it. These behaviors are unchanged.
+
+The popup uses the layout runtime API above, retries the same request three times, and retains
+the same UUID when retrying clear. Clear confirms inline and shows completion for two seconds.
+Usage uses decimal KB/MB and the 50,000,000-byte payload cap. Layout-off still deletes saved
+layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration.

@@ -13,8 +13,11 @@ test('every relative asset the popup loads exists next to the popup page', async
   const script = await readFile(new URL('popup.js', page), 'utf8');
   const refs = [
     ...[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]),
-    script.match(/const ICON = '([^']+)'/)[1],
+    ...[...(await readFile(new URL('popup.css', page), 'utf8')).matchAll(/url\("([^"]+)"\)/g)]
+      .map((m) => m[1])
+      .filter((ref) => !ref.startsWith('data:')),
   ];
+  assert.match(script, /const pat =\s*['"]<svg/);
   for (const ref of refs) {
     const file = fileURLToPath(new URL(ref, page));
     assert.ok(existsSync(file), `popup asset is missing: ${ref}`);
