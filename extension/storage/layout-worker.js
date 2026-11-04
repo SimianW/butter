@@ -90,12 +90,22 @@ async function reconcile(rows, now) {
   const all = await request(rows.getAll());
   let bytes = 0;
   const keep = [];
-  for (const x of all) {
-    if (expired(x, now)) rows.delete(x.key);
-    else {
-      const previous = x.bytes;
+  for (const value of all) {
+    const clean = codec.clean(value);
+    if (
+      !clean ||
+      value.key !== codec.key(clean) ||
+      expired(clean, now) ||
+      !Number.isFinite(value.used) ||
+      value.used < 0 ||
+      value.used > now + 60000
+    ) {
+      rows.delete(value.key);
+    } else {
+      const x = { ...clean, key: codec.key(clean), used: value.used, bytes: 0 };
       bytes += measure(x);
-      if (previous !== x.bytes) rows.put(x);
+      // Rebuild the allowlist before any maintenance write as well as before returning a row.
+      if (JSON.stringify(value) !== JSON.stringify(x)) rows.put(x);
       keep.push(x);
     }
   }
@@ -131,7 +141,7 @@ async function handle(message) {
       );
       const records = [];
       for (const x of found) {
-        if (expired(x, now)) rows.delete(x.key);
+        if (!codec.valid(x) || x.key !== codec.key(x) || expired(x, now)) rows.delete(x.key);
         else {
           const previousBytes = x.bytes;
           x.used = now;
@@ -150,7 +160,9 @@ async function handle(message) {
         !codec.hash(message.conv)
       )
         return {};
-      for (const value of message.records || []) {
+      for (const value of Array.isArray(message.records) && message.records.length <= 256
+        ? message.records
+        : []) {
         const x = codec.clean(value);
         if (!x || x.account !== message.account || x.conv !== message.conv || expired(x, now))
           continue;

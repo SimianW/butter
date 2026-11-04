@@ -417,3 +417,44 @@ test('bridge retries the same put after worker termination before or after commi
     assert.equal(f.disk.size, 1);
   }
 });
+
+test('worker rejects malformed geometry and text-bearing styles on writes and disk loads', async () => {
+  const f = workerFixture();
+  const mutations = [
+    (x) => (x.styles[0] = 'font:16px "secret question text"'),
+    (x) => (x.styles[0] = 'color:secret question text'),
+    (x) => (x.styles[0] = 'background:#ffffff'),
+    (x) => (x.styles[0] = 'color:rgb(999, 0, 0)'),
+    (x) => (x.styles[0] = 'padding:10%'),
+    (x) => (x.styles[0] = 'border-radius:-1px'),
+    (x) => (x.styles[0] = 'text-align:secret'),
+    (x) => (x.styles[0] = 'font:normal 400 16px/26px ' + 'a'.repeat(300)),
+    (x) => (x.account = 'A'.repeat(64)),
+    (x) => (x.digest = 'a'.repeat(63)),
+    (x) => (x.metrics[0] = Infinity),
+    (x) => (x.metrics[1] = 1e100),
+    (x) => (x.metrics[4] = -1),
+    (x) => x.metrics.push(1),
+    (x) => (x.blocks = Array(20001).fill(1)),
+    (x) => (x.styles = Array(257).fill('')),
+    (x) => (x.items = Array(20001).fill(x.items[0])),
+    (x) => (x.items[0][5] = 0.5),
+    (x) => (x.items[0][6] = -3),
+    (x) => (x.items[0][7] = [[3, 2, 0, 10]]),
+    (x) => (x.items[0][7] = [[0, 2, 0, -1]]),
+    (x) => (x.items[0][7] = Array(4097).fill([0, 2, 0, 10])),
+  ];
+  for (const mutate of mutations) {
+    const bad = geometry();
+    mutate(bad);
+    await put(f, [bad]);
+    assert.equal((await load(f)).records.length, 0, String(mutate));
+    assert.equal(f.disk.size, 0);
+    const row = { ...bad, key: codec.key(bad), used: Date.now(), bytes: 0 };
+    f.disk.set(row.key, row);
+    assert.equal((await load(f)).records.length, 0, 'disk: ' + mutate);
+    assert.equal(f.disk.size, 0);
+  }
+  await put(f, [geometry()]);
+  assert.equal((await load(f)).records.length, 1);
+});

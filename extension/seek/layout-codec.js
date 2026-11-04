@@ -1,18 +1,93 @@
 // Geometry wire format. Explicit allowlists keep source text and credentials off disk.
 ((root) => {
   const hash = (s) => typeof s === 'string' && /^[a-f0-9]{64}$/.test(s);
-  const numeric = (x) => typeof x === 'number' && Number.isFinite(x);
-  const css = (s) =>
-    typeof s === 'string' &&
-    s.length <= 2048 &&
-    !/url\s*\(|[{}<>]|content\s*:|var\s*\(/i.test(s) &&
-    s
-      .split(';')
-      .every(
-        (p) =>
-          !p ||
-          /^(font|padding|border-radius|background|color|text-align):[-\w\s.,()%#"'/]+$/.test(p),
+  const number = (x, min = 0, max = 10_000_000) =>
+    typeof x === 'number' && Number.isFinite(x) && x >= min && x <= max;
+  const integer = (x, min, max) => Number.isInteger(x) && number(x, min, max);
+  const array = (x, max, check) =>
+    Array.isArray(x) && x.length <= max && Object.keys(x).length === x.length && x.every(check);
+  const decimal = '(?:0|[1-9]\\d{0,4})(?:\\.\\d{1,6})?';
+  const px = `${decimal}px`;
+  // A closed family vocabulary prevents a forged font name from carrying chat text. Unknown
+  // typography stays warm-only; expanding this list requires an explicit product decision.
+  const families = new Set([
+    'system-ui',
+    'sans-serif',
+    'serif',
+    'monospace',
+    'ui-sans-serif',
+    'ui-serif',
+    'ui-monospace',
+    'Arial',
+    'Helvetica',
+    'Helvetica Neue',
+    'Times New Roman',
+    'Courier New',
+    'Menlo',
+    'Monaco',
+    'Consolas',
+    'SFMono-Regular',
+    'SF Mono',
+    'Segoe UI',
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji',
+    'Noto Sans',
+    'Söhne',
+    'Söhne Mono',
+    'OpenAI Sans',
+    'OpenAI Sans Mono',
+    'Inter',
+    '-apple-system',
+    'BlinkMacSystemFont',
+  ]);
+  const font = new RegExp(
+    `^(?:(?:normal|italic|oblique) )?(?:(?:normal|bold|[1-9]\\d{0,2}|1000) )?(${px})(?:/(${px}|${decimal}))? (.{1,256})$`,
+  );
+  const color = (value) => {
+    const m = /^(rgb|rgba)\((\d{1,3}), (\d{1,3}), (\d{1,3})(?:, (0|1|0?\.\d{1,6}))?\)$/.exec(value);
+    return (
+      !!m &&
+      m.slice(2, 5).every((n) => +n <= 255) &&
+      (m[1] === 'rgba' ? m[5] !== undefined && +m[5] <= 1 : m[5] === undefined)
+    );
+  };
+  const lengths = new RegExp(`^${px}(?: ${px}){0,3}$`);
+  const radius = new RegExp(`^${px}(?: ${px}){0,3}(?: / ${px}(?: ${px}){0,3})?$`);
+  const css = (s) => {
+    if (typeof s !== 'string' || s.length > 1024) return false;
+    if (!s) return true;
+    const seen = new Set();
+    return s.split(';').every((p) => {
+      const split = p.indexOf(':');
+      const name = p.slice(0, split),
+        value = p.slice(split + 1);
+      if (split < 1 || !value || value.length > 512 || seen.has(name)) return false;
+      seen.add(name);
+      if (name === 'font') {
+        const m = font.exec(value);
+        return (
+          !!m &&
+          parseFloat(m[1]) > 0 &&
+          parseFloat(m[1]) <= 512 &&
+          (!m[2] || parseFloat(m[2]) <= 2048) &&
+          m[3].split(',').length <= 16 &&
+          m[3].split(',').every((token) => {
+            token = token.trim();
+            if (/^(["']).*\1$/.test(token)) token = token.slice(1, -1);
+            return families.has(token);
+          })
+        );
+      }
+      if (name === 'background' || name === 'color') return color(value);
+      if (name === 'padding') return lengths.test(value);
+      if (name === 'border-radius') return radius.test(value);
+      return (
+        name === 'text-align' && /^(start|end|left|right|center|justify|match-parent)$/.test(value)
       );
+    });
+  };
   const metrics = ['h', 'rowH', 'turnOffset', 'turnH', 'w', 'vw', 'sw'];
   function pack(x) {
     const styles = [],
@@ -52,29 +127,35 @@
     return (
       x?.schema === 2 &&
       ['account', 'conv', 'turn', 'msg', 'digest', 'layout'].every((k) => hash(x[k])) &&
-      numeric(x.time) &&
-      Array.isArray(x.metrics) &&
+      number(x.time, 0, Number.MAX_SAFE_INTEGER) &&
+      array(x.metrics, 7, (n) => number(n)) &&
       x.metrics.length === 7 &&
-      x.metrics.every(numeric) &&
-      Array.isArray(x.blocks) &&
+      array(x.blocks, 20_000, (n) => number(n) && n > 0) &&
       x.blocks.length > 0 &&
-      x.blocks.every((n) => numeric(n) && n > 0) &&
-      Array.isArray(x.styles) &&
-      x.styles.every(css) &&
-      Array.isArray(x.items) &&
-      x.items.every(
+      array(x.styles, 256, css) &&
+      array(
+        x.items,
+        20_000,
         (i) =>
-          Array.isArray(i) &&
+          array(i, 8, () => true) &&
           i.length === 8 &&
-          i.slice(0, 7).every(numeric) &&
+          number(i[0], -10_000_000) &&
+          number(i[1]) &&
+          number(i[2], -100_000, 100_000) &&
+          number(i[3], 0, 100_000) &&
           [0, 1].includes(i[4]) &&
-          Number.isInteger(i[5]) &&
-          i[5] >= 0 &&
-          i[5] < x.styles.length &&
-          Number.isInteger(i[6]) &&
-          Array.isArray(i[7]) &&
-          i[7].every(
-            (m) => Array.isArray(m) && m.length === 4 && m.every(numeric) && [0, 1].includes(m[2]),
+          integer(i[5], 0, x.styles.length - 1) &&
+          integer(i[6], -2, 19_999) &&
+          array(
+            i[7],
+            4096,
+            (m) =>
+              array(m, 4, () => true) &&
+              m.length === 4 &&
+              integer(m[0], 0, 1_000_000) &&
+              integer(m[1], m[0], 1_000_000) &&
+              [0, 1].includes(m[2]) &&
+              number(m[3]),
           ),
       )
     );

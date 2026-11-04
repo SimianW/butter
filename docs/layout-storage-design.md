@@ -53,6 +53,15 @@ Web Store review justification: “Butter uses unlimitedStorage to cache up to 5
 account-partitioned layout geometry for smooth seeking in long ChatGPT conversations; it stores
 no chat text and enforces its own 30-day expiry and 50 MB limit.”
 
+## Threat model
+
+Account partitioning prevents accidental mixing between accounts in one browser profile.
+It is not a defense against script running on chatgpt.com, which already controls the signed-in
+account. Requests from the page are untrusted: the worker validates every persisted field on write
+and again on disk load. A forged request can only read or write numeric geometry and hashes,
+plus strictly bounded formatting from a closed font-family vocabulary and per-property patterns;
+it cannot persist arbitrary text through a style value. Account hashes are not authentication.
+
 ## Data and loading
 
 The account observer reads only `user.id` (session) or `id` (`me`) from a response the page already
