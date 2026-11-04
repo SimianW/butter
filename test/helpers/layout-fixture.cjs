@@ -110,13 +110,18 @@ function workerFixture({ cap, now = Date.now(), initialLayout } = {}) {
   return {
     disk,
     state,
+    restart: () => vm.runInNewContext(source, { ...ctx }),
     counters,
     changes,
     settings,
     events,
     message: (message, sender = { id: 'butter-test' }) =>
       new Promise((resolve) => {
-        const handled = listener(message, sender, resolve);
+        const handled = listener(
+          { version: 1, requestId: crypto.randomUUID(), ...message },
+          sender,
+          resolve,
+        );
         if (!handled) resolve(undefined);
       }),
     setting: (layout) => {

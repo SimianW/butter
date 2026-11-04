@@ -268,9 +268,17 @@ test('passive account observer hashes only user id, never accesses credentials o
     fs.readFileSync(require.resolve('../extension/history/conversation-main.js'), 'utf8'),
     context,
   );
+  const accountEvents = () => events.filter((e) => e.type === 'butter-account');
+  const waitForAccount = async (count) => {
+    const deadline = Date.now() + 2000;
+    while (accountEvents().length < count) {
+      assert.ok(Date.now() < deadline, 'Passive account hash must finish');
+      await new Promise(setImmediate);
+    }
+  };
   assert.equal(calls.length, 0);
   await win.fetch('/api/auth/session');
-  await new Promise(setImmediate);
+  await waitForAccount(1);
   const expected = crypto.createHash('sha256').update('test-account').digest('hex');
   assert.equal(events.find((e) => e.type === 'butter-account').detail, expected);
   assert.equal(JSON.stringify(events).includes('test-account'), false);
@@ -280,11 +288,11 @@ test('passive account observer hashes only user id, never accesses credentials o
   assert.equal(events.filter((e) => e.type === 'butter-account').length, 1);
   body = { id: 'session-id-is-not-a-user-id' };
   await win.fetch('/api/auth/session');
-  await new Promise(setImmediate);
+  await waitForAccount(2);
   assert.equal(events.filter((e) => e.type === 'butter-account').at(-1).detail, null);
   body = { id: 'test-account' };
   await win.fetch('/backend-api/me');
-  await new Promise(setImmediate);
+  await waitForAccount(3);
   assert.equal(events.filter((e) => e.type === 'butter-account').at(-1).detail, expected);
 });
 
@@ -299,5 +307,113 @@ test('layout-off at worker startup or during its settings read cannot re-enable 
     assert.equal((await usage(f)).bytes, 0);
     assert.equal(f.counters.reads, before.reads);
     assert.equal(f.counters.writes, before.writes);
+  }
+});
+
+test('versioned protocol rejects unsupported clients', async () => {
+  const f = workerFixture();
+  assert.equal(
+    (await f.message({ type: 'butter-layout-usage', version: 2 })).error,
+    'layout-protocol',
+  );
+  assert.equal(
+    (await f.message({ type: 'butter-layout-clear', requestId: 'not-an-operation-id' })).error,
+    'layout-protocol',
+  );
+  assert.equal(f.counters.opens, 0);
+});
+test('restart rebuilds accounting from serialized rows and preserves clear generation/deduplication', async () => {
+  const f = workerFixture();
+  await put(f, [geometry()]);
+  const expected = (await usage(f)).bytes;
+  for (const x of f.disk.values()) delete x.bytes;
+  f.restart();
+  assert.equal((await usage(f)).bytes, expected);
+  const requestId = crypto.randomUUID();
+  await f.message({ type: 'butter-layout-clear', requestId });
+  const fresh = await load(f);
+  await put(f, [geometry()], id('a'), id('c'), fresh.generation);
+  f.restart();
+  await f.message({ type: 'butter-layout-clear', requestId });
+  assert.equal(
+    (await usage(f)).bytes,
+    expected,
+    'A retried completed clear does not delete later writes',
+  );
+  assert.equal((await load(f)).generation, fresh.generation);
+  await put(f, [geometry()], id('a'), id('c'), 0);
+  assert.equal(
+    (await usage(f)).bytes,
+    expected,
+    'The pre-clear generation remains fenced after restart',
+  );
+});
+test('a retried old put cannot replace a newer measured record', async () => {
+  const f = workerFixture(),
+    time = Date.now();
+  await put(f, [geometry({ time })]);
+  await put(f, [geometry({ time: time + 1, h: 700 })]);
+  f.restart();
+  await put(f, [geometry({ time, h: 500 })]);
+  assert.equal(codec.unpack((await load(f)).records[0]).h, 700);
+});
+test('bridge retries the same put after worker termination before or after commit', async () => {
+  for (const committed of [false, true]) {
+    const f = workerFixture(),
+      events = {},
+      responses = [],
+      requests = [];
+    let calls = 0;
+    const chrome = {
+      storage: {
+        local: { get: async () => ({ butterLayoutMigrated: true }) },
+        onChanged: { addListener() {} },
+      },
+      runtime: {
+        sendMessage: async (message) => {
+          requests.push(message);
+          calls++;
+          if (calls === 1) {
+            if (committed) await f.message(message);
+            f.restart();
+            throw Error('The message port closed before a response was received.');
+          }
+          return f.message(message);
+        },
+      },
+    };
+    vm.runInNewContext(
+      fs.readFileSync(require.resolve('../extension/storage/layout-bridge.js'), 'utf8'),
+      {
+        chrome,
+        CustomEvent: class {
+          constructor(type, options) {
+            this.type = type;
+            this.detail = options.detail;
+          }
+        },
+        document: {
+          addEventListener: (name, fn) => (events[name] = fn),
+          dispatchEvent: (e) => responses.push(JSON.parse(e.detail)),
+        },
+      },
+    );
+    await new Promise(setImmediate);
+    await events['butter-layout-request']({
+      detail: JSON.stringify({
+        id: 1,
+        op: 'put',
+        account: id('a'),
+        conv: id('c'),
+        generation: 0,
+        records: [geometry()],
+      }),
+    });
+    assert.equal(requests.length, 2);
+    assert.equal(requests[0].version, 1);
+    assert.deepEqual(requests[0], requests[1]);
+    assert.equal(responses.at(-1).id, 1);
+    assert.equal((await usage(f)).conversations, 1);
+    assert.equal(f.disk.size, 1);
   }
 });

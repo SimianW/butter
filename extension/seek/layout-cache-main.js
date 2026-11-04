@@ -340,7 +340,13 @@
             (s) => s.clientHeight > 0,
           );
         if (!diskEnabled || !account || !ctx || ctx.conv !== conv() || !s) return;
-        pending.set(turn, { r, ctx: { ...ctx, layout: l ?? layout(s) }, account, scope });
+        pending.set(turn, {
+          r,
+          ctx: { ...ctx, layout: l ?? layout(s) },
+          account,
+          scope,
+          time: Date.now(),
+        });
         if (!job) job = setTimeout(() => persistence.flush(), 1500);
       },
       async flush() {
@@ -371,7 +377,7 @@
           )
             continue;
           const wire = { ...ctx.wire, layout: layoutHash };
-          const x = ButterLayoutCodec.pack(c.geometryOnly(r, row.parts, wire));
+          const x = ButterLayoutCodec.pack(c.geometryOnly(r, row.parts, wire, queued.time));
           const id = ButterLayoutCodec.key(x),
             old = memory.get(id);
           if (
@@ -383,7 +389,6 @@
           )
             continue;
           if (!ButterLayoutCodec.valid(x)) continue;
-          memory.set(id, x);
           writes.push(x);
         }
         if (token !== scope || owner !== account || !diskEnabled || generation === undefined)
@@ -395,8 +400,16 @@
             generation,
             records: writes,
           });
-          if (result.error) S.errors++;
-          else S.writes += writes.length;
+          if (result.error) {
+            S.errors++;
+            if (token === scope && owner === account && diskEnabled) {
+              for (const [turn, queued] of batch) if (!pending.has(turn)) pending.set(turn, queued);
+              if (!job) job = setTimeout(() => persistence.flush(), 5000);
+            }
+          } else if (token === scope && owner === account && diskEnabled) {
+            for (const x of writes) memory.set(ButterLayoutCodec.key(x), x);
+            S.writes += writes.length;
+          }
         }
         S.bytes = [...memory.values()].reduce((n, x) => n + ButterLayoutCodec.bytes(x), 0);
       },

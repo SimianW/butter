@@ -22,18 +22,25 @@
       emit({ id: m.id, records: [] });
       return;
     }
-    try {
-      const result = await chrome.runtime.sendMessage({
-        type: 'butter-layout-' + m.op,
-        account: m.account,
-        conv: m.conv,
-        generation: m.generation,
-        records: m.records,
-      });
-      emit({ id: m.id, ...result });
-    } catch {
-      emit({ id: m.id, error: 'layout-storage' });
+    const request = {
+      version: 1,
+      type: 'butter-layout-' + m.op,
+      account: m.account,
+      conv: m.conv,
+      generation: m.generation,
+      records: m.records,
+    };
+    // A terminated worker closes the port. Re-sending wakes it; all disk operations are atomic
+    // and idempotent (puts use stable keys and timestamps). No MAIN-thread await at drag time.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const result = await chrome.runtime.sendMessage(request);
+        if (!result || result.error === 'layout-storage') throw Error('layout-storage');
+        emit({ id: m.id, ...result });
+        return;
+      } catch {}
     }
+    emit({ id: m.id, error: 'layout-storage' });
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
