@@ -98,7 +98,7 @@ try {
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 320);
     assert.equal(await page.locator('[role="switch"]').count(), 5);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
-    const metrics = () => ['.hd', '.master', '.label', '.list', '.row', '.use', '.ft'].map(selector => {
+    const metrics = () => ['.hd', '.master', '.label', '.list', '.row', '.use', '.hd-side'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
       return { selector, top: r?.top, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
     });
@@ -107,6 +107,8 @@ try {
     await page.locator('#popup').screenshot({ path: file }); files.push(file);
     // Also capture the native-height viewport and its scrollable bottom for tall states.
     const height = await page.locator('#popup').evaluate(e => e.offsetHeight);
+    // Chromium caps popups at 600px; only the warning banner may push a state past it.
+    if (!config.broken) assert.ok(height <= 600, `${name}-${color} is ${height}px, over the 600px popup cap`);
     if (height > 600) {
       await page.setViewportSize({ width: 320, height: 600 });
       await page.screenshot({ path: `${shots}/${name}-${color}-viewport.png` });
@@ -141,7 +143,7 @@ try {
       await ref.locator('.popup').first().screenshot({ path: reference });
       const referenceMetrics = await ref.locator('.popup').first().evaluate(el => {
         const base = el.getBoundingClientRect().top;
-        return ['.hd', '.master', '.label', '.list', '.row', '.use', '.ft'].map(selector => {
+        return ['.hd', '.master', '.label', '.list', '.row', '.use', '.hd-side'].map(selector => {
           const e = el.querySelector(selector), r = e?.getBoundingClientRect();
           return { selector, top: r ? r.top - base : undefined, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
         });

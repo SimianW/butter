@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.12 (2026-11-04)
+
+- The popup fits without scrolling: the language switch and GitHub link moved from the bottom row
+  to the top-right corner, so they are no longer cut off at the bottom. The version number now
+  opens the changelog.
+
 ## 0.1.0-alpha.11 (2026-11-04)
 
 - Dragging the scrollbar through a long chat no longer makes ChatGPT load every question you pass.
