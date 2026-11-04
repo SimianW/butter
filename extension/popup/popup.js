@@ -74,7 +74,9 @@ let prefs = ButterStatus.normalize(),
   usage = { conversations: 0, bytes: 0 },
   usageAvailable = true,
   clearState = 'idle',
-  clearTimer;
+  clearTimer,
+  // Bumped by every live settings change, so a slower startup read cannot overwrite it.
+  settingsRevision = 0;
 const root = document.getElementById('popup');
 const scheme = matchMedia('(prefers-color-scheme: dark)');
 const theme = () => {
@@ -192,6 +194,7 @@ root.addEventListener('click', (e) => {
     root.querySelector(`[data-clear="${clearState === 'confirm' ? 'confirm' : 'ask'}"]`)?.focus();
     return;
   }
+  settingsRevision++;
   if (target.dataset.lang) prefs = { ...prefs, lang: target.dataset.lang };
   else if (target.dataset.switch === 'master') prefs = { ...prefs, enabled: !prefs.enabled };
   else {
@@ -207,6 +210,7 @@ root.addEventListener('click', (e) => {
 });
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local' && changes.butter) {
+    settingsRevision++;
     prefs = ButterStatus.normalize(changes.butter.newValue);
     render();
     if (prefs.opts.layout) refreshUsage();
@@ -234,11 +238,12 @@ async function poll() {
     render();
   }
 }
+const startupRevision = settingsRevision;
 Promise.all([
   chrome.storage.local.get('butter'),
   chrome.storage.session.get('butterFailures'),
 ]).then(([local, session]) => {
-  prefs = ButterStatus.normalize(local.butter);
+  if (settingsRevision === startupRevision) prefs = ButterStatus.normalize(local.butter);
   failures = session.butterFailures || {};
   render();
   poll();

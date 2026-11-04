@@ -327,3 +327,61 @@ test('actual popup pending switch is off, displays the consent line, and grants 
   assert.equal(shared.value().opts.layout, true);
   assert.doesNotMatch(html, /Not on yet/);
 });
+
+test('a delayed popup startup read cannot undo a newer consent choice', async () => {
+  const pending = { lang: 'en', opts: { layout: true } };
+  const shared = sharedStorage(pending);
+  const tab = cardTab(shared);
+  await tick();
+  tab.elapse(1000);
+  let resolveInitialGet, click;
+  const root = {
+    classList: { toggle() {} },
+    addEventListener: (type, fn) => (click = fn),
+    append() {},
+  };
+  const popupStorage = {
+    ...shared.storage,
+    local: {
+      ...shared.storage.local,
+      get: () => new Promise((resolve) => (resolveInitialGet = resolve)),
+    },
+    session: { get: async () => ({}) },
+  };
+  vm.runInNewContext(read('popup/popup.js'), {
+    ButterStatus: status,
+    ButterPopup: require('../extension/popup/model.js'),
+    structuredClone,
+    chrome: {
+      storage: popupStorage,
+      runtime: {
+        getManifest: () => ({ version_name: '0.1.0-alpha.10' }),
+        sendMessage: async () => ({ conversations: 0, bytes: 0 }),
+      },
+      tabs: { query: async () => [] },
+    },
+    document: {
+      getElementById: () => root,
+      documentElement: { classList: { toggle() {} } },
+      createElement: () => ({ set innerHTML(value) {}, content: {} }),
+    },
+    matchMedia: () => ({ matches: false, addEventListener() {} }),
+    setInterval() {},
+    clearInterval() {},
+    clearTimeout() {},
+    addEventListener() {},
+  });
+  await tab.click(true);
+  tab.elapse(160);
+  assert.equal(shared.value().layoutConsent, 'granted');
+  resolveInitialGet({ butter: pending });
+  await tick();
+  click({ target: { closest: () => ({ dataset: { lang: 'zh' } }) } });
+  await tick();
+  assert.equal(
+    shared.value().layoutConsent,
+    'granted',
+    'the stale startup snapshot must not be saved back',
+  );
+  assert.equal(tab.host().hidden, true, 'the card must stay hidden after a choice');
+});

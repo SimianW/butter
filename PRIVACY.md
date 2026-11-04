@@ -11,7 +11,8 @@ saves the text of your chats, has no server, and sends nothing to anyone.
 
 Butter reads the following while a ChatGPT tab is open. It keeps this only in that tab's memory, until
 you close or reload the tab; some of it can stay there while you move between chats in the same tab.
-None of it is written to disk or sent.
+The chat text and the raw ids are never written to disk; only the numbers and one-way hashes
+described under "What Butter saves" are. Nothing is sent.
 
 - **The conversation on screen.** Question and answer text, and message and conversation ids, from
   the page and from the responses ChatGPT already loads. Butter uses them to draw the question rail,
@@ -34,9 +35,12 @@ other website.
 **1. Your settings,** in Chrome's extension storage (`chrome.storage.local`): the on/off switches
 and the language.
 
-**2. Saved layouts,** only while "Remember long-chat layouts" is on. They live in Butter's own
-database in the extension (IndexedDB), not in ChatGPT's site storage. For each answer you have
-viewed, Butter saves:
+**2. Saved layouts,** only after you agree and only while "Remember long-chat layouts" is on. The
+first time you open ChatGPT after installing or updating Butter, a small card asks whether Butter
+may remember layouts. Nothing is saved until you agree, and Butter remembers your answer; you can
+change it at any time with the switch in the popup. Saved layouts live in Butter's own database in
+the extension (IndexedDB), not in ChatGPT's site storage. For each answer you have viewed, Butter
+saves:
 
 - the sizes and positions of its blocks, and its typography (font, size, spacing, colour);
 - one-way SHA-256 hashes of your account id, the conversation id and the message ids;
