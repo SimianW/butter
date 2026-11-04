@@ -216,7 +216,9 @@
             .join('')
         : null;
     if (epoch !== accountEpoch) return;
-    if (next !== accountHash) accountGeneration++;
+    // Initial discovery belongs to the requests already in flight; only leaving a known
+    // account fences those responses (including sign-out).
+    if (accountHash !== null && next !== accountHash) accountGeneration++;
     accountHash = next;
     announceAccount();
   };

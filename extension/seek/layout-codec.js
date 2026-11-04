@@ -44,7 +44,7 @@
     'BlinkMacSystemFont',
   ]);
   const font = new RegExp(
-    `^(?:(?:normal|italic|oblique) )?(?:(?:normal|bold|[1-9]\\d{0,2}|1000) )?(${px})(?:/(${px}|${decimal}))? (.{1,256})$`,
+    `^(?:(?:normal|italic|oblique) )?(?:(?:normal|bold|[1-9]\\d{0,2}|1000) )?(${px})(?:/(${px}|${decimal}|normal))? (.{1,256})$`,
   );
   const color = (value) => {
     const m = /^(rgb|rgba)\((\d{1,3}), (\d{1,3}), (\d{1,3})(?:, (0|1|0?\.\d{1,6}))?\)$/.exec(value);
@@ -72,7 +72,7 @@
           !!m &&
           parseFloat(m[1]) > 0 &&
           parseFloat(m[1]) <= 512 &&
-          (!m[2] || parseFloat(m[2]) <= 2048) &&
+          (!m[2] || m[2] === 'normal' || parseFloat(m[2]) <= 2048) &&
           m[3].split(',').length <= 16 &&
           m[3].split(',').every((token) => {
             token = token.trim();

@@ -1062,10 +1062,14 @@
             : rowTop(el);
           a.actualTurnTop = actual;
           a.pixelModelErrorPx = actual + d.offset - top;
-          a.landingErrorPx =
+          const error =
             a.semantic && (a.semantic.matched || a.semantic.fallback)
               ? a.semantic.lastError
               : a.pixelModelErrorPx;
+          // At either scroll boundary, text cannot always reach the preview inset. Validate
+          // the achievable destination, retaining the raw model/semantic error for diagnostics.
+          const target = Math.max(0, Math.min(a.sc.scrollHeight - a.sc.clientHeight, top + error));
+          a.landingErrorPx = target - top;
           a.turnTopErrorPx = actual - d.turnTop;
         }
         try {

@@ -623,3 +623,78 @@ test('WARM dispatch refreshes invalidated stored fingerprints before restore and
     );
   }
 });
+
+test('F6 first-question and semantic landings validate the achievable scroll destination', () => {
+  for (const semantic of [false, true]) {
+    const f = fixture();
+    const repo = require('node:path').resolve(__dirname, '..');
+    const frames = [];
+    let now = 0;
+    let facts = {};
+    Object.assign(f.ctx, {
+      Event: class {},
+      CSS: { escape: (x) => x },
+      clearInterval() {},
+      matchMedia: () => ({ matches: true }),
+      requestAnimationFrame: (fn) => frames.push(fn),
+      __butterAnchorVisibleSwap: () => ({ items: 0 }),
+      CustomEvent: class {
+        constructor(type, o = {}) {
+          this.type = type;
+          this.detail = o.detail;
+        }
+      },
+    });
+    f.ctx.performance.now = () => now;
+    f.ctx.document.dispatchEvent = (e) => {
+      if (e.type === 'butter-status-response') Object.assign(facts, JSON.parse(e.detail));
+    };
+    f.sc.isConnected = true;
+    f.sc.dispatchEvent = () => {};
+    f.sc.scrollTop = 0;
+    f.turn.parentElement.getBoundingClientRect = () => ({ top: 0, bottom: 520 });
+    f.turn.querySelector = () => ({ getBoundingClientRect: () => ({ top: 0 }) });
+    const model = [{ id: 't', index: 0, top: 0, h: 1000, known: true, layout: false, items: [] }];
+    f.ctx.testActive = {
+      sc: f.sc,
+      conv,
+      prep: { model, previewModel: model, flat: [], maxTop: 4300 },
+      startTop: 100,
+      lastTop: 0,
+      insetTop: 52,
+      hostRect: { x: 0, y: 52, width: 768, height: 500 },
+      rendered: new Map(),
+      ...(semantic ? { semantic: { done: true, matched: true, lastError: -52 } } : {}),
+    };
+    f.ctx.testEst = { hidden: true };
+    const bootstrap = fs.readFileSync(repo + '/extension/seek/preview-main.js', 'utf8');
+    vm.runInContext(
+      bootstrap.replace(
+        /\}\)\(\);\s*$/,
+        'active=testActive;revealOwner=active;est=testEst;globalThis.finishForTest=finish;})();',
+      ),
+      f.ctx,
+    );
+    f.ctx.finishForTest('pointerup');
+    for (let i = 0; frames.length && i < 20; i++) {
+      now += 16;
+      frames.shift()();
+    }
+    f.event('butter-status-request');
+    const state = require(repo + '/extension/shared/status.js').classify(facts).seek;
+    console.log(
+      'Clamped top:',
+      f.sc.scrollTop,
+      'destination top:',
+      f.ctx.testActive.destination.top,
+      'reported error:',
+      f.ctx.testActive.landingErrorPx,
+      'state:',
+      state,
+    );
+    assert.equal(f.sc.scrollTop, 0);
+    assert.equal(f.ctx.testActive.destination.top, 0);
+    assert.equal(state, 'ok');
+    assert.equal(f.ctx.testActive.landingErrorPx, 0);
+  }
+});
