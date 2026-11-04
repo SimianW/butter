@@ -40,6 +40,7 @@
     'OpenAI Sans Mono',
     'Inter',
     '-apple-system',
+    '-apple-system-body',
     'BlinkMacSystemFont',
   ]);
   const font = new RegExp(

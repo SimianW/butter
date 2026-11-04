@@ -455,7 +455,11 @@ test('worker rejects malformed geometry and text-bearing styles on writes and di
     assert.equal((await load(f)).records.length, 0, 'disk: ' + mutate);
     assert.equal(f.disk.size, 0);
   }
-  await put(f, [geometry()]);
+  const valid = geometry();
+  valid.styles = [
+    'font:normal 400 16px/26px -apple-system-body, ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";padding:0px 0px 0px 0px;border-radius:0px;background:rgba(0, 0, 0, 0);color:rgb(13, 13, 13);text-align:start',
+  ];
+  await put(f, [valid]);
   assert.equal((await load(f)).records.length, 1);
 });
 
