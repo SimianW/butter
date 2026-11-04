@@ -20,7 +20,7 @@ immediately. **Not yet checked** means the page has not exercised that optimizat
 Choose **English** or **中文** at the bottom; the question rail uses the same language. Butter
 stores these switch and language settings locally in Chrome.
 
-Numeric settings live in `config.js` inside the extension folder. After editing it, click the reload icon
+Numeric settings live in `shared/config-main.js` inside the extension folder. After editing it, click the reload icon
 on the extension card and reload the chatgpt.com tab.
 
 | Setting | Default | What it does |

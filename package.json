@@ -1,0 +1,11 @@
+{
+  "name": "butter-for-chatgpt",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write \"extension/**/*.{js,css,html,json}\" \"test/**\"",
+    "format:check": "prettier --check \"extension/**/*.{js,css,html,json}\" \"test/**\""
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}

@@ -64,7 +64,7 @@ await p.addInitScript(()=>{
 });
 if(mode==='stock'){
  // Navigation-only control: native ChatGPT rendering plus the exact production jump algorithm.
- await p.addInitScript({content:fs.readFileSync(path.join(root,'extension/butter-nav-main.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'extension/butter-nav.js'),'utf8')+`\n(()=>{const seen=new WeakSet();const scan=()=>{for(const e of document.querySelectorAll('[data-turn-key]'))if(!seen.has(e)){seen.add(e);globalThis.butterNavTurn(e)}};new MutationObserver(scan).observe(document,{subtree:true,childList:true});})();`});
+ await p.addInitScript({content:fs.readFileSync(path.join(root,'extension/history/conversation-main.js'),'utf8')+'\n'+fs.readFileSync(path.join(root,'extension/rail/rail.js'),'utf8')+`\n(()=>{const seen=new WeakSet();const scan=()=>{for(const e of document.querySelectorAll('[data-turn-key]'))if(!seen.has(e)){seen.add(e);globalThis.butterNavTurn(e)}};new MutationObserver(scan).observe(document,{subtree:true,childList:true});})();`});
 }
 async function traceStop(file){const done=new Promise(r=>cdp.once('Tracing.tracingComplete',r));await cdp.send('Tracing.end');const {stream}=await done;const f=fs.createWriteStream(file);for(;;){const x=await cdp.send('IO.read',{handle:stream,size:1<<20});f.write(x.base64Encoded?Buffer.from(x.data,'base64'):x.data);if(x.eof)break}await new Promise(r=>f.end(r));await cdp.send('IO.close',{handle:stream})}
 async function traceStart(){await cdp.send('Tracing.start',{transferMode:'ReturnAsStream',traceConfig:{includedCategories:['toplevel','devtools.timeline','disabled-by-default-devtools.timeline','disabled-by-default-devtools.timeline.stack','disabled-by-default-v8.cpu_profiler','v8.execute','blink.user_timing']}})}

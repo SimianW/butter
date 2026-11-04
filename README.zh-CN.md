@@ -36,13 +36,19 @@ ChatGPT 网页版实在是太卡了…… 这是一个真正让它好用起来�
 
 支持 Chrome、Edge、Brave、Arc（Chromium 95 及以上）。[设置与更多细节（英文）→](docs/install.md)
 
-当前版本：**0.1.0-alpha.10**（[更新日志](CHANGELOG.md)）。
+当前版本：**0.1.0-alpha.11**（[更新日志](CHANGELOG.md)）。
+
+## 隐私
+
+Butter 只在 chatgpt.com 上运行，不向任何地方发送任何数据，也从不保存聊天文字。它会保存你的设置；在"记住长对话的布局"
+打开时，还会保存你看过的回答的大小和位置，并用单向哈希代替 ID 做标记。保存的布局 30 天后过期，最多 50 MB，
+可以在弹窗里一键清除。[完整隐私政策 →](PRIVACY.zh-CN.md)
 
 ## 更多
 
 - [测试报告](docs/REPORT.md)：方法、全部结果、与其他插件的对比
 - [工作原理](docs/how-it-works.md)（英文）：改了什么、隐私、已知取舍
 - [开发](docs/development.md)（英文）：仓库结构、测试、打包
-- [隐私政策](PRIVACY.md)（英文）：读取、存储和发送了什么
+- [隐私政策](PRIVACY.zh-CN.md)：读取、存储和发送了什么
 
 MIT 许可证。

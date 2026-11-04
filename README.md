@@ -38,7 +38,15 @@ A thin rail on the right, one tick per question. Hover to preview, click to jump
 
 Chrome, Edge, Brave, Arc (Chromium 95+). [Settings and details →](docs/install.md)
 
-Current version: **0.1.0-alpha.10** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.11** ([changelog](CHANGELOG.md)).
+
+## Privacy
+
+Butter runs only on chatgpt.com and never sends anything anywhere. It never saves the text of your
+chats. It saves your settings and, while "Remember long-chat layouts" is on, the sizes and positions
+of answers you have viewed, labelled with one-way hashes instead of ids. Saved layouts expire after
+30 days, are capped at 50 MB, and can be cleared from the popup.
+[Full privacy policy →](PRIVACY.md)
 
 ## More
 

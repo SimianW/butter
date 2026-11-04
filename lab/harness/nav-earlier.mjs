@@ -4,9 +4,9 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
-const source = fs.readFileSync(process.env.NAV_SOURCE ?? new URL('../../extension/butter-nav.js', import.meta.url), 'utf8');
-const cv = fs.readFileSync(new URL('../../extension/butter-cv.js', import.meta.url), 'utf8');
-const css = fs.readFileSync(new URL('../../extension/butter.css', import.meta.url), 'utf8');
+const source = fs.readFileSync(process.env.NAV_SOURCE ?? new URL('../../extension/rail/rail.js', import.meta.url), 'utf8');
+const cv = fs.readFileSync(new URL('../../extension/stream/offscreen.js', import.meta.url), 'utf8');
+const css = fs.readFileSync(new URL('../../extension/stream/containment.css', import.meta.url), 'utf8');
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
 const p = await context.newPage(), errors = [], results = [];

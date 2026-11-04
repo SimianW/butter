@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.0-alpha.11 (2026-11-04)
+
+- Dragging the scrollbar through a long chat no longer makes ChatGPT load every question you pass.
+  While you hold it, Butter shows a light preview of the text at that spot, and the chat loads only
+  where you let go.
+- Butter can remember the layout of long chats, so the preview also works after a reload. It asks
+  once before saving anything. Saved layouts are numbers and one-way hashes, never chat text; they
+  stay on your computer for 30 days, 50 MB at most, and you can turn this off or clear it in the
+  popup.
+- A new popup: four switches grouped by what they do, and a warning only when something isn't
+  working on the current tab. New icon.
+- Sending a question while far up in a long chat clears the composer and jumps sooner: Butter now
+  jumps right after ChatGPT handles Enter, not before.
+- Switching back to Chrome no longer freezes scrolling for a moment in a long chat.
+- On macOS, the scrollbar stays visible while you drag it.
+- The jump on send now follows the "smoother scrolling" switch.
+- The privacy policy is rewritten for saved layouts and now has a Chinese version.
+- Known issue: right after you let go of the scrollbar, typing can lag for a few seconds while the
+  chat loads that spot. This will be fixed in the next build.
+
 ## 0.1.0-alpha.10 (2026-11-02)
 
 - ChatGPT's pulsing "responding" dot is shown whole again. Before, its left edge was cut off while

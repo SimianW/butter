@@ -116,7 +116,7 @@ for (const version of (process.env.VERSION ? [process.env.VERSION] : ['alpha6','
     const files=historicalFiles(revision), name=historicalStem(files);
     return execFileSync('git',['show',`${revision}:extension/${name}-nav.js`],{cwd:repo,encoding:'utf8'}).replaceAll(name,'butter');
   };
-  const original=ref ? historicalNav(ref) : fs.readFileSync(path.join(repo,'extension/butter-nav.js'),'utf8');
+  const original=ref ? historicalNav(ref) : fs.readFileSync(path.join(repo,'extension/rail/rail.js'),'utf8');
   fs.writeFileSync(path.join(out,`${version}-original.js`),original);
   const source=instrument(original); fs.writeFileSync(path.join(stage,'butter-nav.js'),source);
   fs.writeFileSync(path.join(out,`${version}-instrumented.js`),source);

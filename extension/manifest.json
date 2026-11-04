@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Butter for ChatGPT",
-  "version": "0.1.0.10",
-  "version_name": "0.1.0-alpha.10",
+  "version": "0.1.0.11",
+  "version_name": "0.1.0-alpha.11",
   "description": "Keeps long ChatGPT conversations smooth while answers stream, with a history rail to jump between questions.",
   "icons": {
     "16": "icons/icon-16.png",
@@ -12,41 +12,52 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://chatgpt.com/*"
-      ],
-      "css": [
-        "butter.css"
-      ],
+      "matches": ["https://chatgpt.com/*"],
+      "css": ["stream/containment.css"],
       "js": [
-        "butter-status.js",
-        "butter-settings.js",
-        "butter-nav.js",
-        "butter-cv.js"
+        "shared/status.js",
+        "storage/layout-bridge.js",
+        "shared/settings.js",
+        "consent/layout-consent.js",
+        "seek/seek-meta.js",
+        "rail/rail.js",
+        "stream/offscreen.js"
       ],
       "run_at": "document_start"
     },
     {
-      "matches": [
-        "https://chatgpt.com/*"
-      ],
+      "matches": ["https://chatgpt.com/*"],
       "js": [
-        "config.js",
-        "butter-main.js",
-        "butter-nav-main.js"
+        "shared/config-main.js",
+        "stream/throttle-main.js",
+        "history/conversation-main.js",
+        "seek/core-main.js",
+        "seek/layout-check-main.js",
+        "seek/anchor-main.js",
+        "seek/layout-codec.js",
+        "seek/layout-cache-main.js",
+        "seek/preview-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"
     }
   ],
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage", "unlimitedStorage"],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
     }
-  }
+  },
+  "background": {
+    "service_worker": "storage/layout-worker.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup/fonts/nunito-latin.woff2"],
+      "matches": ["https://chatgpt.com/*"],
+      "use_dynamic_url": true
+    }
+  ]
 }
