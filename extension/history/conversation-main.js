@@ -202,7 +202,8 @@
 
   // Passive identity only: select user.id, hash immediately, never access credential fields.
   let accountHash = null,
-    accountEpoch = 0;
+    accountEpoch = 0,
+    accountGeneration = 0;
   const announceAccount = () =>
     document.dispatchEvent(new CustomEvent('butter-account', { detail: accountHash }));
   document.addEventListener('butter-account-request', announceAccount);
@@ -215,6 +216,7 @@
             .join('')
         : null;
     if (epoch !== accountEpoch) return;
+    if (next !== accountHash) accountGeneration++;
     accountHash = next;
     announceAccount();
   };
@@ -235,7 +237,8 @@
       } catch {}
       document.dispatchEvent(new CustomEvent('butter-seek-write', { detail: { conv: seekConv } }));
     }
-    const seekRequestEpoch = seekEpoch;
+    const seekRequestEpoch = seekEpoch,
+      requestAccountGeneration = accountGeneration;
     if (olderOff() && holding) release();
     try {
       input = older(input, init);
@@ -277,7 +280,13 @@
       if (m)
         res
           .then((r) => (r.ok ? r.clone().json() : null))
-          .then((j) => j && seekRequestEpoch === seekEpoch && onPage(m[1], !!m[2], j))
+          .then(
+            (j) =>
+              j &&
+              seekRequestEpoch === seekEpoch &&
+              requestAccountGeneration === accountGeneration &&
+              onPage(m[1], !!m[2], j),
+          )
           .catch(() => {});
       else if (method === 'POST' && typeof init?.body === 'string' && SEND.test(url))
         onSend(init.body);

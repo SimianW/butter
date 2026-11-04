@@ -458,3 +458,76 @@ test('worker rejects malformed geometry and text-bearing styles on writes and di
   await put(f, [geometry()]);
   assert.equal((await load(f)).records.length, 1);
 });
+
+test('conversation responses cannot publish across account changes', async () => {
+  const emitted = [],
+    listeners = {};
+  let resolveConversation;
+  let identity = 'account-A';
+  const response = (j) => ({ ok: true, clone: () => ({ json: async () => j }) });
+  const win = {
+    addEventListener() {},
+    fetch(input) {
+      if (input === '/api/auth/session')
+        return Promise.resolve(response({ user: { id: identity } }));
+      return new Promise((resolve) => (resolveConversation = resolve));
+    },
+  };
+  const ctx = {
+    window: win,
+    URL,
+    Request,
+    Symbol,
+    crypto: crypto.webcrypto,
+    TextEncoder,
+    location: {
+      href: 'https://chatgpt.com/c/00000000-0000-0000-0000-000000000000',
+      origin: 'https://chatgpt.com',
+      pathname: '/c/00000000-0000-0000-0000-000000000000',
+    },
+    CustomEvent: class {
+      constructor(type, o) {
+        this.type = type;
+        this.detail = o?.detail;
+      }
+    },
+    document: {
+      documentElement: { getAttribute: () => '' },
+      addEventListener: (n, fn) => (listeners[n] = fn),
+      dispatchEvent: (e) => emitted.push(e),
+    },
+  };
+  vm.runInNewContext(
+    fs.readFileSync(require.resolve('../extension/history/conversation-main.js'), 'utf8'),
+    ctx,
+  );
+  const waitAccount = async (n) => {
+    for (let i = 0; i < 1000; i++) {
+      if (emitted.filter((e) => e.type === 'butter-account').length >= n) return;
+      await new Promise(setImmediate);
+    }
+    throw Error('account hash timeout');
+  };
+  await win.fetch('/api/auth/session');
+  await waitAccount(1);
+  const pending = win.fetch('/backend-api/conversations/00000000-0000-0000-0000-000000000000');
+  identity = 'account-B';
+  await win.fetch('/api/auth/session');
+  await waitAccount(2);
+  resolveConversation(
+    response({
+      messages: [
+        { id: 'old-A-message', author: { role: 'user' }, content: { parts: ['A content'] } },
+      ],
+    }),
+  );
+  await pending;
+  await new Promise(setImmediate);
+  assert.equal(emitted.filter((e) => e.type === 'butter-seek-data').length, 0);
+  assert.equal(emitted.filter((e) => e.type === 'butter-nav').length, 0);
+  const fresh = win.fetch('/backend-api/conversations/00000000-0000-0000-0000-000000000000');
+  resolveConversation(response({ messages: [] }));
+  await fresh;
+  await new Promise(setImmediate);
+  assert.equal(emitted.filter((e) => e.type === 'butter-seek-data').length, 1);
+});
