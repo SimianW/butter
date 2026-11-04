@@ -168,3 +168,16 @@ test('late native motion remains valid after sizing changes; an opposite applica
   assert.equal(r.sample({ top: 89000, height: 180462 }).accept, false);
   assert.equal(r.dump().top, 2038);
 });
+
+// The preview host is opaque and sits above the scroller: it must not cover an overlay thumb.
+test('preview host leaves the overlay thumb strip uncovered and keeps classic widths', () => {
+  const span = (p) => core.previewHostSpan(p);
+  // Overlay (offsetWidth === clientWidth): 16 px at the inline end stay uncovered.
+  assert.deepEqual(span(mac), { offset: 0, width: 750, shift: 0 });
+  assert.ok(span(mac).offset + span(mac).width <= mac.clientWidth - core.OVERLAY_BAND);
+  // RTL overlay: the strip is on the left; the content shifts back so the text column stays put.
+  assert.deepEqual(span({ ...mac, rtl: true }), { offset: 16, width: 750, shift: -16 });
+  // Classic: the gutter already excludes the bar, so the host keeps clientWidth.
+  assert.deepEqual(span(classic), { offset: 0, width: 1243, shift: 0 });
+  assert.deepEqual(span({ ...classic, rtl: true }), { offset: 0, width: 1243, shift: 0 });
+});

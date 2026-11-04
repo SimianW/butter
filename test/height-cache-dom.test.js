@@ -776,3 +776,285 @@ test('a row that grows outside its turn gets the turn measured again', () => {
   f.flush();
   assert.equal(f.context.__butterLayoutCache.get('a').rowH, 552);
 });
+
+// A second turn, 'b', whose answer streams until done() (state attribute flips to complete).
+const streamingTurn = (f) => {
+  const s = { streaming: true, queries: 0, reads: 0 };
+  f.context.setTimeout = (fn) => (f.frames.push(fn), 1); // the 1 s hold re-check runs on flush()
+  const item = Object.assign(new f.Element(), {
+    ...f.item,
+    getBoundingClientRect: () => (s.reads++, { top: 120, left: 0, width: 768, height: 26 }),
+  });
+  const t = Object.assign(new f.Element(), {
+    ...f.turn,
+    dataset: { turnKey: 'b' },
+    parentElement: { getBoundingClientRect: () => ({ top: 0, width: 768, height: 500 }) },
+    closest: (sel) => (sel === '.thread-scroll-container' ? f.sc : t),
+    querySelector: (sel) =>
+      sel.includes('in_progress')
+        ? s.streaming
+          ? {}
+          : null
+        : sel.includes('complete')
+          ? s.streaming
+            ? null
+            : {}
+          : sel.includes('author-role')
+            ? { getAttribute: () => 'm2' }
+            : null,
+    querySelectorAll: (sel) => (s.queries++, sel === '[data-math-source]' ? [] : [item]),
+  });
+  item.closest = () => t;
+  const chunk = () =>
+    f.mutation([{ type: 'childList', target: item, addedNodes: [], removedNodes: [] }]);
+  const done = () => {
+    s.streaming = false;
+    f.mutation([
+      {
+        type: 'attributes',
+        attributeName: 'data-talvt-turn-state',
+        target: t,
+        addedNodes: [],
+        removedNodes: [],
+      },
+    ]);
+  };
+  return { s, t, item, chunk, done };
+};
+
+test('nothing is queried, observed or measured for a turn whose answer is streaming', () => {
+  // On every streamed chunk the recorder re-queried the whole streaming turn (lab: 1.06 s of a
+  // 2 min answer), and idle measuring rejected it as incomplete 393 times.
+  const f = fixture();
+  const b = streamingTurn(f);
+  f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);
+  for (let i = 0; i < 5; i++) {
+    b.chunk();
+    f.flush();
+  }
+  assert.equal(b.s.queries, 0, 'no querySelectorAll on the streaming turn');
+  assert.equal(b.s.reads, 0, 'no geometry read');
+  assert.ok(!f.observed.has(b.t) && !f.observed.has(b.item), 'no ResizeObserver on it');
+  assert.equal(f.context.__heightCacheDump().stats.rejected.incomplete, undefined);
+  // Completion catches up: the turn is watched afresh and recorded.
+  b.done();
+  assert.ok(f.observed.has(b.t) && f.observed.has(b.item));
+  f.resize([
+    { target: b.t, contentRect: { height: 500 } },
+    { target: b.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('b')?.blocks[0], 26);
+});
+
+test('idle measuring waits while an answer streams and catches up when it completes', () => {
+  // Measuring forces style and layout of a document every chunk dirties; right after a send it
+  // re-measured the previous long answer in one 484 ms task.
+  const f = fixture();
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  const b = streamingTurn(f);
+  f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);
+  f.flush();
+  f.flush();
+  assert.equal(f.context.__heightCacheDump().stats.records, 0, 'nothing measured while it streams');
+  b.done();
+  f.resize([
+    { target: b.t, contentRect: { height: 500 } },
+    { target: b.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  f.flush();
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a')?.blocks[0], 26);
+  assert.equal(f.context.__butterLayoutCache.get('b')?.blocks[0], 26);
+});
+
+test('a block the stream held back is a placeholder until it renders, then it is recorded', () => {
+  // stream/offscreen.js keeps a block skipped before it ever rendered skipped after completion
+  // (data-butter-unrendered); its size is the placeholder until the user scrolls to it.
+  const f = fixture();
+  let held = true,
+    styleReads = 0;
+  const base = f.context.getComputedStyle;
+  f.context.getComputedStyle = (el) => {
+    if (el === f.item) styleReads++;
+    return { ...base(el), contentVisibility: 'auto' };
+  };
+  f.item.hasAttribute = (n) => n === 'data-butter-unrendered' && held;
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  cvState(f, f.item, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 120 } },
+  ]);
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a'), null);
+  assert.equal(f.context.__heightCacheDump().stats.rejected.placeholder, 1);
+  assert.equal(styleReads, 0, 'rejected without a forced style read');
+  // Scrolled to: it renders at its real size and the turn is recorded.
+  held = false;
+  cvState(f, f.item, false);
+  f.resize([{ target: f.item, contentRect: { height: 33 } }]);
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a')?.blocks[0], 33);
+});
+
+test('a sent question with no answer yet holds idle measuring like a streaming answer', () => {
+  // ChatGPT inserts the sent question as a turn that already reads complete; it turns in_progress
+  // seconds later. Measuring the previous answer in that gap slowed every later style recalc.
+  const f = fixture();
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  const b = streamingTurn(f);
+  let answered = false;
+  b.s.streaming = false; // reads complete
+  const qs = b.t.querySelector;
+  b.t.querySelector = (sel) =>
+    sel === '[data-user-message-bubble]'
+      ? {}
+      : sel === '[data-markdown-text-style="assistant-message"]'
+        ? answered
+          ? {}
+          : null
+        : qs(sel);
+  f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);
+  f.flush();
+  f.flush();
+  assert.equal(f.context.__heightCacheDump().stats.records, 0, 'held while the answer is pending');
+  assert.equal(b.s.queries, 0, 'the pending turn is not queried');
+  // The answer streams, then completes.
+  b.s.streaming = true;
+  answered = true;
+  f.mutation([
+    {
+      type: 'attributes',
+      attributeName: 'data-talvt-turn-state',
+      target: b.t,
+      addedNodes: [],
+      removedNodes: [],
+    },
+  ]);
+  f.flush();
+  assert.equal(f.context.__heightCacheDump().stats.records, 0, 'held while it streams');
+  b.done();
+  f.resize([
+    { target: b.t, contentRect: { height: 500 } },
+    { target: b.item, contentRect: { height: 26 } },
+  ]);
+  for (let i = 0; i < 4; i++) f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a')?.blocks[0], 26);
+  assert.equal(f.context.__butterLayoutCache.get('b')?.blocks[0], 26);
+});
+
+test('a sent question that never gets an answer stops holding idle measuring after 15 s', () => {
+  const f = fixture();
+  let now = 1;
+  f.context.performance.now = () => now;
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  const b = streamingTurn(f);
+  b.s.streaming = false;
+  const qs = b.t.querySelector;
+  b.t.querySelector = (sel) =>
+    sel === '[data-user-message-bubble]'
+      ? {}
+      : sel === '[data-markdown-text-style="assistant-message"]'
+        ? null
+        : qs(sel);
+  f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);
+  f.flush();
+  assert.equal(f.context.__heightCacheDump().stats.records, 0);
+  now += 16000;
+  for (let i = 0; i < 4; i++) f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a')?.blocks[0], 26, 'no longer held');
+  assert.ok(f.observed.has(b.t), 'the unanswered turn is watched as it is');
+});
+
+test('a streaming turn mounted together with completed turns is parked, not observed', () => {
+  // A container holding several turns reached watch() through forEach, whose index argument read
+  // as settled: every turn after the first skipped parking.
+  const f = fixture();
+  f.blocks.push(f.item);
+  const b = streamingTurn(f);
+  const c = streamingTurn(f);
+  c.t.dataset = { turnKey: 'c' };
+  const box = { nodeType: 1, hasAttribute: () => false, firstElementChild: {} };
+  box.querySelectorAll = () => [f.turn, b.t, c.t];
+  f.mutation([{ target: {}, addedNodes: [box], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  for (let i = 0; i < 3; i++) {
+    b.chunk();
+    f.flush();
+  }
+  for (const s of [b, c]) {
+    assert.equal(s.s.queries, 0, `turn ${s.t.dataset.turnKey} is not queried`);
+    assert.ok(!f.observed.has(s.t) && !f.observed.has(s.item), 'no ResizeObserver on it');
+  }
+  assert.equal(f.context.__heightCacheDump().stats.parked, 2);
+  assert.equal(f.context.__heightCacheDump().stats.records, 0, 'nothing measured while it streams');
+});
+
+test('a regenerated answer in a restored turn is not recorded at its placeholder size', () => {
+  // Parking kept the turn restored, and a restored turn's skipped blocks counted as real sizes:
+  // the regenerated answer's held-back formula was recorded at 152 px.
+  const { f } = recorded();
+  layoutReady(f);
+  f.context.__butterLayoutCache.get('a').removed = true;
+  const bubble = Object.assign(new f.Element(), {
+    firstElementChild: { classList: { contains: () => true } },
+    closest: (s) => (s === '.thread-scroll-container' ? f.sc : {}),
+  });
+  void bubble.clientWidth;
+  assert.equal(f.turn.style.contentVisibility, 'auto', 'restored');
+  const state = () =>
+    f.mutation([
+      {
+        type: 'attributes',
+        attributeName: 'data-talvt-turn-state',
+        target: f.turn,
+        addedNodes: [],
+        removedNodes: [],
+      },
+    ]);
+  // Regenerate: the answer streams with a new message id; its formula is held back unrendered.
+  f.c.complete = false;
+  state();
+  const qs = f.turn.querySelector;
+  f.turn.querySelector = (s) => (s.includes('author-role') ? { getAttribute: () => 'm2' } : qs(s));
+  const formula = Object.assign(new f.Element(), {
+    ...f.item,
+    hasAttribute: (n) => n === 'data-butter-unrendered',
+    getBoundingClientRect: () => ({ top: 120, left: 0, width: 768, height: 152 }),
+  });
+  f.blocks.splice(0, f.blocks.length, formula);
+  f.c.complete = true;
+  state();
+  cvState(f, formula, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: formula, contentRect: { height: 120 } },
+  ]);
+  for (let i = 0; i < 3; i++) f.flush();
+  const e = f.context.__butterLayoutCache.get('a');
+  assert.ok(!e || e.msg !== 'm2' || !e.blocks.includes(120), JSON.stringify(e?.blocks));
+  assert.ok(!e?.items?.some((x) => x.h === 152), 'no item at the placeholder size');
+  assert.equal(f.context.__heightCacheDump().stats.rejected.placeholder, 1);
+});

@@ -299,10 +299,18 @@
       .sort((x, y) => x.top - y.top)[0];
     a.insetTop = Math.round(head);
     a.insetBottom = form ? Math.max(0, Math.round(sr.bottom - form.top + 8)) : 140;
+    const st = getComputedStyle(s),
+      span = core.previewHostSpan({
+        offsetWidth: s.offsetWidth,
+        clientWidth: s.clientWidth,
+        borderLeft: parseFloat(st.borderLeftWidth) || 0,
+        borderRight: parseFloat(st.borderRightWidth) || 0,
+        rtl: st.direction === 'rtl',
+      });
     a.hostRect = {
-      x: sr.left + s.clientLeft,
+      x: sr.left + s.clientLeft + span.offset,
       y: sr.top + a.insetTop,
-      width: s.clientWidth,
+      width: span.width,
       height: Math.max(0, s.clientHeight - a.insetTop - a.insetBottom),
     };
     a.dark =
@@ -313,7 +321,8 @@
     const fg = md ? getComputedStyle(md).color : getComputedStyle(document.body).color,
       bg = opaque(s);
     host.style.cssText += `;left:${a.hostRect.x}px;top:${a.hostRect.y}px;width:${a.hostRect.width}px;height:${a.hostRect.height}px;background:${bg};color:${fg}`;
-    est.style.cssText = `left:${a.prep.colLeft}px;width:${Math.min(a.prep.colWidth, a.hostRect.width - a.prep.colLeft)}px;font:16px/26px ${md ? getComputedStyle(md).fontFamily : 'system-ui,sans-serif'};color:${fg}`;
+    layer.style.left = `${span.shift}px`;
+    est.style.cssText = `left:${a.prep.colLeft + span.shift}px;width:${Math.min(a.prep.colWidth, s.clientWidth - a.prep.colLeft)}px;font:16px/26px ${md ? getComputedStyle(md).fontFamily : 'system-ui,sans-serif'};color:${fg}`;
     host.style.setProperty('--page', bg);
     host.style.setProperty('--bubble', a.dark ? '#303030' : '#f4f4f4');
   }

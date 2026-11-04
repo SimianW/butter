@@ -19,6 +19,9 @@ function fixture() {
     setAttribute(n, v) {
       this.attrs[n] = v;
     },
+    removeAttribute(n) {
+      delete this.attrs[n];
+    },
     matches: () => false,
     querySelector: () => null,
     querySelectorAll: () => [],
@@ -73,6 +76,7 @@ function fixture() {
     turn,
     observed,
     seen: (e) => e.hasAttribute('data-butter-seen'),
+    unrendered: (e) => e.hasAttribute('data-butter-unrendered'),
     size: (target, height) => resized([{ target, contentRect: { height } }]),
     cv: (target, skipped) => listeners.contentvisibilityautostatechange({ target, skipped }),
     timers: () => timers.splice(0).forEach((fn) => fn()),
@@ -90,7 +94,7 @@ test('a block that rendered is marked seen', () => {
   assert.ok(f.seen(f.block));
 });
 
-test('a streamed block skipped before it rendered is not marked at its placeholder size', () => {
+test('a streamed block skipped before it rendered is held back, not marked at its placeholder size', () => {
   // Below the fold, the streaming rule skips a block as it arrives; ResizeObserver then reports the
   // 120px placeholder. Marking it kept it skipped at 120px after the answer completed.
   for (const order of ['event first', 'size first']) {
@@ -101,13 +105,29 @@ test('a streamed block skipped before it rendered is not marked at its placehold
     f.timers();
     assert.ok(!f.seen(f.block), order);
     assert.ok(!f.observed.has(f.block), order);
-    // The answer completes: the block renders at its real size, then it is marked.
-    f.complete();
-    assert.ok(f.observed.has(f.block), `${order}: observed again for its rendered size`);
-    f.size(f.block, 33);
-    f.timers();
-    assert.ok(f.seen(f.block), order);
+    assert.ok(f.unrendered(f.block), `${order}: held back at the flush, while the answer streams`);
   }
+});
+
+test('a held-back block stays skipped when the answer completes, until it comes into view', () => {
+  // ChatGPT lays out every block that is no longer skipped in the task that completes the answer,
+  // so the hold must outlast completion: rendering a long answer's blocks then froze the page.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120);
+  f.timers();
+  f.complete();
+  f.timers();
+  assert.ok(f.unrendered(f.block), 'kept after completion');
+  assert.ok(!f.observed.has(f.block), 'not measured at completion');
+  assert.ok(!f.seen(f.block));
+  // Scrolled to: it renders at its real size, is marked, and is no longer held back.
+  f.cv(f.block, false);
+  assert.ok(f.observed.has(f.block));
+  f.size(f.block, 33);
+  f.timers();
+  assert.ok(f.seen(f.block));
+  assert.ok(!f.unrendered(f.block));
 });
 
 test('a skipped streamed block is marked once it comes into view and renders', () => {
@@ -121,6 +141,7 @@ test('a skipped streamed block is marked once it comes into view and renders', (
   f.size(f.block, 33);
   f.timers();
   assert.ok(f.seen(f.block));
+  assert.ok(!f.unrendered(f.block));
 });
 
 test('a skipped streamed block still waiting for its flush is handled when the answer completes', () => {
@@ -136,4 +157,5 @@ test('a skipped streamed block still waiting for its flush is handled when the a
   f.size(f.block, 33);
   f.timers();
   assert.ok(f.seen(f.block));
+  assert.ok(!f.unrendered(f.block), 'rendered by the completion layout: measured, not held');
 });

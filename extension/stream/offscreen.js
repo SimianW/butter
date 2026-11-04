@@ -7,8 +7,11 @@
 // Blocks of an answer still streaming are skipped before they are marked (containment.css). ChatGPT
 // does not scroll with the stream, so most of a long answer arrives below the fold and is skipped
 // before it ever renders: its size is then only the 120px placeholder. Such a block is not marked;
-// it is marked once it has rendered: when it comes into view, or when the answer completes and the
-// streaming rule no longer skips it.
+// at the flush it gets data-butter-unrendered instead, which keeps it skipped after the answer
+// completes (containment.css). It is marked once it has rendered, when it comes into view.
+// The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+// skipped in the same task that marks the answer complete, before any observer callback runs, so
+// letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
@@ -29,9 +32,17 @@
     }
     for (const el of queue)
       if (!el.isConnected) continue;
-      else if (skipped.has(el)) waiting.add(el);
-      else el.setAttribute('data-butter-seen', '');
+      else if (skipped.has(el)) hold(el);
+      else {
+        el.setAttribute('data-butter-seen', '');
+        el.removeAttribute('data-butter-unrendered');
+      }
     queue.clear();
+  };
+  // Only answer blocks take the attribute; containment.css has no rule for it on turns.
+  const hold = (el) => {
+    waiting.add(el);
+    if (!el.hasAttribute('data-turn-key')) el.setAttribute('data-butter-unrendered', '');
   };
   const rendered = (el) => {
     skipped.delete(el);
@@ -66,17 +77,17 @@
   new MutationObserver((records) => {
     for (const r of records) {
       for (const n of r.addedNodes) if (n.nodeType === 1) scan(n);
-      // An answer that completes is no longer under the streaming rule: its unmarked blocks render,
-      // including skipped ones still queued for the next flush.
+      // An answer that completes is no longer under the streaming rule. Its held-back blocks stay
+      // skipped (data-butter-unrendered). Skipped blocks still queued for the flush got no
+      // attribute in time, so ChatGPT's completion layout has just rendered them: measure them.
       if (r.type === 'attributes' && (waiting.size || queue.size)) {
         const t = r.target.closest?.('[data-turn-key]');
         const busy = '[data-talvt-turn-state="in_progress"]';
         if (t && !t.matches(busy) && !t.querySelector(busy)) {
           for (const el of queue)
-            if (skipped.has(el) && t.contains(el)) (queue.delete(el), waiting.add(el));
-          for (const el of waiting)
-            if (!el.isConnected) waiting.delete(el);
-            else if (t.contains(el)) rendered(el);
+            if (skipped.has(el) && t.contains(el))
+              (queue.delete(el), waiting.add(el), rendered(el));
+          for (const el of waiting) if (!el.isConnected) waiting.delete(el);
         }
       }
     }

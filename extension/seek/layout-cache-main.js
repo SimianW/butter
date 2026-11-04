@@ -13,6 +13,9 @@
     blocksRestored: 0,
     restoreMisses: {},
     hooks: 0,
+    parked: 0,
+    released: 0,
+    held: 0,
     hits: [],
   };
   const turns = new Map(); // turnKey -> entry (see core.mergeRecord)
@@ -480,6 +483,22 @@
     !t.querySelector('[data-talvt-turn-state="in_progress"]') &&
     (t.matches('[data-talvt-turn-state="complete"]') ||
       !!t.querySelector('[data-talvt-turn-state="complete"]'));
+  // A turn whose answer is being generated, from the send until it reads complete. The cache leaves
+  // it alone: no observers, queries or measuring (there is nothing to record until it completes),
+  // and while one is generated nothing is measured in idle time either, because measuring forces
+  // style and layout of a document that every streamed chunk dirties. On completion the turn is
+  // watched afresh and everything queued meanwhile is measured.
+  // A sent question appears as a turn that reads complete but holds no answer yet; seconds later it
+  // turns in_progress. Measuring then (the previous answer, re-queued by the insertion) forced a
+  // 0.4 s style recalc, and every style recalc for the rest of the stream ran about 30% slower.
+  const BUSY = '[data-talvt-turn-state="in_progress"]';
+  const PENDING_MS = 15000; // a send that never starts streaming stops holding idle measuring
+  const busy = new Map(); // turn element -> { since, streamed }
+  const streams = (t) => t.matches(BUSY) || !!t.querySelector(BUSY);
+  const generating = (t) =>
+    !complete(t) ||
+    (!!t.querySelector('[data-user-message-bubble]') &&
+      !t.querySelector('[data-markdown-text-style="assistant-message"]'));
   // ChatGPT's markdown renderer reveals a streamed answer gradually. Only while it does so does it
   // render the revealed prefix instead of the full text, and only then does its markdown root carry
   // .AdaptiveStreaming (hashed: AdaptiveStreaming-xxxxxx). The turn may already read complete, so a
@@ -618,8 +637,31 @@
     changes.set(t, (changes.get(t) || 0) + 1);
     schedule();
   };
+  // Releases turns that completed without a state change reaching the observer, and says whether
+  // idle measuring must wait for an answer being generated.
+  const holding = () => {
+    let hold = false;
+    for (const [t, b] of busy) {
+      if (!t.isConnected) busy.delete(t);
+      else if (!generating(t)) release(t);
+      else if (streams(t)) hold = b.streamed = true;
+      else if (b.streamed)
+        continue; // stopped without completing: nothing to record, no hold
+      else if (performance.now() - b.since < PENDING_MS) hold = true;
+      else release(t, true); // a send that never started streaming: watch it as it is
+    }
+    return hold;
+  };
   function work(deadline) {
     idle = 0;
+    if (busy.size && holding()) {
+      S.held++;
+      idle = setTimeout(() => {
+        idle = 0;
+        schedule();
+      }, 1000);
+      return;
+    }
     if (globalThis.__butterSeeking?.()) {
       idle = setTimeout(() => {
         idle = 0;
@@ -666,9 +708,12 @@
   const boxless = (el) => !!el.getClientRects && el.getClientRects().length === 0;
   // A block skipped by the streaming rule before it ever rendered is only its placeholder size
   // (contain-intrinsic-size 120px: a display formula read as 152 px). stream/offscreen.js marks a
-  // block data-butter-seen only once it has rendered at its real size.
+  // block data-butter-seen only once it has rendered at its real size; until then, a block it held
+  // back (data-butter-unrendered) stays skipped after the answer completes.
   const placeholder = (b, t) => {
-    if (!skipped.has(b) || b.hasAttribute?.('data-butter-seen') || applied.has(t)) return false;
+    if (!skipped.has(b) || b.hasAttribute?.('data-butter-seen')) return false;
+    if (b.hasAttribute?.('data-butter-unrendered') && !cvOff()) return true;
+    if (applied.has(t)) return false;
     if (getComputedStyle(b).contentVisibility === 'auto') return true;
     skipped.delete(b); // no longer content-visibility: auto, so no event said it stopped skipping
     return false;
@@ -859,8 +904,12 @@
   };
   // The turn element's own size changes whenever blocks stream in or math typesets, so observing it
   // re-queues a record. Register blocks immediately on insertion, before their first layout.
-  const watch = (t) => {
-    if (meta.has(t) || !t.dataset.turnKey) return;
+  const watch = (t, settled = false) => {
+    if (meta.has(t) || !t.dataset.turnKey || busy.has(t)) return;
+    if (!settled && generating(t)) {
+      park(t);
+      return;
+    }
     live.add(t);
     // The record's rowH is the row's height; the row can grow outside the turn (no mutation inside
     // [data-turn-key]), so observe it too or the record goes stale without a new reveal re-measure.
@@ -875,22 +924,70 @@
     S.observed++;
     queue(t);
   };
+  // Stops watching a turn whose answer is being generated (see busy above).
+  function park(t) {
+    if (!busy.has(t)) {
+      busy.set(t, { since: performance.now(), streamed: false });
+      S.parked++;
+    }
+    schedule(); // holding() polls it, in case its completion reaches no observer
+    pending.delete(t);
+    if (job?.t === t) job = null;
+    if (applied.has(t)) unrestore(t); // the regenerated answer's blocks are not the recorded ones
+    const m = meta.get(t);
+    if (!m) return;
+    ro.unobserve(t);
+    if (m.row && meta.get(m.row)?.turn === t) {
+      ro.unobserve(m.row);
+      meta.delete(m.row);
+    }
+    for (const b of m.blocks || []) {
+      ro.unobserve(b);
+      meta.get(b).observing = false;
+    }
+    meta.delete(t);
+    live.delete(t);
+  }
+  function release(t, settled = false) {
+    busy.delete(t);
+    S.released++;
+    for (const el of t.querySelectorAll(ITEMS)) leanCache.delete(el);
+    watch(t, settled);
+  }
   new MutationObserver((rs) => {
     let removed = false;
-    const dirty = new Set();
+    const dirty = new Set(),
+      states = new Set(); // turns whose generation state may have changed
     for (const r of rs) {
       if (r.removedNodes?.length) removed = true;
       const parent = (r.target.nodeType === 1 ? r.target : r.target.parentElement)?.closest?.(
         '[data-turn-key]',
       );
-      if (parent) dirty.add(parent);
+      let state = r.attributeName === 'data-talvt-turn-state';
       for (const n of r.addedNodes || []) {
         if (n.nodeType !== 1) continue;
         if (n.hasAttribute('data-turn-key')) watch(n);
-        else if (n.firstElementChild) n.querySelectorAll('[data-turn-key]').forEach(watch);
+        else if (parent)
+          state ||=
+            n.hasAttribute('data-talvt-turn-state') ||
+            (!!n.firstElementChild && !!n.querySelector('[data-talvt-turn-state]'));
+        else if (n.firstElementChild)
+          n.querySelectorAll('[data-turn-key]').forEach((t) => watch(t));
       }
+      if (!parent) continue;
+      if (state) states.add(parent);
+      // A generating turn's only interesting change is its state.
+      if (state || !busy.has(parent)) dirty.add(parent);
     }
     for (const t of dirty) {
+      if (busy.has(t)) {
+        if (!generating(t)) release(t);
+        continue;
+      }
+      if (states.has(t) && t.dataset.turnKey && generating(t)) {
+        park(t);
+        continue;
+      }
       for (const b of meta.get(t)?.blocks || [])
         if (!b.isConnected) {
           ro.unobserve(b);
@@ -1007,9 +1104,7 @@
           const sc = this.closest('.thread-scroll-container');
           if (sc)
             for (const t of sc.querySelectorAll('[data-turn-key]'))
-              if (!applied.has(t)) {
-                restore(t);
-              }
+              if (!applied.has(t) && !busy.has(t)) restore(t);
         }
         return Reflect.apply(d.get, this, []);
       },

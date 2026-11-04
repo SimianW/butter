@@ -6,7 +6,7 @@ the whole conversation. Butter cuts that work in six places:
 | File | Change | Why |
 |---|---|---|
 | `stream/containment.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
-| `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away, and are marked only once they have rendered (in view, or when the answer completes). | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. |
+| `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away, and are marked only once they have rendered. A streamed block still skipped at the 1 s flush, so never rendered, gets `data-butter-unrendered` and stays skipped after the answer completes, until it comes into view. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. ChatGPT lays out every block that is no longer skipped in the task that completes the answer, so letting never-rendered blocks render then froze the page for about 0.5 s on a long answer. |
 | `rail/rail.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end first, then lets ChatGPT scroll the new question into place. Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
 | `stream/throttle-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
 | `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
@@ -32,7 +32,8 @@ turn mounts again at the same width with the same message and blocks, the cache 
 before ChatGPT's first layout read, as inline `content-visibility`, so only while the cv setting is on.
 Nor does one with a block that the streaming rule skipped before it ever rendered: ChatGPT does not
 scroll with the stream, so most of a long answer arrives below the fold, and such a block is only its
-120 px placeholder (a display formula reads 152 px). A widget wrapped in a `display: contents` block
+120 px placeholder (a display formula reads 152 px); such blocks stay so until the user scrolls to
+them, and the turn is recorded once all have rendered. A widget wrapped in a `display: contents` block
 (learning cards, card rows in long answers) has no box of its own; its children's boxes give its size.
 Measuring a turn reads the layout of all its items, so it runs only in idle time, a slice of 24 items
 between checks of the idle deadline: a turn first seen during a fast scroll is recorded while it is
@@ -42,6 +43,13 @@ view is measured again only if its record was dropped or replaced, or if the tur
 (a DOM, size or window-width change); a remounted copy of a recorded message with the recorded turn,
 row and block sizes adopts the record without measuring. Nothing is measured while seek, cv and
 layout are all off.
+While an answer is being generated, from the send (ChatGPT inserts the question as a turn that
+reads complete but has no answer yet) until the turn reads complete, the cache leaves that turn
+alone: no observers, queries or measuring. It measures nothing else in idle time either: a measure
+forces style and layout of a page that every chunk dirties, and the one that used to land just
+after the send (the previous answer, about 0.4 s) left every later style recalc of the stream about
+30% slower. On completion the turn is watched afresh and everything queued is measured; a send that
+never starts streaming stops holding after 15 s. A seek press during a stream still measures.
 
 Seen text uses those recorded positions at half opacity. Display math becomes a single line of TeX
 in a placeholder of the recorded height, capped by the same TeX-row limit for rows stored by

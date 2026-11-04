@@ -4,6 +4,11 @@
   const OVERLAY_BAND = 15; // overlay bars: press must sit within this many px of the inline-end edge
   const CLASSIC_ARROW = 12; // Chromium classic scrollbar endpoint height
   const CLASSIC_MIN_THUMB = 12;
+  const OVERLAY_STRIP = 16; // overlay thumb strip the preview leaves uncovered (press band + 1 px slack)
+
+  // Scrollbar gutter width: > 0 for classic bars, 0 for overlay bars that draw over the content.
+  const scrollbarGutter = (p) =>
+    p.offsetWidth - p.clientWidth - (p.borderLeft || 0) - (p.borderRight || 0);
 
   // ---- 1. Thumb press classification ----------------------------------------------------------
   // p.x / p.y: pointer position relative to the scroller's border box, in CSS px of the element.
@@ -19,7 +24,7 @@
     const bl = p.borderLeft || 0,
       br = p.borderRight || 0,
       bt = p.borderTop || 0;
-    const gutter = p.offsetWidth - p.clientWidth - bl - br;
+    const gutter = scrollbarGutter(p);
     if (gutter > 0) {
       const leftGutter =
         p.clientLeft == null ? (p.rtl ? gutter : 0) : Math.max(0, p.clientLeft - bl);
@@ -43,6 +48,17 @@
     if (fromEdge < -1 || fromEdge > (p.band ?? OVERLAY_BAND))
       return { kind: null, reason: 'overlay-off-band' };
     return { kind: 'overlay', fromEdge };
+  }
+
+  // Preview host span inside the scroller's padding box. Overlay bars draw the thumb over the
+  // content, so an opaque host as wide as clientWidth hides it while dragging: leave the inline-end
+  // strip uncovered. `shift` moves the content back so the text column stays put (RTL only).
+  function previewHostSpan(p) {
+    if (scrollbarGutter(p) > 0) return { offset: 0, width: p.clientWidth, shift: 0 };
+    const strip = Math.min(OVERLAY_STRIP, p.clientWidth);
+    return p.rtl
+      ? { offset: strip, width: p.clientWidth - strip, shift: -strip }
+      : { offset: 0, width: p.clientWidth - strip, shift: 0 };
   }
 
   // ---- 2. Activation: a candidate becomes a seek session only on scroll evidence ----------------
@@ -495,6 +511,7 @@
     OVERLAY_BAND,
     createRelease,
     classifyPress,
+    previewHostSpan,
     sameSelection,
     createActivation,
     validateSnapshot,
