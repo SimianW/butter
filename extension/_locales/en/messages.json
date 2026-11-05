@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Butter for ChatGPT",
+    "description": "Extension name shown in Chrome and the Chrome Web Store. Keep the Butter for ChatGPT brand in English."
+  },
+  "appDesc": {
+    "message": "Makes long ChatGPT chats smooth: no freezes while answers stream, instant scrollbar previews, and a question rail.",
+    "description": "Short extension summary shown in Chrome and the Chrome Web Store; maximum 132 characters."
+  }
+}

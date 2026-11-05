@@ -2,6 +2,7 @@
 
 ## 0.1.0-alpha.12 (2026-11-04)
 
+- Chrome and the Chrome Web Store show Butter's name and summary in Chinese when your browser is set to Chinese, and the summary is updated.
 - The popup fits without scrolling: the language switch and GitHub link moved from the bottom row
   to the top-right corner, so they are no longer cut off at the bottom. The version number now
   opens the changelog.
