@@ -7,9 +7,9 @@ the whole conversation. Butter cuts that work in six places:
 |---|---|---|
 | `stream/containment.css` | `container-type: normal` on the thread's inner wrapper. | As a size container around the whole conversation it makes Chrome redo style for everything inside on every streamed update. Most of the win. |
 | `stream/containment.css` + `stream/offscreen.js` | `content-visibility: auto` on turns and answer blocks, but only after they have rendered once (`data-butter-seen`); blocks of the answer being streamed get it right away, and are marked only once they have rendered. A streamed block still skipped at the 1 s flush, so never rendered, gets `data-butter-unrendered` and stays skipped after the answer completes, until it comes into view. | Off-screen content skips style and layout. Waiting for the first render means the browser already knows each block's real height, so scrolling never jumps. ChatGPT lays out every block that is no longer skipped in the task that completes the answer, so letting never-rendered blocks render then froze the page for about 0.5 s on a long answer. |
-| `rail/rail.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end, then lets ChatGPT scroll the new question into place. The jump comes right after ChatGPT's own Enter or click handler, in the same task: jumping before it made that handler lay out the end of the chat before it cleared the composer, so the page froze with the typed text still showing (lab: 3.1 s instead of 0.6 s). Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. Sending from the top of the long test chat took 2.6 s instead of 9.6 s. |
+| `rail/rail.js` | When you send a question while scrolled more than 1.5 screens above the end, jumps to one screen above the end, then lets ChatGPT scroll the new question into place. The jump comes right after ChatGPT's own Enter or click handler, in the same task: jumping before it made that handler lay out the end of the chat before it cleared the composer, so the page froze with the typed text still showing (lab: 3.1 s instead of 0.6 s). Enter and the send button do this; Shift+Enter (a newline) doesn't. | ChatGPT's own scroll to the new question passes every turn in between, and each one it passes is mounted and laid out. In the latest lab benchmark, sending from far up made the new question visible in 3.4 s instead of 13.1 s. |
 | `stream/throttle-main.js` (page world) | Lets ChatGPT's stream smoother publish at most every 250 ms instead of every frame. Only the exact callback `()=>{this.frame=void 0,this.publish()}` is touched; anything else passes through. | Each publish re-renders the answer and restyles the page. Text still streams; it arrives in slightly bigger steps. |
-| `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. A jump to an early question in the test chat blocked typing for at most 1.8 s instead of 3.7 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
+| `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. In the latest lab benchmark, the longest frame while earlier messages loaded was 2.3 s instead of 8.4 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
 | `seek/preview-main.js` + `seek/layout-cache-main.js` (page world) | Holds virtualizer scroll notifications during a native thumb drag and draws cached text instead. | ChatGPT mounts the destination after release, so dragging past many turns does not mount each one. |
 
 The [history rail](history-rail.md) lives in `rail/rail.js` and `history/conversation-main.js`.
@@ -108,14 +108,16 @@ The worker serializes operations, prunes expired records, and caps serialized re
 50,000,000 across all accounts, evicting least recently used rows first. This is logical payload
 size, including stored metadata; IndexedDB's physical/index overhead is browser-dependent.
 `unlimitedStorage` removes Chrome's quota/eviction risk; Butter still enforces its own limit.
-`butter.opts.layout` defaults to true; false deletes every account's saved layouts and stops
+`ButterStatus.normalize` keeps `opts.layout` off until the user grants `layoutConsent`
+through the in-page card or popup switch. Pending or declined consent prevents persisted
+geometry reads/writes. Setting layout false deletes every account's saved layouts and stops
 persisted reads/writes while keeping the in-session cache. Clear increments a durable generation
 so delayed writes from other tabs cannot repopulate cleared data. The bridge retires disk-backed
 memory on clear. New measurements can subsequently save again if saving remains enabled.
 
 The bridge deletes the old site-origin trial database `butter-seek-cold-geometry-v1` once and marks
 success in extension settings. A blocked/failed deletion is retried on a later visit. No old
-records are read or imported. See [privacy and clearing instructions](../PRIVACY.md#what-it-stores),
+records are read or imported. See [privacy and clearing instructions](../PRIVACY.md#what-butter-saves-on-your-computer),
 the [runtime API](development.md#layout-storage-api), and the
 [backend/permission rationale](layout-storage-design.md).
 
@@ -127,9 +129,12 @@ the [runtime API](development.md#layout-storage-api), and the
   drag; an unmeasured destination may still need alignment when released.
 - Holding mounts during a drag moves ChatGPT's first render of the destination area to the
   release. ChatGPT then renders the target turn and its never-rendered neighbours in one task, so
-  typing right after release can wait about 5 s in a long chat, against about 2 s without the
-  preview at a real drag pace. Time until the destination is readable is about the same. In
-  exchange the drag itself stays smooth: held-frame p95 about 30 ms, against 120–1455 ms. Butter's
+  a separate [drag-release trace](../notes/runs/2026-11-04-drag-release/report.md) found that typing
+  right after release could wait about 5 s in a long chat, against about 2 s without the preview
+  at a real drag pace. In that trace, time until the destination was readable was about the same;
+  the drag itself stayed smooth: held-frame p95 about 30 ms, against 120–1455 ms. These are separate
+  measurements from the [latest benchmark](benchmarks.md), where release readiness was slower
+  with Butter. Butter's
   own scripts take about 70 ms of that task. Every fix we found changes what you see: skipping the
   neighbours with estimated heights, revealing before they mount, or mounting during the drag.
 - Wide tables and visualizations are sized against the app's main content area instead of the

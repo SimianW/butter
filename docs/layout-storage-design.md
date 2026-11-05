@@ -45,7 +45,8 @@ No `navigator.storage.estimate()` value is used.
 The worker recomputes each row's exact UTF-8 JSON size and sums the durable store on every geometry
 operation, including the first request that starts/restarts a worker. Writes, deletion and eviction
 commit together in a readwrite transaction. Unknown-account requests are rejected before opening
-the database. There is no byte total or account authority in a worker global. Globals cache a DB
+the database. Persisted geometry access also requires `layoutConsent: "granted"` and the layout
+option on; default-pending consent prevents geometry reads/writes, and pending usage returns zero. There is no byte total or account authority in a worker global. Globals cache a DB
 connection, a promise queue, and settings reloaded from `chrome.storage.local`; losing them cannot
 lose layout data or clear fencing. OS disk exhaustion can still reject writes; warm preview works.
 

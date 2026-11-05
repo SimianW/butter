@@ -1,5 +1,7 @@
 # Butter for ChatGPT 测试报告
 
+Historical, as of 2026-10-30; references to builds and measurements describe that period.
+
 2026-10-29 至 10-30。测的是 0.1.0-alpha 版（开发时的内部版本名是 v5，结果表里的 `butter-v5`）。本文写清楚测了什么、怎么测的、每个数字从哪来。原始数据的汇总表在 [`results/`](../results)，测试脚本在 [`lab/`](../lab)。
 
 ## 结论

@@ -1,4 +1,4 @@
-# Persisted data inventory for the privacy-policy rewrite
+# Persisted data inventory
 
 This is a factual implementation inventory, not a replacement privacy policy. No chat text,
 raw account id, auth token or cookie is persisted. All processing and storage remain on the device;
@@ -49,9 +49,22 @@ file/index overhead and the bounded control values above are outside that logica
 
 | Key | Shape | Derivation/retention |
 |---|---|---|
-| `butter` | `{enabled:true,opts:{container:true,cv:true,throttle:true,older:true,rail:true,layout:true},lang:"en"}` | Existing user settings plus default-true `opts.layout`; not derived from chat text. Defaults need not be written. Retained until changed or extension data removal. |
+| `butter` | `{enabled:true,opts:{container:true,cv:true,throttle:true,older:true,seek:true,rail:true,layout:false},lang:"en",layoutConsent:"pending"}` | Normalized settings include default-true `opts.seek`; `opts.layout` stays false until `layoutConsent: "granted"` and the saved layout option is not false. Not derived from chat text. Defaults need not be written. Retained until changed or extension data removal. |
 | `butterLayoutMigrated` | `true` | Successful deletion marker for the legacy site database. No chat-derived data; retained until extension data removal. |
 | `butterLayoutCleared` | Random UUID string | Change notification for open tabs, replaced on clear. No chat/account-derived data; retained until the next clear or extension data removal. |
+
+## `chrome.storage.session`
+
+`butterFailures` holds observed failures by feature group and failed feature. It contains no chat
+or account data. Successful engagement of the failed feature removes its record; disabling a
+setting or switching chats preserves it. Browser shutdown clears it.
+
+## Consent
+
+`butter.layoutConsent` is `pending`, `granted` or `declined`. The in-page card records the answer;
+the popup layout switch can update it. Pending or declined consent prevents persisted geometry
+reads/writes regardless of a saved layout option. Consent is a local setting, not derived
+from chat text. Pending usage returns zero.
 
 ## Clearing and other storage
 
