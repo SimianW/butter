@@ -1,7 +1,10 @@
 # Butter icon
 
-The approved “A 改” vector drawings are the sources. `butter-icon-final.svg` supplies 32, 48 and
-128 px; `butter-icon-final-16.svg` simplifies the drawing and adds the cream halo at 16 px.
+The approved “A 改” vector drawings are the sources. `butter-icon-final.svg` supplies 48 and
+128 px. The toolbar sizes drop the floor shadow and stretch the drawing to fill the square, so the
+wide block isn't dwarfed by Chrome's square toolbar icons: `butter-icon-toolbar.svg` supplies
+32 px (the toolbar on high-DPI screens), and `butter-icon-final-16.svg` simplifies the drawing and
+adds the cream halo at 16 px.
 The popup inlines the main drawing at 54 × 48 px.
 
 Regenerate the transparent PNGs from the repository root:
