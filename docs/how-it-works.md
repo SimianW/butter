@@ -145,5 +145,5 @@ the [runtime API](development.md#layout-storage-api), and the
   `data-talvt-turn-state`, `data-user-message-bubble`, `.thread-scroll-container`, one Tailwind
   class) and the history rail on the shape of ChatGPT's conversation API responses. If ChatGPT
   changes them the extension mostly stops helping. Because it also wraps fetch, layout and scroll
-  events, a partial change could still misbehave. Pausing Butter from the popup stops its changes;
-  its fetch wrapper then only passes requests through unchanged.
+  events, a partial change could still misbehave. Pausing Butter from the popup disables request
+  rewriting and drag deferral; the fetch wrapper stays installed and keeps observing responses.
