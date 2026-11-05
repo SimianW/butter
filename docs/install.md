@@ -3,10 +3,11 @@
 ## From the Chrome Web Store
 
 [Add to Chrome](https://chromewebstore.google.com/detail/butter-for-chatgpt/fedpfgnghhahjkkcdeepohabigdjfhif),
-then reload any open chatgpt.com tabs. Store installs receive updates automatically.
+then reload any open chatgpt.com tabs. Store installs receive updates automatically; each update goes
+through Google's review first, so the store can be a few days behind the latest GitHub release.
 
 Works on Windows, macOS and Linux in Chrome, Edge, Brave, Arc and other Chromium browsers
-(version 95 or later). Not in Safari or Firefox.
+(version 111 or later). Not in Safari or Firefox.
 
 ## Or install manually
 

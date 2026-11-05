@@ -6,7 +6,7 @@ Long ChatGPT chats, smooth as butter.
 
 ## Install
 
-**[Add to Chrome](https://chromewebstore.google.com/detail/butter-for-chatgpt/fedpfgnghhahjkkcdeepohabigdjfhif)** — install from the Chrome Web Store, then reload ChatGPT.
+**[Add to Chrome](https://chromewebstore.google.com/detail/butter-for-chatgpt/fedpfgnghhahjkkcdeepohabigdjfhif)** — install from the Chrome Web Store, then reload ChatGPT. Store updates go through Google's review, so the store can be a few days behind the latest [GitHub release](https://github.com/SimianW/butter/releases).
 
 ### Or install manually
 
@@ -14,7 +14,7 @@ Long ChatGPT chats, smooth as butter.
 2. Open `chrome://extensions` and turn on **Developer mode**.
 3. Click **Load unpacked**, select the `butter` folder, then reload chatgpt.com.
 
-Supports Chrome, Edge, Brave and Arc (Chromium 95+). Safari and Firefox are not supported.
+Supports Chrome, Edge, Brave and Arc (Chromium 111+). Safari and Firefox are not supported.
 [Install and settings →](docs/install.md)
 
 Current version: **0.1.0-alpha.12** ([changelog](CHANGELOG.md)).
@@ -85,7 +85,7 @@ Butter runs only on chatgpt.com, makes no network requests of its own, and has n
 
 **Does it send my data anywhere?** No. All processing and storage stay in your browser.
 
-**What if ChatGPT changes?** Butter can stop helping if ChatGPT changes its page; it never breaks the page.
+**What if ChatGPT changes?** Butter checks for the parts of ChatGPT's page it relies on and stops helping when they are missing. If an update still causes problems, pause Butter from the popup's main switch and [open an issue](https://github.com/SimianW/butter/issues).
 
 **How do I turn parts off?** Open the popup from Butter's toolbar icon. Use the individual switches, or pause Butter with the main switch.
 

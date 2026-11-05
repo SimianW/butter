@@ -6,7 +6,7 @@
 
 ## 安装
 
-**[添加至 Chrome](https://chromewebstore.google.com/detail/butter-for-chatgpt/fedpfgnghhahjkkcdeepohabigdjfhif)** — 从 Chrome 应用商店安装，然后刷新 ChatGPT。
+**[添加至 Chrome](https://chromewebstore.google.com/detail/butter-for-chatgpt/fedpfgnghhahjkkcdeepohabigdjfhif)** — 从 Chrome 应用商店安装，然后刷新 ChatGPT。商店更新要经过 Google 审核，可能比 [GitHub 最新版本](https://github.com/SimianW/butter/releases)晚几天。
 
 ### 或者手动安装
 
@@ -14,7 +14,7 @@
 2. 打开 `chrome://extensions`，开启 **开发者模式**。
 3. 点击 **加载已解压的扩展程序**，选择 `butter` 文件夹，然后刷新 chatgpt.com。
 
-支持 Chrome、Edge、Brave 和 Arc（Chromium 95 及以上），暂不支持 Safari 和 Firefox。
+支持 Chrome、Edge、Brave 和 Arc（Chromium 111 及以上），暂不支持 Safari 和 Firefox。
 [安装与设置（英文）→](docs/install.md)
 
 当前版本：**0.1.0-alpha.12**（[更新日志](CHANGELOG.md)）。
@@ -85,7 +85,7 @@ Butter 只在 chatgpt.com 上运行，不自行发起网络请求，没有服务
 
 **会把我的数据发送到别处吗？** 不会。所有处理和存储都在你的浏览器内完成。
 
-**ChatGPT 改版了怎么办？** 如果 ChatGPT 改了页面结构，Butter 可能不再起作用，但不会弄坏页面。
+**ChatGPT 改版了怎么办？** Butter 会检查它依赖的页面结构，找不到时就停止优化。如果更新后仍然出现问题，可以用弹窗里的总开关暂停 Butter，并[提交 issue](https://github.com/SimianW/butter/issues)。
 
 **怎样关闭部分功能？** 点击工具栏里的 Butter 图标，在弹窗中分别关闭各项功能，或用总开关暂停 Butter。
 
