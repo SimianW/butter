@@ -26,6 +26,7 @@
     layer,
     est,
     fade,
+    notice,
     active = null,
     pendingCommit = null,
     held = false,
@@ -263,8 +264,8 @@
     host.setAttribute('aria-hidden', 'true');
     const shadow = host.attachShadow({ mode: 'open' });
     shadow.innerHTML = `<style>
-:host{all:initial;--math-bg:rgb(0 0 0 / .04);--math-fg:#5d5d5d}
-:host([data-dark]){--math-bg:rgb(255 255 255 / .06);--math-fg:#a3a3a3}
+:host{all:initial;--math-bg:rgb(0 0 0 / .04);--math-fg:#5d5d5d;--notice-bg:#fafafa;--notice-border:#bbb;--notice-fg:#444}
+:host([data-dark]){--math-bg:rgb(255 255 255 / .06);--math-fg:#a3a3a3;--notice-bg:#262626;--notice-border:#666;--notice-fg:#ccc}
 .layer{position:absolute;left:0;top:0;width:100%;height:0}
 .it{position:absolute;box-sizing:border-box;margin:0;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;opacity:.5}
 .est{position:absolute;box-sizing:border-box;overflow:hidden;overflow-wrap:anywhere}
@@ -275,10 +276,15 @@
 .math.display{display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:var(--math-bg);border-radius:8px;padding:0 12px;font:12px/1.5 ui-monospace,"SF Mono",Menlo,monospace;white-space:nowrap;overflow:hidden}
 .math.display span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fade{position:absolute;inset:auto 0 0;height:60px;background:linear-gradient(transparent,var(--page));pointer-events:none}
-</style><div class="layer"></div><div class="est" hidden></div><div class="fade" hidden></div>`;
+.fade.unseen{height:110px;background:linear-gradient(transparent,var(--page) 55%)}
+.notice{position:absolute;bottom:8px;box-sizing:border-box;padding:8px 10px;border:1px dashed var(--notice-border);border-radius:8px;background:var(--notice-bg);font-size:13px;line-height:1.45;color:var(--notice-fg)}
+.notice:not([hidden]){display:flex;gap:8px;align-items:flex-start}
+.notice b{display:block;font-weight:600;color:var(--preview-fg)}
+</style><div class="layer"></div><div class="est" hidden></div><div class="fade" hidden></div><div class="notice" hidden><span>⋯</span><span><b></b><span class="notice-detail"></span></span></div>`;
     layer = shadow.querySelector('.layer');
     est = shadow.querySelector('.est');
     fade = shadow.querySelector('.fade');
+    notice = shadow.querySelector('.notice');
     document.documentElement.append(host);
   }
   function place(a) {
@@ -325,6 +331,8 @@
     host.style.cssText += `;left:${a.hostRect.x}px;top:${a.hostRect.y}px;width:${a.hostRect.width}px;height:${a.hostRect.height}px;background:${bg};color:${fg}`;
     layer.style.left = `${span.shift}px`;
     est.style.cssText = `left:${a.prep.colLeft + span.shift}px;width:${Math.min(a.prep.colWidth, s.clientWidth - a.prep.colLeft)}px;font:16px/26px ${md ? getComputedStyle(md).fontFamily : 'system-ui,sans-serif'};color:${fg}`;
+    notice.style.cssText = `left:${a.prep.colLeft + span.shift}px;width:${Math.min(a.prep.colWidth, s.clientWidth - a.prep.colLeft)}px;font-family:${md ? getComputedStyle(md).fontFamily : 'system-ui,sans-serif'}`;
+    host.style.setProperty('--preview-fg', fg);
     host.style.setProperty('--page', bg);
     host.style.setProperty('--bubble', a.dark ? '#303030' : '#f4f4f4');
   }
@@ -369,6 +377,18 @@
       H = a.hostRect.height;
     const question = core.previewQuestion(a.prep.model, top, a.insetTop);
     const unseen = question && !question.layout;
+    notice.hidden = !unseen;
+    if (unseen) {
+      // Match the rail's language setting; seek-meta.js lives in the isolated world.
+      const zh = document.documentElement.getAttribute('data-butter-lang') === 'zh';
+      notice.querySelector('b').textContent = zh
+        ? '只能预览这个回答的开头'
+        : 'Only the start of this answer can be previewed';
+      notice.querySelector('.notice-detail').textContent = zh
+        ? '其余部分还没有缓存，打开这个问题即可查看。'
+        : "The rest isn't cached yet. Open the question to see it.";
+    }
+    fade.className = unseen ? 'fade unseen' : 'fade';
     const vis = unseen ? [] : core.windowAt(a.prep.flat, view, H, 400),
       want = new Set();
     const estimated = unseen

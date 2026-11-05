@@ -1,0 +1,130 @@
+[
+  {
+    "width": 840,
+    "dark": false,
+    "lang": "en",
+    "sameStart": true,
+    "text": "⋯Only the start of this answer can be previewedThe rest isn't cached yet. Open the question to see it.",
+    "border": "dashed",
+    "background": "rgb(250, 250, 250)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 840,
+    "dark": false,
+    "lang": "zh",
+    "sameStart": true,
+    "text": "⋯只能预览这个回答的开头其余部分还没有缓存，打开这个问题即可查看。",
+    "border": "dashed",
+    "background": "rgb(250, 250, 250)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 840,
+    "dark": true,
+    "lang": "en",
+    "sameStart": true,
+    "text": "⋯Only the start of this answer can be previewedThe rest isn't cached yet. Open the question to see it.",
+    "border": "dashed",
+    "background": "rgb(38, 38, 38)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 840,
+    "dark": true,
+    "lang": "zh",
+    "sameStart": true,
+    "text": "⋯只能预览这个回答的开头其余部分还没有缓存，打开这个问题即可查看。",
+    "border": "dashed",
+    "background": "rgb(38, 38, 38)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 390,
+    "dark": false,
+    "lang": "en",
+    "sameStart": true,
+    "text": "⋯Only the start of this answer can be previewedThe rest isn't cached yet. Open the question to see it.",
+    "border": "dashed",
+    "background": "rgb(250, 250, 250)",
+    "bottom": 324,
+    "top": 230.625,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 390,
+    "dark": false,
+    "lang": "zh",
+    "sameStart": true,
+    "text": "⋯只能预览这个回答的开头其余部分还没有缓存，打开这个问题即可查看。",
+    "border": "dashed",
+    "background": "rgb(250, 250, 250)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 390,
+    "dark": true,
+    "lang": "en",
+    "sameStart": true,
+    "text": "⋯Only the start of this answer can be previewedThe rest isn't cached yet. Open the question to see it.",
+    "border": "dashed",
+    "background": "rgb(38, 38, 38)",
+    "bottom": 324,
+    "top": 230.625,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  },
+  {
+    "width": 390,
+    "dark": true,
+    "lang": "zh",
+    "sameStart": true,
+    "text": "⋯只能预览这个回答的开头其余部分还没有缓存，打开这个问题即可查看。",
+    "border": "dashed",
+    "background": "rgb(38, 38, 38)",
+    "bottom": 324,
+    "top": 268.3125,
+    "inside": true,
+    "measured": {
+      "noticeHidden": true,
+      "text": "An opened answer keeps its normal preview."
+    }
+  }
+]
