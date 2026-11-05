@@ -283,6 +283,44 @@ test('the recorder keeps inline and display TeX spans with measured display heig
   assert.ok(!JSON.stringify(f.context.__heightCacheDump()).includes('value'));
 });
 
+test('HTML-only display math keeps nested TeX sources instead of recording an empty block', () => {
+  const tex = String.raw`\boxed{\widetilde{E} = E(f(X;\theta),T) + c\sum_{i=1}^{n}\left[\frac{1}{(\theta_i-10)^2+\varepsilon}+\frac{1}{(\theta_i+10)^2+\varepsilon}\right]}`;
+  for (const annotation of [null, { textContent: '' }]) {
+    const f = fixture();
+    const source = { getAttribute: () => tex };
+    f.item.firstChild = {
+      nodeType: 1,
+      tagName: 'SPAN',
+      classList: { contains: (n) => n === 'katex-display' },
+      querySelector: (s) => (s === '[data-math-source]' ? source : annotation),
+      closest: () => null,
+      get firstChild() {
+        throw Error('nested KaTeX/base glyphs must not be duplicated');
+      },
+    };
+    f.item.getBoundingClientRect = () => ({ top: 120, left: 0, width: 768, height: 150 });
+    f.blocks.push(f.item);
+    f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+    f.resize([
+      { target: f.turn, contentRect: { height: 500 } },
+      { target: f.item, contentRect: { height: 150 } },
+    ]);
+    f.flush();
+    const record = f.context.__butterLayoutCache.get('a');
+    assert.equal(record.items[0].text, tex, 'the boxed formula must not disappear');
+    assert.equal(record.items[0].math.length, 1);
+    assert.equal(record.items[0].math[0].display, true);
+    assert.equal(record.items[0].math[0].h, 150);
+    // Follow the geometry-only disk path as well: the formula must survive source hydration.
+    const check = require('../extension/seek/layout-check-main.js');
+    const codec = require('../extension/seek/layout-codec.js');
+    const parts = check.segments('\\[\n' + tex + '\n\\]');
+    const stored = codec.unpack(codec.pack(check.geometryOnly(record, parts, {}, 1)));
+    assert.equal(stored.items[0].source, 0);
+    assert.equal(check.hydrate(stored, parts).items[0].text, tex);
+  }
+});
+
 test('height cache uses the shared fingerprint and preserves checkpoint width values', () => {
   const f = fixture(),
     calls = [];

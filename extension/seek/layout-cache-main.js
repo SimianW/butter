@@ -580,8 +580,10 @@
       const cls = n.classList;
       if (cls.contains('katex-display') || cls.contains('katex')) {
         const tex =
-          n.querySelector('annotation')?.textContent ??
-          n.closest('[data-math-source]')?.getAttribute('data-math-source') ??
+          n.querySelector('annotation')?.textContent ||
+          n.closest('[data-math-source]')?.getAttribute('data-math-source') ||
+          // HTML-only KaTeX may keep the source inside the outer display wrapper.
+          n.querySelector('[data-math-source]')?.getAttribute('data-math-source') ||
           '';
         const display = cls.contains('katex-display');
         const start = out.length;
