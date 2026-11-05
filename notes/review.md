@@ -1,5 +1,7 @@
 # Butter for ChatGPT: adversarial correctness and robustness review
 
+Historical, as of 2026-10-30; references to builds and measurements describe that period.
+
 Reviewed 2026-10-30. Scope: `manifest.json`, `stream/containment.css`, `shared/config-main.js`, and `stream/throttle-main.js`; all four were read before investigating. Only this report was changed in the project. No browser, login, or authenticated request was used.
 
 **Recommendation:** keep the smoother throttle as an experiment, harden its wrapper contract, and reconsider the unconditional CSS changes before wider use. The strongest counterexample is the claim that the two removed size containers have no consumers: the supplied JS and fetched public CSS contain real responsive and container-unit dependencies. The 9-turn textContent SHA result is useful evidence for that replay's text, but cannot detect clipping, incorrect layout, generated equation numbers, scrolling, or other scheduler users.

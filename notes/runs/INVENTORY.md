@@ -6,7 +6,7 @@ Staged source trees, dependency environments, traces, screenshots/video, archive
 
 | Source directory | Decision | Archived report or reason |
 |---|---|---|
-| butter-bench-final | Exclude | Incomplete paused/resumed benchmark: integrity validation failed; report explicitly prohibits publishing preliminary figures. No measurements archived. |
+| butter-bench-final | Keep (completed after authorized resume) | [2026-11-04-big-benchmark](2026-11-04-big-benchmark/report.md); final validation passed 73/73. Replaces the earlier inventory decision made while the run was incomplete; private audit/capture data excluded. |
 | butter-bench-lab2 | Keep | [2026-11-04-bench-lab2](2026-11-04-bench-lab2/report.md); report and/or selected result tables |
 | butter-cache-v2 | Keep | [2026-11-02-cache-v2](2026-11-02-cache-v2/report.md); report and/or selected result tables |
 | butter-capture-fix | Keep | [2026-11-04-capture-fix](2026-11-04-capture-fix/report.md); report and/or selected result tables |

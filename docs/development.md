@@ -3,13 +3,14 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `popup/popup.css`, `popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
+| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `docs/` | User docs, test report, media. |
-| `results/` | Result tables from every benchmark run, made by `lab/summarize.py`. |
+| `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
-| `notes/review.md` | Risk review of the extension code. |
+| `notes/review.md` | Historical risk review of the early extension code. |
+| `notes/runs/` | Curated lab reports and numeric results; private captures excluded. |
 | `report/report.html` | One-page visual summary. |
 | `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
 | `CHANGELOG.md` | Versions. |
@@ -44,7 +45,7 @@ Test zips retain the base Chrome numeric version; remove the previous install be
 
 ## Layout storage API
 
-From an extension context (including the upcoming popup), use:
+From an extension context (including the popup), use:
 
 ```js
 await chrome.runtime.sendMessage({ version: 1, type: 'butter-layout-usage' });
@@ -76,8 +77,11 @@ All requests include `version: 1`. Unknown identities or layout-off produce no g
 writes. Clear ids are durably deduplicated for the latest 64 clear operations. Retrying clear gets
 its original result; query usage again if subsequent measurements may already have saved data.
 
-`butter.opts.layout` defaults to true in `ButterStatus.normalize`. Setting it false deletes layouts
-for all accounts and stops reads/writes; it is independent of the master optimization switch.
+`layoutConsent` starts as `pending`, and `ButterStatus.normalize` keeps `opts.layout` false
+unless consent is `granted` and the saved layout option is not false. Persisted reads/writes
+require both. The in-page card asks first; the popup switch also records consent. While pending,
+usage reports zero and no layout data is saved. Setting layout false deletes layouts for all
+accounts and stops reads/writes; it is independent of the master optimization switch.
 The popup shows usage below Remember long-chat layouts and confirms Clear inline.
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can

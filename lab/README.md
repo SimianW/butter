@@ -1,7 +1,9 @@
 # Test lab
 
-Everything used to measure Butter for ChatGPT. The method and results are in
-[`../docs/REPORT.md`](../docs/REPORT.md).
+Tools used to measure Butter for ChatGPT. Current method and results are in
+[benchmarks](../docs/benchmarks.md); the [original report](../docs/REPORT.md) is historical.
+Curated reports and numeric summaries go in [`notes/runs/`](../notes/runs/README.md), after
+removing private data. Raw captures stay local.
 
 ## Browser (`lab`)
 
@@ -26,7 +28,8 @@ run the harness scripts without `EXT=`.
 
 ## Harness (`harness/`)
 
-`npm install` once. Every script needs `CHAT=<url of a long ChatGPT chat>`. `EXT=<dirs>` restarts
+Run `npm ci --prefix lab/harness` from the repository root. Live-chat scripts generally need
+`CHAT=<url of a long ChatGPT chat>`; fixture-only and isolated popup scripts do not. `EXT=<dirs>` restarts
 the lab browser with exactly those unpacked extensions (`EXT=` empty = no extensions); without
 `EXT` the scripts use the browser as it is.
 

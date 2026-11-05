@@ -1,0 +1,28 @@
+{
+  "sourceDirectory": "butter-bench-final",
+  "archiveDate": "2026-11-04",
+  "dateBasis": "User-requested America/Toronto run date; completion/source modification timestamps fall on 2026-11-05 UTC.",
+  "sources": [
+    {
+      "name": "report.md",
+      "modifiedAt": "2026-11-05T01:21:13.443961+00:00",
+      "sha256": "84fed03d8a0372d19206e77507cd83bc3f657c96f24a18fed42cf79a7810c31d"
+    },
+    {
+      "name": "results.json",
+      "modifiedAt": "2026-11-05T01:21:13.439583+00:00",
+      "sha256": "afadb15536c0a8c63570b978ef7e750c7ed8da91b291cc7dde7829cc96288d11"
+    },
+    {
+      "name": "store-numbers.md",
+      "modifiedAt": "2026-11-05T01:21:13.444118+00:00",
+      "sha256": "e3c424ce4fbae694a0388cf7f583246c0a7db2452cd3f53a9680a4c67bc9d095"
+    }
+  ],
+  "transformations": [
+    "Curated report: preserves method, all aggregate rows, caveats, failed-attempt and outlier notes; omits private audit payloads and every-run tables duplicated in numeric JSON.",
+    "Results JSON: allowlisted build hashes, safe environment, GPU fields, frozen-input checksums, validator and all metric series. Full account/audit/resume payloads and machine paths excluded.",
+    "Raw capture paths reduced to private-raw provenance labels; no raw captures, chat IDs/URLs/text, account information, credentials, or account screenshots archived.",
+    "Store numeric summary preserved with report link made clickable."
+  ]
+}
