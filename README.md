@@ -17,7 +17,7 @@ Long ChatGPT chats, smooth as butter.
 Supports Chrome, Edge, Brave and Arc (Chromium 111+). Safari and Firefox are not supported.
 [Install and settings →](docs/install.md)
 
-Current version: **0.1.0-alpha.12** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.13** ([changelog](CHANGELOG.md)).
 
 ## Demo
 
@@ -40,7 +40,7 @@ Medians from 5–6 runs per arm in a long math chat on Linux Chromium without GP
 
 The trade-off: after releasing a drag at an unread spot, real text took about 4.3 s to appear with Butter versus 0.2 s without it, where the drag itself stuttered for seconds.
 
-These are lab results, not a promise for every computer. Drag figures use classic scrollbars; the builds use different release-readiness checks. “Frozen” sums blocking time, rather than one continuous freeze. Typing showed no meaningful improvement. Butter was measured at alpha.11; alpha.12 changes only the popup and locale metadata.
+These are lab results, not a promise for every computer. Drag figures use classic scrollbars; the builds use different release-readiness checks. “Frozen” sums blocking time, rather than one continuous freeze. Typing showed no meaningful improvement. Butter was measured at alpha.11; later builds change only the popup, locale metadata and toolbar icon.
 [Full results, method and caveats →](docs/benchmarks.md)
 
 ## Features

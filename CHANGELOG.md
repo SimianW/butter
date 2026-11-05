@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.13 (2026-11-04)
+
+- The toolbar icon is bigger: it drops the floor shadow and stands taller, so Butter no longer
+  looks smaller than Chrome's other toolbar icons. The store icon is unchanged.
+
 ## 0.1.0-alpha.12 (2026-11-04)
 
 - Chrome and the Chrome Web Store show Butter's name and summary in Chinese when your browser is set to Chinese, and the summary is updated.

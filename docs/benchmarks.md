@@ -3,8 +3,8 @@
 ## Latest benchmark: alpha.9 and alpha.11 (2026-11-04)
 
 Butter 0.1.0-alpha.11 was compared with released 0.1.0-alpha.9 and a true no-extension control.
-The current alpha.12 changes only the popup and locale metadata, so these are alpha.11 measurements,
-not a fresh alpha.12 run. The benchmark completed on November 4 in America/Toronto
+Later builds (alpha.12 and alpha.13) change only the popup, locale metadata and toolbar icon, so
+these alpha.11 measurements still apply. The benchmark completed on November 4 in America/Toronto
 (November 5 UTC); the final validator passed **73/73** checks.
 
 ### What the results mean
