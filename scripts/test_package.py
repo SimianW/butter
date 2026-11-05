@@ -79,6 +79,24 @@ class PackageTests(unittest.TestCase):
         plain, _ = self.package()
         self.assertEqual(self.archive_manifest(plain)["version_name"], "0.1.0-alpha.10")
 
+    def test_release_and_test_packages_include_real_locales(self):
+        shutil.rmtree(self.extension)
+        shutil.copytree(ROOT / "extension", self.extension)
+        for args in ((), ("--test", "locales")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    manifest = json.loads(archive.read("butter/manifest.json"))
+                    self.assertEqual(manifest["default_locale"], "en")
+                    self.assertEqual(manifest["name"], "__MSG_appName__")
+                    self.assertEqual(manifest["description"], "__MSG_appDesc__")
+                    for locale in ("en", "zh_CN"):
+                        relative = f"_locales/{locale}/messages.json"
+                        self.assertEqual(
+                            archive.read(f"butter/{relative}"),
+                            (self.extension / relative).read_bytes(),
+                        )
+
     def test_numbering_uses_numeric_max_for_exact_base_and_tag(self):
         dist = self.root / "dist"
         dist.mkdir()
