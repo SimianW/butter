@@ -322,7 +322,7 @@ test('overlay rail reserves the scrollbar strip; classic gutters keep their orig
     const nav = setup({ gutter });
     assert.ok(nav.host.attributes.has('data-on'));
     const right = 1200 - parseFloat(nav.host.style['--r']);
-    assert.equal(1000 - right, gutter ? gutter + 4 : 18);
+    assert.equal(1000 - right, gutter ? gutter + 4 : 12);
     nav.pointer(2);
     nav.flush();
     assert.equal(1200 - parseFloat(nav.host.style['--r']), right, 'hover keeps the rail position');
@@ -337,7 +337,7 @@ test('overlay rail reserves the scrollbar strip; classic gutters keep their orig
     nav.scroller.clientWidth = 1000;
     nav.resize(nav.scroller);
     nav.flush();
-    assert.equal(parseFloat(nav.host.style['--r']), 218);
+    assert.equal(parseFloat(nav.host.style['--r']), 212);
   }
 });
 

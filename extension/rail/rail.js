@@ -50,7 +50,7 @@
   const HEADER = 52,
     COMPOSER = 140; // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64; // a jumped-to question lands this far below the scroller's top
-  const OVERLAY_SCROLLBAR_GAP = 14; // overlay thumbs have no measured gutter; keep their strip clear
+  const OVERLAY_SCROLLBAR_GAP = 8; // overlay thumbs have no measured gutter; keep their strip clear
   const EDGE = 40; // a turn showing only this much at the top or bottom isn't lit
   const PAGE_AT = 240; // ChatGPT loads earlier messages when scrolled within ~230px of the top
   const MAX_EARLIER = 50; // at most 100 older turns / 60s per click; another click continues
