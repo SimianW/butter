@@ -1,0 +1,1642 @@
+{
+  "before": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1224,
+      "right": 1276,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 4,
+    "bounds": [
+      {
+        "element": "rail",
+        "right": 1276
+      },
+      {
+        "element": "pill",
+        "right": 1276
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "bar",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      }
+    ],
+    "presses": [],
+    "card": {
+      "shown": false,
+      "gap": -66,
+      "centerY": 0
+    },
+    "tick": {
+      "x": 1250,
+      "y": 356
+    }
+  },
+  "beforeClick": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1224,
+      "right": 1276,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 4,
+    "bounds": [
+      {
+        "element": "rail hot",
+        "right": 1276
+      },
+      {
+        "element": "pill",
+        "right": 1276
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "bar",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "bar",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      }
+    ],
+    "presses": [
+      {
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false,
+        "trusted": true
+      }
+    ],
+    "card": {
+      "shown": false,
+      "gap": 4.963134765625,
+      "centerY": 356
+    },
+    "tick": {
+      "x": 1250,
+      "y": 356
+    }
+  },
+  "baselineHover": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1224,
+      "right": 1276,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 4,
+    "bounds": [
+      {
+        "element": "rail hot",
+        "right": 1276
+      },
+      {
+        "element": "pill",
+        "right": 1276
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      },
+      {
+        "element": "tick",
+        "right": 1270
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "bar",
+        "isScroller": false
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "rail hot",
+        "isScroller": false
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "CHATGPT-BUTTER-NAV",
+        "inner": "pill",
+        "isScroller": false
+      }
+    ],
+    "presses": [],
+    "card": {
+      "shown": true,
+      "gap": 8,
+      "centerY": 356
+    },
+    "tick": {
+      "x": 1250,
+      "y": 356
+    }
+  },
+  "afterClick": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1210,
+      "right": 1262,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 18,
+    "bounds": [
+      {
+        "element": "rail",
+        "right": 1262
+      },
+      {
+        "element": "pill",
+        "right": 1262
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      }
+    ],
+    "presses": [
+      {
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true,
+        "trusted": true
+      }
+    ],
+    "card": {
+      "shown": false,
+      "gap": 2.35205078125,
+      "centerY": 356
+    },
+    "tick": {
+      "x": 1236,
+      "y": 356
+    }
+  },
+  "hover": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1210,
+      "right": 1262,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 18,
+    "bounds": [
+      {
+        "element": "rail hot",
+        "right": 1262
+      },
+      {
+        "element": "pill",
+        "right": 1262
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      }
+    ],
+    "presses": [],
+    "card": {
+      "shown": true,
+      "gap": 8,
+      "centerY": 356
+    },
+    "tick": {
+      "x": 1236,
+      "y": 356
+    }
+  },
+  "seek": {
+    "visible": true,
+    "width": 1280,
+    "gutter": 0,
+    "rail": {
+      "left": 1210,
+      "right": 1262,
+      "width": 52,
+      "top": 311,
+      "bottom": 401
+    },
+    "clearance": 18,
+    "bounds": [
+      {
+        "element": "rail hot",
+        "right": 1262
+      },
+      {
+        "element": "pill",
+        "right": 1262
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      },
+      {
+        "element": "tick",
+        "right": 1256
+      }
+    ],
+    "hits": [
+      {
+        "gap": 1,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 313,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 356,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 1,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 2,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 6,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 10,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      },
+      {
+        "gap": 14,
+        "y": 399,
+        "target": "MAIN",
+        "inner": "thread-scroll-container",
+        "isScroller": true
+      }
+    ],
+    "presses": [],
+    "card": {
+      "shown": true,
+      "gap": 8,
+      "centerY": 356
+    },
+    "tick": {
+      "x": 1236,
+      "y": 356
+    }
+  },
+  "matrix": [
+    {
+      "build": "baseline",
+      "gutter": 15,
+      "visible": true,
+      "width": 1280,
+      "rail": {
+        "left": 1209,
+        "right": 1261,
+        "width": 52,
+        "top": 311,
+        "bottom": 401
+      },
+      "clearance": 19,
+      "bounds": [
+        {
+          "element": "rail",
+          "right": 1261
+        },
+        {
+          "element": "pill",
+          "right": 1261
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        }
+      ],
+      "hits": [
+        {
+          "gap": 1,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        }
+      ],
+      "presses": [],
+      "card": {
+        "shown": false,
+        "gap": -81,
+        "centerY": 0
+      },
+      "tick": {
+        "x": 1235,
+        "y": 356
+      }
+    },
+    {
+      "build": "baseline",
+      "gutter": 0,
+      "visible": true,
+      "width": 560,
+      "rail": {
+        "left": 504,
+        "right": 556,
+        "width": 52,
+        "top": 311,
+        "bottom": 401
+      },
+      "clearance": 4,
+      "bounds": [
+        {
+          "element": "rail",
+          "right": 556
+        },
+        {
+          "element": "pill",
+          "right": 556
+        },
+        {
+          "element": "tick",
+          "right": 550
+        },
+        {
+          "element": "tick",
+          "right": 550
+        },
+        {
+          "element": "tick",
+          "right": 550
+        },
+        {
+          "element": "tick",
+          "right": 550
+        },
+        {
+          "element": "tick",
+          "right": 550
+        }
+      ],
+      "hits": [
+        {
+          "gap": 1,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 313,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "rail",
+          "isScroller": false
+        },
+        {
+          "gap": 10,
+          "y": 313,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        },
+        {
+          "gap": 14,
+          "y": 313,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        },
+        {
+          "gap": 1,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 356,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        },
+        {
+          "gap": 10,
+          "y": 356,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        },
+        {
+          "gap": 14,
+          "y": 356,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "bar",
+          "isScroller": false
+        },
+        {
+          "gap": 1,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 399,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "rail",
+          "isScroller": false
+        },
+        {
+          "gap": 10,
+          "y": 399,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        },
+        {
+          "gap": 14,
+          "y": 399,
+          "target": "CHATGPT-BUTTER-NAV",
+          "inner": "pill",
+          "isScroller": false
+        }
+      ],
+      "presses": [],
+      "card": {
+        "shown": false,
+        "gap": -66,
+        "centerY": 0
+      },
+      "tick": {
+        "x": 530,
+        "y": 356
+      }
+    },
+    {
+      "build": "baseline",
+      "gutter": false,
+      "visible": false
+    },
+    {
+      "build": "baseline",
+      "gutter": false,
+      "visible": false
+    },
+    {
+      "build": "fixed",
+      "gutter": 15,
+      "visible": true,
+      "width": 1280,
+      "rail": {
+        "left": 1209,
+        "right": 1261,
+        "width": 52,
+        "top": 311,
+        "bottom": 401
+      },
+      "clearance": 19,
+      "bounds": [
+        {
+          "element": "rail",
+          "right": 1261
+        },
+        {
+          "element": "pill",
+          "right": 1261
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        },
+        {
+          "element": "tick",
+          "right": 1255
+        }
+      ],
+      "hits": [
+        {
+          "gap": 1,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        }
+      ],
+      "presses": [],
+      "card": {
+        "shown": false,
+        "gap": -81,
+        "centerY": 0
+      },
+      "tick": {
+        "x": 1235,
+        "y": 356
+      }
+    },
+    {
+      "build": "fixed",
+      "gutter": 0,
+      "visible": true,
+      "width": 560,
+      "rail": {
+        "left": 490,
+        "right": 542,
+        "width": 52,
+        "top": 311,
+        "bottom": 401
+      },
+      "clearance": 18,
+      "bounds": [
+        {
+          "element": "rail",
+          "right": 542
+        },
+        {
+          "element": "pill",
+          "right": 542
+        },
+        {
+          "element": "tick",
+          "right": 536
+        },
+        {
+          "element": "tick",
+          "right": 536
+        },
+        {
+          "element": "tick",
+          "right": 536
+        },
+        {
+          "element": "tick",
+          "right": 536
+        },
+        {
+          "element": "tick",
+          "right": 536
+        }
+      ],
+      "hits": [
+        {
+          "gap": 1,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 313,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 356,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 1,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 2,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 6,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 10,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        },
+        {
+          "gap": 14,
+          "y": 399,
+          "target": "MAIN",
+          "inner": "thread-scroll-container",
+          "isScroller": true
+        }
+      ],
+      "presses": [],
+      "card": {
+        "shown": false,
+        "gap": -80,
+        "centerY": 0
+      },
+      "tick": {
+        "x": 516,
+        "y": 356
+      }
+    },
+    {
+      "build": "fixed",
+      "gutter": false,
+      "visible": false
+    },
+    {
+      "build": "fixed",
+      "gutter": false,
+      "visible": false
+    }
+  ]
+}

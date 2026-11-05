@@ -50,6 +50,7 @@
   const HEADER = 52,
     COMPOSER = 140; // ChatGPT's fixed header and composer overlap the scroller
   const TOP_INSET = 64; // a jumped-to question lands this far below the scroller's top
+  const OVERLAY_SCROLLBAR_GAP = 14; // overlay thumbs have no measured gutter; keep their strip clear
   const EDGE = 40; // a turn showing only this much at the top or bottom isn't lit
   const PAGE_AT = 240; // ChatGPT loads earlier messages when scrolled within ~230px of the top
   const MAX_EARLIER = 50; // at most 100 older turns / 60s per click; another click continues
@@ -215,6 +216,7 @@
         bottom: r.bottom,
         left: r.left,
         right: r.right - (s.offsetWidth - s.clientWidth),
+        gutter: s.offsetWidth - s.clientWidth,
         width: r.width,
       };
       changed();
@@ -846,7 +848,10 @@
     const y = Math.round((top + bottom) / 2 - h / 2);
     geo = { y, top: y + PAD + moreH, pitch };
     more.hidden = !cur.hasPrev;
-    host.style.setProperty('--r', `${Math.round(innerWidth - box.right + 4)}px`);
+    host.style.setProperty(
+      '--r',
+      `${Math.round(innerWidth - box.right + 4 + (box.gutter ? 0 : OVERLAY_SCROLLBAR_GAP))}px`,
+    );
     host.style.setProperty('--y', `${y}px`);
     host.style.setProperty('--pitch', `${pitch}px`);
     const colW = Math.min(760, box.width - 96); // the text column, for the travel placeholder

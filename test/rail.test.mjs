@@ -127,7 +127,7 @@ class FakeElement {
   }
 }
 
-function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
+function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   let now = 10_000,
     nextId = 1;
   const frames = new Map(),
@@ -209,7 +209,7 @@ function setup({ count = 5, hasPrev = false, height = 900 } = {}) {
     scrollTop: 0,
     scrollHeight: 5000,
     clientHeight: height,
-    clientWidth: 1000,
+    clientWidth: 1000 - gutter,
     offsetWidth: 1000,
     getBoundingClientRect: () => ({ top: 0, bottom: height, left: 0, right: 1000, width: 1000 }),
     scrollTo({ top }) {
@@ -316,6 +316,30 @@ function assertBetween(actual, start, target) {
     }),
   );
 }
+
+test('overlay rail reserves the scrollbar strip; classic gutters keep their original position', () => {
+  for (const gutter of [0, 15, 20]) {
+    const nav = setup({ gutter });
+    assert.ok(nav.host.attributes.has('data-on'));
+    const right = 1200 - parseFloat(nav.host.style['--r']);
+    assert.equal(1000 - right, gutter ? gutter + 4 : 18);
+    nav.pointer(2);
+    nav.flush();
+    assert.equal(1200 - parseFloat(nav.host.style['--r']), right, 'hover keeps the rail position');
+    nav.seek({ state: 'dragging', id: 'q1', n: 2, total: 5 });
+    nav.flush();
+    assert.equal(1200 - parseFloat(nav.host.style['--r']), right, 'seek keeps the rail position');
+    // Switching scrollbar mode must replace the offset rather than accumulate it.
+    nav.scroller.clientWidth = 985;
+    nav.resize(nav.scroller);
+    nav.flush();
+    assert.equal(parseFloat(nav.host.style['--r']), 219);
+    nav.scroller.clientWidth = 1000;
+    nav.resize(nav.scroller);
+    nav.flush();
+    assert.equal(parseFloat(nav.host.style['--r']), 218);
+  }
+});
 
 test('hover wave stays within its targets when the frame timestamp predates kick()', () => {
   const nav = setup();
