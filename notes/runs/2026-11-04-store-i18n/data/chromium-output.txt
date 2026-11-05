@@ -1,0 +1,148 @@
+{
+  "lang": "en-US",
+  "chromium": "156.0.8078.4",
+  "management": {
+    "name": "Butter for ChatGPT",
+    "description": "Makes long ChatGPT chats smooth: no freezes while answers stream, instant scrollbar previews, and a question rail.",
+    "version": "0.1.0-alpha.12",
+    "state": "ENABLED"
+  },
+  "popup": {
+    "version": "v0.1.0 · alpha 12",
+    "switches": [
+      {
+        "key": "master",
+        "label": "Enable Butter",
+        "checked": "true"
+      },
+      {
+        "key": "streaming",
+        "label": "Smoother streaming",
+        "checked": "true"
+      },
+      {
+        "key": "scrolling",
+        "label": "Smoother scrolling",
+        "checked": "true"
+      },
+      {
+        "key": "rail",
+        "label": "Question rail",
+        "checked": "true"
+      },
+      {
+        "key": "layout",
+        "label": "Remember long-chat layouts",
+        "checked": "false"
+      }
+    ],
+    "languageButtons": [
+      {
+        "text": "中文",
+        "selected": "false"
+      },
+      {
+        "text": "EN",
+        "selected": "true"
+      }
+    ],
+    "text": "Butter\nV0.1.0 · ALPHA 12\nGitHub\n中文\nEN\nEnable Butter\nOpen a ChatGPT chat to start\nMake ChatGPT smoother\nSmoother streaming\nLong answers stream without lag\nSmoother scrolling\nDrag the scrollbar to preview; it loads when you let go\nQuestion rail\nYour questions on the right; click one to jump\nRemember long-chat layouts\nFaster jumps when you come back; uses some storage\nNot on yet · turning it on means you agree",
+    "uiLanguage": "en-US",
+    "manifest": {
+      "name": "Butter for ChatGPT",
+      "description": "Makes long ChatGPT chats smooth: no freezes while answers stream, instant scrollbar previews, and a question rail."
+    }
+  },
+  "languageSwitch": {
+    "chineseLabels": [
+      "启用 Butter",
+      "回答生成时更顺",
+      "长对话滚动更顺",
+      "问题导航条",
+      "记住长对话的布局"
+    ],
+    "persistedAfterReload": true,
+    "restoredEnglishLabels": [
+      "Enable Butter",
+      "Smoother streaming",
+      "Smoother scrolling",
+      "Question rail",
+      "Remember long-chat layouts"
+    ]
+  },
+  "errors": []
+}
+{
+  "lang": "zh-CN",
+  "chromium": "156.0.8078.4",
+  "management": {
+    "name": "Butter for ChatGPT",
+    "description": "让 ChatGPT 长对话保持流畅：回答输出时不卡顿，拖动滚动条即时预览，还有问题导航条。",
+    "version": "0.1.0-alpha.12",
+    "state": "ENABLED"
+  },
+  "popup": {
+    "version": "v0.1.0 · alpha 12",
+    "switches": [
+      {
+        "key": "master",
+        "label": "Enable Butter",
+        "checked": "true"
+      },
+      {
+        "key": "streaming",
+        "label": "Smoother streaming",
+        "checked": "true"
+      },
+      {
+        "key": "scrolling",
+        "label": "Smoother scrolling",
+        "checked": "true"
+      },
+      {
+        "key": "rail",
+        "label": "Question rail",
+        "checked": "true"
+      },
+      {
+        "key": "layout",
+        "label": "Remember long-chat layouts",
+        "checked": "false"
+      }
+    ],
+    "languageButtons": [
+      {
+        "text": "中文",
+        "selected": "false"
+      },
+      {
+        "text": "EN",
+        "selected": "true"
+      }
+    ],
+    "text": "Butter\nV0.1.0 · ALPHA 12\nGitHub\n中文\nEN\nEnable Butter\nOpen a ChatGPT chat to start\nMake ChatGPT smoother\nSmoother streaming\nLong answers stream without lag\nSmoother scrolling\nDrag the scrollbar to preview; it loads when you let go\nQuestion rail\nYour questions on the right; click one to jump\nRemember long-chat layouts\nFaster jumps when you come back; uses some storage\nNot on yet · turning it on means you agree",
+    "uiLanguage": "zh-CN",
+    "manifest": {
+      "name": "Butter for ChatGPT",
+      "description": "让 ChatGPT 长对话保持流畅：回答输出时不卡顿，拖动滚动条即时预览，还有问题导航条。"
+    }
+  },
+  "languageSwitch": {
+    "chineseLabels": [
+      "启用 Butter",
+      "回答生成时更顺",
+      "长对话滚动更顺",
+      "问题导航条",
+      "记住长对话的布局"
+    ],
+    "persistedAfterReload": true,
+    "restoredEnglishLabels": [
+      "Enable Butter",
+      "Smoother streaming",
+      "Smoother scrolling",
+      "Question rail",
+      "Remember long-chat layouts"
+    ]
+  },
+  "errors": []
+}
