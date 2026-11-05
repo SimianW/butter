@@ -1,0 +1,41 @@
+[
+  {
+    "label": "explicit",
+    "turnIndex": 0,
+    "memorySource": "measured",
+    "items": 2,
+    "domElements": 77,
+    "previewActive": false,
+    "renderedItems": 0,
+    "persistedStatus": "disabled",
+    "persistedRecords": 0,
+    "privacyCheckedTextNodes": 7,
+    "privacy": "pass"
+  },
+  {
+    "label": "saved",
+    "turnIndex": 0,
+    "memorySource": "measured",
+    "items": 2,
+    "domElements": 77,
+    "previewActive": false,
+    "renderedItems": 0,
+    "persistedStatus": "found",
+    "persistedRecords": 1,
+    "privacyCheckedTextNodes": 7,
+    "privacy": "pass"
+  },
+  {
+    "label": "armed-drag",
+    "turnIndex": 1,
+    "memorySource": "measured",
+    "items": 2,
+    "domElements": 79,
+    "previewActive": true,
+    "renderedItems": 10,
+    "persistedStatus": "found",
+    "persistedRecords": 1,
+    "privacyCheckedTextNodes": 7,
+    "privacy": "pass"
+  }
+]
