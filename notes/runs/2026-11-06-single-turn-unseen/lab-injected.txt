@@ -1,0 +1,8 @@
+{"turns":5,"mounted":5,"dil":false,"heights":[1512.4375,1130,1486.078125,1936.71875,1280],"rows":[{"row":1512,"record":false},{"row":1130,"record":true},{"row":1486,"record":false},{"row":1937,"record":true},{"row":1280,"record":true}]}
+{"turns":2,"mounted":2,"dil":false,"heights":[1022.71875,824.71875],"rows":[{"row":1023,"record":false},{"row":825,"record":true}]}
+{"turns":3,"mounted":3,"dil":false,"heights":[7780.71875,5275.71875,7167.71875],"rows":[{"row":7781,"record":true},{"row":5276,"record":true},{"row":7168,"record":true}]}
+{"turns":5,"mounted":5,"dil":false,"heights":[26123,30554,36927.234375,208,250],"rows":[{"row":26123,"record":false},{"row":30554,"record":false},{"row":36927,"record":false},{"row":208,"record":false},{"row":250,"record":false}]}
+{"turns":10,"mounted":5,"dil":false,"heights":[null,null,null,null,null,258,258,600,634,232],"rows":[{"row":258,"record":true},{"row":258,"record":true},{"row":600,"record":true},{"row":634,"record":true},{"row":232,"record":true}]}
+{"turns":1,"mounted":1,"dil":false,"heights":[1428],"rows":[{"row":1428,"record":true}]}
+{"singleAfterScroll":{"record":true,"items":28,"rowH":1428,"actual":1428,"sw":1526,"currentSw":1526,"stats":{"observed":1,"records":2,"refreshes":1,"rejected":{},"recordMs":2.299999952316284,"recordMax":1.3000001907348633,"restored":0,"blocksRestored":0,"restoreMisses":{},"hooks":51,"parked":0,"released":0,"held":0}}}
+{"singleFound":true}

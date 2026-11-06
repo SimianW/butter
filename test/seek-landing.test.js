@@ -69,7 +69,7 @@ function fixture() {
     scripts: [],
     documentElement: { className: 'light', hasAttribute: () => false },
     addEventListener: on,
-    querySelectorAll: () => [sc],
+    querySelectorAll: (s) => (s === '[data-turn-key]' ? [] : [sc]),
   };
   const ctx = {
     document,

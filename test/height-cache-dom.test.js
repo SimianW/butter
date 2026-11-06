@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const core = require('../extension/seek/core-main.js');
-function fixture() {
+function fixture({ mounted = false, setup = () => {} } = {}) {
   const frames = [],
     observed = new Set(),
     listeners = {},
@@ -76,7 +76,7 @@ function fixture() {
   const doc = {
     scripts: [],
     addEventListener: (n, fn) => (listeners[n] = fn),
-    querySelectorAll: () => [sc],
+    querySelectorAll: (s) => (s === '[data-turn-key]' ? (mounted ? [turn] : []) : [sc]),
   };
   const context = {
     document: doc,
@@ -127,6 +127,7 @@ function fixture() {
   context.clearTimeout = () => {};
   context.queueMicrotask = queueMicrotask;
   context.window = context;
+  setup({ context, turn, item, blocks, sc, Element });
   vm.createContext(context);
   vm.runInContext(
     fs.readFileSync(require.resolve('../extension/seek/layout-cache-main.js'), 'utf8'),
@@ -1131,4 +1132,113 @@ test('a regenerated answer in a restored turn is not recorded at its placeholder
   assert.ok(!e || e.msg !== 'm2' || !e.blocks.includes(120), JSON.stringify(e?.blocks));
   assert.ok(!e?.items?.some((x) => x.h === 152), 'no item at the placeholder size');
   assert.equal(f.context.__heightCacheDump().stats.rejected.placeholder, 1);
+});
+
+test('a single Dil turn mounted before recorder startup is recorded without leaving the viewport', () => {
+  // Capture-shaped Dil blocks: prose, a code widget, display math and a wide table. The real
+  // selector/wrapper structure is also exercised by the run's synthetic-dil.mjs browser fixture.
+  const f = fixture({
+    mounted: true,
+    setup({ turn, item, blocks, sc, Element }) {
+      sc.clientLeft = 0;
+      const paragraph = Object.assign(new Element(), { ...item, closest: () => turn });
+      const code = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'DIV',
+        className: '',
+        hasAttribute: (n) => n === 'data-client-defined-widget',
+        children: [],
+        firstChild: { nodeType: 3, data: 'Synthetic code' },
+        getBoundingClientRect: () => ({ top: 162, left: 0, width: 768, height: 186 }),
+      });
+      const formula = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'SPAN',
+        className: 'katex-display',
+        classList: { contains: (n) => n === 'katex-display' },
+        querySelector: () => ({ textContent: 'x=1' }),
+        getBoundingClientRect: () => ({ top: 364, left: 0, width: 768, height: 38.484375 }),
+      });
+      const table = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'DIV',
+        className: 'TableFrame-fixture',
+        firstChild: { nodeType: 3, data: 'Synthetic cells' },
+        getBoundingClientRect: () => ({ top: 420, left: 0, width: 768, height: 110.5 }),
+      });
+      blocks.push(paragraph, code, formula);
+      const original = turn.querySelectorAll;
+      turn.querySelectorAll = (s) => (s === core.PREVIEW_ITEMS ? [...blocks, table] : original(s));
+    },
+  });
+  assert.ok(f.observed.has(f.turn), 'startup must observe the already-mounted turn');
+  f.resize([
+    { target: f.turn, contentRect: { height: 600 } },
+    ...f.blocks.map((target) => ({
+      target,
+      contentRect: { height: target.getBoundingClientRect().height },
+    })),
+  ]);
+  f.flush();
+  const r = f.context.__butterLayoutCache.get('a');
+  assert.ok(r, JSON.stringify(f.context.__heightCacheDump().stats.rejected));
+  assert.equal(r.items.length, 4);
+  assert.equal(r.items[2].math[0].h, 38.484375);
+  assert.equal(
+    core.buildModel({
+      ids: ['a'],
+      measured: { a: 500 },
+      records: { a: r },
+      texts: {},
+      scrollHeight: 500,
+      gap: 12,
+      sw: 768,
+    })[0].layout,
+    true,
+  );
+});
+
+test('readiness capture reports the actual per-turn rejection and never emits content or IDs', () => {
+  const f = fixture();
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  f.c.math = false;
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.diagnostics(f.turn).lastRejection, 'math-pending');
+  f.turn.__reactFiber$fixture = {
+    memoizedProps: { entries: [{ turnKey: 'a' }], RowComponent() {} },
+    memoizedState: { memoizedState: { a: 500 } },
+  };
+  let copied;
+  f.context.copy = (json) => (copied = JSON.parse(json));
+  f.context.console = { table() {}, info() {} };
+  const capture = () =>
+    vm.runInContext(
+      fs.readFileSync(require.resolve('../notes/diagnostics/capture-record-readiness.js'), 'utf8'),
+      f.context,
+    );
+  capture();
+  assert.equal(copied.turns[0].hasRecord, false);
+  assert.equal(copied.turns[0].recorder.lastRejection, 'math-pending');
+  assert.equal(copied.turns[0].layoutReason, 'no-record');
+  f.c.math = true;
+  f.resize([{ target: f.item, contentRect: { height: 26 } }]);
+  f.flush();
+  capture();
+  assert.equal(copied.turns[0].layout, true);
+  assert.equal(copied.turns[0].recorder.lastRejection, null);
+  assert.equal(copied.turns[0].recordValidation, null);
+  const json = JSON.stringify(copied);
+  for (const privateValue of [
+    'sample',
+    'm1',
+    '00000000-0000-0000-0000-000000000000',
+    '"id"',
+    '"text"',
+  ])
+    assert.ok(!json.includes(privateValue), privateValue);
 });

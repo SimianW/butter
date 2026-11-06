@@ -64,3 +64,33 @@ observation, not proof of what the recorder saw earlier. The frozen private seek
 is not exposed; `memory` is the current cache entry, accompanied by rendered geometry.
 
 Lab validation and commands: [run report](../runs/2026-11-05-preview-record-capture/report.md).
+
+## A viewed answer still says unseen
+
+Use [capture-record-readiness.js](capture-record-readiness.js) **while not seeking**, before
+reloading or changing settings. In DevTools Console choose **top** (steps above), paste the
+whole file and press Enter. It prints a table for every virtualizer turn and copies a
+privacy-safe JSON object with counts, geometry and fixed reason codes. Share only that JSON.
+It never reads question/answer text into the output, sends requests, flushes measurements or
+calls `prepare()`. Rect reads can force fresh layout, so record/recorder state is saved first.
+
+Each row includes `hasRecord`, item/block counts, `rowH`, ChatGPT's `measuredHeight`, the mounted
+row's current height, recorded/current `sw`, `fromStorage`, and the exact `buildModel` `layout`
+boolean. `layoutReason` distinguishes absent records, missing items, width mismatches, missing
+virtualizer measurements and height mismatches. The model uses empty texts because text cannot
+affect this boolean. `recordValidation` reruns `validateSnapshot` on the accepted record's
+geometry, with completion/math readiness assumed; it cannot reconstruct a rejected snapshot.
+
+Test build `0.1.0-alpha.13+unseen-notice.7` adds per-mounted-turn recorder status:
+`observed`, `generating`, `queued`, `measuring`, `attempted`, and `lastRejection`. The last field
+is the reason returned by the latest failed `validateSnapshot` attempt (for example
+`placeholder`, `math-pending`, `zero-block` or `math-height`), cleared after a successful record.
+If the turn has never had a completed attempt, `attempted` is false and `lastRejection` is null.
+An attempt interrupted by a mutation or skip does not replace the previous outcome. Unmounted
+turns have no recorder status. Older builds report `rejectionDiagnosticsAvailable: false` and
+`recorder: null`; they can still report geometry and the resulting layout decision.
+
+On the affected Mac, let scrolling stop briefly, run once, scroll through the whole answer,
+wait about a second, and run again. Then hold the scrollbar to check the notice. If it persists,
+use the original drag capture too: the readiness report describes the current cache, while the
+seek model is frozen when the scrollbar is pressed.

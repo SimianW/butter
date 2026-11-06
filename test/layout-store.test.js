@@ -19,7 +19,7 @@ function fixture({ known = true, columns } = {}) {
     scripts: [],
     documentElement: { className: 'light' },
     addEventListener: (name, fn) => (events[name] ||= []).push(fn),
-    querySelectorAll: () => [sc],
+    querySelectorAll: (s) => (s === '[data-turn-key]' ? [] : [sc]),
   };
   const ctx = {
     MutationObserver: class {

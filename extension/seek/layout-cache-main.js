@@ -24,6 +24,7 @@
     skipped = new WeakSet(),
     stale = new WeakSet(), // queued for a record that has not succeeded yet
     verified = new WeakMap(), // turn element -> the entry its last successful record produced
+    outcomes = new WeakMap(), // last completed recording attempt; reason codes only
     contentH = new WeakMap(),
     leanCache = new WeakMap(),
     mathGeometry = new WeakMap(),
@@ -779,6 +780,7 @@
     return false;
   };
   function reject(t, reason) {
+    outcomes.set(t, { reason });
     S.rejected[reason] = (S.rejected[reason] || 0) + 1;
     // The class going away is not observed, and an answer revealed in full by then may not
     // resize or mutate again, so look once more shortly after.
@@ -864,6 +866,7 @@
     )
       return false;
     S.adopted = (S.adopted || 0) + 1;
+    outcomes.set(t, { reason: null });
     stale.delete(t);
     verified.set(t, prev);
     return true;
@@ -966,6 +969,7 @@
     );
     if (reason) reject(t, reason);
     else {
+      outcomes.set(t, { reason: null });
       if (prev?.ready) S.refreshes++;
       S.records++;
       stale.delete(t);
@@ -1113,6 +1117,9 @@
     attributes: true,
     attributeFilter: ['data-talvt-turn-state', 'data-math-source'],
   });
+  // document_start normally precedes the turns; also handle turns already present at startup.
+  // Scrolling alone produces no child mutation to register an existing single/last turn.
+  document.querySelectorAll('[data-turn-key]').forEach((t) => watch(t));
 
   // Adopted geometry must still match current source, layout and expiry at each use.
   const currentEntry = (key, sc) => {
@@ -1206,6 +1213,14 @@
     column: shownColumn,
     flush: () => persistence.flush(),
     flushMeasurements: measure,
+    diagnostics: (t) => ({
+      observed: meta.has(t),
+      generating: busy.has(t),
+      queued: pending.has(t),
+      measuring: job?.t === t,
+      attempted: outcomes.has(t),
+      lastRejection: outcomes.get(t)?.reason ?? null,
+    }),
     get: (key, preparedScroller) => {
       const sc = preparedScroller || scroller();
       if (!preparedScroller && turns.get(key)?.fromStorage) persistence.refreshLayout(sc);
