@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Dil: one size per real block except hr/wide
+
+1 !== 20
+
+    at file:///home/simon/.t3/worktrees/butter/t3-8302ad9c/lab/harness/dil-renderer.mjs:56:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 20,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.17.0

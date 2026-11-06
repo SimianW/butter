@@ -23,10 +23,14 @@ the jumped-to question; scrolling yourself releases that alignment.
 While you hold and drag the thread's native scrollbar thumb, `seek/preview-main.js` stops its scroll
 notifications before ChatGPT's virtualizer sees them. The real turns move off screen and a lightweight
 text preview takes their place. `seek/layout-cache-main.js` records complete, typeset turns and their block
-positions; skipped, incomplete or zero-size snapshots never replace a good record. Neither does a
+positions. Blocks belong to the markdown root in the original renderer, or the nested
+`DilResponseRoot` in ChatGPT's Dil renderer; the wrappers around that root are not blocks.
+Each display formula is measured at its own `.katex-display` element, including formulas inside
+mixed prose blocks, and its height is refreshed even when its cached text stays the same.
+Skipped, incomplete or zero-size snapshots never replace a good record. Neither does a
 snapshot taken while ChatGPT still reveals a streamed answer (its markdown root carries
 `AdaptiveStreaming`, even after the turn reads complete): it would hold only the answer's first
-lines. Nor does one where a block that is only a display formula is taller than its TeX rows allow
+lines. Nor does one where a display formula (or a formula-only block) is taller than its TeX rows allow
 (120 px plus 64 px per row): that box belongs to an answer that was only partly in the page. When a removed
 turn mounts again at the same width with the same message and blocks, the cache restores its sizes
 before ChatGPT's first layout read, as inline `content-visibility`, so only while the cv setting is on.

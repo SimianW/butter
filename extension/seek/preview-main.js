@@ -344,7 +344,7 @@
       const span = document.createElement('span');
       span.className = 'math' + (m.display ? ' display' : '');
       if (m.display) {
-        span.style.height = `${m.h}px`;
+        span.style.height = `${Math.min(m.h, core.displayMathLimit({ text, math }, m))}px`;
         const line = document.createElement('span');
         line.textContent = text.slice(m.start, m.end).replace(/\s+/g, ' ');
         span.append(line);
@@ -1122,7 +1122,7 @@
   }
 
   // ---- swap alignment audit: where the preview showed text vs where the real text is ----
-  const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
+  const ITEMS = core.PREVIEW_ITEMS;
   const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/u;
   const textRect = (root, needle) =>
     (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);

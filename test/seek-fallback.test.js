@@ -120,6 +120,21 @@ test('a snapshot taken while ChatGPT reveals the answer is never authoritative',
   assert.equal(kept.entry, entry);
 });
 
+test('an inflated display span in a mixed prose block cannot bypass the math height guard', () => {
+  const text = 'Paragraph before x=1 and after the formula';
+  const math = { start: 17, end: 20, display: true, h: 2169.484375 };
+  const snapshot = {
+    complete: true,
+    mathReady: true,
+    h: 2663.484375,
+    blocks: [2195.484375],
+    items: [{ top: 424, h: 2195.484375, text, math: [math] }],
+  };
+  assert.equal(core.validateSnapshot(snapshot), 'math-height');
+  math.h = 38.484375;
+  assert.equal(core.validateSnapshot(snapshot), null, 'tall mixed prose with normal math is valid');
+});
+
 test('a snapshot holding a never-rendered placeholder block is not authoritative', () => {
   const ok = {
     conv: 'c',

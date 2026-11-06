@@ -258,9 +258,7 @@ test('the recorder keeps inline and display TeX spans with measured display heig
     tagName: 'SPAN',
     classList: { contains: (n) => n === 'katex-display' },
     querySelector: () => ({ textContent: '\\frac{a}{b}' }),
-    getBoundingClientRect: () => {
-      throw Error('math descendants must not force skipped layout');
-    },
+    getBoundingClientRect: () => ({ top: 130, left: 0, width: 768, height: 38 }),
     nextSibling: null,
   };
   f.item.getBoundingClientRect = () => ({ top: 120, left: 0, width: 768, height: 48 });
@@ -278,7 +276,7 @@ test('the recorder keeps inline and display TeX spans with measured display heig
   assert.equal(item.math.length, 2);
   assert.equal(item.text.slice(item.math[0].start, item.math[0].end), 'x^2');
   assert.equal(item.math[1].display, true);
-  assert.equal(item.math[1].h, 48);
+  assert.equal(item.math[1].h, 38);
   assert.equal(item.text.slice(item.math[1].start, item.math[1].end), '\\frac{a}{b}');
   assert.ok(!JSON.stringify(f.context.__heightCacheDump()).includes('value'));
 });
@@ -294,6 +292,7 @@ test('HTML-only display math keeps nested TeX sources instead of recording an em
       classList: { contains: (n) => n === 'katex-display' },
       querySelector: (s) => (s === '[data-math-source]' ? source : annotation),
       closest: () => null,
+      getBoundingClientRect: () => ({ top: 136, left: 0, width: 768, height: 118 }),
       get firstChild() {
         throw Error('nested KaTeX/base glyphs must not be duplicated');
       },
@@ -310,7 +309,7 @@ test('HTML-only display math keeps nested TeX sources instead of recording an em
     assert.equal(record.items[0].text, tex, 'the boxed formula must not disappear');
     assert.equal(record.items[0].math.length, 1);
     assert.equal(record.items[0].math[0].display, true);
-    assert.equal(record.items[0].math[0].h, 150);
+    assert.equal(record.items[0].math[0].h, 118);
     // Follow the geometry-only disk path as well: the formula must survive source hydration.
     const check = require('../extension/seek/layout-check-main.js');
     const codec = require('../extension/seek/layout-codec.js');
@@ -349,6 +348,41 @@ test('height cache uses the shared fingerprint and preserves checkpoint width va
   }
 });
 
+test('display descendants inside a skipped block are not measured until it renders', () => {
+  const f = fixture();
+  let reads = 0;
+  f.item.firstChild = {
+    nodeType: 1,
+    tagName: 'SPAN',
+    classList: { contains: (n) => n === 'katex-display' },
+    querySelector: () => ({ textContent: 'x=1' }),
+    getBoundingClientRect: () => {
+      reads++;
+      return { top: 120, left: 0, width: 768, height: 26 };
+    },
+  };
+  f.item.hasAttribute = (n) => n === 'data-butter-seen';
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  cvState(f, f.item, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  assert.equal(reads, 0, 'no forced descendant layout while skipped');
+  assert.equal(f.context.__butterLayoutCache.get('a'), null);
+  cvState(f, f.item, false);
+  f.flush();
+  assert.equal(reads, 1);
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].math[0].h, 26);
+  cvState(f, f.item, true);
+  f.resize([{ target: f.turn, contentRect: { height: 510 } }]);
+  f.flush();
+  assert.equal(reads, 1, 'unchanged skipped math reuses its measured geometry');
+  assert.equal(f.context.__butterLayoutCache.get('a').h, 510);
+});
+
 test('a formula box that spans the rest of a partly rendered answer is not recorded', () => {
   // Seen in a user video: the snapshot ended at an early display formula whose box ran to the end
   // of the turn, so the preview drew one viewport-sized math box and none of the text after it.
@@ -363,6 +397,7 @@ test('a formula box that spans the rest of a partly rendered answer is not recor
     tagName: 'SPAN',
     classList: { contains: (n) => n === 'katex-display' },
     querySelector: () => ({ textContent: 'y_{n+1}^{(4)}=1.2340' }),
+    getBoundingClientRect: () => ({ top: 136, left: 0, width: 768, height: 33 }),
     nextSibling: null,
   };
   f.blocks.push(f.item);

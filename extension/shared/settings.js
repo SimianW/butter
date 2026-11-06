@@ -72,8 +72,11 @@
     const wrapper = [
       ...scope.querySelectorAll('div.\\[container-type\\:inline-size\\].min-h-full'),
     ].find(visible);
+    // Same response roots as the recorder and isolated-world offscreen markers.
+    const answerRoot =
+      ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
     const cv = scope.querySelector(
-      '[data-turn-key][data-butter-seen], [data-markdown-text-style="assistant-message"] > [data-butter-seen]:not([data-wide-block]), [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] > :not([data-wide-block])',
+      `[data-turn-key][data-butter-seen], ${answerRoot} > [data-butter-seen]:not([data-wide-block]), [data-talvt-turn-state="in_progress"] ${answerRoot} > :not([data-wide-block])`,
     );
     const streaming = !!scope.querySelector('[data-talvt-turn-state="in_progress"]');
     streamSince = streaming ? streamSince || now : 0;

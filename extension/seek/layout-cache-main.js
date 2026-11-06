@@ -26,9 +26,10 @@
     verified = new WeakMap(), // turn element -> the entry its last successful record produced
     contentH = new WeakMap(),
     leanCache = new WeakMap(),
+    mathGeometry = new WeakMap(),
     applied = new WeakSet(); // turns restore() gave their recorded sizes
-  const BLOCK = '[data-markdown-text-style="assistant-message"] > :not([data-wide-block]):not(hr)';
-  const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
+  const BLOCK = core.ANSWER_BLOCKS;
+  const ITEMS = core.PREVIEW_ITEMS;
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1] || null;
   // Any answer column serves for width and font. Reading one inside a turn that content-visibility
   // skips forced style and layout of that whole turn (a DisplayLock update: 0.6 s for a long answer).
@@ -564,7 +565,7 @@
   // Lean text for the preview: TeX source for math, list bullets, no buttons/SVG. Capped.
   const CAP = 4000;
   const BLOCKY = /^(P|LI|H[1-6]|PRE|TR|BLOCKQUOTE|DIV|UL|OL|TABLE|THEAD|TBODY|SECTION|FIGURE)$/;
-  function lean(el, blockHeight) {
+  function lean(el) {
     let out = '';
     const math = [];
     const walk = (n) => {
@@ -588,7 +589,7 @@
         const display = cls.contains('katex-display');
         const start = out.length;
         out += tex;
-        math.push({ start, end: out.length, display, h: display ? blockHeight : 0 });
+        math.push({ start, end: out.length, display, element: n });
         return;
       }
       if (tag === 'BR') {
@@ -846,8 +847,28 @@
           const r = box(el);
           let text = leanCache.get(el);
           if (text == null) {
-            text = lean(el, r.height);
+            text = lean(el);
             leanCache.set(el, text);
+          }
+          let math;
+          // Descendant reads force layout inside a skipped block. Reuse geometry only if its
+          // text and containing box are unchanged. Otherwise keep collecting visible formulas
+          // further down the answer, and wait for this block's reveal before accepting the turn.
+          if (skipped.has(el) && text.math.some((m) => m.display)) {
+            const cached = mathGeometry.get(el);
+            if (cached?.text === text && cached.w === r.width && cached.h === r.height)
+              math = cached.math;
+            else {
+              j.snap.mathReady = false;
+              math = [];
+            }
+          } else {
+            // Text/offsets survive resize, but each formula's own box must be refreshed.
+            math = text.math.map(({ element, ...m }) => ({
+              ...m,
+              h: m.display ? box(element).height : 0,
+            }));
+            mathGeometry.set(el, { text, w: r.width, h: r.height, math });
           }
           j.items.push({
             top: r.top - rr.top,
@@ -857,7 +878,7 @@
             user: el.matches('[data-user-message-bubble]'),
             css: styleKey(el),
             text: text.text,
-            math: text.math,
+            math,
           });
         }
       } while (j.items.length < j.all.length && left() > RESERVE);

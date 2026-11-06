@@ -47,6 +47,17 @@ async function put(f, records, account = id('a'), conv = id('c'), generation = 0
 const usage = (f) => f.message({ type: 'butter-layout-usage' });
 const clear = (f) => f.message({ type: 'butter-layout-clear' });
 
+test('old wrapper-level geometry is rejected and pruned rather than reused', async () => {
+  const f = workerFixture();
+  const old = { ...geometry(), schema: 2 };
+  assert.equal(codec.valid(old), false);
+  f.disk.set(codec.key(old), { ...old, key: codec.key(old), used: old.time, bytes: 100 });
+  assert.equal((await load(f)).records.length, 0);
+  assert.equal(f.disk.size, 0);
+  await put(f, [old]);
+  assert.equal((await usage(f)).bytes, 0, 'old tabs cannot save the obsolete format');
+});
+
 test('worker partitions by account and conversation; usage counts conversations across accounts', async () => {
   const f = workerFixture();
   await put(f, [geometry(), geometry({ turn: id('1') })]);

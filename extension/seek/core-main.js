@@ -5,6 +5,14 @@
   const CLASSIC_ARROW = 12; // Chromium classic scrollbar endpoint height
   const CLASSIC_MIN_THUMB = 12;
   const OVERLAY_STRIP = 16; // overlay thumb strip the preview leaves uncovered (press band + 1 px slack)
+  // ChatGPT has both direct markdown blocks and Dil answers behind several wrapper layers (one
+  // layer can also hold an empty sibling). Only the response root owns blocks in the latter.
+  // Keep the isolated-world offscreen selector and containment.css in sync; the renderer fixture
+  // exercises all three against real DOM, including hr and wide-block exclusions.
+  const ANSWER_ROOT =
+    ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
+  const ANSWER_BLOCKS = ANSWER_ROOT + ' > :not([data-wide-block]):not(hr)';
+  const PREVIEW_ITEMS = '[data-user-message-bubble], ' + ANSWER_ROOT + ' > *';
 
   // Scrollbar gutter width: > 0 for classic bars, 0 for overlay bars that draw over the content.
   const scrollbarGutter = (p) =>
@@ -170,7 +178,14 @@
     if (s.blocks.some((h) => !(h > 0) || !Number.isFinite(h))) return 'zero-block';
     if (s.items && s.items.some((it) => !(it.h >= 0) || !Number.isFinite(it.top)))
       return 'bad-item';
-    if (s.items && s.items.some((it) => it.h > displayMathLimit(it))) return 'math-height';
+    if (
+      s.items?.some(
+        (it) =>
+          it.h > displayMathLimit(it) ||
+          it.math?.some((m) => m.display && m.h > displayMathLimit(it, m)),
+      )
+    )
+      return 'math-height';
     return null;
   }
   // A block that is only a display formula is as tall as its TeX rows, never a screenful. A snapshot
@@ -185,9 +200,10 @@
       ? m
       : null;
   }
-  function displayMathLimit(it) {
-    if (!displayMath(it)) return Infinity;
-    return 120 + 64 * (1 + (it.text.match(/\\\\|\\cr(?![a-zA-Z])/g) || []).length);
+  function displayMathLimit(it, m = displayMath(it)) {
+    if (!m) return Infinity;
+    const tex = it.text.slice(m.start, m.end);
+    return 120 + 64 * (1 + (tex.match(/\\\\|\\cr(?![a-zA-Z])/g) || []).length);
   }
   function mergeRecord(prev, snap, now) {
     const reason = validateSnapshot(snap);
@@ -504,6 +520,9 @@
   }
 
   const api = {
+    ANSWER_ROOT,
+    ANSWER_BLOCKS,
+    PREVIEW_ITEMS,
     previewLitQuestions,
     previewCardQuestion,
     previewQuestion,
