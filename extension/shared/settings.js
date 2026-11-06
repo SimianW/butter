@@ -76,7 +76,7 @@
     const answerRoot =
       ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
     const cv = scope.querySelector(
-      `[data-turn-key][data-butter-seen], ${answerRoot} > [data-butter-seen]:not([data-wide-block]), [data-talvt-turn-state="in_progress"] ${answerRoot} > :not([data-wide-block])`,
+      `[data-turn-key][data-butter-seen], ${answerRoot} > [data-butter-seen]:not([data-wide-block]):not([class*="TableFrame-"]), [data-talvt-turn-state="in_progress"] ${answerRoot} > :not([data-wide-block]):not([class*="TableFrame-"])`,
     );
     const streaming = !!scope.querySelector('[data-talvt-turn-state="in_progress"]');
     streamSince = streaming ? streamSince || now : 0;

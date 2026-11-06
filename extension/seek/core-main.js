@@ -11,8 +11,18 @@
   // exercises all three against real DOM, including hr and wide-block exclusions.
   const ANSWER_ROOT =
     ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
-  const ANSWER_BLOCKS = ANSWER_ROOT + ' > :not([data-wide-block]):not(hr)';
+  const ANSWER_BLOCKS =
+    ANSWER_ROOT + ' > :not([data-wide-block]):not([class*="TableFrame-"]):not(hr)';
   const PREVIEW_ITEMS = '[data-user-message-bubble], ' + ANSWER_ROOT + ' > *';
+
+  // Wide wrappers use the scroller's box. Lean text always belongs inside the answer column;
+  // keep a narrower item's inset (including right-aligned questions) when it already fits.
+  function previewItemSpan(item, column) {
+    if (!column) return { left: item.left, w: item.w };
+    const w = Math.max(0, Math.min(item.w, column.w));
+    const left = Math.max(column.left, Math.min(item.left, column.left + column.w - w));
+    return { left, w };
+  }
 
   // Scrollbar gutter width: > 0 for classic bars, 0 for overlay bars that draw over the content.
   const scrollbarGutter = (p) =>
@@ -523,6 +533,7 @@
     ANSWER_ROOT,
     ANSWER_BLOCKS,
     PREVIEW_ITEMS,
+    previewItemSpan,
     previewLitQuestions,
     previewCardQuestion,
     previewQuestion,

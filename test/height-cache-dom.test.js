@@ -665,6 +665,7 @@ test("a widget block with no box of its own gets its children's size", () => {
   const card = {
     nodeType: 1,
     tagName: 'DIV',
+    hasAttribute: () => false,
     className: 'card',
     classList: { contains: () => false },
     firstChild: { nodeType: 3, data: 'Card text', nextSibling: null },
@@ -998,7 +999,7 @@ test('a sent question with no answer yet holds idle measuring like a streaming a
       ? {}
       : sel === '[data-markdown-text-style="assistant-message"]'
         ? answered
-          ? {}
+          ? { getBoundingClientRect: () => ({ left: 0, width: 768 }) }
           : null
         : qs(sel);
   f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);

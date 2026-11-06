@@ -58,6 +58,19 @@ test('old wrapper-level geometry is rejected and pruned rather than reused', asy
   assert.equal((await usage(f)).bytes, 0, 'old tabs cannot save the obsolete format');
 });
 
+test('old full-scroller table geometry is rejected and pruned rather than reused', async () => {
+  const f = workerFixture();
+  const old = { ...geometry(), schema: 3 };
+  old.items[0][2] = 0;
+  old.items[0][3] = 1258;
+  assert.equal(codec.valid(old), false);
+  f.disk.set(codec.key(old), { ...old, key: codec.key(old), used: old.time, bytes: 100 });
+  assert.equal((await load(f)).records.length, 0);
+  assert.equal(f.disk.size, 0);
+  await put(f, [old]);
+  assert.equal((await usage(f)).bytes, 0, 'old tabs cannot save unclamped geometry');
+});
+
 test('worker partitions by account and conversation; usage counts conversations across accounts', async () => {
   const f = workerFixture();
   await put(f, [geometry(), geometry({ turn: id('1') })]);

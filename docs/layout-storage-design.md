@@ -74,10 +74,13 @@ row self-contained permits independent TTL/LRU eviction and updates; no heights 
 quantized, so encoding does not change landing geometry. Question/answer
 text stays in the merged cache's page memory and is hydrated against the current source only.
 
-The compact wire schema is 3. Schema 2 recorded Dil renderer wrappers as whole-answer blocks and
-could assign their heights to descendant formulas. Schema 3 uses the real response blocks and
-each display element's own height. Old schemas are rejected on write and pruned on disk load,
-without importing or repairing their geometry; answers are measured again. The numeric array
+The compact wire schema is 4. Schema 2 recorded Dil renderer wrappers as whole-answer blocks and
+could assign their heights to descendant formulas. Schema 3 used the real response blocks and
+each display element's own height, but could store full-scroller table geometry and include Dil
+table frames in intrinsic block sizes. Schema 4 clamps preview items to the answer column and
+excludes those frames from intrinsic sizes, just like classic wide tables. Old schemas are rejected
+on write and pruned on disk load, without importing or repairing their geometry; answers are
+measured again. The numeric array
 fields, runtime protocol version 1 and IndexedDB database version remain unchanged.
 
 Current-conversation prefetch starts on known account / chat source arrival. It finishes in memory

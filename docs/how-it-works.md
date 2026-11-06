@@ -57,7 +57,12 @@ never starts streaming stops holding after 15 s. A seek press during a stream st
 
 Seen text uses those recorded positions at half opacity. Display math becomes a single line of TeX
 in a placeholder of the recorded height, capped by the same TeX-row limit for rows stored by
-earlier builds. Stored geometry from a previous visit also counts as opened.
+earlier builds. Classic wide tables and Dil table frames remain preview items, but do not receive
+intrinsic block sizes or block containment. Their cells become row text with spaces between cells;
+grid and flex widget cells on the same visual row also stay on one text line. Recording and drawing
+both clamp preview items to the answer column. Skipped widgets reuse measured rows only while
+their containing box is unchanged; visible widgets refresh row grouping when measured again.
+Stored geometry from a previous visit also counts as opened.
 A question without measured or stored layout previews from its
 beginning, with a bottom fade, and releasing lands at that question's start below the header.
 The history rail applies its normal lit band to the preview geometry through a `butter-seek-state`

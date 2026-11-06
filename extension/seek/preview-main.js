@@ -433,7 +433,8 @@
         const el = document.createElement('div'),
           it = f.it;
         el.className = 'it';
-        el.style.cssText = `${it.css};top:${f.abs}px;left:${it.left}px;width:${it.w}px;height:${it.h}px`;
+        const span = core.previewItemSpan(it, { left: a.prep.colLeft, w: a.prep.colWidth });
+        el.style.cssText = `${it.css};top:${f.abs}px;left:${span.left}px;width:${span.w}px;height:${it.h}px`;
         if (it.user) {
           el.style.background = 'var(--bubble)';
           el.style.borderRadius = '18px';

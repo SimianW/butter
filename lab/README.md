@@ -36,6 +36,7 @@ the lab browser with exactly those unpacked extensions (`EXT=` empty = no extens
 | Script | What it does |
 |---|---|
 | `dil-renderer.mjs` | Synthetic Dil-wrapper and direct-markdown regression: real recorder, formula sizing and resize, preview clamp, anchor indexes and containment. Separate headless browser; no ChatGPT requests or shared lab lock. |
+| `dil-tables-widgets.mjs` | Synthetic Dil/classic tables and captured code-widget nesting, plus grid/flex cards: row text, column bounds, actual preview drawing, resize, skipped-widget safety and wide-table containment. Separate headless browser; no ChatGPT requests or shared lab lock. |
 | `baseline.mjs` | Chats for real, turn by turn, in a project (`PROJECT=<project url>`) with the prompts in `prompts-baseline.mjs`; measures every answer. `build-report.mjs` turns its output into an HTML page. |
 | `record.mjs` | Sends one real prompt and records the streamed SSE answer with chunk timing. |
 | `bench.mjs` | The main benchmark: replays a recording into `CHAT` via a `fetch` hook (nothing reaches OpenAI), scrolls and types while it streams, and measures frames, Long Animation Frames, keystrokes, CDP metrics and the answer's SHA-256. `TRACE=1|heavy|stack` also saves a Chrome trace. |

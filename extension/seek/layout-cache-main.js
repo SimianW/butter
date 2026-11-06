@@ -565,13 +565,14 @@
   // Lean text for the preview: TeX source for math, list bullets, no buttons/SVG. Capped.
   const CAP = 4000;
   const BLOCKY = /^(P|LI|H[1-6]|PRE|TR|BLOCKQUOTE|DIV|UL|OL|TABLE|THEAD|TBODY|SECTION|FIGURE)$/;
-  function lean(el) {
+  function lean(el, readRows = true) {
     let out = '';
     const math = [];
-    const walk = (n) => {
+    let spatial = false;
+    const walk = (n, inline = false, widget = false) => {
       if (out.length > CAP) return;
       if (n.nodeType === 3) {
-        out += n.data;
+        out += inline ? n.data.replace(/\s+/g, ' ') : n.data;
         return;
       }
       if (n.nodeType !== 1) return;
@@ -593,13 +594,46 @@
         return;
       }
       if (tag === 'BR') {
-        out += '\n';
+        out += inline ? ' ' : '\n';
         return;
       }
-      const block = BLOCKY.test(tag);
+      widget ||= n.hasAttribute('data-client-defined-widget');
+      // Widgets can use block elements as cells. Keep their visual rows as text, without
+      // reproducing the card UI. Single-child grids also wrap code editors; those stay ordinary
+      // blocks so each .cm-line keeps its newline. Never read descendants of a skipped item.
+      if (widget && !inline && n.children.length > 1 && tag === 'DIV') {
+        const display = readRows && getComputedStyle(n).display;
+        if (!readRows) spatial = true;
+        if (display === 'grid' || display === 'flex') {
+          spatial = true;
+          const cells = [...n.children]
+            .map((cell) => ({ cell, r: cell.getBoundingClientRect() }))
+            .filter(({ r }) => r.width && r.height);
+          const overlaps = (a, b) => a.top < b.top + b.height && b.top < a.top + a.height;
+          // Column layouts wrap entire card sections too. Recurse normally through those,
+          // otherwise a nested grid (or code editor) would lose its own row boundaries.
+          if (cells.some(({ r }, i) => i > 0 && overlaps(r, cells[i - 1].r))) {
+            if (out && !out.endsWith('\n')) out += '\n';
+            let row;
+            for (const { cell, r } of cells) {
+              const before = out.length;
+              if (row) out += overlaps(r, row) ? '  ' : '\n';
+              const start = out.length;
+              walk(cell, true, widget);
+              if (out.length === start) out = out.slice(0, before);
+              else row = r;
+            }
+            if (!out.endsWith('\n')) out += '\n';
+            return;
+          }
+        }
+      }
+      const block = !inline && BLOCKY.test(tag);
       if (block && out && !out.endsWith('\n')) out += '\n';
+      if (inline && BLOCKY.test(tag) && out && !/\s$/.test(out)) out += ' ';
       if (tag === 'LI') out += '• ';
-      for (let c = n.firstChild; c; c = c.nextSibling) walk(c);
+      for (let c = n.firstChild; c; c = c.nextSibling)
+        walk(c, inline || tag === 'TD' || tag === 'TH', widget);
       if (tag === 'TD' || tag === 'TH') out += '  ';
       if (block && !out.endsWith('\n')) out += '\n';
     };
@@ -608,6 +642,7 @@
     const text = out.trim().slice(0, CAP);
     return {
       text,
+      spatial,
       math: math
         .map((m) => ({ ...m, start: m.start - trim, end: m.end - trim }))
         .filter((m) => m.start >= 0 && m.end <= text.length),
@@ -840,15 +875,21 @@
     if (!needed()) return true; // seek, cv and layout turned off since begin()
     return timed(() => {
       const rr = t.parentElement.getBoundingClientRect(),
-        sr = sc.getBoundingClientRect();
+        sr = sc.getBoundingClientRect(),
+        column = t.querySelector(MD)?.getBoundingClientRect();
       do {
         for (const end = Math.min(j.all.length, j.items.length + SLICE); j.items.length < end; ) {
           const el = j.all[j.items.length];
           const r = box(el);
           let text = leanCache.get(el);
-          if (text == null) {
-            text = lean(el);
+          if (text == null || (text.spatial && !skipped.has(el))) {
+            text = lean(el, !skipped.has(el));
             leanCache.set(el, text);
+          }
+          if (text.spatial && skipped.has(el)) {
+            const cached = mathGeometry.get(el);
+            if (cached?.text !== text || cached.w !== r.width || cached.h !== r.height)
+              j.snap.placeholder = true;
           }
           let math;
           // Descendant reads force layout inside a skipped block. Reuse geometry only if its
@@ -868,13 +909,17 @@
               ...m,
               h: m.display ? box(element).height : 0,
             }));
-            mathGeometry.set(el, { text, w: r.width, h: r.height, math });
+            if (!text.spatial || !skipped.has(el))
+              mathGeometry.set(el, { text, w: r.width, h: r.height, math });
           }
+          const span = core.previewItemSpan(
+            { left: r.left - sr.left - sc.clientLeft, w: r.width },
+            column && { left: column.left - sr.left - sc.clientLeft, w: column.width },
+          );
           j.items.push({
             top: r.top - rr.top,
             h: r.height,
-            left: r.left - sr.left - sc.clientLeft,
-            w: r.width,
+            ...span,
             user: el.matches('[data-user-message-bubble]'),
             css: styleKey(el),
             text: text.text,
