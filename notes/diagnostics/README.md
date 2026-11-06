@@ -94,3 +94,46 @@ On the affected Mac, let scrolling stop briefly, run once, scroll through the wh
 wait about a second, and run again. Then hold the scrollbar to check the notice. If it persists,
 use the original drag capture too: the readiness report describes the current cache, while the
 seek model is frozen when the scrollbar is pressed.
+
+## Readiness says layout true, but pressing still shows unseen
+
+Install test build `0.1.0-alpha.13+unseen-notice.8` or later, then use
+[capture-press-decision.js](capture-press-decision.js). Open the affected chat, scroll through
+the answer, **press and drag the scrollbar slightly, then release it once**. In DevTools
+Console choose **top**, paste the entire file and press Enter. It prints and copies one JSON
+object. Share only that JSON, ideally with the readiness capture taken just before pressing.
+Do not reload or clear layouts between these captures.
+
+This reads the read-only `__seekDump.pressDecision` property, which returns a detached copy
+of the last qualifying press's summary. It does not invoke `__seekDump()`, measure the DOM,
+read current cache records, flush, hydrate, access storage or send requests. The summary
+survives release and harmless clicks (including opening DevTools), until another qualifying
+scrollbar press or a page reload. A `render: null` means the candidate never rendered a preview;
+drag slightly while holding the thumb to trigger it.
+
+The summary includes only counts, booleans, numeric geometry and fixed reason codes:
+
+- `fiberFound`, `idsFromFallback` and `idsReason` distinguish virtualizer turn order from
+  the `ids-from-fallback` conversation-message order. No actual keys or IDs are included.
+- `scroller.matchesThreadScroller` compares the pressed element with the first visible
+  `.thread-scroll-container`, exactly the one readiness chooses. `threadScrollerCount`,
+  `threadScrollerSw`, `swBefore` and `sw` distinguish multiple scrollers and width changes
+  during prepare. These are full scroller widths; the narrower preview host is separate.
+- `turns` follows the frozen model's zero-based turn order. `layoutReason` is null for a
+  trusted layout, otherwise `no-record`, `no-items`, `sw-mismatch`, `no-measured`,
+  `height-mismatch` or `conv-mismatch`. `recordSw`, the scroller's `sw`, `rowH` and
+  `measuredHeight` show the inputs. `mounted` and `rowHeightAtPrepare` reuse the row rects the
+  press already reads. `modelTop` and `modelHeight` show the frozen row geometry.
+- Each turn's `cache.before` and `cache.after` are scalar summaries saved around the
+  synchronous measurement flush and storage adoption. `recordChanged` flags replacement;
+  `convMatches` detects conversation filtering without exposing its identity;
+  `storedAvailable`, `fromStorage` and `retiredStored` distinguish stored-record adoption or
+  retirement. A retired invalid stored record has `layoutReason: no-record`.
+- `render` records the actual `previewQuestion` selection: `turnIndex`, `modelLength`,
+  `layout`, `unseen`, scroll `top`, `insetTop` and `previewTop`. Its `prepareSequence` identifies
+  the model being rendered. A separate `releasePrepare` appears only if release retargeting
+  prepares another model; it does not replace the original press/render evidence.
+
+No text, TeX, styles, selectors from chat content, IDs, URLs, account identifiers or React props
+are stored in this summary. The capture is a past decision, so geometry can differ from the
+live page after release. An unavailable-build or no-prepared-press error produces no JSON.

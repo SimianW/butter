@@ -290,7 +290,11 @@ test('the product render completes before publishing rail state for a known prev
   assert.doesNotThrow(() =>
     f.ctx.renderForTest(
       {
-        prep: { model, flat: [{ turn: 0, index: 0, abs: 52, h: 148, it: model[0].items[0] }] },
+        prep: {
+          decision: { sequence: 1 },
+          model,
+          flat: [{ turn: 0, index: 0, abs: 52, h: 148, it: model[0].items[0] }],
+        },
         insetTop: 52,
         hostRect: { x: 0, y: 52, width: 500, height: 300 },
         rendered: new Map([[0, item]]),
@@ -381,7 +385,11 @@ test('a nested math or answer box is not proof of ink when its text is clipped a
     },
   ];
   const a = {
-    prep: { model, flat: [{ turn: 0, index: 0, abs: 0, h: 10000, it: model[0].items[0] }] },
+    prep: {
+      decision: { sequence: 1 },
+      model,
+      flat: [{ turn: 0, index: 0, abs: 0, h: 10000, it: model[0].items[0] }],
+    },
     insetTop: 52,
     hostRect: { x: 0, y: 52, width: 500, height: 300 },
     rendered: new Map([[0, item]]),
@@ -774,6 +782,7 @@ test('unseen previews explain their fixed answer-start excerpt and hide the noti
       });
       const a = {
         prep: {
+          decision: { sequence: 1 },
           model,
           previewModel: seek.buildPreviewModel(model, records, 12),
           flat: seek.flatten(model),
@@ -789,6 +798,9 @@ test('unseen previews explain their fixed answer-start excerpt and hide the noti
       for (const progress of [0, 0.25, 0.75, 0.95]) {
         const top = row.top + row.h * progress - 52;
         f.ctx.renderForTest(a, top);
+        assert.equal(a.prep.decision.render.turnIndex, 1);
+        assert.equal(a.prep.decision.render.unseen, true);
+        assert.equal(a.prep.decision.render.modelLength, 2);
         early ??= f.ctx.testEst.textContent;
         assert.match(early, /unmeasured question/);
         assert.match(early, /early answer/);

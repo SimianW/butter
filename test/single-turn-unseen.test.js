@@ -33,6 +33,9 @@ function prepareFixture(measuredHeight) {
   const source = fs.readFileSync(require.resolve('../extension/seek/preview-main.js'), 'utf8');
   const context = {
     core,
+    document: { querySelectorAll: () => [scroller] },
+    prepareSequence: 0,
+    pressDecision: null,
     performance: { now: () => 0 },
     texts: () => ({ byId: { synthetic: { q: 'Question', answer: 'Answer' } } }),
     __butterLayoutCache: { prepare: () => ({ records: { synthetic: record }, storedTurns: 0 }) },

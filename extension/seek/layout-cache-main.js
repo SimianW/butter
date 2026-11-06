@@ -1208,6 +1208,15 @@
     });
 
   // Read API for seek/preview-main.js (same world). Records carry chat text: never dump them.
+  const recordDecision = (e, conversation) => ({
+    hasRecord: !!e,
+    convMatches: e ? e.conv === conversation : null,
+    items: e?.items?.length ?? 0,
+    blocks: e?.blocks?.length ?? 0,
+    sw: Number.isFinite(e?.sw) ? e.sw : null,
+    rowH: Number.isFinite(e?.rowH) ? e.rowH : null,
+    fromStorage: !!e?.fromStorage,
+  });
   globalThis.__butterLayoutCache = {
     ...persistence,
     column: shownColumn,
@@ -1234,17 +1243,30 @@
     },
     // One synchronous consumer path: hydrate/adopt disk records, then validate every entry.
     prepare: (sc, ids) => {
+      const conversation = conv(),
+        before = ids.map((id) => turns.get(id)),
+        beforeDecisions = before.map((e) => recordDecision(e, conversation));
       // A press right after wheel scrolling: measure turns still waiting for the scroll to settle.
       measure();
       const stored = persistence.records(sc);
       scWidths.set(sc, sc.clientWidth);
       for (const [id, e] of Object.entries(stored)) if (!turns.has(id)) turns.set(id, e);
-      const records = {};
-      for (const id of ids) {
+      const records = {},
+        decisions = [];
+      for (const [index, id] of ids.entries()) {
+        const candidate = turns.get(id);
         const e = currentEntry(id, sc);
-        if (e?.conv === conv()) records[id] = e;
+        if (e?.conv === conversation) records[id] = e;
+        decisions.push({
+          before: beforeDecisions[index],
+          after: recordDecision(e, conversation),
+          recordChanged: before[index] !== e,
+          storedAvailable: !!stored[id],
+          retiredStored: !!candidate && !e,
+          reason: e && e.conv !== conversation ? 'conv-mismatch' : null,
+        });
       }
-      return { records, storedTurns: Object.keys(stored).length };
+      return { records, storedTurns: Object.keys(stored).length, decisions };
     },
     adopt: (records, sc) => {
       scWidths.set(sc, sc.clientWidth);

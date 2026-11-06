@@ -289,7 +289,27 @@ test('merged prepare synchronously uses prefetched memory with no disk reads at 
   assert.equal(result.records.t.items[0].text, 'answer');
   assert.equal(f.storage.worker.counters.reads, reads);
   f.ctx.getComputedStyle = () => ({ font: '20px serif' });
-  assert.equal(Object.keys(f.api.prepare(f.sc, ['t']).records).length, 0);
+  const invalid = f.api.prepare(f.sc, ['t']);
+  assert.equal(Object.keys(invalid.records).length, 0);
+  assert.equal(invalid.decisions[0].before.fromStorage, true);
+  assert.equal(invalid.decisions[0].retiredStored, true);
+  assert.equal(invalid.decisions[0].after.hasRecord, false);
+});
+
+test('press preparation preserves a warm record when a stored variant is available', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  const warm = { ...record, conv, rowH: 560 };
+  f.api.adopt({ t: warm }, f.sc);
+  const result = f.api.prepare(f.sc, ['t']);
+  assert.equal(result.storedTurns, 1);
+  assert.equal(result.records.t, warm);
+  assert.equal(result.decisions[0].storedAvailable, true);
+  assert.equal(result.decisions[0].recordChanged, false);
+  assert.equal(result.decisions[0].after.fromStorage, false);
+  assert.equal(result.decisions[0].after.rowH, 560);
 });
 
 test('failed loads retain bounded measurements and recover on the next source update', async () => {

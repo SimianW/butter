@@ -1,0 +1,42 @@
+[
+  {
+    "project": false,
+    "dil": false,
+    "items": 28,
+    "readinessLayout": true,
+    "lastRejection": null,
+    "activated": true,
+    "notice": false,
+    "pressReason": null
+  },
+  {
+    "project": false,
+    "dil": false,
+    "items": 29,
+    "readinessLayout": true,
+    "lastRejection": null,
+    "activated": true,
+    "notice": false,
+    "pressReason": null
+  },
+  {
+    "project": true,
+    "dil": false,
+    "items": 0,
+    "readinessLayout": false,
+    "lastRejection": "math-pending",
+    "activated": true,
+    "notice": true,
+    "pressReason": "no-record"
+  },
+  {
+    "project": false,
+    "dil": false,
+    "items": 21,
+    "readinessLayout": true,
+    "lastRejection": null,
+    "activated": true,
+    "notice": false,
+    "pressReason": null
+  }
+]

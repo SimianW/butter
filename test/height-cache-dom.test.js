@@ -1242,3 +1242,40 @@ test('readiness capture reports the actual per-turn rejection and never emits co
   ])
     assert.ok(!json.includes(privateValue), privateValue);
 });
+
+test('press cache decisions retain pre-flush geometry and distinguish conversation filtering', () => {
+  const f = fixture({ mounted: true, setup: ({ blocks, item }) => blocks.push(item) });
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  layoutReady(f);
+  const cache = f.context.__butterLayoutCache;
+  const first = cache.prepare(f.sc, ['a']).decisions[0];
+  assert.equal(first.before.hasRecord, true);
+  assert.equal(first.before.rowH, 500);
+  assert.equal(first.after.rowH, 500);
+  assert.equal(first.reason, null);
+  f.turn.parentElement.getBoundingClientRect = () => ({ top: 0, width: 768, height: 540 });
+  f.resize([{ target: f.turn, contentRect: { height: 540 } }]);
+  const flushed = cache.prepare(f.sc, ['a']).decisions[0];
+  assert.equal(flushed.before.rowH, 500);
+  assert.equal(flushed.after.rowH, 540);
+  assert.equal(flushed.recordChanged, true);
+  f.context.location.pathname = '/g/g-p-synthetic/c/11111111-1111-1111-1111-111111111111';
+  const filtered = cache.prepare(f.sc, ['a']);
+  assert.equal(filtered.records.a, undefined);
+  assert.equal(filtered.decisions[0].reason, 'conv-mismatch');
+  assert.equal(filtered.decisions[0].after.convMatches, false);
+  assert.deepEqual(Object.keys(filtered.decisions[0].before).sort(), [
+    'blocks',
+    'convMatches',
+    'fromStorage',
+    'hasRecord',
+    'items',
+    'rowH',
+    'sw',
+  ]);
+  assert.equal(cache.prepare(f.sc, ['missing']).decisions[0].after.hasRecord, false);
+});
