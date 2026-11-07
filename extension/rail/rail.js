@@ -512,7 +512,6 @@
 
   let host = null,
     rail,
-    pill,
     more,
     tickBox,
     cardPos,
@@ -537,9 +536,8 @@
       `<button class="more" aria-label="${TXT.more}"><i></i><i></i><i></i></button><div class="ticks"></div></nav>` +
       `<div class="cardpos instant"><div class="card" role="tooltip"><div class="meta"></div><div class="text"></div></div></div>` +
       `<div class="warp"><div class="streak"></div></div>`;
-    [rail, pill, more, tickBox, cardPos, card, meta, text, warp, streak] = [
+    [rail, more, tickBox, cardPos, card, meta, text, warp, streak] = [
       '.rail',
-      '.pill',
       '.more',
       '.ticks',
       '.cardpos',

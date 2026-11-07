@@ -560,7 +560,7 @@ test('a remounted turn whose size changed is measured', () => {
 test('a remounted turn whose blocks changed size at the same total is measured', () => {
   // Adopting on equal turn and row height alone kept [100, 200] for blocks now [200, 100].
   const f = fixture();
-  const block = (h) => Object.assign(new f.Element(), { ...f.item, closest: () => f.turn });
+  const block = () => Object.assign(new f.Element(), { ...f.item, closest: () => f.turn });
   const [a, b] = [block(), block()];
   f.blocks.push(a, b);
   f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
@@ -669,7 +669,7 @@ test('a block skipped before it ever rendered is not recorded at its placeholder
 
 test('a skipped block that rendered before it was marked is recorded', () => {
   const f = fixture();
-  f.context.getComputedStyle = (el) => ({ contentVisibility: 'auto' });
+  f.context.getComputedStyle = () => ({ contentVisibility: 'auto' });
   f.item.hasAttribute = (n) => n === 'data-butter-seen';
   f.blocks.push(f.item);
   f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);

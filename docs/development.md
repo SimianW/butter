@@ -36,6 +36,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 
 Run `npm ci` to install the pinned development formatter, then `npm run format` to format
 `extension/**/*.{js,css,html,json}` and `test/**`. Use `npm run format:check` to check them.
+`npm run lint` checks `extension/` and `test/` for undefined and unused names (ESLint; config in `eslint.config.mjs`).
 `node --test` uses only Node built-ins and still runs without installing npm dependencies.
 
 ## Release

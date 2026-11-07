@@ -1288,7 +1288,7 @@
       })(),
     };
     if (full) {
-      out.events = S.events.map(({ kind, t, top, why, ms, error, reason, kind2 }) => ({
+      out.events = S.events.map(({ kind, t, top, why, ms, error, reason }) => ({
         kind,
         t,
         top,
