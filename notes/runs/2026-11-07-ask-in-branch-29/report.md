@@ -1,11 +1,13 @@
 # Ask in branch #29: streaming wait, hidden-button rules, Chinese menus
 
 2026-11-07. Ticket [#29](https://github.com/SimianW/butter/issues/29) (parent spec #26), branch
-`t3/aib-29` off the integration branch `t3/ask-in-branch` (`19da28d`). No version bump, no package.
+`t3/aib-29` off the integration branch `t3/ask-in-branch` (`19da28d`), then merged with it at `8f0d247` (#30).
+All checks below were re-run after the merge. No version bump, no package.
 
 ## Result
 
-- **Unit seam:** `node --test` passes 284/284. The new and changed branch tests cover the streaming
+- **Unit seam:** `node --test` passes 290/290 after merging `origin/t3/ask-in-branch` (#30's popup
+  tests included; 284/284 before the merge). The new and changed branch tests cover the streaming
   wait with a fake streaming page, the hidden-button rules, Work-mode detection and menu matching
   in English and Simplified Chinese. Every new rule was mutation-checked: each one fails a test
   when removed (see "Mutation check").
@@ -136,7 +138,7 @@ Full outputs are in [`checks/`](checks).
 | `npm ci` | `found 0 vulnerabilities` |
 | `npm run format:check` | `All matched files use Prettier code style!` |
 | `npm run lint` | no findings |
-| `node --test` | `tests 284`, `pass 284`, `fail 0` |
+| `node --test` | `tests 290`, `pass 290`, `fail 0` (after the merge of `8f0d247`; 284/284 before) |
 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | `Ran 41 tests`, `OK` |
 | `python3 scripts/check-version.py` | `OK: 0.1.0-alpha.14 / 0.1.0.14; manifest, READMEs, and changelog agree.` |
 | `node lab/harness/branch-qa.mjs` | 14 `PASS` lines ending `PASS 24 screenshots …; no page errors; no requests left the fixture` ([output](checks/branch-qa.txt)) |
