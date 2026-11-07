@@ -291,10 +291,20 @@
     };
   })();
 
-  // The line above the composer stays until the user sends their own next message, or ×.
+  // The line above the composer stays until the user sends their own next message, or ×, or
+  // leaves this conversation. ChatGPT saving the branch after its first message (unsaved
+  // local-chatgpt id → saved id) is not leaving it.
   const line = (() => {
-    let timer = 0;
-    const place = () => ui?.note.place(P.composerBox());
+    let timer = 0,
+      route = null;
+    const place = () => {
+      const id = B.identity(location.href);
+      if (id !== route) {
+        if (!(route && !B.saved(route) && B.saved(id))) return hide();
+        route = id;
+      }
+      ui?.note.place(P.composerBox());
+    };
     const stop = () => {
       clearInterval(timer);
       timer = 0;
@@ -327,6 +337,7 @@
     return {
       show(kind, title) {
         hide();
+        route = B.identity(location.href);
         getUI().note.show({ kind, title, onClose: stop });
         place();
         timer = setInterval(place, 200);

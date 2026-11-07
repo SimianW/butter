@@ -151,8 +151,9 @@ svg { display: block; }
     });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme);
     theme();
+    // ChatGPT can replace <html>; attach to the current one.
     const attach = () => {
-      if (!host.isConnected) html.append(host);
+      if (host.parentNode !== document.documentElement) document.documentElement.append(host);
     };
     const t = () => STRINGS[lang()];
     const el = (tag, cls, markup = '') => {

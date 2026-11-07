@@ -346,6 +346,14 @@ try {
     await inShadow(dest, '.line').waitFor();
     assert.equal(await inShadow(dest, '.line .t').innerText(), '分支自《Explain Corpus Meaning》· 原对话不变');
     await capture(dest, 'ready', 1280, 'light-zh');
+    // ChatGPT saves the branch after the first send (local id → saved id): the line stays.
+    await dest.evaluate(() => history.pushState({}, '', '/c/0f9e2c4a-1b2c-4d3e-8f4a-5b6c7d8e9f01'));
+    await dest.waitForTimeout(500);
+    assert.equal(await inShadow(dest, '.line').count(), 1, 'line kept when the branch is saved');
+    // Going to another chat (or a new one) in this tab: the line goes.
+    await dest.evaluate(() => history.pushState({}, '', '/'));
+    await dest.waitForTimeout(500);
+    assert.equal(await inShadow(dest, '.line').count(), 0, 'line gone on another route');
     await dest.close();
     await page.close();
     await settings({});
