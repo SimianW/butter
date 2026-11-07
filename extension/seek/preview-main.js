@@ -434,16 +434,18 @@
       H = a.hostRect.height;
     const question = core.previewQuestion(a.prep.model, top, a.insetTop);
     const unseen = question && !question.layout;
-    a.prep.decision.render = {
-      prepareSequence: a.prep.decision.sequence,
-      modelLength: a.prep.model.length,
-      turnIndex: question?.index ?? null,
-      layout: question?.layout ?? null,
-      unseen: !!unseen,
-      top,
-      insetTop: a.insetTop,
-      previewTop: a.previewTop,
-    };
+    // Diagnostics only: record which turn this press's frozen model selected.
+    if (a.prep.decision)
+      a.prep.decision.render = {
+        prepareSequence: a.prep.decision.sequence,
+        modelLength: a.prep.model.length,
+        turnIndex: question?.index ?? null,
+        layout: question?.layout ?? null,
+        unseen: !!unseen,
+        top,
+        insetTop: a.insetTop,
+        previewTop: a.previewTop,
+      };
     notice.hidden = !unseen;
     if (unseen) {
       // Match the rail's language setting; seek-meta.js lives in the isolated world.
@@ -1376,7 +1378,7 @@
       })(),
     };
     if (full) {
-      out.events = S.events.map(({ kind, t, top, why, ms, error, reason, kind2 }) => ({
+      out.events = S.events.map(({ kind, t, top, why, ms, error, reason }) => ({
         kind,
         t,
         top,

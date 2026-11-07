@@ -81,14 +81,15 @@ virtualizer measurements and height mismatches. The model uses empty texts becau
 affect this boolean. `recordValidation` reruns `validateSnapshot` on the accepted record's
 geometry, with completion/math readiness assumed; it cannot reconstruct a rejected snapshot.
 
-Test build `0.1.0-alpha.13+unseen-notice.7` adds per-mounted-turn recorder status:
-`observed`, `generating`, `queued`, `measuring`, `attempted`, and `lastRejection`. The last field
-is the reason returned by the latest failed `validateSnapshot` attempt (for example
-`placeholder`, `math-pending`, `zero-block` or `math-height`), cleared after a successful record.
-If the turn has never had a completed attempt, `attempted` is false and `lastRejection` is null.
-An attempt interrupted by a mutation or skip does not replace the previous outcome. Unmounted
-turns have no recorder status. Older builds report `rejectionDiagnosticsAvailable: false` and
-`recorder: null`; they can still report geometry and the resulting layout decision.
+Builds with the recorder diagnostics hook (`__butterLayoutCache.diagnostics`) add
+per-mounted-turn recorder status: `observed`, `generating`, `queued`, `measuring`, `attempted`
+and `lastRejection`. The last field is the reason returned by the latest failed
+`validateSnapshot` attempt (for example `placeholder`, `math-pending`, `zero-block` or
+`math-height`), cleared after a successful record. If the turn has never had a completed attempt,
+`attempted` is false and `lastRejection` is null. An attempt interrupted by a mutation or skip
+does not replace the previous outcome. Unmounted turns have no recorder status. Builds without
+the hook report `rejectionDiagnosticsAvailable: false` and `recorder: null`; they can still
+report geometry and the resulting layout decision.
 
 On the affected Mac, let scrolling stop briefly, run once, scroll through the whole answer,
 wait about a second, and run again. Then hold the scrollbar to check the notice. If it persists,
@@ -97,7 +98,7 @@ seek model is frozen when the scrollbar is pressed.
 
 ## Readiness says layout true, but pressing still shows unseen
 
-Install test build `0.1.0-alpha.13+unseen-notice.8` or later, then use
+This needs a build with the press-decision hook (`__seekDump.pressDecision`). Use
 [capture-press-decision.js](capture-press-decision.js). Open the affected chat, scroll through
 the answer, **press and drag the scrollbar slightly, then release it once**. In DevTools
 Console choose **top**, paste the entire file and press Enter. It prints and copies one JSON
@@ -145,7 +146,8 @@ steps above). For each mounted turn it counts `[data-math-source]` formulas with
 render, what they hold instead, and how many sit inside a content-visibility block. It prints
 and copies counts only: no text, TeX, IDs or URLs.
 
-Zero formulas without `.katex` means page-level math readiness is not the cause. Up to
+Zero formulas without `.katex` means page-level math readiness is not the cause. This snippet
+reads only the DOM and needs no Butter hook. Up to
 `0.1.0-alpha.13+unseen-notice.8`, the recorder also reported `math-pending` for a long answer
 whose skipped display-math blocks had no geometry measured while on screen; any DOM change in
 the turn discarded what had been measured. From `+unseen-notice.9` such blocks keep their real

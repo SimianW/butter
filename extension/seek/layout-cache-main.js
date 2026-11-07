@@ -925,7 +925,7 @@
               // answer stays usable; only the rows or formula boxes inside are estimates. The item
               // is flagged, the record is not persisted, and the turn stays queued for its reveal.
               approx = true;
-              math = text.math.map(({ element, ...m }) => ({
+              math = text.math.map(({ element: _element, ...m }) => ({
                 ...m,
                 h: m.display ? estimateDisplay(text.text.slice(m.start, m.end), r.height) : 0,
               }));
@@ -1263,6 +1263,7 @@
     column: shownColumn,
     flush: () => persistence.flush(),
     flushMeasurements: measure,
+    // Diagnostics only: recorder status for one mounted turn element, as booleans and reason codes.
     diagnostics: (t) => ({
       observed: meta.has(t),
       generating: busy.has(t),

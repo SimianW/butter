@@ -66,7 +66,7 @@
       anchors = [],
       realItems = new Map();
     let missingReal = 0;
-    const ITEMS = __butterSeekCore.PREVIEW_ITEMS;
+    const ITEMS = globalThis.__butterSeekCore.PREVIEW_ITEMS;
     for (const [i, el] of a.rendered) {
       const f = a.prep.flat[i],
         t = a.prep.model[f.turn],

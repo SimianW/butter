@@ -26,6 +26,7 @@ function prepareFixture(measuredHeight) {
     clientWidth: 766,
     scrollTop: 0,
     scrollHeight: rowHeight,
+    clientHeight: rowHeight,
     getBoundingClientRect: () => ({ top: 0 }),
     querySelector: () => turn,
     querySelectorAll: () => [turn],
@@ -49,13 +50,22 @@ function prepareFixture(measuredHeight) {
 }
 
 test('a single turn with no virtualizer measurement keeps the unseen fallback', () => {
-  assert.equal(prepareFixture(null).model[0].layout, false);
+  const prep = prepareFixture(null);
+  assert.equal(prep.model[0].layout, false);
+  assert.equal(prep.decision.turns[0].layoutReason, 'no-measured');
 });
 
 test('a single turn with a mismatching virtualizer measurement keeps the unseen fallback', () => {
-  assert.equal(prepareFixture(1885.5).model[0].layout, false);
+  const prep = prepareFixture(1885.5);
+  assert.equal(prep.model[0].layout, false);
+  assert.equal(prep.decision.turns[0].layoutReason, 'height-mismatch');
 });
 
 test('a single turn with matching geometry uses its recorded layout', () => {
-  assert.equal(prepareFixture(1937.5).model[0].layout, true);
+  const prep = prepareFixture(1937.5);
+  assert.equal(prep.model[0].layout, true);
+  assert.equal(prep.decision.turns[0].layoutReason, null);
+  assert.equal(prep.decision.turns[0].mounted, true);
+  assert.equal(prep.decision.scroller.matchesThreadScroller, true);
+  assert.equal(prep.decision.fiberFound, true);
 });
