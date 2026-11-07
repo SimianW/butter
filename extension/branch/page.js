@@ -82,17 +82,22 @@
   // ChatGPT's own "Ask ChatGPT" selection button, and the box that draws it (the first
   // ancestor with a background), whose geometry and colors Butter's button copies.
   // sideChat: the same toolbar also offers "Ask in side chat", which only Work mode has.
+  // Live (2026-11-07) the button is transparent at rest and, while hovered, tints only itself with
+  // no radius or shadow; that tint is not the box, so a hovered, pressed or focused button is
+  // skipped and the toolbar box under it is still found.
+  const busy = (el) => el.matches(':hover, :active, :focus-visible');
   const nativeAsk = () => {
     const button = [...document.querySelectorAll('button, [role="button"]')].find(
       (el) => B.labels.nativeAsk.test(label(el).replace(/^❝\s*/, '')) && visible(el),
     );
     if (!button) return null;
     let box = button;
-    for (let el = button, i = 0; el && i < 3; el = el.parentElement, i++) {
+    for (let el = busy(button) ? button.parentElement : button, i = 0; el && i < 3; i++) {
       if (getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)') {
         box = el;
         break;
       }
+      el = el.parentElement;
     }
     let sideChat = false;
     for (let el = button.parentElement, i = 0; el && el !== document.body && i < 4; i++) {
@@ -117,6 +122,31 @@
       fontSize: t.fontSize,
       fontFamily: t.fontFamily,
     };
+  };
+
+  // Formulas, for ButterBranch.quoteOf. ChatGPT renders them with KaTeX (live, 2026-11-07):
+  // .katex inline, .katex-display > .katex for display math, each keeping its LaTeX source in
+  // annotation[encoding="application/x-tex"]; the wrapper's data-math-source holds it too.
+  const FORMULA = '.katex';
+  const quoteDom = {
+    formula(el) {
+      const display = el.matches('.katex-display');
+      if (!display && !(el.matches('.katex') && !el.parentElement?.closest('.katex-display')))
+        return null;
+      const tex =
+        el.querySelector('annotation[encoding="application/x-tex"]')?.textContent ??
+        el.closest('[data-math-source]')?.getAttribute('data-math-source') ??
+        null;
+      return { tex, display };
+    },
+    layout(el) {
+      const { display } = getComputedStyle(el);
+      if (display === 'none') return 'hidden';
+      if (display === 'table-cell') return 'cell';
+      if (/^(inline|contents|ruby)/.test(display)) return 'inline';
+      return /^(P|H[1-6]|UL|OL|PRE|BLOCKQUOTE|TABLE|HR)$/.test(el.tagName) ? 'paragraph' : 'line';
+    },
+    pre: (el) => /^pre/.test(getComputedStyle(el).whiteSpace),
   };
 
   const streaming = () =>
@@ -257,8 +287,13 @@
     replyKeys,
     headerBottom,
     nativeAsk,
+    nativeBusy: ({ button }) => busy(button),
     nativeStyle,
     facts,
-    EXCLUDED: 'textarea, input, [contenteditable="true"], .katex, math, img, svg',
+    quoteDom,
+    FORMULA,
+    // A selection may not start or end in these, nor touch NON_TEXT, outside a formula.
+    EXCLUDED: 'textarea, input, [contenteditable="true"], math, img, svg',
+    NON_TEXT: 'math, img, video, canvas, iframe',
   };
 })();

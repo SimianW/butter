@@ -1,7 +1,8 @@
 // Synthetic ChatGPT-like conversation for branch-qa.mjs. No ChatGPT requests: every
 // https://chatgpt.com/** request is answered with this page. The scene follows the approved
 // mockup (issue #26 artifact 1): 56 px header, 720 px column, composer 44 px above the bottom,
-// and a native "Ask ChatGPT" chip shaped like the live one (fixed container > button).
+// and a native "Ask ChatGPT" chip shaped like the live one (fixed container > button). As live, the
+// button is transparent at rest and tints only itself, square, while hovered.
 // Attributes and labels mirror the live page of 2026-11-07 (ask-in-branch-29 report): the composer
 // form's data-composer-placement / data-chatgpt-composer, the unlabelled submit "Send" button,
 // data-talvt-turn-state on turns, and ChatGPT's English or Simplified Chinese menu labels.
@@ -12,6 +13,22 @@ export const ORIGINAL = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 export const BRANCH = 'local-chatgpt:0f9e2c4a-1b2c-4d3e-8f4a-5b6c7d8e9f00';
 export const QUOTE = 'RAG (Retrieval-Augmented Generation) than traditional model training';
 export const LATEST = 'Retrieval adds relevant context before an answer is generated.';
+// Formulas (?math): KaTeX markup as ChatGPT renders it (live, 2026-11-07): a wrapper with
+// data-math-display / data-math-source around .katex (inline) or .katex-display > .katex (display);
+// inside, the visually hidden MathML holds annotation[encoding="application/x-tex"] with the
+// source, and aria-hidden .katex-html draws the glyphs. Both parts are selectable text.
+export const MATH = {
+  inline: '\\frac{1}{L}',
+  display: '\\begin{aligned}\nx_{k+1}&=x_k-\\tfrac{1}{L}\\nabla f(x_k)\\\\\nf(x_k)-f^*&\\le\\frac{L\\|x_0-x^*\\|^2}{2k}\n\\end{aligned}',
+  rate: 'O(1/k)',
+};
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const katex = (tex, glyphs, display) => {
+  const inner = `<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"${display ? ' display="block"' : ''}><semantics><mrow>${[...glyphs].map((c) => `<mi>${esc(c)}</mi>`).join('')}</mrow><annotation encoding="application/x-tex">${esc(tex)}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut"></span>${[...glyphs].map((c) => `<span class="mord">${esc(c)}</span>`).join('')}</span></span></span>`;
+  return display
+    ? `<span class="math-display" data-math-display="true" data-math-source="${esc(tex)}"><span class="katex-display">${inner}</span></span>`
+    : `<span data-math-display="false" data-math-source="${esc(tex)}">${inner}</span>`;
+};
 // Live English text; the Chinese UI's wording wasn't checked, so the fixture uses this for both.
 const DISCLAIMER = 'ChatGPT can make mistakes. Check important info.';
 // ChatGPT's own labels per UI language (live, 2026-11-07).
@@ -63,6 +80,7 @@ export function fixtureHtml(url) {
   // ms from a send to ChatGPT's reply starting to show; 0 = no reply. As live, the sent question's
   // turn shows at once and the reply then appears, streaming, inside that same turn.
   const reply = Number(q.get('reply') || 0);
+  const math = q.has('math'); // a paragraph with inline and display formulas below the quote
   // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
   // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
   const fail = q.get('fail') || '';
@@ -102,7 +120,11 @@ header .t{font-size:15px;color:var(--fg2)}
 .native{position:fixed;z-index:50;pointer-events:none;width:max-content}
 .native>div{pointer-events:auto;display:flex;height:30px;border-radius:7px;background:var(--chip);box-shadow:0 2px 8px rgb(0 0 0 / .18);overflow:hidden}
 .native button{all:unset;height:30px;padding:0 9px;color:var(--chip-fg);font-size:14px;display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap}
+.native button:hover{background:rgb(255 255 255 / .1)}
 .native[hidden]{display:none}
+.katex{font:1.15em/1.2 "Times New Roman",serif;white-space:nowrap}
+.katex-mathml{position:absolute;clip:rect(1px,1px,1px,1px);padding:0;border:0;height:1px;width:1px;overflow:hidden}
+.math-display{display:block;margin:0 0 14px}.katex-display{display:block;text-align:center}
 [role=menu]{position:fixed;background:var(--pop);border:1px solid var(--hair);border-radius:14px;padding:6px;z-index:60;min-width:220px;font-size:14px}
 [role=menuitem]{padding:7px 10px;border-radius:8px;cursor:pointer;display:flex;gap:8px;align-items:center}
 </style></head><body>
@@ -112,7 +134,14 @@ header .t{font-size:15px;color:var(--fg2)}
  <div data-turn-key="t-earlier" data-talvt-turn-state="complete"><div data-chatgpt-selection-conversation-id="${conv}" data-chatgpt-selection-message-id="m-earlier">
   <div class="a" data-markdown-text-style="assistant-message">
    <p>A corpus can be used for training, but it can also simply be searched when an AI needs information.</p>
-   <p id="para">This is closer to <span id="quote">${QUOTE}</span>, although the page alone doesn't establish the exact architecture.</p>
+   <p id="para">This is closer to <span id="quote">${QUOTE}</span>, although the page alone doesn't establish the exact architecture.</p>${
+     math
+       ? `
+   <p id="math-before">Gradient descent with step ${katex(MATH.inline, '1/L', false)}:</p>
+   ${katex(MATH.display, 'xk+1=xk−∇f(xk)/L', true)}
+   <p id="math-after">converges at rate ${katex(MATH.rate, 'O(1/k)', false)}.</p>`
+       : ''
+   }
   </div>
   <div class="acts"><span></span><span></span><span></span>${more}</div>
  </div></div>

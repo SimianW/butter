@@ -158,3 +158,96 @@ test('ready line: the reply has started once the last reply on the page is one t
   );
   assert.equal(branch.replyStarted([], ['turn-c']), true, 'first reply of the page');
 });
+
+// Quotes with formulas. A small DOM-like tree: text nodes, elements laid out inline, as a line or
+// as a paragraph, and KaTeX formulas as ChatGPT renders them (live, 2026-11-07): the selectable
+// glyphs, with the LaTeX source kept aside (annotation[encoding="application/x-tex"]).
+const tree = (node, parent = null) => {
+  node.parentNode = parent;
+  for (const child of node.childNodes || []) tree(child, node);
+  return node;
+};
+const t = (data) => ({ nodeType: 3, nodeName: '#text', data });
+const el = (layout, ...childNodes) => ({ nodeType: 1, nodeName: 'DIV', layout, childNodes });
+const para = (...children) => el('paragraph', ...children);
+const formula = (tex, glyphs, display = false) => ({
+  nodeType: 1,
+  nodeName: 'SPAN',
+  layout: display ? 'line' : 'inline',
+  formula: { tex, display },
+  childNodes: [t(glyphs)],
+});
+// ChatGPT wraps a display formula in its own line box.
+const displayBlock = (tex, glyphs) => el('line', formula(tex, glyphs, true));
+const dom = {
+  formula: (node) => node.formula || null,
+  layout: (node) => node.layout || 'inline',
+  pre: () => false,
+};
+const range = (startContainer, startOffset, endContainer, endOffset) => ({
+  startContainer,
+  startOffset,
+  endContainer,
+  endOffset,
+});
+const STEP = 'x_{k+1}=x_k-\\frac1L\\nabla f(x_k)';
+
+test('quote: an inline formula alone is its LaTeX source between single dollars', () => {
+  const p = tree(para(t('The rate is '), formula('O(1/k)', 'O(1/k)'), t(' here.')));
+  assert.equal(branch.quoteOf(range(p, 1, p, 2), dom), '$O(1/k)$');
+});
+
+test('quote: a display formula alone is its LaTeX source between double dollars', () => {
+  const reply = tree(
+    el('line', para(t('Gradient descent:')), displayBlock(STEP, 'xk+1=xk−L1∇f(xk)')),
+  );
+  assert.equal(branch.quoteOf(range(reply, 1, reply, 2), dom), `$$${STEP}$$`);
+});
+
+test('quote: text and formulas in document order, display math on its own line', () => {
+  const before = t('Gradient descent with step '),
+    last = t('.');
+  tree(
+    el(
+      'line',
+      para(before, formula('1/L', '1/L'), t(':')),
+      displayBlock(STEP, 'xk+1=xk−L1∇f(xk)'),
+      para(t('converges at rate '), formula('O(1/k)', 'O(1/k)'), last),
+    ),
+  );
+  assert.equal(
+    branch.quoteOf(range(before, 9, last, 1), dom),
+    `descent with step $1/L$:\n\n$$${STEP}$$\n\nconverges at rate $O(1/k)$.`,
+  );
+});
+
+test('quote: a selection that covers only part of a formula quotes the whole formula', () => {
+  const lead = t('The rate is '),
+    tail = t(' here.');
+  const f = formula('O(1/k)', 'O(1/k)');
+  const glyphs = f.childNodes[0];
+  tree(para(lead, f, tail));
+  // From text into the middle of the formula's glyphs.
+  assert.equal(branch.quoteOf(range(lead, 4, glyphs, 2), dom), 'rate is $O(1/k)$');
+  // From the middle of the formula's glyphs into the text after it.
+  assert.equal(branch.quoteOf(range(glyphs, 3, tail, 5), dom), '$O(1/k)$ here');
+  // Entirely inside the formula.
+  assert.equal(branch.quoteOf(range(glyphs, 1, glyphs, 3), dom), '$O(1/k)$');
+});
+
+test('quote: a multi-line display formula keeps its lines, each quoted with "> "', () => {
+  const tex = '\\begin{aligned}\n  a &= b \\\\  \n\n  c &= d\n\\end{aligned}';
+  const reply = tree(el('line', para(t('So:')), displayBlock(tex, 'a=bc=d')));
+  const quote = branch.quoteOf(range(reply, 0, reply, 2), dom);
+  // A blank line would end the quoted math block, so blank lines go; trailing spaces too.
+  assert.equal(quote, 'So:\n\n$$\\begin{aligned}\n  a &= b \\\\\n  c &= d\n\\end{aligned}$$');
+  assert.equal(
+    branch.formatMessage(quote, 'Why?'),
+    '> So:\n> \n> $$\\begin{aligned}\n>   a &= b \\\\\n>   c &= d\n> \\end{aligned}$$\n\nWhy?',
+  );
+});
+
+test('quote: a formula without its LaTeX source makes the selection unquotable', () => {
+  const p = tree(para(t('See '), formula(null, 'x'), t('.')));
+  assert.equal(branch.quoteOf(range(p, 0, p, 3), dom), null);
+});

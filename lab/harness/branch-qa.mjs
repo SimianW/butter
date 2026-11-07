@@ -12,7 +12,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fixtureHtml, ORIGINAL, BRANCH, QUOTE, LATEST } from './branch-fixture.mjs';
+import { fixtureHtml, ORIGINAL, BRANCH, QUOTE, LATEST, MATH } from './branch-fixture.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const shots =
@@ -164,6 +164,26 @@ try {
     assert.equal(Math.round(r.chip.top), Math.round(r.native.top), 'top edges aligned');
     assert.deepEqual(r.chipCss, r.nativeCss, 'same height, radius, background and shadow');
     assert.deepEqual(r.chipFont, r.nativeFont, 'same font size');
+    // ChatGPT's button hovered: it tints itself, square; Butter's keeps the resting look.
+    const resting = r.chipCss;
+    await page.hover('.native button');
+    await settle(page);
+    const tinted = await page.$eval('.native button', (b) => getComputedStyle(b).backgroundColor);
+    assert.equal(tinted, 'rgba(255, 255, 255, 0.1)', 'fixture: native button shows its hover tint');
+    assert.deepEqual((await rects(page)).chipCss, resting, 'native hovered: chip keeps its resting look');
+    if (theme === 'light') await capture(page, 'button-native-hover', 1280, theme);
+    // Butter's own hover: a lighter background, same shape and shadow (mockup state 1).
+    await inShadow(page, '.chip').hover();
+    await settle(page);
+    const own = (await rects(page)).chipCss;
+    assert.notEqual(own.backgroundColor, resting.backgroundColor, 'chip hover changes its background');
+    assert.deepEqual(
+      { ...own, backgroundColor: null },
+      { ...resting, backgroundColor: null },
+      'chip hover keeps height, radius and shadow',
+    );
+    await page.mouse.move(5, 790);
+    await settle(page);
     // ChatGPT's button moves: Butter's follows.
     await page.evaluate(() => {
       fixture.nativeShift = 40;
@@ -286,6 +306,53 @@ try {
     assert.ok(flip.box.top >= 16, 'inside the viewport');
     await low.close();
     pass('question box: aligned under the buttons, one-line quote, keys, draft kept, flips above');
+  }
+
+  // ---- Formulas: a selection across text and KaTeX formulas, ending partway into one, quotes
+  // each formula whole as its LaTeX source; the box shows that quote and Enter sends it.
+  {
+    const page = await open('math=1');
+    await page.evaluate(() => {
+      const start = document.querySelector('#math-before').firstChild;
+      const glyph = document.querySelectorAll('#math-after .katex-html .mord')[1].firstChild;
+      const r = document.createRange();
+      r.setStart(start, 9); // "descent with step"
+      r.setEnd(glyph, 1); // "O(" of O(1/k): partway into the formula
+      getSelection().removeAllRanges();
+      getSelection().addRange(r);
+    });
+    await inShadow(page, '.chip').waitFor();
+    await settle(page);
+    const quote = `descent with step $${MATH.inline}$:\n\n$$${MATH.display}$$\n\nconverges at rate $${MATH.rate}$`;
+    await capture(page, 'formula-button', 1280, 'light');
+    await inShadow(page, '.chip').click();
+    await inShadow(page, '.qpop').waitFor();
+    await settle(page);
+    const shown = await page.evaluate((host) => {
+      const q = document.querySelector(host).shadowRoot.querySelector('.q span');
+      return { text: q.textContent, oneLine: q.scrollHeight <= q.clientHeight + 1 };
+    }, HOST);
+    assert.equal(shown.text, quote.replace(/\s+/g, ' '), 'box shows the LaTeX quote');
+    assert.ok(shown.oneLine, 'box quote on one line');
+    await capture(page, 'formula-question', 1280, 'light');
+    await inShadow(page, 'textarea').fill('Why this rate?');
+    const next = context.waitForEvent('page');
+    await inShadow(page, 'textarea').press('Enter');
+    const dest = await next;
+    await inShadow(dest, '.line').waitFor();
+    const sent = await dest.evaluate(() => fixture.sent.map((m) => m.text));
+    const lines = (s) => s.split('\n').filter((line) => line.trim() !== '' && line.trim() !== '>');
+    console.log(`INFO formula message as sent: ${JSON.stringify(sent[0])}`);
+    assert.equal(sent.length, 1, 'sent once');
+    assert.deepEqual(
+      lines(sent[0]),
+      lines(`${quote.split('\n').map((l) => `> ${l}`).join('\n')}\n\nWhy this rate?`),
+      'sent message quotes the LaTeX source, line by line',
+    );
+    assert.ok(sent[0].includes(`> $$\\begin{aligned}`), 'display math starts its own quoted line');
+    await dest.close();
+    await page.close();
+    pass('formulas: text + partial formula selection quotes LaTeX, one-line box quote, sent');
   }
 
   // ---- 3, 4 · New tab: overlay while branching, then verified branch, sent, line above composer.

@@ -107,6 +107,111 @@
     !!page &&
     hiddenReason({ ...page, identity: id }) === null;
 
+  // The quote for a selection that touches formulas: the selected text, with every formula it
+  // touches, even partly, written whole as its LaTeX source: `$…$` inline, `$$…$$` on its own line
+  // for display math. Paragraphs are separated by a blank line, other blocks by a line break.
+  // range: { startContainer, startOffset, endContainer, endOffset }, as a DOM Range. dom describes
+  // the page's nodes, so this runs on any tree with nodeType, nodeName, data, childNodes and
+  // parentNode:
+  //   formula(el) → { tex, display } for a formula's element, else null;
+  //   layout(el) → 'inline', 'line', 'paragraph', 'cell' or 'hidden';
+  //   pre(el) → true when whitespace inside it is kept.
+  // Returns null when a touched formula has no LaTeX source.
+  const quoteOf = (range, dom) => {
+    const isFormula = (n) => n.nodeType === 1 && !!dom.formula(n);
+    // The outermost formula holding node, or null.
+    const formulaOf = (node) => {
+      let found = null;
+      for (let n = node; n; n = n.parentNode) if (isFormula(n)) found = n;
+      return found;
+    };
+    const ancestors = new Set();
+    for (let n = range.startContainer; n; n = n.parentNode) ancestors.add(n);
+    let root = range.endContainer;
+    while (root && !ancestors.has(root)) root = root.parentNode;
+    if (!root) return null;
+    const outer = formulaOf(root);
+    if (outer) root = outer.parentNode || outer;
+    let pre = false;
+    for (let n = root; n; n = n.parentNode) if (n.nodeType === 1 && dom.pre(n)) pre = true;
+
+    // The subtree in document order: text, formulas, and line gaps where blocks start and end.
+    const items = [],
+      startOf = new Map(),
+      endOf = new Map();
+    const walk = (node, keep) => {
+      startOf.set(node, items.length);
+      if (node.nodeType === 3) items.push({ text: node.data, pre: keep });
+      else if (node.nodeType === 1) {
+        const formula = node !== root && dom.formula(node);
+        if (formula) items.push({ formula });
+        else if (node.nodeName === 'BR') items.push({ text: '\n', pre: true });
+        else {
+          const layout = dom.layout(node);
+          if (layout !== 'hidden') {
+            const gap = { paragraph: 2, line: 1 }[layout] || 0;
+            const inner = keep || dom.pre(node);
+            if (gap) items.push({ gap });
+            for (const child of node.childNodes) walk(child, inner);
+            if (gap) items.push({ gap });
+            else if (layout === 'cell') items.push({ text: ' ', pre: false });
+          }
+        }
+      }
+      endOf.set(node, items.length);
+    };
+    walk(root, pre);
+
+    // A boundary inside a formula moves out to take the whole formula.
+    const point = (container, offset, end) => {
+      const formula = formulaOf(container);
+      if (formula) return { i: startOf.get(formula), off: end ? Infinity : 0 };
+      if (container.nodeType === 3) return { i: startOf.get(container), off: offset };
+      const child = container.childNodes[offset];
+      return { i: child ? startOf.get(child) : endOf.get(container), off: 0 };
+    };
+    const a = point(range.startContainer, range.startOffset, false),
+      b = point(range.endContainer, range.endOffset, true);
+
+    let out = '',
+      gap = 0;
+    const put = (s, keep) => {
+      if (!s) return;
+      if (gap && out) {
+        out = out.replace(/[ \t]+$/, '') + '\n'.repeat(gap);
+        if (!keep) s = s.replace(/^[ \t]+/, '');
+      } else if (!keep && /\s$/.test(out)) s = s.replace(/^[ \t]+/, '');
+      gap = 0;
+      out += s;
+    };
+    for (let i = a.i; i <= b.i && i < items.length; i++) {
+      const it = items[i];
+      if (it.gap) gap = Math.max(gap, it.gap);
+      else if (it.text !== undefined) {
+        const s = it.text.slice(i === a.i ? a.off : 0, i === b.i ? b.off : undefined);
+        put(it.pre ? s : s.replace(/[ \t\n\r\f]+/g, ' '), it.pre);
+      } else {
+        if (i === b.i && b.off === 0) break;
+        const { tex, display } = it.formula;
+        if (!text(tex)) return null;
+        if (!display) {
+          put(`$${tex.trim().replace(/\s+/g, ' ')}$`, true);
+          continue;
+        }
+        // A blank line would end the quoted math block, so blank lines go.
+        const lines = tex
+          .trim()
+          .split(/\r\n?|\n/)
+          .map((line) => line.trimEnd())
+          .filter((line) => line.trim());
+        gap = Math.max(gap, 1);
+        put(`$$${lines.join('\n')}$$`, true);
+        gap = 1;
+      }
+    }
+    return out.trim();
+  };
+
   // Handoff: the original tab hands { original, title, quote, question } to the worker, which
   // keeps it in session storage until the new tab claims it once. Short-lived on purpose.
   const TTL = 60_000;
@@ -171,6 +276,7 @@
     replyStarted,
     confirmedFailure,
     formatMessage,
+    quoteOf,
     identity,
     saved,
     isBranch,

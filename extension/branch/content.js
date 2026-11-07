@@ -44,13 +44,23 @@
     const range = s.getRangeAt(0);
     const start = P.replyOf(range.startContainer),
       end = P.replyOf(range.endContainer);
+    // Formulas are fine (quoted as LaTeX); editable controls, images and other non-text regions
+    // are not.
+    const inside = (node, selector) => {
+      const el = elementOf(node)?.closest(selector);
+      return !!el && !el.closest(P.FORMULA);
+    };
+    const touching = (selector) =>
+      !!start && [...start.querySelectorAll(selector)].some((el) => range.intersectsNode(el));
     const excluded =
-      !!elementOf(range.startContainer)?.closest(P.EXCLUDED) ||
-      !!elementOf(range.endContainer)?.closest(P.EXCLUDED) ||
+      inside(range.startContainer, P.EXCLUDED) ||
+      inside(range.endContainer, P.EXCLUDED) ||
       (!!start &&
-        [...start.querySelectorAll('.katex, math, img')].some((el) => range.intersectsNode(el)));
+        [...start.querySelectorAll(P.NON_TEXT)].some(
+          (el) => !el.closest(P.FORMULA) && range.intersectsNode(el),
+        ));
     const identity = B.identity(location.href),
-      text = s.toString();
+      text = touching(P.FORMULA) ? B.quoteOf(range, P.quoteDom) || '' : s.toString();
     if (!B.qualifies({ text, start, end, identity, excluded, page: P.facts() })) return null;
     return { range: range.cloneRange(), quote: text.trim(), identity };
   };
@@ -87,12 +97,14 @@
     const area = sel.range.getBoundingClientRect();
     if (native) {
       const r = native.box.getBoundingClientRect();
+      // While ChatGPT's button is hovered, pressed or focused, keep the look it had at rest.
+      const busy = P.nativeBusy(native);
       last = {
         dx: r.left - area.left,
         dy: r.top - area.bottom,
         width: r.width,
         height: r.height,
-        style: P.nativeStyle(native),
+        style: busy && last?.style ? last.style : P.nativeStyle(native),
       };
     } else if (!boxOpen) last = null;
     if (last) {
