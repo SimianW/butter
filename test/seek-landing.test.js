@@ -286,10 +286,15 @@ test('the product render completes before publishing rail state for a known prev
     remove() {},
   };
   const model = [{ id: 't', index: 0, top: 0, h: 500, layout: true, items: [{ top: 52, h: 148 }] }];
+  const decision = { sequence: 1 };
   assert.doesNotThrow(() =>
     f.ctx.renderForTest(
       {
-        prep: { model, flat: [{ turn: 0, index: 0, abs: 52, h: 148, it: model[0].items[0] }] },
+        prep: {
+          decision,
+          model,
+          flat: [{ turn: 0, index: 0, abs: 52, h: 148, it: model[0].items[0] }],
+        },
         insetTop: 52,
         hostRect: { x: 0, y: 52, width: 500, height: 300 },
         rendered: new Map([[0, item]]),
@@ -297,6 +302,11 @@ test('the product render completes before publishing rail state for a known prev
       0,
     ),
   );
+  assert.equal(decision.render.prepareSequence, 1);
+  assert.equal(decision.render.turnIndex, 0);
+  assert.equal(decision.render.layout, true);
+  assert.equal(decision.render.unseen, false);
+  assert.equal(decision.render.modelLength, 1);
 });
 
 test('S5 resize and font events retire the fingerprint without reading layout inside restore', async () => {
