@@ -15,14 +15,22 @@
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+  // Same block containers as seek/core-main.js and containment.css (separate script world).
+  const ANSWER_ROOT =
+    ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
   const TARGETS =
-    '[data-turn-key], [data-markdown-text-style="assistant-message"] > :not([data-wide-block])';
+    '[data-turn-key], ' + ANSWER_ROOT + ' > :not([data-wide-block]):not([class*="TableFrame-"])';
   // Marks are flushed in one batch per second: each flush is one style invalidation pass instead
   // of one per streamed block. The delay also lets Chrome record the sizes before we mark.
   const FLUSH_MS = 1000;
   const queue = new Set(),
     skipped = new WeakSet(),
-    waiting = new Set(); // skipped when their size came in: wait until they render
+    waiting = new Set(), // skipped when their size came in: wait until they render
+    // Waited and then rendered: content-visibility stopped skipping them, so they were laid out
+    // and the browser remembered their real size. One scrolled past again before the flush (a
+    // scrollbar drag through the answer) is marked anyway; holding it back again left it a
+    // placeholder for the seek recorder however often it was read.
+    shown = new WeakSet();
   let scheduled = false;
   const flush = () => {
     scheduled = false;
@@ -32,7 +40,7 @@
     }
     for (const el of queue)
       if (!el.isConnected) continue;
-      else if (skipped.has(el)) hold(el);
+      else if (skipped.has(el) && !shown.has(el)) hold(el);
       else {
         el.setAttribute('data-butter-seen', '');
         el.removeAttribute('data-butter-unrendered');
@@ -46,7 +54,10 @@
   };
   const rendered = (el) => {
     skipped.delete(el);
-    if (waiting.delete(el) && el.isConnected) ro.observe(el); // reports its rendered size
+    if (waiting.delete(el) && el.isConnected) {
+      shown.add(el);
+      ro.observe(el); // reports its rendered size
+    }
   };
   document.addEventListener(
     'contentvisibilityautostatechange',

@@ -63,6 +63,8 @@ so the snippet saves memory and computed visibility first; these DOM sizes are a
 observation, not proof of what the recorder saw earlier. The frozen private seek model
 is not exposed; `memory` is the current cache entry, accompanied by rendered geometry.
 
+Lab validation and commands: [run report](../runs/2026-11-05-preview-record-capture/report.md).
+
 ## A viewed answer still says unseen
 
 Use [capture-record-readiness.js](capture-record-readiness.js) **while not seeking**, before
@@ -145,4 +147,9 @@ render, what they hold instead, and how many sit inside a content-visibility blo
 and copies counts only: no text, TeX, IDs or URLs.
 
 Zero formulas without `.katex` means page-level math readiness is not the cause. This snippet
-reads only the DOM and needs no Butter hook.
+reads only the DOM and needs no Butter hook. Up to
+`0.1.0-alpha.13+unseen-notice.8`, the recorder also reported `math-pending` for a long answer
+whose skipped display-math blocks had no geometry measured while on screen; any DOM change in
+the turn discarded what had been measured. From `+unseen-notice.9` such blocks keep their real
+box and get a flagged formula estimate instead (cache items carry `approx: true`); see the
+[run report](../runs/2026-11-06-math-pending-long-answer/report.md).

@@ -1,0 +1,91 @@
+✔ real recorder observes blocks inserted after the empty turn, before a later layout (9.595221ms)
+✔ real recorder preserves the last positive size across zero/skipped notifications and pending math (1.397889ms)
+✔ removed streamed blocks stop being observed and can be observed again if reinserted (0.928591ms)
+✔ restore applies cached sizes before any native geometry getter is read (1.277447ms)
+✔ the recorder keeps inline and display TeX spans with measured display height and trimmed offsets (1.34911ms)
+✔ HTML-only display math keeps nested TeX sources instead of recording an empty block (3.759954ms)
+✔ height cache uses the shared fingerprint and preserves checkpoint width values (2.196836ms)
+✔ display descendants inside a skipped block are not measured until it renders (1.364129ms)
+✔ a formula box that spans the rest of a partly rendered answer is not recorded (1.340809ms)
+✔ an answer ChatGPT is still revealing is not recorded until it settles (1.393918ms)
+✔ a recorded turn coming back into view is not measured again (1.088984ms)
+✔ a reveal event on a recorded turn makes no DOM query (1.026174ms)
+✔ a turn that changed while skipped is measured again once it is back in view (1.657056ms)
+✔ a turn first seen while the page scrolls is recorded in idle slices while it is rendered (1.927793ms)
+✔ a turn that is skipped part-way through its measure stops being read (1.536724ms)
+✔ a turn that changes part-way through its measure is measured again from the start (1.577443ms)
+✔ a remounted copy of a recorded, unchanged turn adopts its record without measuring (1.657716ms)
+✔ a remounted turn whose size changed is measured (1.06266ms)
+✔ a remounted turn whose blocks changed size at the same total is measured (1.208844ms)
+✔ a widget block with no box of its own gets its children's size (1.208312ms)
+✔ a block skipped before it ever rendered is not recorded at its placeholder size (2.047639ms)
+✔ a skipped block that rendered before it was marked is recorded (1.884533ms)
+✔ restore leaves content-visibility alone when the cv setting is off (2.826962ms)
+✔ nothing is measured while seek, cv and layout are all off (4.049497ms)
+✔ a measure in progress stops when seek, cv and layout are all turned off (1.475788ms)
+✔ the seek preview press measures turns still waiting for idle time (1.519159ms)
+✔ a row that grows outside its turn gets the turn measured again (1.250987ms)
+✔ nothing is queried, observed or measured for a turn whose answer is streaming (1.579383ms)
+✔ idle measuring waits while an answer streams and catches up when it completes (1.152967ms)
+✔ a block the stream held back is a placeholder until it renders, then it is recorded (1.174132ms)
+✔ a sent question with no answer yet holds idle measuring like a streaming answer (1.280089ms)
+✔ a sent question that never gets an answer stops holding idle measuring after 15 s (1.28261ms)
+✔ a streaming turn mounted together with completed turns is parked, not observed (1.598394ms)
+✔ a regenerated answer in a restored turn is not recorded at its placeholder size (1.326667ms)
+✔ a single Dil turn mounted before recorder startup is recorded without leaving the viewport (1.639842ms)
+✔ readiness capture reports the actual per-turn rejection and never emits content or IDs (1.789412ms)
+✔ press cache decisions retain pre-flush geometry and distinguish conversation filtering (1.406646ms)
+✖ a long answer read one block at a time is recorded despite DOM churn in the turn (2.036995ms)
+✖ blocks never on screen get flagged estimates, refined once revealed, never persisted (1.36799ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 37
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.31292
+
+✖ failing tests:
+
+test at test/height-cache-dom.test.js:1326:1
+✖ a long answer read one block at a time is recorded despite DOM churn in the turn (2.036995ms)
+  AssertionError [ERR_ASSERTION]: a fully read answer has a record
+      at TestContext.<anonymous> (/home/simon/.t3/worktrees/butter/t3-8302ad9c/test/height-cache-dom.test.js:1336:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/height-cache-dom.test.js:1345:1
+✖ blocks never on screen get flagged estimates, refined once revealed, never persisted (1.36799ms)
+  AssertionError [ERR_ASSERTION]: seen skipped blocks have real boxes: the answer is usable before it is read
+      at TestContext.<anonymous> (/home/simon/.t3/worktrees/butter/t3-8302ad9c/test/height-cache-dom.test.js:1348:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+✖ a held-back block that rendered while scrolled past is marked, even if skipped by the flush (1.028591ms)
+ℹ tests 6
+ℹ pass 5
+ℹ fail 1
+✖ failing tests:
+✖ a held-back block that rendered while scrolled past is marked, even if skipped by the flush (1.028591ms)

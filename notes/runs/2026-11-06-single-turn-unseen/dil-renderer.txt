@@ -1,0 +1,12 @@
+Dil: 20 block sizes, 23 items, math heights 38, 38, 38
+anchors: 23 matching block indexes, zero geometry error
+resize: display height refreshed to 62
+preview: legacy mixed-prose display height clamped to 184px
+containment: real blocks marked and skipped, wrapper left visible
+streaming containment: real blocks skipped before marking, wide block left visible
+direct: 20 block sizes, 23 items, math heights 38, 38, 38
+anchors: 23 matching block indexes, zero geometry error
+resize: display height refreshed to 62
+preview: legacy mixed-prose display height clamped to 184px
+containment: real blocks marked and skipped, wrapper left visible
+streaming containment: real blocks skipped before marking, wide block left visible

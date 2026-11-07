@@ -1,0 +1,6 @@
+
+> format:check
+> prettier --check "extension/**/*.{js,css,html,json}" "test/**"
+
+Checking formatting...
+All matched files use Prettier code style!

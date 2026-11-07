@@ -3,6 +3,14 @@ import assert from 'node:assert/strict';
 import core from '../extension/seek/core-main.js';
 import seekMeta from '../extension/seek/seek-meta.js';
 
+test('preview item bounds stay in the answer column while preserving narrow insets', () => {
+  const column = { left: 63, w: 640 };
+  assert.deepEqual(core.previewItemSpan({ left: 0, w: 766 }, column), column);
+  assert.deepEqual(core.previewItemSpan({ left: 503, w: 200 }, column), { left: 503, w: 200 });
+  assert.deepEqual(core.previewItemSpan({ left: 710, w: 200 }, column), { left: 503, w: 200 });
+  assert.deepEqual(core.previewItemSpan({ left: -20, w: 100 }, column), { left: 63, w: 100 });
+});
+
 test('seek card describes seen, unseen and loading questions in both UI languages', () => {
   assert.equal(seekMeta(false, 7, 14, 'dragging'), 'Question 7 of 14');
   assert.equal(seekMeta(false, 3, 14, 'dragging', true), 'Question 3 of 14 · not opened yet');

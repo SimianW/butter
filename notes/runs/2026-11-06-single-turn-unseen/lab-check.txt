@@ -1,0 +1,7 @@
+{"turns":5,"mounted":5,"dil":false,"heights":[1512.4375,1130,1486.078125,1936.71875,1280],"rows":[{"row":1512,"record":false},{"row":1130,"record":false},{"row":1486,"record":false},{"row":1937,"record":false},{"row":1280,"record":false}]}
+{"turns":2,"mounted":2,"dil":false,"heights":[1022.71875,824.71875],"rows":[{"row":1023,"record":false},{"row":825,"record":false}]}
+{"turns":3,"mounted":3,"dil":false,"heights":[7780.71875,5275.71875,7167.71875],"rows":[{"row":7781,"record":false},{"row":5276,"record":false},{"row":7168,"record":false}]}
+{"turns":5,"mounted":5,"dil":false,"heights":[26123,30554,36927.234375,208,250],"rows":[{"row":26123,"record":false},{"row":30554,"record":false},{"row":36927,"record":false},{"row":208,"record":false},{"row":250,"record":false}]}
+{"turns":3,"mounted":3,"dil":false,"heights":[2404.484375,1970,1782],"rows":[{"row":2404,"record":false},{"row":1970,"record":false},{"row":1782,"record":false}]}
+{"turns":1,"mounted":1,"dil":false,"heights":[4223.578125],"rows":[{"row":4224,"record":false}]}
+{"singleFound":true}

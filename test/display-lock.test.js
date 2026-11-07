@@ -40,7 +40,7 @@ function fixture() {
       documentElement: html,
       scripts: [],
       addEventListener: (n, fn) => (listeners[n] = fn),
-      querySelectorAll: () => [sc],
+      querySelectorAll: (s) => (s === '[data-turn-key]' ? [] : [sc]),
       dispatchEvent() {},
     },
     location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },

@@ -1,0 +1,30 @@
+✖ old full-scroller table geometry is rejected and pruned rather than reused (4.225368ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57.471582
+
+✖ failing tests:
+
+test at test/layout-storage.test.js:61:1
+✖ old full-scroller table geometry is rejected and pruned rather than reused (4.225368ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (/home/simon/.t3/worktrees/butter/t3-8302ad9c/test/layout-storage.test.js:66:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

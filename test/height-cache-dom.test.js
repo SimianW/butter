@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const core = require('../extension/seek/core-main.js');
-function fixture() {
+function fixture({ mounted = false, setup = () => {} } = {}) {
   const frames = [],
     observed = new Set(),
     listeners = {},
@@ -76,7 +76,7 @@ function fixture() {
   const doc = {
     scripts: [],
     addEventListener: (n, fn) => (listeners[n] = fn),
-    querySelectorAll: () => [sc],
+    querySelectorAll: (s) => (s === '[data-turn-key]' ? (mounted ? [turn] : []) : [sc]),
   };
   const context = {
     document: doc,
@@ -127,6 +127,7 @@ function fixture() {
   context.clearTimeout = () => {};
   context.queueMicrotask = queueMicrotask;
   context.window = context;
+  setup({ context, turn, item, blocks, sc, Element });
   vm.createContext(context);
   vm.runInContext(
     fs.readFileSync(require.resolve('../extension/seek/layout-cache-main.js'), 'utf8'),
@@ -258,9 +259,7 @@ test('the recorder keeps inline and display TeX spans with measured display heig
     tagName: 'SPAN',
     classList: { contains: (n) => n === 'katex-display' },
     querySelector: () => ({ textContent: '\\frac{a}{b}' }),
-    getBoundingClientRect: () => {
-      throw Error('math descendants must not force skipped layout');
-    },
+    getBoundingClientRect: () => ({ top: 130, left: 0, width: 768, height: 38 }),
     nextSibling: null,
   };
   f.item.getBoundingClientRect = () => ({ top: 120, left: 0, width: 768, height: 48 });
@@ -278,9 +277,48 @@ test('the recorder keeps inline and display TeX spans with measured display heig
   assert.equal(item.math.length, 2);
   assert.equal(item.text.slice(item.math[0].start, item.math[0].end), 'x^2');
   assert.equal(item.math[1].display, true);
-  assert.equal(item.math[1].h, 48);
+  assert.equal(item.math[1].h, 38);
   assert.equal(item.text.slice(item.math[1].start, item.math[1].end), '\\frac{a}{b}');
   assert.ok(!JSON.stringify(f.context.__heightCacheDump()).includes('value'));
+});
+
+test('HTML-only display math keeps nested TeX sources instead of recording an empty block', () => {
+  const tex = String.raw`\boxed{\widetilde{E} = E(f(X;\theta),T) + c\sum_{i=1}^{n}\left[\frac{1}{(\theta_i-10)^2+\varepsilon}+\frac{1}{(\theta_i+10)^2+\varepsilon}\right]}`;
+  for (const annotation of [null, { textContent: '' }]) {
+    const f = fixture();
+    const source = { getAttribute: () => tex };
+    f.item.firstChild = {
+      nodeType: 1,
+      tagName: 'SPAN',
+      classList: { contains: (n) => n === 'katex-display' },
+      querySelector: (s) => (s === '[data-math-source]' ? source : annotation),
+      closest: () => null,
+      getBoundingClientRect: () => ({ top: 136, left: 0, width: 768, height: 118 }),
+      get firstChild() {
+        throw Error('nested KaTeX/base glyphs must not be duplicated');
+      },
+    };
+    f.item.getBoundingClientRect = () => ({ top: 120, left: 0, width: 768, height: 150 });
+    f.blocks.push(f.item);
+    f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+    f.resize([
+      { target: f.turn, contentRect: { height: 500 } },
+      { target: f.item, contentRect: { height: 150 } },
+    ]);
+    f.flush();
+    const record = f.context.__butterLayoutCache.get('a');
+    assert.equal(record.items[0].text, tex, 'the boxed formula must not disappear');
+    assert.equal(record.items[0].math.length, 1);
+    assert.equal(record.items[0].math[0].display, true);
+    assert.equal(record.items[0].math[0].h, 118);
+    // Follow the geometry-only disk path as well: the formula must survive source hydration.
+    const check = require('../extension/seek/layout-check-main.js');
+    const codec = require('../extension/seek/layout-codec.js');
+    const parts = check.segments('\\[\n' + tex + '\n\\]');
+    const stored = codec.unpack(codec.pack(check.geometryOnly(record, parts, {}, 1)));
+    assert.equal(stored.items[0].source, 0);
+    assert.equal(check.hydrate(stored, parts).items[0].text, tex);
+  }
 });
 
 test('height cache uses the shared fingerprint and preserves checkpoint width values', () => {
@@ -311,6 +349,43 @@ test('height cache uses the shared fingerprint and preserves checkpoint width va
   }
 });
 
+test('display descendants inside a skipped block are not measured until it renders', () => {
+  const f = fixture();
+  let reads = 0;
+  f.item.firstChild = {
+    nodeType: 1,
+    tagName: 'SPAN',
+    classList: { contains: (n) => n === 'katex-display' },
+    querySelector: () => ({ textContent: 'x=1' }),
+    getBoundingClientRect: () => {
+      reads++;
+      return { top: 120, left: 0, width: 768, height: 26 };
+    },
+  };
+  f.item.hasAttribute = (n) => n === 'data-butter-seen';
+  f.blocks.push(f.item);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  cvState(f, f.item, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  assert.equal(reads, 0, 'no forced descendant layout while skipped');
+  // The seen block's box is real; its unmeasured formula is only a flagged estimate.
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].approx, true);
+  cvState(f, f.item, false);
+  f.flush();
+  assert.equal(reads, 1);
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].math[0].h, 26);
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].approx, undefined);
+  cvState(f, f.item, true);
+  f.resize([{ target: f.turn, contentRect: { height: 510 } }]);
+  f.flush();
+  assert.equal(reads, 1, 'unchanged skipped math reuses its measured geometry');
+  assert.equal(f.context.__butterLayoutCache.get('a').h, 510);
+});
+
 test('a formula box that spans the rest of a partly rendered answer is not recorded', () => {
   // Seen in a user video: the snapshot ended at an early display formula whose box ran to the end
   // of the turn, so the preview drew one viewport-sized math box and none of the text after it.
@@ -325,6 +400,7 @@ test('a formula box that spans the rest of a partly rendered answer is not recor
     tagName: 'SPAN',
     classList: { contains: (n) => n === 'katex-display' },
     querySelector: () => ({ textContent: 'y_{n+1}^{(4)}=1.2340' }),
+    getBoundingClientRect: () => ({ top: 136, left: 0, width: 768, height: 33 }),
     nextSibling: null,
   };
   f.blocks.push(f.item);
@@ -592,6 +668,7 @@ test("a widget block with no box of its own gets its children's size", () => {
   const card = {
     nodeType: 1,
     tagName: 'DIV',
+    hasAttribute: () => false,
     className: 'card',
     classList: { contains: () => false },
     firstChild: { nodeType: 3, data: 'Card text', nextSibling: null },
@@ -925,7 +1002,7 @@ test('a sent question with no answer yet holds idle measuring like a streaming a
       ? {}
       : sel === '[data-markdown-text-style="assistant-message"]'
         ? answered
-          ? {}
+          ? { getBoundingClientRect: () => ({ left: 0, width: 768 }) }
           : null
         : qs(sel);
   f.mutation([{ target: {}, addedNodes: [b.t], removedNodes: [] }]);
@@ -1059,6 +1136,70 @@ test('a regenerated answer in a restored turn is not recorded at its placeholder
   assert.equal(f.context.__heightCacheDump().stats.rejected.placeholder, 1);
 });
 
+test('a single Dil turn mounted before recorder startup is recorded without leaving the viewport', () => {
+  // Capture-shaped Dil blocks: prose, a code widget, display math and a wide table. The real
+  // selector/wrapper structure is also exercised by the run's synthetic-dil.mjs browser fixture.
+  const f = fixture({
+    mounted: true,
+    setup({ turn, item, blocks, sc, Element }) {
+      sc.clientLeft = 0;
+      const paragraph = Object.assign(new Element(), { ...item, closest: () => turn });
+      const code = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'DIV',
+        className: '',
+        hasAttribute: (n) => n === 'data-client-defined-widget',
+        children: [],
+        firstChild: { nodeType: 3, data: 'Synthetic code' },
+        getBoundingClientRect: () => ({ top: 162, left: 0, width: 768, height: 186 }),
+      });
+      const formula = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'SPAN',
+        className: 'katex-display',
+        classList: { contains: (n) => n === 'katex-display' },
+        querySelector: () => ({ textContent: 'x=1' }),
+        getBoundingClientRect: () => ({ top: 364, left: 0, width: 768, height: 38.484375 }),
+      });
+      const table = Object.assign(new Element(), {
+        ...paragraph,
+        tagName: 'DIV',
+        className: 'TableFrame-fixture',
+        firstChild: { nodeType: 3, data: 'Synthetic cells' },
+        getBoundingClientRect: () => ({ top: 420, left: 0, width: 768, height: 110.5 }),
+      });
+      blocks.push(paragraph, code, formula);
+      const original = turn.querySelectorAll;
+      turn.querySelectorAll = (s) => (s === core.PREVIEW_ITEMS ? [...blocks, table] : original(s));
+    },
+  });
+  assert.ok(f.observed.has(f.turn), 'startup must observe the already-mounted turn');
+  f.resize([
+    { target: f.turn, contentRect: { height: 600 } },
+    ...f.blocks.map((target) => ({
+      target,
+      contentRect: { height: target.getBoundingClientRect().height },
+    })),
+  ]);
+  f.flush();
+  const r = f.context.__butterLayoutCache.get('a');
+  assert.ok(r, JSON.stringify(f.context.__heightCacheDump().stats.rejected));
+  assert.equal(r.items.length, 4);
+  assert.equal(r.items[2].math[0].h, 38.484375);
+  assert.equal(
+    core.buildModel({
+      ids: ['a'],
+      measured: { a: 500 },
+      records: { a: r },
+      texts: {},
+      scrollHeight: 500,
+      gap: 12,
+      sw: 768,
+    })[0].layout,
+    true,
+  );
+});
+
 test('readiness capture reports the actual per-turn rejection and never emits content or IDs', () => {
   const f = fixture();
   f.blocks.push(f.item);
@@ -1123,9 +1264,7 @@ test('recorder diagnostics report no attempt for a turn that was never measured'
 });
 
 test('press cache decisions retain pre-flush geometry and distinguish conversation filtering', () => {
-  const f = fixture();
-  f.blocks.push(f.item);
-  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  const f = fixture({ mounted: true, setup: ({ blocks, item }) => blocks.push(item) });
   f.resize([
     { target: f.turn, contentRect: { height: 500 } },
     { target: f.item, contentRect: { height: 26 } },
@@ -1159,4 +1298,127 @@ test('press cache decisions retain pre-flush geometry and distinguish conversati
     'sw',
   ]);
   assert.equal(cache.prepare(f.sc, ['missing']).decisions[0].after.hasRecord, false);
+});
+
+// A long answer: several seen blocks, each a paragraph with one display formula. Only some are on
+// screen at a time; content-visibility skips the rest at their remembered (real) size.
+const plain = (x) => JSON.parse(JSON.stringify(x)); // vm-realm arrays
+function longAnswer(n) {
+  const f = fixture();
+  const reads = [];
+  const items = Array.from({ length: n }, (_, i) => {
+    reads.push(0);
+    const formula = {
+      nodeType: 1,
+      tagName: 'SPAN',
+      classList: { contains: (c) => c === 'katex-display' },
+      querySelector: () => ({ textContent: `x_${i}=1` }),
+      getBoundingClientRect: () => {
+        reads[i]++;
+        return { top: 120 + i * 100, left: 0, width: 768, height: 44 };
+      },
+    };
+    return Object.assign(new f.Element(), {
+      ...f.item,
+      hasAttribute: (a) => a === 'data-butter-seen',
+      firstChild: formula,
+      closest: () => f.turn,
+      getBoundingClientRect: () => ({ top: 120 + i * 100, left: 0, width: 768, height: 90 }),
+    });
+  });
+  f.blocks.push(...items);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  for (const it of items) cvState(f, it, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    ...items.map((target) => ({ target, contentRect: { height: 90 } })),
+  ]);
+  f.flush();
+  // ChatGPT's hover action bar and similar updates add or remove nodes inside the turn.
+  const churn = () => f.mutation([{ target: items[0], addedNodes: [], removedNodes: [] }]);
+  const reveal = (i) => {
+    cvState(f, items[i], false);
+    f.flush();
+    cvState(f, items[i], true);
+  };
+  return { f, items, reads, churn, reveal, get: () => f.context.__butterLayoutCache.get('a') };
+}
+
+test('a long answer read one block at a time is recorded despite DOM churn in the turn', () => {
+  // Mac (Dil, 16k px turn): readiness hasRecord false, lastRejection math-pending, although every
+  // formula had typeset. Any mutation in the turn dropped the lean-text cache, and skipped blocks'
+  // geometry was only reused for the identical cached object, so it never accumulated.
+  const { reads, churn, reveal, get } = longAnswer(3);
+  for (let i = 0; i < 3; i++) {
+    reveal(i);
+    churn();
+  }
+  const r = get();
+  assert.ok(r, 'a fully read answer has a record');
+  assert.deepEqual(plain(r.items.map((it) => it.math[0].h)), [44, 44, 44]);
+  assert.ok(!r.items.some((it) => it.approx), 'every formula was measured');
+  assert.deepEqual(reads, [1, 1, 1], 'no descendant read while skipped');
+});
+
+test('blocks never on screen get flagged estimates, refined once revealed, never persisted', () => {
+  const { f, reads, reveal, get } = longAnswer(3);
+  const r = get();
+  assert.ok(r, 'seen skipped blocks have real boxes: the answer is usable before it is read');
+  assert.deepEqual(reads, [0, 0, 0], 'estimates force no layout inside skipped blocks');
+  assert.deepEqual(plain(r.items.map((it) => [it.h, !!it.approx, it.math[0].h <= it.h])), [
+    [90, true, true],
+    [90, true, true],
+    [90, true, true],
+  ]);
+  assert.equal(core.validateSnapshot({ ...r, complete: true, mathReady: true }), null);
+  assert.equal(
+    core.buildModel({
+      ids: ['a'],
+      measured: { a: 500 },
+      records: { a: r },
+      texts: {},
+      scrollHeight: 500,
+      gap: 12,
+      sw: 768,
+    })[0].layout,
+    true,
+  );
+  reveal(1);
+  const refined = get();
+  assert.deepEqual(
+    plain(refined.items.map((it) => !!it.approx)),
+    [true, false, true],
+    'a revealed block re-queues the turn and replaces its estimate',
+  );
+  assert.equal(refined.items[1].math[0].h, 44);
+  reveal(0);
+  reveal(2);
+  assert.ok(!get().items.some((it) => it.approx));
+  const records = f.context.__heightCacheDump().stats.records;
+  reveal(1);
+  assert.equal(
+    f.context.__heightCacheDump().stats.records,
+    records,
+    'complete record: no re-measure',
+  );
+});
+
+test('an estimate never replaces a record measured in full', () => {
+  const { f, reveal, get, churn } = longAnswer(2);
+  reveal(0);
+  reveal(1);
+  const measured = get();
+  assert.ok(measured && !measured.items.some((it) => it.approx));
+  // Both blocks skipped; the turn changes size (a new snapshot is taken) and one block's box with
+  // it, so its measured geometry no longer applies.
+  const old = f.blocks[1].getBoundingClientRect;
+  f.blocks[1].getBoundingClientRect = () => ({ ...old(), height: 95 });
+  churn();
+  f.resize([{ target: f.turn, contentRect: { height: 505 } }]);
+  f.flush();
+  assert.equal(get(), measured, 'the measured record is kept');
+  assert.equal(f.context.__butterLayoutCache.diagnostics(f.turn).lastRejection, 'estimated');
+  reveal(1);
+  assert.equal(get().items[1].h, 95, 'measured again once it is on screen');
+  assert.ok(!get().items.some((it) => it.approx));
 });

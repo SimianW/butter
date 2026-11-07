@@ -101,7 +101,7 @@
       return indexes.get(s);
     };
     return {
-      schema: 2,
+      schema: 4,
       account: x.account,
       conv: x.conv,
       turn: x.turn,
@@ -126,7 +126,7 @@
   }
   function valid(x) {
     return (
-      x?.schema === 2 &&
+      x?.schema === 4 &&
       ['account', 'conv', 'turn', 'msg', 'digest', 'layout'].every((k) => hash(x[k])) &&
       number(x.time, 0, Number.MAX_SAFE_INTEGER) &&
       array(x.metrics, 7, (n) => number(n)) &&

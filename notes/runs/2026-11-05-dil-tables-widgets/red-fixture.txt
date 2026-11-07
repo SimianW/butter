@@ -1,0 +1,452 @@
+PASS Dil: table remains a preview item
+FAIL Dil: wide table excluded from intrinsic block sizes: Expected values to be strictly equal:
+
+6 !== 5
+
+FAIL Dil: every item stays in the answer column: left 0
+FAIL Dil: all table cells survive as four text rows: Expected values to be strictly deep-equal:
++ actual - expected
+
+  [
+    [
+      'Feature',
++   ],
++   [
++     ''
++   ],
++   [
+      'Practice',
++   ],
++   [
++     ''
++   ],
++   [
+      'Evaluation'
+    ],
+    [
++     ''
++   ],
++   [
+      'Mask',
++   ],
++   [
++     ''
++   ],
++   [
+      'Enabled',
++   ],
++   [
++     ''
++   ],
++   [
+      'Disabled'
+    ],
+    [
++     ''
++   ],
++   [
+      'Output',
++   ],
++   [
++     ''
++   ],
++   [
+      'Scaled',
++   ],
++   [
++     ''
++   ],
++   [
+      'Identity'
+    ],
+    [
++     ''
++   ],
++   [
+      'Gradient',
++   ],
++   [
++     ''
++   ],
++   [
+      'Masked',
++   ],
++   [
++     ''
++   ],
++   [
+      'Unchanged'
+    ]
+  ]
+
+PASS Dil: code widget preserves code lines and omits buttons
+FAIL Dil: grid cells keep two horizontal rows: Expected values to be strictly equal:
++ actual - expected
+
++ 'Input values\n3\n0\n9\n0\n6\n0\n12\n0\nEnd of card'
+- 'Input values\n3  0  9  0\n6  0  12  0\nEnd of card'
+
+FAIL Dil: flex cells keep one horizontal row: Expected values to be strictly equal:
++ actual - expected
+
++ 'Input values\n3\n0\n9\n0\nEnd of card'
+- 'Input values\n3  0  9  0\nEnd of card'
+                  ^
+
+FAIL Dil: preview clamps a wide incoming record: left 0
+PASS Dil: preview draws every cell
+PASS classic: table remains a preview item
+PASS classic: wide table excluded from intrinsic block sizes
+FAIL classic: every item stays in the answer column: left 0
+PASS classic: all table cells survive as four text rows
+PASS classic: code widget preserves code lines and omits buttons
+FAIL classic: grid cells keep two horizontal rows: Expected values to be strictly equal:
++ actual - expected
+
++ 'Input values\n3\n0\n9\n0\n6\n0\n12\n0\nEnd of card'
+- 'Input values\n3  0  9  0\n6  0  12  0\nEnd of card'
+
+FAIL classic: flex cells keep one horizontal row: Expected values to be strictly equal:
++ actual - expected
+
++ 'Input values\n3\n0\n9\n0\nEnd of card'
+- 'Input values\n3  0  9  0\nEnd of card'
+                  ^
+
+FAIL classic: preview clamps a wide incoming record: left 0
+PASS classic: preview draws every cell
+FAIL Dil and classic tables have identical preview text and geometry: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
+    h: 110,
+    left: 0,
++   text: 'Feature\n' +
++     '  \n' +
++     'Practice\n' +
++     '  \n' +
++     'Evaluation\n' +
++     '  \n' +
++     'Mask\n' +
++     '  \n' +
++     'Enabled\n' +
++     '  \n' +
++     'Disabled\n' +
++     '  \n' +
++     'Output\n' +
++     '  \n' +
++     'Scaled\n' +
++     '  \n' +
++     'Identity\n' +
++     '  \n' +
++     'Gradient\n' +
++     '  \n' +
++     'Masked\n' +
++     '  \n' +
++     'Unchanged',
+-   text: 'Feature  Practice  Evaluation  \n' +
+-     'Mask  Enabled  Disabled  \n' +
+-     'Output  Scaled  Identity  \n' +
+-     'Gradient  Masked  Unchanged',
+    w: 766
+  }
+
+PASS no browser errors
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'Dil: wide table excluded from intrinsic block sizes: Expected values to be strictly equal:\n' +
++     '\n' +
++     '6 !== 5\n',
++   'Dil: every item stays in the answer column: left 0',
++   'Dil: all table cells survive as four text rows: Expected values to be strictly deep-equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     '  [\n' +
++     '    [\n' +
++     "      'Feature',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Practice',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Evaluation'\n" +
++     '    ],\n' +
++     '    [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Mask',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Enabled',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Disabled'\n" +
++     '    ],\n' +
++     '    [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Output',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Scaled',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Identity'\n" +
++     '    ],\n' +
++     '    [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Gradient',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Masked',\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "+     ''\n" +
++     '+   ],\n' +
++     '+   [\n' +
++     "      'Unchanged'\n" +
++     '    ]\n' +
++     '  ]\n',
++   'Dil: grid cells keep two horizontal rows: Expected values to be strictly equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     "+ 'Input values\\n3\\n0\\n9\\n0\\n6\\n0\\n12\\n0\\nEnd of card'\n" +
++     "- 'Input values\\n3  0  9  0\\n6  0  12  0\\nEnd of card'\n",
++   'Dil: flex cells keep one horizontal row: Expected values to be strictly equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     "+ 'Input values\\n3\\n0\\n9\\n0\\nEnd of card'\n" +
++     "- 'Input values\\n3  0  9  0\\nEnd of card'\n" +
++     '                  ^\n',
++   'Dil: preview clamps a wide incoming record: left 0',
++   'classic: every item stays in the answer column: left 0',
++   'classic: grid cells keep two horizontal rows: Expected values to be strictly equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     "+ 'Input values\\n3\\n0\\n9\\n0\\n6\\n0\\n12\\n0\\nEnd of card'\n" +
++     "- 'Input values\\n3  0  9  0\\n6  0  12  0\\nEnd of card'\n",
++   'classic: flex cells keep one horizontal row: Expected values to be strictly equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     "+ 'Input values\\n3\\n0\\n9\\n0\\nEnd of card'\n" +
++     "- 'Input values\\n3  0  9  0\\nEnd of card'\n" +
++     '                  ^\n',
++   'classic: preview clamps a wide incoming record: left 0',
++   'Dil and classic tables have identical preview text and geometry: Expected values to be strictly deep-equal:\n' +
++     '+ actual - expected\n' +
++     '\n' +
++     '  {\n' +
++     '    h: 110,\n' +
++     '    left: 0,\n' +
++     "+   text: 'Feature\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Practice\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Evaluation\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Mask\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Enabled\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Disabled\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Output\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Scaled\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Identity\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Gradient\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Masked\\n' +\n" +
++     "+     '  \\n' +\n" +
++     "+     'Unchanged',\n" +
++     "-   text: 'Feature  Practice  Evaluation  \\n' +\n" +
++     "-     'Mask  Enabled  Disabled  \\n' +\n" +
++     "-     'Output  Scaled  Identity  \\n' +\n" +
++     "-     'Gradient  Masked  Unchanged',\n" +
++     '    w: 766\n' +
++     '  }\n'
++ ]
+- []
+
+    at file:///home/simon/.t3/worktrees/butter/t3-8302ad9c/lab/harness/dil-tables-widgets.mjs:75:10 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'Dil: wide table excluded from intrinsic block sizes: Expected values to be strictly equal:\n' +
+      '\n' +
+      '6 !== 5\n',
+    'Dil: every item stays in the answer column: left 0',
+    'Dil: all table cells survive as four text rows: Expected values to be strictly deep-equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      '  [\n' +
+      '    [\n' +
+      "      'Feature',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Practice',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Evaluation'\n" +
+      '    ],\n' +
+      '    [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Mask',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Enabled',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Disabled'\n" +
+      '    ],\n' +
+      '    [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Output',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Scaled',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Identity'\n" +
+      '    ],\n' +
+      '    [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Gradient',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Masked',\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "+     ''\n" +
+      '+   ],\n' +
+      '+   [\n' +
+      "      'Unchanged'\n" +
+      '    ]\n' +
+      '  ]\n',
+    'Dil: grid cells keep two horizontal rows: Expected values to be strictly equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'Input values\\n3\\n0\\n9\\n0\\n6\\n0\\n12\\n0\\nEnd of card'\n" +
+      "- 'Input values\\n3  0  9  0\\n6  0  12  0\\nEnd of card'\n",
+    'Dil: flex cells keep one horizontal row: Expected values to be strictly equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'Input values\\n3\\n0\\n9\\n0\\nEnd of card'\n" +
+      "- 'Input values\\n3  0  9  0\\nEnd of card'\n" +
+      '                  ^\n',
+    'Dil: preview clamps a wide incoming record: left 0',
+    'classic: every item stays in the answer column: left 0',
+    'classic: grid cells keep two horizontal rows: Expected values to be strictly equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'Input values\\n3\\n0\\n9\\n0\\n6\\n0\\n12\\n0\\nEnd of card'\n" +
+      "- 'Input values\\n3  0  9  0\\n6  0  12  0\\nEnd of card'\n",
+    'classic: flex cells keep one horizontal row: Expected values to be strictly equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      "+ 'Input values\\n3\\n0\\n9\\n0\\nEnd of card'\n" +
+      "- 'Input values\\n3  0  9  0\\nEnd of card'\n" +
+      '                  ^\n',
+    'classic: preview clamps a wide incoming record: left 0',
+    'Dil and classic tables have identical preview text and geometry: Expected values to be strictly deep-equal:\n' +
+      '+ actual - expected\n' +
+      '\n' +
+      '  {\n' +
+      '    h: 110,\n' +
+      '    left: 0,\n' +
+      "+   text: 'Feature\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Practice\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Evaluation\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Mask\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Enabled\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Disabled\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Output\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Scaled\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Identity\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Gradient\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Masked\\n' +\n" +
+      "+     '  \\n' +\n" +
+      "+     'Unchanged',\n" +
+      "-   text: 'Feature  Practice  Evaluation  \\n' +\n" +
+      "-     'Mask  Enabled  Disabled  \\n' +\n" +
+      "-     'Output  Scaled  Identity  \\n' +\n" +
+      "-     'Gradient  Masked  Unchanged',\n" +
+      '    w: 766\n' +
+      '  }\n'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.17.0

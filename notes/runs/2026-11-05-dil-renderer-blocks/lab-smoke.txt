@@ -1,0 +1,5 @@
+title: <REDACTED>
+probe: undefined
+webdriver: false
+Layer 1 Sandbox	Namespace | PID namespaces	Yes | Network namespaces	Yes | Seccomp-BPF sandbox	Yes
+exit: 0

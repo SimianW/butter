@@ -1,0 +1,45 @@
+✔ real recorder observes blocks inserted after the empty turn, before a later layout (9.22804ms)
+✔ real recorder preserves the last positive size across zero/skipped notifications and pending math (1.304674ms)
+✔ removed streamed blocks stop being observed and can be observed again if reinserted (0.870099ms)
+✔ restore applies cached sizes before any native geometry getter is read (1.284312ms)
+✔ the recorder keeps inline and display TeX spans with measured display height and trimmed offsets (1.290386ms)
+✔ HTML-only display math keeps nested TeX sources instead of recording an empty block (7.168858ms)
+✔ height cache uses the shared fingerprint and preserves checkpoint width values (2.186197ms)
+✔ display descendants inside a skipped block are not measured until it renders (1.284608ms)
+✔ a formula box that spans the rest of a partly rendered answer is not recorded (1.37353ms)
+✔ an answer ChatGPT is still revealing is not recorded until it settles (1.410449ms)
+✔ a recorded turn coming back into view is not measured again (1.078931ms)
+✔ a reveal event on a recorded turn makes no DOM query (1.056143ms)
+✔ a turn that changed while skipped is measured again once it is back in view (1.702842ms)
+✔ a turn first seen while the page scrolls is recorded in idle slices while it is rendered (1.815254ms)
+✔ a turn that is skipped part-way through its measure stops being read (1.539261ms)
+✔ a turn that changes part-way through its measure is measured again from the start (1.530244ms)
+✔ a remounted copy of a recorded, unchanged turn adopts its record without measuring (1.68832ms)
+✔ a remounted turn whose size changed is measured (1.053467ms)
+✔ a remounted turn whose blocks changed size at the same total is measured (1.15425ms)
+✔ a widget block with no box of its own gets its children's size (1.166869ms)
+✔ a block skipped before it ever rendered is not recorded at its placeholder size (2.057136ms)
+✔ a skipped block that rendered before it was marked is recorded (1.976528ms)
+✔ restore leaves content-visibility alone when the cv setting is off (2.769281ms)
+✔ nothing is measured while seek, cv and layout are all off (4.012886ms)
+✔ a measure in progress stops when seek, cv and layout are all turned off (1.43514ms)
+✔ the seek preview press measures turns still waiting for idle time (1.481507ms)
+✔ a row that grows outside its turn gets the turn measured again (1.148931ms)
+✔ nothing is queried, observed or measured for a turn whose answer is streaming (1.59766ms)
+✔ idle measuring waits while an answer streams and catches up when it completes (1.151129ms)
+✔ a block the stream held back is a placeholder until it renders, then it is recorded (1.146211ms)
+✔ a sent question with no answer yet holds idle measuring like a streaming answer (1.24604ms)
+✔ a sent question that never gets an answer stops holding idle measuring after 15 s (1.206452ms)
+✔ a streaming turn mounted together with completed turns is parked, not observed (1.602867ms)
+✔ a regenerated answer in a restored turn is not recorded at its placeholder size (1.340017ms)
+✔ a single Dil turn mounted before recorder startup is recorded without leaving the viewport (1.773438ms)
+✔ readiness capture reports the actual per-turn rejection and never emits content or IDs (1.949003ms)
+✔ press cache decisions retain pre-flush geometry and distinguish conversation filtering (1.425092ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.059603

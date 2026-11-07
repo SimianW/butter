@@ -69,7 +69,7 @@ function fixture() {
     scripts: [],
     documentElement: { className: 'light', hasAttribute: () => false },
     addEventListener: on,
-    querySelectorAll: () => [sc],
+    querySelectorAll: (s) => (s === '[data-turn-key]' ? [] : [sc]),
   };
   const ctx = {
     document,
@@ -265,6 +265,7 @@ test('the product render completes before publishing rail state for a known prev
   f.ctx.testLayer = { style: {} };
   f.ctx.testEst = { hidden: true };
   f.ctx.testFade = {};
+  f.ctx.testNotice = { hidden: true };
   f.ctx.document.createRange = () => ({
     selectNodeContents() {},
     getClientRects: () => [{ width: 100, height: 20, top: 60, bottom: 80, left: 20, right: 120 }],
@@ -276,7 +277,7 @@ test('the product render completes before publishing rail state for a known prev
   vm.runInContext(
     source.replace(
       /\}\)\(\);\s*$/,
-      'layer=testLayer;est=testEst;fade=testFade;globalThis.renderForTest=render;})();',
+      'layer=testLayer;est=testEst;fade=testFade;notice=testNotice;globalThis.renderForTest=render;})();',
     ),
     f.ctx,
   );
@@ -337,6 +338,7 @@ test('a nested math or answer box is not proof of ink when its text is clipped a
   f.ctx.testLayer = { style: {} };
   f.ctx.testEst = { hidden: true, style: {}, replaceChildren() {}, append() {} };
   f.ctx.testFade = {};
+  f.ctx.testNotice = { hidden: true };
   f.ctx.document.createTreeWalker = () => {
     let first = true;
     return {
@@ -367,7 +369,7 @@ test('a nested math or answer box is not proof of ink when its text is clipped a
   vm.runInContext(
     source.replace(
       /\}\)\(\);\s*$/,
-      'layer=testLayer;est=testEst;fade=testFade;globalThis.renderForTest=render;})();',
+      'layer=testLayer;est=testEst;fade=testFade;notice=testNotice;globalThis.renderForTest=render;})();',
     ),
     f.ctx,
   );
@@ -389,7 +391,11 @@ test('a nested math or answer box is not proof of ink when its text is clipped a
     },
   ];
   const a = {
-    prep: { model, flat: [{ turn: 0, index: 0, abs: 0, h: 10000, it: model[0].items[0] }] },
+    prep: {
+      decision: { sequence: 1 },
+      model,
+      flat: [{ turn: 0, index: 0, abs: 0, h: 10000, it: model[0].items[0] }],
+    },
     insetTop: 52,
     hostRect: { x: 0, y: 52, width: 500, height: 300 },
     rendered: new Map([[0, item]]),
@@ -706,5 +712,138 @@ test('F6 first-question and semantic landings validate the achievable scroll des
     assert.equal(f.ctx.testActive.destination.top, 0);
     assert.equal(state, 'ok');
     assert.equal(f.ctx.testActive.landingErrorPx, 0);
+  }
+});
+
+test('unseen previews explain their fixed answer-start excerpt and hide the notice for measured questions', () => {
+  for (const lang of ['en', 'zh']) {
+    for (const measured of [{ first: 500, unseen: 10000 }, { first: 500 }]) {
+      const f = fixture();
+      const element = () => ({
+        children: [],
+        style: {},
+        hidden: true,
+        append(...nodes) {
+          this.children.push(...nodes);
+        },
+        remove() {},
+        replaceChildren(...nodes) {
+          this.children = nodes;
+        },
+        get textContent() {
+          return this.children.map((n) => n.textContent).join('');
+        },
+        getBoundingClientRect: () => ({ top: 52, bottom: 352 }),
+      });
+      f.ctx.testLayer = element();
+      f.ctx.testEst = element();
+      f.ctx.testFade = {};
+      const title = {},
+        detail = {};
+      f.ctx.testNotice = {
+        hidden: true,
+        querySelector: (selector) => (selector === 'b' ? title : detail),
+      };
+      f.ctx.document.documentElement.getAttribute = () => lang;
+      f.ctx.document.createElement = element;
+      f.ctx.document.createTextNode = (textContent) => ({ textContent });
+      f.ctx.NodeFilter = { SHOW_TEXT: 4 };
+      f.ctx.document.createTreeWalker = (el) => {
+        let first = true;
+        return {
+          nextNode() {
+            if (!first) return null;
+            first = false;
+            return { data: el.textContent };
+          },
+        };
+      };
+      f.ctx.document.createRange = () => ({
+        selectNodeContents() {},
+        getClientRects: () => [
+          { width: 100, height: 26, top: 52, bottom: 78, left: 0, right: 100 },
+        ],
+      });
+      const source = fs.readFileSync(
+        process.env.RENDER_SOURCE ||
+          require('node:path').join(__dirname, '../extension/seek/preview-main.js'),
+        'utf8',
+      );
+      vm.runInContext(
+        source.replace(
+          /\}\)\(\);\s*$/,
+          'layer=testLayer;est=testEst;fade=testFade;notice=testNotice;globalThis.renderForTest=render;})();',
+        ),
+        f.ctx,
+      );
+      const answer = 'early answer '.repeat(600) + '\n\n' + 'late answer '.repeat(600);
+      const records = { first: { ...record, rowH: 500 } };
+      const model = seek.buildModel({
+        ids: ['first', 'unseen'],
+        measured,
+        records,
+        texts: { unseen: { q: 'unmeasured question', answer } },
+        scrollHeight: 10512,
+        gap: 12,
+      });
+      const a = {
+        prep: {
+          decision: { sequence: 1 },
+          model,
+          previewModel: seek.buildPreviewModel(model, records, 12),
+          flat: seek.flatten(model),
+        },
+        insetTop: 52,
+        hostRect: { x: 0, y: 52, width: 768, height: 300 },
+        rendered: new Map(),
+      };
+      const row = model[1];
+      assert.equal(row.layout, false);
+      assert.ok(row.h > 6000, 'A nonzero row height must not hide the rendering bug');
+      let early;
+      for (const progress of [0, 0.25, 0.75, 0.95]) {
+        const top = row.top + row.h * progress - 52;
+        f.ctx.renderForTest(a, top);
+        assert.equal(a.prep.decision.render.turnIndex, 1);
+        assert.equal(a.prep.decision.render.unseen, true);
+        assert.equal(a.prep.decision.render.modelLength, 2);
+        early ??= f.ctx.testEst.textContent;
+        assert.match(early, /unmeasured question/);
+        assert.match(early, /early answer/);
+        assert.equal(f.ctx.testEst.textContent, early, 'The excerpt stays at the answer start');
+        assert.equal(f.ctx.testEst.style.top, '0px');
+        assert.equal(f.ctx.testEst.hidden, false);
+        assert.equal(f.ctx.testNotice.hidden, false, 'Unseen answers explain the fixed preview');
+        assert.equal(
+          title.textContent,
+          lang === 'zh'
+            ? '只能预览这个回答的开头'
+            : 'Only the start of this answer can be previewed',
+        );
+        assert.equal(
+          detail.textContent,
+          lang === 'zh'
+            ? '其余部分还没有缓存，打开这个问题即可查看。'
+            : "The rest isn't cached yet. Open the question to see it.",
+        );
+        assert.equal(f.ctx.testFade.hidden, false);
+        assert.equal(f.ctx.testFade.className, 'fade unseen');
+        assert.equal(
+          seek.landing(seek.previewQuestion(model, top, 52), 52, 20000).top,
+          row.top - 52,
+          'Release keeps question-start landing',
+        );
+      }
+      // Move out of the unseen question into an opened question, then back again.
+      assert.equal(model[0].layout, true);
+      a.prep.previewModel = seek.buildPreviewModel(model, records, 12);
+      a.prep.flat = seek.flatten(a.prep.previewModel);
+      f.ctx.renderForTest(a, 0);
+      assert.equal(f.ctx.testNotice.hidden, true, 'Measured questions have no notice');
+      assert.equal(f.ctx.testFade.className, 'fade');
+      f.ctx.renderForTest(a, row.top - 52);
+      assert.equal(f.ctx.testNotice.hidden, false);
+      assert.equal(f.ctx.testEst.textContent, early);
+    }
   }
 });

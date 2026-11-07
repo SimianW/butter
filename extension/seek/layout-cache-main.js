@@ -27,9 +27,10 @@
     outcomes = new WeakMap(), // last completed recording attempt; reason codes only
     contentH = new WeakMap(),
     leanCache = new WeakMap(),
+    mathGeometry = new WeakMap(),
     applied = new WeakSet(); // turns restore() gave their recorded sizes
-  const BLOCK = '[data-markdown-text-style="assistant-message"] > :not([data-wide-block]):not(hr)';
-  const ITEMS = '[data-user-message-bubble], [data-markdown-text-style="assistant-message"] > *';
+  const BLOCK = core.ANSWER_BLOCKS;
+  const ITEMS = core.PREVIEW_ITEMS;
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1] || null;
   // Any answer column serves for width and font. Reading one inside a turn that content-visibility
   // skips forced style and layout of that whole turn (a DisplayLock update: 0.6 s for a long answer).
@@ -565,13 +566,14 @@
   // Lean text for the preview: TeX source for math, list bullets, no buttons/SVG. Capped.
   const CAP = 4000;
   const BLOCKY = /^(P|LI|H[1-6]|PRE|TR|BLOCKQUOTE|DIV|UL|OL|TABLE|THEAD|TBODY|SECTION|FIGURE)$/;
-  function lean(el, blockHeight) {
+  function lean(el, readRows = true) {
     let out = '';
     const math = [];
-    const walk = (n) => {
+    let spatial = false;
+    const walk = (n, inline = false, widget = false) => {
       if (out.length > CAP) return;
       if (n.nodeType === 3) {
-        out += n.data;
+        out += inline ? n.data.replace(/\s+/g, ' ') : n.data;
         return;
       }
       if (n.nodeType !== 1) return;
@@ -581,23 +583,58 @@
       const cls = n.classList;
       if (cls.contains('katex-display') || cls.contains('katex')) {
         const tex =
-          n.querySelector('annotation')?.textContent ??
-          n.closest('[data-math-source]')?.getAttribute('data-math-source') ??
+          n.querySelector('annotation')?.textContent ||
+          n.closest('[data-math-source]')?.getAttribute('data-math-source') ||
+          // HTML-only KaTeX may keep the source inside the outer display wrapper.
+          n.querySelector('[data-math-source]')?.getAttribute('data-math-source') ||
           '';
         const display = cls.contains('katex-display');
         const start = out.length;
         out += tex;
-        math.push({ start, end: out.length, display, h: display ? blockHeight : 0 });
+        math.push({ start, end: out.length, display, element: n });
         return;
       }
       if (tag === 'BR') {
-        out += '\n';
+        out += inline ? ' ' : '\n';
         return;
       }
-      const block = BLOCKY.test(tag);
+      widget ||= n.hasAttribute('data-client-defined-widget');
+      // Widgets can use block elements as cells. Keep their visual rows as text, without
+      // reproducing the card UI. Single-child grids also wrap code editors; those stay ordinary
+      // blocks so each .cm-line keeps its newline. Never read descendants of a skipped item.
+      if (widget && !inline && n.children.length > 1 && tag === 'DIV') {
+        const display = readRows && getComputedStyle(n).display;
+        if (!readRows) spatial = true;
+        if (display === 'grid' || display === 'flex') {
+          spatial = true;
+          const cells = [...n.children]
+            .map((cell) => ({ cell, r: cell.getBoundingClientRect() }))
+            .filter(({ r }) => r.width && r.height);
+          const overlaps = (a, b) => a.top < b.top + b.height && b.top < a.top + a.height;
+          // Column layouts wrap entire card sections too. Recurse normally through those,
+          // otherwise a nested grid (or code editor) would lose its own row boundaries.
+          if (cells.some(({ r }, i) => i > 0 && overlaps(r, cells[i - 1].r))) {
+            if (out && !out.endsWith('\n')) out += '\n';
+            let row;
+            for (const { cell, r } of cells) {
+              const before = out.length;
+              if (row) out += overlaps(r, row) ? '  ' : '\n';
+              const start = out.length;
+              walk(cell, true, widget);
+              if (out.length === start) out = out.slice(0, before);
+              else row = r;
+            }
+            if (!out.endsWith('\n')) out += '\n';
+            return;
+          }
+        }
+      }
+      const block = !inline && BLOCKY.test(tag);
       if (block && out && !out.endsWith('\n')) out += '\n';
+      if (inline && BLOCKY.test(tag) && out && !/\s$/.test(out)) out += ' ';
       if (tag === 'LI') out += '• ';
-      for (let c = n.firstChild; c; c = c.nextSibling) walk(c);
+      for (let c = n.firstChild; c; c = c.nextSibling)
+        walk(c, inline || tag === 'TD' || tag === 'TH', widget);
       if (tag === 'TD' || tag === 'TH') out += '  ';
       if (block && !out.endsWith('\n')) out += '\n';
     };
@@ -606,6 +643,7 @@
     const text = out.trim().slice(0, CAP);
     return {
       text,
+      spatial,
       math: math
         .map((m) => ({ ...m, start: m.start - trim, end: m.end - trim }))
         .filter((m) => m.start >= 0 && m.end <= text.length),
@@ -815,7 +853,13 @@
   // ChatGPT remounts turns as they scroll in and out. A new element for a recorded message, at the
   // recorded width with the recorded turn, row and block sizes, is the same layout: no measure.
   function adopt(t, prev, c, els) {
-    if (!prev?.ready || prev.fromStorage || prev.conv !== c || verified.get(t) === prev)
+    if (
+      !prev?.ready ||
+      prev.fromStorage ||
+      prev.conv !== c ||
+      verified.get(t) === prev ||
+      prev.items.some((it) => it.approx) // measure: the new copy may show what was estimated
+    )
       return false;
     const row = t.parentElement;
     if (
@@ -833,6 +877,13 @@
     verified.set(t, prev);
     return true;
   }
+  // Content of a lean() result, without its element references.
+  const signature = (x) =>
+    x.text + '\0' + x.math.map((m) => `${m.start},${m.end},${+m.display}`).join(';');
+  // A display formula never measured: about one rendered row per TeX row, within its block.
+  const ESTIMATED_ROW = 40;
+  const estimateDisplay = (tex, blockH) =>
+    Math.min(blockH, ESTIMATED_ROW * (1 + (tex.match(/\\\\|\\cr(?![a-zA-Z])/g) || []).length));
   // Reads the next items of a job until the idle deadline. Returns true when the job is done.
   function step(j, left) {
     const { t, sc } = j;
@@ -840,25 +891,73 @@
     if (!needed()) return true; // seek, cv and layout turned off since begin()
     return timed(() => {
       const rr = t.parentElement.getBoundingClientRect(),
-        sr = sc.getBoundingClientRect();
+        sr = sc.getBoundingClientRect(),
+        column = t.querySelector(MD)?.getBoundingClientRect();
       do {
         for (const end = Math.min(j.all.length, j.items.length + SLICE); j.items.length < end; ) {
           const el = j.all[j.items.length];
           const r = box(el);
+          const hidden = skipped.has(el);
           let text = leanCache.get(el);
-          if (text == null) {
-            text = lean(el, r.height);
+          if (text == null || (text.spatial && !hidden)) {
+            text = lean(el, !hidden);
             leanCache.set(el, text);
           }
+          let math,
+            approx = false;
+          // Descendant reads force layout inside a skipped block (widget rows, formula boxes). Reuse
+          // the geometry measured while it was on screen if its content and box are unchanged. Any
+          // mutation in the turn (ChatGPT's hover action bar) drops leanCache, so compare content,
+          // not the cached object; a widget's rows are compared by its row-free text.
+          if (hidden && (text.spatial || text.math.some((m) => m.display))) {
+            const cached = mathGeometry.get(el);
+            if (
+              cached &&
+              cached.w === r.width &&
+              cached.h === r.height &&
+              (cached.text === text || cached.sig === signature(text))
+            ) {
+              text = cached.text;
+              math = cached.math;
+            } else {
+              // Never on screen in this layout. Its box is real (a seen block skips at its
+              // remembered size; an unrendered one is rejected as a placeholder in begin()), so the
+              // answer stays usable; only the rows or formula boxes inside are estimates. The item
+              // is flagged, the record is not persisted, and the turn stays queued for its reveal.
+              approx = true;
+              math = text.math.map(({ element: _element, ...m }) => ({
+                ...m,
+                h: m.display ? estimateDisplay(text.text.slice(m.start, m.end), r.height) : 0,
+              }));
+            }
+          } else {
+            // Text/offsets survive resize, but each formula's own box must be refreshed.
+            math = text.math.map(({ element, ...m }) => ({
+              ...m,
+              h: m.display ? box(element).height : 0,
+            }));
+            if (!hidden)
+              mathGeometry.set(el, {
+                text,
+                sig: signature(text.spatial ? lean(el, false) : text),
+                w: r.width,
+                h: r.height,
+                math,
+              });
+          }
+          const span = core.previewItemSpan(
+            { left: r.left - sr.left - sc.clientLeft, w: r.width },
+            column && { left: column.left - sr.left - sc.clientLeft, w: column.width },
+          );
           j.items.push({
             top: r.top - rr.top,
             h: r.height,
-            left: r.left - sr.left - sc.clientLeft,
-            w: r.width,
+            ...span,
             user: el.matches('[data-user-message-bubble]'),
             css: styleKey(el),
             text: text.text,
-            math: text.math,
+            math,
+            ...(approx && { approx }),
           });
         }
       } while (j.items.length < j.all.length && left() > RESERVE);
@@ -894,21 +993,24 @@
     }
     if (snap.sw != null) scWidths.set(sc, snap.sw);
     const prev = turns.get(key);
-    const { entry, reason } = core.mergeRecord(
-      prev?.conv === c ? prev : null,
-      snap,
-      performance.now(),
-    );
+    // Estimates (see step) stand in only where nothing was measured: never over a record measured
+    // in full. A block coming into view queues the turn again (stale); only a full record is stored.
+    const approx = !!snap.items?.some((it) => it.approx);
+    const { entry, reason } =
+      approx && prev?.ready && prev.conv === c && !prev.items.some((it) => it.approx)
+        ? { entry: prev, reason: 'estimated' }
+        : core.mergeRecord(prev?.conv === c ? prev : null, snap, performance.now());
     if (reason) reject(t, reason);
     else {
       outcomes.set(t, { reason: null });
       if (prev?.ready) S.refreshes++;
       S.records++;
-      stale.delete(t);
+      if (approx) S.approx = (S.approx || 0) + 1;
+      else stale.delete(t);
       verified.set(t, entry);
       turns.delete(key);
       turns.set(key, entry);
-      persistence.record(key, entry, sc, layout);
+      if (!approx) persistence.record(key, entry, sc, layout);
     }
     while (turns.size > 64) turns.delete(turns.keys().next().value);
   }
@@ -989,6 +1091,13 @@
       const parent = (r.target.nodeType === 1 ? r.target : r.target.parentElement)?.closest?.(
         '[data-turn-key]',
       );
+      // stream/offscreen.js marks a block seen up to a second after it rendered, often once it is
+      // skipped again with no reveal left to come. A turn rejected for that placeholder (or still
+      // holding estimates) is queued again; nothing in it changed, so its lean text is kept.
+      if (r.attributeName === 'data-butter-seen') {
+        if (parent && meta.has(parent) && stale.has(parent)) queue(parent);
+        continue;
+      }
       let state = r.attributeName === 'data-talvt-turn-state';
       for (const n of r.addedNodes || []) {
         if (n.nodeType !== 1) continue;
@@ -1047,8 +1156,11 @@
     subtree: true,
     characterData: true,
     attributes: true,
-    attributeFilter: ['data-talvt-turn-state', 'data-math-source'],
+    attributeFilter: ['data-talvt-turn-state', 'data-math-source', 'data-butter-seen'],
   });
+  // document_start normally precedes the turns; also handle turns already present at startup.
+  // Scrolling alone produces no child mutation to register an existing single/last turn.
+  document.querySelectorAll('[data-turn-key]').forEach((t) => watch(t));
 
   // Adopted geometry must still match current source, layout and expiry at each use.
   const currentEntry = (key, sc) => {

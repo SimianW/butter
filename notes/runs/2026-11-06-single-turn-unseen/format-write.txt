@@ -1,0 +1,10 @@
+extension/seek/layout-cache-main.js 155ms (unchanged)
+test/height-cache-dom.test.js 108ms
+test/display-lock.test.js 9ms (unchanged)
+test/seek-landing.test.js 42ms (unchanged)
+test/layout-store.test.js 23ms (unchanged)
+test/single-turn-unseen.test.js 3ms (unchanged)
+notes/diagnostics/capture-record-readiness.js 6ms (unchanged)
+notes/diagnostics/README.md 37ms (unchanged)
+notes/runs/2026-11-06-single-turn-unseen/lab-check.mjs 9ms
+notes/runs/2026-11-06-single-turn-unseen/synthetic-dil.mjs 6ms

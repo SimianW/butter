@@ -1,0 +1,32 @@
+PASS Dil: table remains a preview item
+PASS Dil: wide table excluded from intrinsic block sizes
+PASS Dil: every item stays in the answer column
+PASS Dil: all table cells survive as four text rows
+PASS Dil: table text matches source for stored hydration
+PASS Dil: code widget preserves code lines and omits buttons
+PASS Dil: grid cells keep two horizontal rows
+PASS Dil: flex cells keep one horizontal row
+PASS Dil: preview clamps a wide incoming record
+PASS Dil: preview draws every cell
+PASS Dil: last table row fits inside the clipped preview height
+PASS Dil: resize refreshes grid rows without a text mutation
+PASS Dil: unchanged skipped grid reuses its recorded rows
+PASS Dil: changed skipped grid cannot replace good rows
+PASS Dil: wide table stays outside block containment
+PASS classic: table remains a preview item
+PASS classic: wide table excluded from intrinsic block sizes
+PASS classic: every item stays in the answer column
+PASS classic: all table cells survive as four text rows
+PASS classic: table text matches source for stored hydration
+PASS classic: code widget preserves code lines and omits buttons
+PASS classic: grid cells keep two horizontal rows
+PASS classic: flex cells keep one horizontal row
+PASS classic: preview clamps a wide incoming record
+PASS classic: preview draws every cell
+PASS classic: last table row fits inside the clipped preview height
+PASS classic: resize refreshes grid rows without a text mutation
+PASS classic: unchanged skipped grid reuses its recorded rows
+PASS classic: changed skipped grid cannot replace good rows
+PASS classic: wide table stays outside block containment
+PASS Dil and classic tables have identical preview text and geometry
+PASS no browser errors

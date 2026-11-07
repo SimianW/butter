@@ -1,0 +1,2 @@
+/home/simon/.t3/worktrees/butter/t3-8302ad9c/dist/butter-0.1.0-alpha.13+unseen-notice.7.zip
+Note: Chrome version remains 0.1.0.13; remove the previous install before loading this test build.

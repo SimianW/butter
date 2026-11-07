@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.0-alpha.14 (2026-11-07)
+
+- Holding the scrollbar over an answer you have already read shows that answer again, instead of
+  saying only its start can be previewed. This could happen in long answers with formulas, in
+  chats with a single question, and in answers ChatGPT draws with its newer renderer.
+- Formulas no longer go missing from the scrollbar preview, and a formula no longer stretches to
+  the height of the whole answer.
+- Tables and widgets keep their rows in the preview, and wide tables stay inside the answer column.
+- For an answer you haven't opened yet, the preview now says it can show only the start, in the
+  rail's language.
+- On macOS, the history rail stays clear of the scrollbar, so it no longer covers the thumb.
+
 ## 0.1.0-alpha.13 (2026-11-04)
 
 - The toolbar icon is bigger: it drops the floor shadow and stands taller, so Butter no longer

@@ -13,7 +13,7 @@ Each row in object store `geometry` has exactly the following fields:
 
 | Field | Shape/example (synthetic) | Derivation |
 |---|---|---|
-| `schema` | `2` | Wire-format version; no content. |
+| `schema` | `4` | Wire-format version; no content. |
 | `account` | 64 lowercase hexadecimal characters | SHA-256 of the ChatGPT user id: account identity. The raw id is not forwarded. |
 | `conv` | 64 lowercase hexadecimal characters | SHA-256 of conversation id: chat identity. |
 | `turn` | 64 lowercase hexadecimal characters | SHA-256 of question/turn message id: chat identity. |
