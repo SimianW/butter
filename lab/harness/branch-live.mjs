@@ -99,8 +99,8 @@ const pickText = (page, { latest }) =>
         if (n.textContent.trim().length < 40) continue;
         if (n.parentElement.closest('.katex, math, code, pre, button, svg, a')) continue;
         n.parentElement.scrollIntoView({ block: 'center', behavior: 'instant' });
-        const start = n.textContent.search(/\S/);
-        return { ok: true, start };
+        window.__butterQaPick = n; // dragSelect uses this same passage
+        return { ok: true };
       }
     }
     return { ok: false };
@@ -110,9 +110,14 @@ const dragSelect = async (page) => {
   const box = await page.evaluate(() => {
     const vis = (el) => el.getClientRects().length && el.getBoundingClientRect().width > 0;
     const replies = [...document.querySelectorAll('[data-markdown-text-style="assistant-message"]')].filter(vis);
+    const picked = window.__butterQaPick?.isConnected ? [window.__butterQaPick] : [];
+    const nodes = [...picked];
     for (const reply of replies.slice(0, -1).reverse()) {
       const walk = document.createTreeWalker(reply, NodeFilter.SHOW_TEXT);
-      for (let n; (n = walk.nextNode()); ) {
+      for (let n; (n = walk.nextNode()); ) nodes.push(n);
+    }
+    {
+      for (const n of nodes) {
         if (n.textContent.trim().length < 40) continue;
         if (n.parentElement.closest('.katex, math, code, pre, button, svg, a')) continue;
         const s = n.textContent.search(/\S/);
@@ -165,6 +170,7 @@ const identityKind = (url, original) => {
   };
 };
 
+const drift = [];
 try {
   const page = context.pages().find((p) => p.url().startsWith('https://chatgpt.com')) || (await context.newPage());
   watch(page, 'original');
@@ -178,10 +184,22 @@ try {
     await page.waitForTimeout(2500);
     const original = decodeURIComponent(/\/c\/([^/?#]+)/.exec(new URL(page.url()).pathname)[1]).toLowerCase();
     await pickText(page, { latest: false });
-    await page.waitForTimeout(800);
+    // ChatGPT keeps adjusting the scroll position for a while after loading a chat; start only
+    // once it has stayed put for 1.5 s, so a late adjustment isn't counted as Butter's.
+    for (let last = null, same = 0, i = 0; same < 6 && i < 80; i++) {
+      const now = (await pageState(page)).scroll;
+      same = now === last ? same + 1 : 0;
+      last = now;
+      await page.waitForTimeout(250);
+    }
     const before = await pageState(page);
     const originalPrint = await fingerprint(page);
+    // Original tab's scroll position at each step, to tell Butter's effect from ChatGPT's own.
+    const timeline = [];
+    const mark = async (step) => timeline.push([step, (await pageState(page)).scroll]);
+    await mark('before');
     await dragSelect(page);
+    await mark('selected');
     await page.locator(`${HOST} .chip`).waitFor({ timeout: 5000 });
     await page.waitForTimeout(300);
     run.button = await page.evaluate((host) => {
@@ -208,15 +226,19 @@ try {
         butterFont: getComputedStyle(chip).fontSize,
       };
     }, HOST);
+    await mark('button shown');
     run.screenshots.push(await shot(page, `button-${width}.png`));
     await page.locator(`${HOST} .chip`).click();
+    await mark('box open');
     await page.locator(`${HOST} textarea`).fill(QUESTION);
     await page.waitForTimeout(200);
+    await mark('typed');
     run.screenshots.push(await shot(page, `question-${width}.png`, [`${HOST} .q span`]));
     const opened = context.waitForEvent('page');
     const sentAt = Date.now();
     await page.locator(`${HOST} textarea`).press('Enter');
     const dest = await opened;
+    await mark('enter');
     watch(dest, 'branch');
     // Record every click on ChatGPT's send button in this tab, with the route at that moment.
     await dest.evaluate((original) => {
@@ -251,6 +273,8 @@ try {
     run.screenshots.push(
       await shot(dest, `ready-${width}.png`, [`${HOST} .line .t`, '.ProseMirror']),
     );
+    await mark('end');
+    run.originalScroll = timeline;
     const after = await pageState(page);
     run.originalUnchanged = JSON.stringify(after) === JSON.stringify(before);
     // Redacted comparison: which field changed, if any (no URLs or text kept).
@@ -284,12 +308,14 @@ try {
       assert.ok(run.afterSendClick.length && run.afterSendClick.every((r) => r.blocked), 'send blocked by the guard');
     }
     assert.equal(run.originalSendRequests.length, 0, 'nothing sent from the original tab');
-    assert.ok(run.originalUnchanged, 'original tab unchanged');
+    // Checked after both widths, so one run's drift doesn't hide the other's result.
+    if (!run.originalUnchanged) drift.push(width);
     // Discard the unsent branch: clear its composer, close the tab.
     for (const editor of await dest.locator('.ProseMirror[contenteditable="true"]:visible').all())
       await editor.fill('');
     await dest.close();
   }
+  assert.deepEqual(drift, [], 'original tab unchanged');
 } finally {
   await fs.writeFile(path.join(out, process.env.OUT_JSON || 'live.json'), JSON.stringify(results, null, 1) + '\n');
   await browser.close();
