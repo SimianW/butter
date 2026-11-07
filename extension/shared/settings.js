@@ -41,13 +41,11 @@
   apply();
 
   // Facts a feature in this tab reports when they happen (Ask in branch: a confirmed failure or a
-  // made branch). Recorded at once, since the tab may close before the popup asks, and kept for
-  // the popup's later probes of this tab.
-  const reported = {};
+  // made branch). Recorded at once and only then, since the tab may close before the popup asks;
+  // replaying them in later probes would let an old outcome overwrite a newer one from another tab.
   const record = (states) => chrome.runtime.sendMessage({ type: 'butter-status-record', states });
   globalThis.ButterSettings = {
     report(key, fact) {
-      reported[key] = fact;
       return record(classify({ [key]: fact }, settings)).catch(() => {});
     },
   };
@@ -122,7 +120,6 @@
         engaged: !!main.rail?.parsed && railReady,
         failed: !main.rail?.parsed,
       },
-      ...reported,
     };
     const states = classify(facts, settings);
     record(states).then(

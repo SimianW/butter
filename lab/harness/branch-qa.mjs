@@ -311,7 +311,9 @@ try {
     assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), ['m-latest'], 'latest reply');
     assert.equal(await dest.evaluate(() => fixture.workClicks), 0, 'never Work mode');
     assert.equal(await dest.title(), 'Branch · Explain Corpus Meaning', 'title restored');
-    // Line placement: 8 px above the composer, spanning it.
+    // Line placement: 8 px above the composer, spanning it. The line appears as the sent
+    // composer shrinks; let one 200 ms placement tick follow it.
+    await dest.waitForTimeout(250);
     const place = await dest.evaluate((host) => {
       const line = document.querySelector(host).shadowRoot.querySelector('.line');
       return {
@@ -493,6 +495,27 @@ try {
   }
   assert.deepEqual(await failures(), {}, 'a cancel is not a failure');
   pass('cancel via ×, Cancel and Esc: card gone at once, no further menu press, nothing sent');
+
+  // ---- Cancel while sending: the branch is verified and filled, but ChatGPT's Send button
+  // enables only 2.5 s later. The card stays, and Esc in that window sends nothing.
+  {
+    const page = await open();
+    const dest = await ask(page, { fixture: 'senddelay=2500' });
+    await dest.waitForFunction(
+      () => document.querySelector('.ProseMirror').innerText.trim() && fixture.sent.length === 0,
+    );
+    assert.equal(await inShadow(dest, '.card').count(), 1, 'card kept while waiting for Send');
+    await dest.keyboard.press('Escape');
+    assert.equal(await inShadow(dest, '.card').count(), 0, 'card gone at once');
+    assert.equal(await inShadow(dest, '.scrim').count(), 0, 'cover gone at once');
+    await dest.waitForTimeout(2500 + 1000);
+    assert.equal(await dest.evaluate(() => fixture.sent.length), 0, 'sent after Esc');
+    assert.equal(await inShadow(dest, '.line').count(), 0, 'no ready line after cancel');
+    await dest.close();
+    await page.close();
+  }
+  assert.deepEqual(await failures(), {}, 'a cancel while sending is not a failure');
+  pass('Esc while waiting for a delayed Send button: card gone, nothing sent');
 
   // ---- Failure types: card per mockup state 5, only after the re-check, reported to status.
   // Each case also exercises one of the card's controls.

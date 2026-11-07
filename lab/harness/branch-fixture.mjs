@@ -47,6 +47,7 @@ export function fixtureHtml(url) {
   const slow = Number(q.get('slow') || 0); // ms before each menu opens
   const land = Number(q.get('land') || 300); // ms from "Branch in new chat" to the new route
   const hold = Number(q.get('hold') || 0); // ms a sent message stays in the composer
+  const sendDelay = Number(q.get('senddelay') || 0); // ms before Send enables after text arrives
   const pad = Number(q.get('pad') || 0); // px above the conversation, to push the quote down
   const L = LABELS[q.get('lang') === 'zh' ? 'zh' : 'en']; // ChatGPT's UI language
   const stream = Number(q.get('stream') || 0); // ms the latest reply is still being written
@@ -137,7 +138,12 @@ if (${stream}) {
   }, ${stream});
   send.hidden = true;
 }
-const sync = () => (send.disabled = !editor.innerText.trim());
+let sendTimer;
+const sync = () => {
+  clearTimeout(sendTimer);
+  if (!editor.innerText.trim() || !${sendDelay}) send.disabled = !editor.innerText.trim();
+  else sendTimer = setTimeout(() => (send.disabled = false), ${sendDelay});
+};
 editor.addEventListener('input', sync);
 send.addEventListener('click', () => {
   if (send.disabled || send.hidden) return;

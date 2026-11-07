@@ -456,11 +456,11 @@
           const waiting = state === 'waiting-for-reply';
           u.overlay.waiting(waiting);
           tabTitle.set(u.strings()[waiting ? 'waiting' : 'creating']);
-        } else if (state === 'sending') {
+        } else if (state === 'ready') {
+          // The card and its cancel stay through sending: until the click, cancel still stops it.
           end();
           u.overlay.remove();
-          if (info.verified) line.show('ready', job.title);
-        } else if (state === 'ready') {
+          line.show('ready', job.title);
           globalThis.ButterSettings?.report('branch', { exercised: true, engaged: true });
         } else if (state === 'unsure') {
           end();
