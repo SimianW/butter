@@ -13,6 +13,9 @@ export function fixtureHtml(url) {
   const land = Number(q.get('land') || 300); // ms from "Branch in new chat" to the new route
   const hold = Number(q.get('hold') || 0); // ms a sent message stays in the composer
   const pad = Number(q.get('pad') || 0); // px above the conversation, to push the quote down
+  // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
+  // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
+  const fail = q.get('fail') || '';
   const conv = decodeURIComponent(/\/c\/([^/?#]+)/.exec(url.pathname)?.[1] || '');
   const isBranch = conv !== ORIGINAL;
   const title = isBranch ? 'Branch · Explain Corpus Meaning' : 'Explain Corpus Meaning';
@@ -56,19 +59,21 @@ header .t{font-size:15px;color:var(--fg2)}
    <p>A corpus can be used for training, but it can also simply be searched when an AI needs information.</p>
    <p id="para">This is closer to <span id="quote">${QUOTE}</span>, although the page alone doesn't establish the exact architecture.</p>
   </div>
-  <div class="acts"><span></span><span></span><span></span><button aria-label="More actions" class="more"><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button></div>
+  <div class="acts"><span></span><span></span><span></span><button aria-label="More actions" class="more"${fail === 'more' ? ' style="display:none"' : ''}><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button></div>
  </div></div>
  <div data-turn-key="t-latest"><div data-chatgpt-selection-conversation-id="${conv}" data-chatgpt-selection-message-id="m-latest">
   <div class="a" data-markdown-text-style="assistant-message"><p id="latest">Retrieval adds relevant context before an answer is generated.</p></div>
-  <div class="acts"><span></span><span></span><span></span><button aria-label="More actions" class="more"><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button></div>
+  <div class="acts"><span></span><span></span><span></span><button aria-label="More actions" class="more"${fail === 'more' ? ' style="display:none"' : ''}><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button></div>
  </div></div>
 </div></div>
-<form class="composer"><div class="ProseMirror" contenteditable="true" role="textbox"></div><span class="plus">+</span>
+<form class="composer"${fail === 'load' ? ' style="display:none"' : ''}><div class="ProseMirror" contenteditable="true" role="textbox"></div><span class="plus">+</span>
  <button class="send" type="button" data-testid="send-button" aria-label="Send prompt" disabled>↑</button></form>
 <div class="native" hidden><div><button type="button">Ask ChatGPT</button></div></div>
 <script>
 const ORIGINAL = ${JSON.stringify(ORIGINAL)}, BRANCH = ${JSON.stringify(BRANCH)};
-window.fixture = { sent: [], branchedFrom: [], workClicks: 0, nativeShift: 0 };
+window.fixture = { sent: [], branchedFrom: [], workClicks: 0, nativeShift: 0, morePresses: 0,
+  noBranch: ${JSON.stringify(fail === 'branch')}, noNewChat: ${JSON.stringify(fail === 'newchat')},
+  sameRoute: ${JSON.stringify(fail === 'identity')} };
 const editor = document.querySelector('.ProseMirror'), send = document.querySelector('.send');
 const sync = () => (send.disabled = !editor.innerText.trim());
 editor.addEventListener('input', sync);
@@ -108,27 +113,27 @@ const menu = (items, x, y) => {
 const closeMenus = () => document.querySelectorAll('[role=menu]').forEach((m) => m.remove());
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
 for (const more of document.querySelectorAll('.more'))
-  more.addEventListener('pointerdown', () => setTimeout(() => {
+  more.addEventListener('pointerdown', () => (fixture.morePresses++, setTimeout(() => {
     const id = more.closest('[data-chatgpt-selection-message-id]').dataset.chatgptSelectionMessageId;
     const r = more.getBoundingClientRect();
     menu([
       { label: 'Wednesday, 1:50 PM' },
       { label: 'Regenerate response', sub: true, icon: 'arrows-clockwise-rotate-lg' },
-      { label: 'Branch conversation', sub: true, icon: 'branch', on: () => setTimeout(() => {
+      ...(fixture.noBranch ? [] : [{ label: 'Branch conversation', sub: true, icon: 'branch', on: () => setTimeout(() => {
         menu([
           { label: 'Branch into Work mode', on: () => fixture.workClicks++ },
-          { label: 'Branch in new chat', on: () => {
+          ...(fixture.noNewChat ? [] : [{ label: 'Branch in new chat', on: () => {
             fixture.branchedFrom.push(id); closeMenus();
-            setTimeout(() => {
+            if (!fixture.sameRoute) setTimeout(() => {
               history.pushState({}, '', location.pathname.replace(ORIGINAL, encodeURIComponent(BRANCH)) + location.search);
               document.title = 'Branch · Explain Corpus Meaning';
               document.querySelector('header .t').textContent = document.title;
               for (const w of document.querySelectorAll('[data-chatgpt-selection-conversation-id]')) w.dataset.chatgptSelectionConversationId = BRANCH;
             }, ${land});
-          } },
+          } }]),
         ], r.left + 230, r.top + 60);
-      }, ${slow}) },
+      }, ${slow}) }]),
     ], r.left, r.top + 24);
-  }, ${slow}));
+  }, ${slow})));
 </script></body></html>`;
 }

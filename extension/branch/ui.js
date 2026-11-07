@@ -20,7 +20,23 @@
       unsure:
         'Butter couldn’t confirm this is a new branch. Your question is filled in but not sent; check before sending.',
       failed: 'Couldn’t create branch',
-      failedNote: 'Butter couldn’t make a branch of this chat. Nothing was sent.',
+      // One sentence per cause; failedNote adds "Nothing was sent.".
+      causes: {
+        more: 'Couldn’t find the latest reply’s “More actions” button.',
+        branch: 'Couldn’t find ChatGPT’s “Branch conversation” menu.',
+        newchat: 'Couldn’t find ChatGPT’s “Branch in new chat” menu.',
+        identity: 'The tab didn’t move to a new chat.',
+        load: 'This chat didn’t finish loading.',
+        stream: 'The reply didn’t finish in time.',
+        error: 'Something went wrong while making the branch.',
+      },
+      failedNote: (cause) => `${cause} Nothing was sent.`,
+      closeTab: 'Close tab',
+      copy: 'Copy question',
+      copied: 'Copied',
+      retry: 'Try again',
+      blocked: 'Chrome blocked the new tab. Allow pop-ups for chatgpt.com, then try again.',
+      handoff: 'Couldn’t hand your question to the new tab. Try again.',
     },
     zh: {
       ask: '在分支中问',
@@ -34,7 +50,22 @@
       ready: (title) => (title ? `分支自《${title}》· 原对话不变` : '分支自原对话 · 原对话不变'),
       unsure: '无法确认这是新的分支。问题已填入但没有发送，请确认后再发送。',
       failed: '没能创建分支',
-      failedNote: 'Butter 没能为这个对话创建分支。没有发送任何内容。',
+      causes: {
+        more: '找不到最新回复的 “More actions” 按钮。',
+        branch: '找不到 ChatGPT 的 “Branch conversation” 菜单。',
+        newchat: '找不到 ChatGPT 的 “Branch in new chat” 菜单。',
+        identity: '标签页没有转到新的对话。',
+        load: '这个对话没有加载完成。',
+        stream: '回复没有及时生成完。',
+        error: '创建分支时出了问题。',
+      },
+      failedNote: (cause) => `${cause}没有发送任何内容。`,
+      closeTab: '关闭标签页',
+      copy: '复制问题',
+      copied: '已复制',
+      retry: '重试',
+      blocked: 'Chrome 拦截了新标签页。请允许 chatgpt.com 打开弹出窗口，然后重试。',
+      handoff: '没能把问题交给新标签页，请重试。',
     },
   };
   const ICON = {
@@ -84,6 +115,7 @@ svg { display: block; }
 .qpop .foot { margin-top: 8px; font-size: 12.5px; color: var(--fg3); display: flex; justify-content: space-between; gap: 12px; }
 .qpop .foot span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .qpop .foot span:last-child { white-space: nowrap; }
+.qpop .foot span.reason { color: var(--err); white-space: normal; overflow: visible; }
 .qpop kbd { font: 11px ui-monospace, monospace; border: 1px solid var(--hair); border-radius: 4px; padding: 0 4px; }
 
 /* 3 · new tab: cover and card while Butter drives ChatGPT's menu */
@@ -107,6 +139,8 @@ svg { display: block; }
 .card .btn { font-size: 14px; line-height: 1.65; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--hair);
   color: var(--fg); background: var(--pop); }
 .card .btn:hover { background: var(--bubble); }
+.card .btn.pri { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.card .btn.pri:hover { background: color-mix(in srgb, var(--fg) 85%, var(--bg)); }
 .card.err h3 { color: var(--err); }
 .card.err h3 svg { width: 18px; height: 18px; flex: none; }
 
@@ -253,6 +287,16 @@ svg { display: block; }
         box.style.left = `${left}px`;
         box.style.top = `${top}px`;
       },
+      // Why the last Enter didn't go through (pop-up blocked, hand-over failed), in place of the
+      // hint; null puts the hint back.
+      reason(text) {
+        const hint = box?.querySelector('.foot span');
+        if (!hint) return;
+        hint.textContent = text || t().hint;
+        hint.classList.toggle('reason', !!text);
+        if (text) hint.setAttribute('role', 'alert');
+        else hint.removeAttribute('role');
+      },
       size: () => (box ? box.getBoundingClientRect() : null),
       close() {
         box?.remove();
@@ -265,7 +309,8 @@ svg { display: block; }
 
     // ---- 3 · overlay card
     let scrim = null,
-      card = null;
+      card = null,
+      onFailureClose = null;
     const overlay = {
       working({ question: text, headerBottom = 56, onCancel }) {
         overlay.remove();
@@ -288,33 +333,61 @@ svg { display: block; }
         card.querySelector('.btn').addEventListener('click', onCancel);
         root.append(scrim, card);
       },
-      failure({ question: text, onClose }) {
+      // Mockup state 5. × (and Esc) close only the card and keep the tab.
+      failure({ question: text, cause, headerBottom = 56, onRetry, onCopy, onCloseTab, onClose }) {
         overlay.remove();
         attach();
         const s = t();
+        scrim = el('div', 'scrim');
+        scrim.style.top = `${headerBottom}px`;
         card = el(
           'div',
           'card err',
-          `<button class="x" type="button">${ICON.x}</button><h3>${ICON.warn}<span></span></h3><p></p><div class="quoted"></div>`,
+          `<button class="x" type="button">${ICON.x}</button><h3>${ICON.warn}<span></span></h3><p></p><div class="quoted"></div><div class="btns"><button class="btn" type="button" data-act="close-tab"></button><button class="btn" type="button" data-act="copy"></button><button class="btn pri" type="button" data-act="retry"></button></div>`,
         );
         card.setAttribute('role', 'alert');
         card.querySelector('.x').setAttribute('aria-label', s.close);
         card.querySelector('h3 span').textContent = s.failed;
-        card.querySelector('p').textContent = s.failedNote;
+        card.querySelector('p').textContent = s.failedNote(s.causes[cause] || s.causes.error);
         card.querySelector('.quoted').textContent = text;
-        card.querySelector('.x').addEventListener('click', () => {
-          overlay.remove();
-          onClose?.();
+        const act = (name) => card.querySelector(`[data-act="${name}"]`);
+        act('close-tab').textContent = s.closeTab;
+        act('copy').textContent = s.copy;
+        act('retry').textContent = s.retry;
+        card.querySelector('.x').addEventListener('click', () => overlay.close());
+        act('close-tab').addEventListener('click', () => onCloseTab?.());
+        act('retry').addEventListener('click', () => onRetry?.());
+        let copiedTimer;
+        act('copy').addEventListener('click', async () => {
+          const button = act('copy');
+          const ok = await onCopy?.();
+          if (!ok || !button.isConnected) return;
+          button.textContent = s.copied;
+          clearTimeout(copiedTimer);
+          copiedTimer = setTimeout(() => (button.textContent = s.copy), 1500);
         });
-        root.append(card);
+        onFailureClose = onClose;
+        root.append(scrim, card);
+        act('retry').focus({ preventScroll: true });
+      },
+      // Close the failure card only (× or Esc).
+      close() {
+        if (!card?.classList.contains('err')) return false;
+        const done = onFailureClose;
+        overlay.remove();
+        done?.();
+        return true;
       },
       remove() {
         scrim?.remove();
         card?.remove();
-        scrim = card = null;
+        scrim = card = onFailureClose = null;
       },
       get shown() {
         return !!card;
+      },
+      get failed() {
+        return !!card?.classList.contains('err');
       },
     };
 

@@ -46,6 +46,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
       older: false,
       rail: false,
       layout: false,
+      branch: false,
       future: false,
     },
   };
@@ -59,6 +60,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     streaming: ['container', 'cv', 'throttle'],
     scrolling: ['older', 'seek'],
     rail: ['rail'],
+    branch: ['branch'],
     layout: ['layout'],
   });
   for (const group of Object.keys(status.groups)) {
@@ -79,6 +81,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     older: false,
     rail: false,
     layout: false,
+    branch: false,
     future: false,
   });
 });

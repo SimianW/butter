@@ -7,7 +7,7 @@ import path from 'node:path';
 const extension = new URL('../extension/', import.meta.url).pathname;
 const ORIGINAL = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 const ID = '11111111-2222-4333-8444-555555555555';
-function worker(session, local = {}, now = () => 1000) {
+function worker(session, local = {}, now = () => 1000, tabs = { messages: [], removed: [] }) {
   const listeners = [];
   const area = (rows) => ({
     get: async (key) =>
@@ -24,6 +24,10 @@ function worker(session, local = {}, now = () => 1000) {
     chrome: {
       runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
       storage: { local: area(local), session: area(session), onChanged: { addListener() {} } },
+      tabs: {
+        sendMessage: async (id, message) => void tabs.messages.push([id, { ...message }]),
+        remove: async (id) => void tabs.removed.push(id),
+      },
     },
     importScripts: (...files) =>
       files.forEach((file) =>
@@ -73,4 +77,32 @@ test('the worker ignores other extensions and drops expired jobs when it wakes',
   worker(session, {}, () => 1000 + 60_000);
   await new Promise((r) => setTimeout(r, 0));
   assert.deepEqual(session, {});
+});
+
+test('the original tab hears when its job is claimed, or when the claim failed', async () => {
+  const tabs = { messages: [], removed: [] },
+    send = worker({}, {}, () => 1000, tabs);
+  await send({ type: 'butter-branch-put', id: ID, job }, origin);
+  assert.deepEqual(await send({ type: 'butter-branch-claim', id: ID }, dest), { job });
+  assert.deepEqual(tabs.messages, [[1, { type: 'butter-branch-claimed', id: ID }]]);
+  // A claim the worker refuses (here: from the original tab itself) tells the original tab too.
+  tabs.messages.length = 0;
+  await send({ type: 'butter-branch-put', id: ID, job }, origin);
+  assert.deepEqual(await send({ type: 'butter-branch-claim', id: ID }, origin), {
+    error: 'sender',
+  });
+  assert.deepEqual(tabs.messages, [[1, { type: 'butter-branch-unclaimed', id: ID }]]);
+  // An unknown job tells nobody.
+  tabs.messages.length = 0;
+  assert.deepEqual(await send({ type: 'butter-branch-claim', id: ID }, dest), { missing: true });
+  assert.deepEqual(tabs.messages, []);
+});
+
+test('Close tab: the worker closes only the tab that asks', async () => {
+  const tabs = { messages: [], removed: [] },
+    send = worker({}, {}, () => 1000, tabs);
+  assert.deepEqual(await send({ type: 'butter-branch-close', tab: 1 }, dest), { ok: true });
+  assert.deepEqual(tabs.removed, [2]);
+  assert.equal(await send({ type: 'butter-branch-close' }, { ...dest, id: 'other' }), undefined);
+  assert.deepEqual(tabs.removed, [2]);
 });

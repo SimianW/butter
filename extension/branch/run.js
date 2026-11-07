@@ -7,7 +7,8 @@
 // Rules:
 // - Success is decided by identity: the tab shows a readable conversation other than the
 //   original, and that conversation has rendered. Menu-step timeouts never decide it.
-// - Before reporting a failure, the run re-checks whether the tab already landed on a branch.
+// - Before reporting a failure, even after an unexpected page error, the run re-checks whether
+//   the tab already landed on a branch.
 // - It sends only from a verified branch. Any doubt ends in unsure: filled, not sent.
 // - It never types into or sends in the original conversation.
 // - "Branch in new chat" is pressed at most once per run, so a slow branch is never made twice.
@@ -29,6 +30,7 @@
 
   function start({ job, page: rawPage, clock, onState = () => {} }) {
     let cancelled = false,
+      sending = false,
       state = null;
     // Every adapter call goes through here, so nothing reaches the page after cancel().
     const page = new Proxy(rawPage, {
@@ -162,11 +164,18 @@
           (current === null || B.isBranch(current, job.original));
         if (!maybeBranch) return { state: 'failed', cause: attempt.cause || 'identity' };
         // Something changed, but Butter can't be sure it is a branch: fill, never send.
+        sending = true;
         enter('sending', { verified: false });
         const filled = await fill(null);
         if (filled.cause === 'identity') return { state: 'failed', cause: 'identity' };
         return { state: 'unsure', cause: filled.cause || 'unverified', identity: current };
       }
+      return send(id);
+    }
+
+    // From a verified branch: fill, then send once.
+    async function send(id) {
+      sending = true;
       enter('sending', { verified: true, identity: id });
       const filled = await fill(id);
       if (filled.cause === 'identity') return { state: 'failed', cause: 'identity' };
@@ -186,7 +195,32 @@
       return { state: 'ready', identity: id };
     }
 
+    // An unexpected page error. Once filling has begun, never retry (a send may have gone out):
+    // unsure. Before that, re-check for a branch like any other failure, and carry on if the
+    // tab has one.
+    async function recover(error) {
+      if (sending) return { state: 'unsure', cause: 'error', error };
+      let id = null;
+      try {
+        page.dismissMenus();
+        id = await waitFor(verified, TIMING.recheck);
+      } catch (again) {
+        if (again instanceof Cancelled) throw again;
+      }
+      if (!id) return { state: 'failed', cause: 'error', error };
+      try {
+        return await send(id);
+      } catch (again) {
+        if (again instanceof Cancelled) throw again;
+        return { state: 'unsure', cause: 'error', error: again };
+      }
+    }
+
     const done = run()
+      .catch((error) => {
+        if (error instanceof Cancelled || cancelled) throw error;
+        return recover(error);
+      })
       .catch((error) => {
         if (error instanceof Cancelled || cancelled) return { state: 'cancelled' };
         return { state: 'failed', cause: 'error', error };
