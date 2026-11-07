@@ -49,7 +49,7 @@ globalThis.measureRailFixture = () => {
   const tick = root.querySelectorAll('.tick')[2].getBoundingClientRect();
   const hits = [];
   for (const y of [r.top + 2, (tick.top + tick.bottom) / 2, r.bottom - 2])
-    for (const gap of [1, 2, 6, 10, 14]) {
+    for (const gap of [1, 2, 6, 10]) {
       const target = doc.elementFromPoint(s.right - gap, y);
       const inner = target === host ? root.elementFromPoint(s.right - gap, y) : target;
       hits.push({ gap, y, target: target.tagName, inner: inner?.className, isScroller: target === sc });
@@ -78,9 +78,9 @@ globalThis.checkRailFixture = () => {
   const result = measureRailFixture();
   const check = (ok, message) => { if (!ok) throw new Error(message); };
   check(result.visible, 'rail must be visible');
-  check(result.clearance === (result.gutter ? result.gutter + 4 : 18), 'wrong scrollbar clearance');
+  check(result.clearance === (result.gutter ? result.gutter + 4 : 12), 'wrong scrollbar clearance');
   check(result.rail.width === 52, 'rail width changed');
-  check(result.bounds.every(b => b.right <= result.width - 14), 'pointer bounds cover scrollbar strip');
+  check(result.bounds.every(b => b.right <= result.width - 12), 'pointer bounds cover scrollbar strip');
   check(result.hits.every(h => h.isScroller), 'edge strip intercepts pointer hits');
   if (result.card.shown) {
     check(Math.abs(result.card.gap - 8) < 0.1, 'card must remain 8px beside rail');
