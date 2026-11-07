@@ -1,0 +1,41 @@
+✔ message is a Markdown quote of every selected line, a blank line, then the question (0.966439ms)
+✔ the full quote is kept, never truncated (0.161705ms)
+✔ identity parsing reads saved and unsaved conversation routes, and nothing else (0.576343ms)
+✔ a branch is a readable identity different from the original (0.173303ms)
+✔ a handoff job is claimed once by a new tab of the same conversation, then deleted (2.006609ms)
+✔ expired, foreign or malformed jobs are refused and deleted (0.614156ms)
+✔ pruning deletes only expired branch jobs (0.387745ms)
+✔ a selection qualifies only as non-empty text inside one reply of a saved conversation (0.185793ms)
+✔ settings add an Ask in branch key that defaults to on and can be turned off (0.721842ms)
+✔ happy path: branches, verifies the new identity, then sends the quote and question there (3.595728ms)
+✔ false-failure regression: a menu step times out but the tab already landed on a branch → ready (1.060372ms)
+✔ false-failure regression: the branch lands after the verification window → ready, not failed (1.942669ms)
+✔ false-failure regression: clicking "Branch in new chat" throws, but the branch is made → ready (0.261459ms)
+✔ a real failure is reported only after the re-check, and nothing is filled or sent (0.760993ms)
+✔ a missing More actions button fails as "more" after a retry, sending nothing (0.794249ms)
+✔ never sends when the identity stays equal to the original: fails without typing (1.09881ms)
+✔ never sends when the identity cannot be read: fills the composer, leaves it unsent (unsure) (1.856644ms)
+✔ never sends when the new conversation has not rendered: unsure, filled, unsent (0.907258ms)
+✔ the identity is re-checked right before typing: back on the original → no typing (0.329173ms)
+✔ no send button after filling → unsure, the message stays in the composer (0.349651ms)
+✔ an existing different draft in the branch composer is not overwritten (0.195471ms)
+✔ "Branch in new chat" is pressed at most once, so a slow branch is never made twice (1.043245ms)
+✔ menus are not retried once the tab has landed on a branch (0.402196ms)
+✔ a page that already shows the branch (rerun after success) verifies without menus (0.145714ms)
+✔ waits while the latest reply streams, then branches from the finished reply (0.669763ms)
+✔ a page that never loads fails as "load" without typing (1.48935ms)
+✔ cancel in loading stops every further page call and sends nothing (0.238456ms)
+✔ cancel in waiting-for-reply stops every further page call and sends nothing (0.081365ms)
+✔ cancel in branching stops every further page call and sends nothing (0.07119ms)
+✔ cancel in verifying stops every further page call and sends nothing (0.084105ms)
+✔ cancel in sending stops every further page call and sends nothing (0.100964ms)
+✔ the worker stores a job in session storage only and hands it out once (8.313964ms)
+✔ the worker ignores other extensions and drops expired jobs when it wakes (5.136186ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 82.036372

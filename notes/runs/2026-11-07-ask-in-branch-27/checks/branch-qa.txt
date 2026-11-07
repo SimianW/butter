@@ -1,0 +1,11 @@
+PASS button light: 4 px gap, top aligned, mirrored style, follows/hides, setting
+PASS button dark: 4 px gap, top aligned, mirrored style, follows/hides, setting
+INFO page selection while the box is open: ""
+PASS question box: aligned under the buttons, one-line quote, keys, draft kept, flips above
+PASS new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone
+PASS screenshots 1280px light
+PASS screenshots 800px light
+PASS screenshots 1280px dark
+PASS screenshots 800px dark
+PASS Simplified Chinese strings and title; spinner still under reduced motion
+PASS 19 screenshots in notes/runs/2026-11-07-ask-in-branch-27/screenshots; no page errors; no requests left the fixture

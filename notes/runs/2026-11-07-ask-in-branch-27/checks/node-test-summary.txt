@@ -1,0 +1,9 @@
+✔ test/stream-throttle.test.mjs (50.70302ms)
+ℹ tests 266
+ℹ suites 0
+ℹ pass 266
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 692.337673
