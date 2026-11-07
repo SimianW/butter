@@ -137,3 +137,17 @@ The summary includes only counts, booleans, numeric geometry and fixed reason co
 No text, TeX, styles, selectors from chat content, IDs, URLs, account identifiers or React props
 are stored in this summary. The capture is a past decision, so geometry can differ from the
 live page after release. An unavailable-build or no-prepared-press error produces no JSON.
+
+## Readiness says `math-pending`
+
+Use [capture-math-pending.js](capture-math-pending.js) in DevTools Console (context **top**,
+steps above). For each mounted turn it counts `[data-math-source]` formulas without a `.katex`
+render, what they hold instead, and how many sit inside a content-visibility block. It prints
+and copies counts only: no text, TeX, IDs or URLs.
+
+Zero formulas without `.katex` means page-level math readiness is not the cause. Up to
+`0.1.0-alpha.13+unseen-notice.8`, the recorder also reported `math-pending` for a long answer
+whose skipped display-math blocks had no geometry measured while on screen; any DOM change in
+the turn discarded what had been measured. From `+unseen-notice.9` such blocks keep their real
+box and get a flagged formula estimate instead (cache items carry `approx: true`); see the
+[run report](../runs/2026-11-06-math-pending-long-answer/report.md).

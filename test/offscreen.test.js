@@ -159,3 +159,21 @@ test('a skipped streamed block still waiting for its flush is handled when the a
   assert.ok(f.seen(f.block));
   assert.ok(!f.unrendered(f.block), 'rendered by the completion layout: measured, not held');
 });
+
+test('a held-back block that rendered while scrolled past is marked, even if skipped by the flush', () => {
+  // Dragging the scrollbar through a streamed answer: each held-back block came into view and
+  // rendered for a few frames, then was skipped again before the one-second flush. It was held back
+  // again, so the seek recorder kept rejecting the turn as a placeholder however often it was read.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120);
+  f.timers();
+  f.complete();
+  f.timers();
+  f.cv(f.block, false);
+  f.size(f.block, 33);
+  f.cv(f.block, true); // scrolled past before the flush
+  f.timers();
+  assert.ok(f.seen(f.block), 'it rendered at its real size, which the browser remembers');
+  assert.ok(!f.unrendered(f.block));
+});

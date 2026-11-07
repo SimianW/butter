@@ -372,11 +372,13 @@ test('display descendants inside a skipped block are not measured until it rende
   ]);
   f.flush();
   assert.equal(reads, 0, 'no forced descendant layout while skipped');
-  assert.equal(f.context.__butterLayoutCache.get('a'), null);
+  // The seen block's box is real; its unmeasured formula is only a flagged estimate.
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].approx, true);
   cvState(f, f.item, false);
   f.flush();
   assert.equal(reads, 1);
   assert.equal(f.context.__butterLayoutCache.get('a').items[0].math[0].h, 26);
+  assert.equal(f.context.__butterLayoutCache.get('a').items[0].approx, undefined);
   cvState(f, f.item, true);
   f.resize([{ target: f.turn, contentRect: { height: 510 } }]);
   f.flush();
@@ -1278,4 +1280,127 @@ test('press cache decisions retain pre-flush geometry and distinguish conversati
     'sw',
   ]);
   assert.equal(cache.prepare(f.sc, ['missing']).decisions[0].after.hasRecord, false);
+});
+
+// A long answer: several seen blocks, each a paragraph with one display formula. Only some are on
+// screen at a time; content-visibility skips the rest at their remembered (real) size.
+const plain = (x) => JSON.parse(JSON.stringify(x)); // vm-realm arrays
+function longAnswer(n) {
+  const f = fixture();
+  const reads = [];
+  const items = Array.from({ length: n }, (_, i) => {
+    reads.push(0);
+    const formula = {
+      nodeType: 1,
+      tagName: 'SPAN',
+      classList: { contains: (c) => c === 'katex-display' },
+      querySelector: () => ({ textContent: `x_${i}=1` }),
+      getBoundingClientRect: () => {
+        reads[i]++;
+        return { top: 120 + i * 100, left: 0, width: 768, height: 44 };
+      },
+    };
+    return Object.assign(new f.Element(), {
+      ...f.item,
+      hasAttribute: (a) => a === 'data-butter-seen',
+      firstChild: formula,
+      closest: () => f.turn,
+      getBoundingClientRect: () => ({ top: 120 + i * 100, left: 0, width: 768, height: 90 }),
+    });
+  });
+  f.blocks.push(...items);
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  for (const it of items) cvState(f, it, true);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    ...items.map((target) => ({ target, contentRect: { height: 90 } })),
+  ]);
+  f.flush();
+  // ChatGPT's hover action bar and similar updates add or remove nodes inside the turn.
+  const churn = () => f.mutation([{ target: items[0], addedNodes: [], removedNodes: [] }]);
+  const reveal = (i) => {
+    cvState(f, items[i], false);
+    f.flush();
+    cvState(f, items[i], true);
+  };
+  return { f, items, reads, churn, reveal, get: () => f.context.__butterLayoutCache.get('a') };
+}
+
+test('a long answer read one block at a time is recorded despite DOM churn in the turn', () => {
+  // Mac (Dil, 16k px turn): readiness hasRecord false, lastRejection math-pending, although every
+  // formula had typeset. Any mutation in the turn dropped the lean-text cache, and skipped blocks'
+  // geometry was only reused for the identical cached object, so it never accumulated.
+  const { reads, churn, reveal, get } = longAnswer(3);
+  for (let i = 0; i < 3; i++) {
+    reveal(i);
+    churn();
+  }
+  const r = get();
+  assert.ok(r, 'a fully read answer has a record');
+  assert.deepEqual(plain(r.items.map((it) => it.math[0].h)), [44, 44, 44]);
+  assert.ok(!r.items.some((it) => it.approx), 'every formula was measured');
+  assert.deepEqual(reads, [1, 1, 1], 'no descendant read while skipped');
+});
+
+test('blocks never on screen get flagged estimates, refined once revealed, never persisted', () => {
+  const { f, reads, reveal, get } = longAnswer(3);
+  const r = get();
+  assert.ok(r, 'seen skipped blocks have real boxes: the answer is usable before it is read');
+  assert.deepEqual(reads, [0, 0, 0], 'estimates force no layout inside skipped blocks');
+  assert.deepEqual(plain(r.items.map((it) => [it.h, !!it.approx, it.math[0].h <= it.h])), [
+    [90, true, true],
+    [90, true, true],
+    [90, true, true],
+  ]);
+  assert.equal(core.validateSnapshot({ ...r, complete: true, mathReady: true }), null);
+  assert.equal(
+    core.buildModel({
+      ids: ['a'],
+      measured: { a: 500 },
+      records: { a: r },
+      texts: {},
+      scrollHeight: 500,
+      gap: 12,
+      sw: 768,
+    })[0].layout,
+    true,
+  );
+  reveal(1);
+  const refined = get();
+  assert.deepEqual(
+    plain(refined.items.map((it) => !!it.approx)),
+    [true, false, true],
+    'a revealed block re-queues the turn and replaces its estimate',
+  );
+  assert.equal(refined.items[1].math[0].h, 44);
+  reveal(0);
+  reveal(2);
+  assert.ok(!get().items.some((it) => it.approx));
+  const records = f.context.__heightCacheDump().stats.records;
+  reveal(1);
+  assert.equal(
+    f.context.__heightCacheDump().stats.records,
+    records,
+    'complete record: no re-measure',
+  );
+});
+
+test('an estimate never replaces a record measured in full', () => {
+  const { f, reveal, get, churn } = longAnswer(2);
+  reveal(0);
+  reveal(1);
+  const measured = get();
+  assert.ok(measured && !measured.items.some((it) => it.approx));
+  // Both blocks skipped; the turn changes size (a new snapshot is taken) and one block's box with
+  // it, so its measured geometry no longer applies.
+  const old = f.blocks[1].getBoundingClientRect;
+  f.blocks[1].getBoundingClientRect = () => ({ ...old(), height: 95 });
+  churn();
+  f.resize([{ target: f.turn, contentRect: { height: 505 } }]);
+  f.flush();
+  assert.equal(get(), measured, 'the measured record is kept');
+  assert.equal(f.context.__butterLayoutCache.diagnostics(f.turn).lastRejection, 'estimated');
+  reveal(1);
+  assert.equal(get().items[1].h, 95, 'measured again once it is on screen');
+  assert.ok(!get().items.some((it) => it.approx));
 });
