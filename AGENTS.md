@@ -46,6 +46,7 @@ the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
   body (the `pr` skill). Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop`
   returns APPROVE on the final diff, at the round budget the tier sets. Every review in this
   repo, including when the user asks to review a PR or branch, runs `review-loop`.
+- Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
