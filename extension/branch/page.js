@@ -1,19 +1,22 @@
 // Isolated world. Ask in branch: ChatGPT DOM lookups, and the page adapter that run.js drives.
-// Selectors were checked on the live page on 2026-11-07 (notes/runs/2026-11-07-ask-in-branch-27).
-// The "Branch in new chat" item has no test id or icon, so it is matched by its exact label and
-// never by menu position (its sibling is "Branch into Work mode").
+// Selectors were checked on the live page on 2026-11-07 (notes/runs/2026-11-07-ask-in-branch-27
+// and -29). Menus are matched by ButterBranch.pick: structure (roles, icons) first, then English or
+// Simplified Chinese labels. The "Branch in new chat" item has no test id or icon, so it is
+// matched by its exact label and never by menu position (its sibling is "Branch into Work mode").
 (() => {
+  const B = ButterBranch;
   const ASSISTANT =
     '[data-markdown-text-style="assistant-message"], [data-message-author-role="assistant"]';
   const TURN = '[data-turn-key], [data-testid^="conversation-turn-"], article';
   const COMPOSER =
     '#prompt-textarea[contenteditable="true"], .ProseMirror[contenteditable="true"][role="textbox"]';
-  const NATIVE_ASK = /^(Ask ChatGPT|询问 ChatGPT|询问ChatGPT|问问 ChatGPT|向 ChatGPT 提问)$/;
-  const MORE_LABEL = /^(More actions)$/;
-  const BRANCH_LABEL = /^(Branch conversation)$/;
-  const NEW_CHAT_LABEL = /^(Branch in new chat)$/;
-  const SEND =
-    '[data-testid="send-button"], button[aria-label="Send prompt"], button[aria-label="Send"], button[aria-label="Send message"]';
+  // Live: English "Send", Chinese "发送", no test id; the composer form's submit button.
+  const SEND = [
+    '[data-testid="send-button"]',
+    ...['Send prompt', 'Send', 'Send message', '发送', '发送提示', '发送消息'].map(
+      (name) => `button[aria-label="${name}"]`,
+    ),
+  ].join(', ');
 
   const visible = (el) => {
     if (!el?.isConnected || !el.getClientRects().length) return false;
@@ -21,8 +24,14 @@
     return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== 'hidden';
   };
   const label = (el) => (el.getAttribute('aria-label') || el.textContent || '').trim();
-  const icon = (el, name) =>
-    [...el.querySelectorAll('use')].some((u) => (u.getAttribute('href') || '').includes(name));
+  // What ButterBranch.pick needs to know about a button or menu item.
+  const describe = (el) => ({
+    el,
+    popup: el.getAttribute('aria-haspopup') === 'menu',
+    icons: [...el.querySelectorAll('use')].map((u) => u.getAttribute('href') || ''),
+    label: label(el),
+    testid: el.dataset.testid,
+  });
   const elementOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement);
   const replyOf = (node) => elementOf(node)?.closest(ASSISTANT) || null;
   const scroller = () => [...document.querySelectorAll('.thread-scroll-container')].find(visible);
@@ -44,9 +53,10 @@
 
   // ChatGPT's own "Ask ChatGPT" selection button, and the box that draws it (the first
   // ancestor with a background), whose geometry and colors Butter's button copies.
+  // sideChat: the same toolbar also offers "Ask in side chat", which only Work mode has.
   const nativeAsk = () => {
     const button = [...document.querySelectorAll('button, [role="button"]')].find(
-      (el) => NATIVE_ASK.test(label(el).replace(/^❝\s*/, '')) && visible(el),
+      (el) => B.labels.nativeAsk.test(label(el).replace(/^❝\s*/, '')) && visible(el),
     );
     if (!button) return null;
     let box = button;
@@ -56,7 +66,15 @@
         break;
       }
     }
-    return { button, box };
+    let sideChat = false;
+    for (let el = button.parentElement, i = 0; el && el !== document.body && i < 4; i++) {
+      sideChat = [...el.querySelectorAll('button, [role="button"]')].some((b) =>
+        B.labels.sideChat.test(label(b)),
+      );
+      if (sideChat) break;
+      el = el.parentElement;
+    }
+    return { button, box, sideChat };
   };
   const nativeStyle = ({ button, box }) => {
     const b = getComputedStyle(box),
@@ -77,9 +95,47 @@
     !!(scroller() || document).querySelector('[data-talvt-turn-state="in_progress"]') ||
     [...document.querySelectorAll('[data-testid="stop-button"]')].some(visible);
 
+  // More actions of one reply: a button of the reply's own turn, outside the reply text, never
+  // a button of a later turn (a user turn under this one has none).
+  const moreOf = (reply) => {
+    const turn = reply.closest(TURN);
+    for (let scope = reply; scope; scope = scope.parentElement) {
+      const candidates = [...scope.querySelectorAll('button')].filter(
+        (el) => visible(el) && replyOf(el) === null && (!turn || el.closest(TURN) === turn),
+      );
+      const more = B.pick(candidates.map(describe), 'more')?.el;
+      if (more) return more;
+      if (!turn || scope === turn) break;
+    }
+    return null;
+  };
+
+  // What decides whether ChatGPT can branch here (ButterBranch.hiddenReason). Evidence for each
+  // signal is in notes/runs/2026-11-07-ask-in-branch-29/report.md.
+  const facts = () => {
+    const editor = composer(),
+      form = editor?.closest('form');
+    const replies = [...document.querySelectorAll(ASSISTANT)].filter(visible);
+    const branchAction = replies.some((r) => moreOf(r)) ? true : streaming() ? null : false;
+    return {
+      temporary:
+        B.temporaryUrl(location.href) ||
+        // The Temporary Chat switch while it's on.
+        [...document.querySelectorAll('use[href*="chat-bubble-checkmark-dashed"]')].some(visible),
+      work: B.isWorkMode({
+        composer: form && {
+          placement: form.hasAttribute('data-composer-placement'),
+          chat: form.hasAttribute('data-chatgpt-composer'),
+        },
+        label: editor?.getAttribute('aria-label'),
+        sideChat: !!nativeAsk()?.sideChat,
+      }),
+      branchAction,
+    };
+  };
+
   // The page adapter for run.js. One per run.
   function adapter() {
-    const B = ButterBranch;
     let latest = null,
       latestSince = 0;
     const menuItems = () => [...document.querySelectorAll('[role="menuitem"]')].filter(visible);
@@ -113,35 +169,10 @@
           return null;
         }
         if (performance.now() - latestSince < 400) return null;
-        const turn = last.closest(TURN);
-        for (let scope = last; scope; scope = scope.parentElement) {
-          const more = [...scope.querySelectorAll('button')].find(
-            (el) =>
-              visible(el) &&
-              (el.dataset.testid === 'message-more-button' ||
-                icon(el, 'icon-ellipsis-horizontal') ||
-                MORE_LABEL.test(label(el))) &&
-              replyOf(el) === null &&
-              // Never a button of a later turn (a user turn under this one has none).
-              (!turn || el.closest(TURN) === turn),
-          );
-          if (more) return more;
-          if (!turn || scope === turn) break;
-        }
-        return null;
+        return moreOf(last);
       },
-      branchItem: () =>
-        menuItems().find(
-          (el) => el.getAttribute('aria-haspopup') === 'menu' && icon(el, 'icon-branch'),
-        ) ||
-        menuItems().find(
-          (el) => el.getAttribute('aria-haspopup') === 'menu' && BRANCH_LABEL.test(label(el)),
-        ) ||
-        null,
-      newChatItem: () =>
-        menuItems().find(
-          (el) => el.getAttribute('aria-haspopup') !== 'menu' && NEW_CHAT_LABEL.test(label(el)),
-        ) || null,
+      branchItem: () => B.pick(menuItems().map(describe), 'branch')?.el || null,
+      newChatItem: () => B.pick(menuItems().map(describe), 'newchat')?.el || null,
       press(el) {
         if (el.getAttribute('role') === 'menuitem') {
           el.click();
@@ -171,11 +202,14 @@
       },
       sendButton() {
         const el = composer();
-        const scope = el?.closest('form') || document;
+        const form = el?.closest('form');
+        const usable = (b) =>
+          visible(b) && !b.disabled && b.getAttribute('aria-disabled') !== 'true';
         return (
-          [...scope.querySelectorAll(SEND)].find(
-            (b) => visible(b) && !b.disabled && b.getAttribute('aria-disabled') !== 'true',
-          ) || null
+          [...(form || document).querySelectorAll(SEND)].find(usable) ||
+          // Structural fallback: the composer form's submit button (labels vary by language).
+          [...(form?.querySelectorAll('button[type="submit"]') || [])].find(usable) ||
+          null
         );
       },
       send(button) {
@@ -194,6 +228,7 @@
     headerBottom,
     nativeAsk,
     nativeStyle,
+    facts,
     EXCLUDED: 'textarea, input, [contenteditable="true"], .katex, math, img, svg',
   };
 })();

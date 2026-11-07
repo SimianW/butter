@@ -9,11 +9,11 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fixtureHtml, ORIGINAL, BRANCH, QUOTE } from './branch-fixture.mjs';
+import { fixtureHtml, ORIGINAL, BRANCH, QUOTE, LATEST } from './branch-fixture.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const shots =
-  process.env.SHOTS || path.join(repo, 'notes/runs/2026-11-07-ask-in-branch-27/screenshots');
+  process.env.SHOTS || path.join(repo, 'notes/runs/2026-11-07-ask-in-branch-29/screenshots');
 await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-branch-qa-'));
 const context = await chromium.launchPersistentContext(profile, {
@@ -45,10 +45,10 @@ await settings({});
 
 const HOST = 'chatgpt-butter-branch';
 const inShadow = (page, selector) => page.locator(`${HOST} ${selector}`);
-const open = async (query = '', width = 1280) => {
+const open = async (query = '', width = 1280, route = `/c/${ORIGINAL}`) => {
   const page = await context.newPage();
   await page.setViewportSize({ width, height: 800 });
-  await page.goto(`https://chatgpt.com/c/${ORIGINAL}?${query}`);
+  await page.goto(`https://chatgpt.com${route}?${query}`);
   await page.locator('.ProseMirror').waitFor();
   return page;
 };
@@ -280,12 +280,131 @@ try {
     assert.equal(await inShadow(dest, '.line').count(), 1, 'line still shown');
     await dest.locator('.ProseMirror').click();
     await dest.keyboard.type('And fine-tuning?');
-    await dest.locator('.send').click();
+    await dest.locator('.send:not(.stop)').click();
     await settle(dest);
     assert.equal(await inShadow(dest, '.line').count(), 0, 'line gone after the next send');
     await dest.close();
     await page.close();
     pass('new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone');
+  }
+
+  // Ask from the original tab; returns the new tab with Butter's card up.
+  const ask = async (page, question = 'What does RAG mean here?') => {
+    await select(page);
+    await inShadow(page, '.chip').waitFor();
+    await settle(page);
+    await inShadow(page, '.chip').click();
+    await inShadow(page, 'textarea').fill(question);
+    const next = context.waitForEvent('page');
+    await inShadow(page, 'textarea').press('Enter');
+    const dest = await next;
+    await inShadow(dest, '.card').waitFor();
+    return dest;
+  };
+  const heading = (dest) => inShadow(dest, '.card h3').innerText();
+  // The working card per the mockup (state 3): 400 px wide, centred, 250 px from the top at
+  // 800 px height; the scrim starts below the 56 px header.
+  const cardGeometry = (dest) =>
+    dest.evaluate((host) => {
+      const root = document.querySelector(host).shadowRoot;
+      return {
+        card: root.querySelector('.card').getBoundingClientRect().toJSON(),
+        scrim: root.querySelector('.scrim').getBoundingClientRect().toJSON(),
+        width: innerWidth,
+      };
+    }, HOST);
+
+  // ---- Streaming: the button works while the latest reply is written; the new tab waits.
+  {
+    const page = await open('stream=5000&slow=300');
+    // The latest reply is streaming in the original tab too: the button is still offered.
+    assert.equal(await page.evaluate(() => fixture.streamEnded), undefined);
+    const dest = await ask(page);
+    assert.equal(await heading(dest), 'Waiting for the reply to finish…');
+    assert.equal(await dest.title(), 'Waiting for the reply to finish…', 'tab title while waiting');
+    const g = await cardGeometry(dest);
+    assert.equal(Math.round(g.card.width), 400);
+    assert.equal(Math.round(g.card.top), 250);
+    assert.equal(Math.round(g.card.left + g.card.width / 2), g.width / 2, 'centred');
+    assert.equal(Math.round(g.scrim.top), 56, 'scrim below the header');
+    assert.equal(await dest.evaluate(() => fixture.branchedFrom.length), 0, 'no branch while streaming');
+    // Then branches from the finished latest reply and sends there.
+    await inShadow(dest, '.line').waitFor({ timeout: 20000 });
+    assert.equal(await dest.evaluate(() => fixture.streamEnded), true);
+    assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), ['m-latest']);
+    assert.deepEqual(await dest.evaluate(() => fixture.branchedText), [LATEST], 'finished reply');
+    const sent = await dest.evaluate(() => fixture.sent);
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0].conv, BRANCH);
+    await dest.close();
+    await page.close();
+    pass('streaming: button offered, new tab waits (card per mockup, title), then branches the finished latest reply');
+  }
+  {
+    // Cancel while waiting: the cover goes, nothing is branched or sent, even after the stream ends.
+    const page = await open('stream=3000');
+    const dest = await ask(page);
+    assert.equal(await heading(dest), 'Waiting for the reply to finish…');
+    await inShadow(dest, '.card .btn').click();
+    // #27's cancel path removes the cover on the run's next poll (≤ 100 ms).
+    await inShadow(dest, '.card').waitFor({ state: 'detached', timeout: 1000 });
+    assert.notEqual(await dest.title(), 'Waiting for the reply to finish…', 'title restored');
+    await dest.waitForFunction(() => fixture.streamEnded === true);
+    await dest.waitForTimeout(2500);
+    assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), [], 'never branched');
+    assert.deepEqual(await dest.evaluate(() => fixture.sent), [], 'nothing sent');
+    assert.equal(await dest.evaluate(() => document.querySelector('.ProseMirror').innerText.trim()), '');
+    await dest.close();
+    await page.close();
+    pass('streaming: Cancel while waiting stops at once; nothing branched, typed or sent');
+  }
+
+  // ---- No button where ChatGPT can't branch. ChatGPT's own button is shown in each case, so
+  // its absence is Butter's rule, not a missing anchor.
+  {
+    const cases = [
+      ['Temporary Chat', 'temporary-chat=true'],
+      ['Work mode', 'work=1'],
+      ['Work mode (side chat in the toolbar only)', 'side=1'],
+      ['no branch action', 'nobranch=1'],
+      ['Work mode, Chinese UI', 'work=1&lang=zh'],
+      ['unsaved branch', '', `/c/${encodeURIComponent(BRANCH)}`],
+      ['unsaved new chat', '', '/'],
+    ];
+    for (const [name, query, route] of cases) {
+      const page = await open(query, 1280, route);
+      await select(page);
+      await page.waitForFunction(() => !document.querySelector('.native').hidden);
+      await page.waitForTimeout(400);
+      assert.equal((await rects(page)).chip, null, `no button: ${name}`);
+      await page.close();
+    }
+    // Control: the same fixture in Chat mode, Chinese UI, while the latest reply streams.
+    for (const query of ['lang=zh', 'stream=60000']) {
+      const page = await open(query);
+      await select(page);
+      await inShadow(page, '.chip').waitFor({ timeout: 3000 });
+      await page.close();
+    }
+    pass(`hidden: ${cases.map(([n]) => n).join(', ')}; shown in the Chat-mode controls`);
+  }
+
+  // ---- ChatGPT in Simplified Chinese (Butter in English): menus matched, flow completes.
+  {
+    const page = await open('lang=zh&slow=200');
+    const dest = await ask(page);
+    await inShadow(dest, '.line').waitFor();
+    assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), ['m-latest']);
+    assert.equal(await dest.evaluate(() => fixture.workClicks), 0, 'never Work mode');
+    const sent = await dest.evaluate(() => fixture.sent);
+    assert.deepEqual(
+      sent.map((m) => ({ ...m, text: m.text.replace(/\n{3,}/g, '\n\n').trim() })),
+      [{ conv: BRANCH, text: `> ${QUOTE}\n\nWhat does RAG mean here?` }],
+      'sent once via the Chinese "发送" button, in the verified branch',
+    );
+    await dest.close();
+    await page.close();
+    pass('Chinese ChatGPT menus: 更多操作 → 创建对话分支 → 在新聊天中创建分支; sent once in the branch');
   }
 
   // ---- Screenshots of mockup states 1–4, light and dark, 1280 and 800 px.
@@ -313,6 +432,16 @@ try {
       await capture(dest, 'ready', width, theme);
       await dest.close();
       await page.close();
+      // The working card's waiting variant (latest reply still streaming).
+      const streaming = await open(`theme=${theme}&stream=60000`, width);
+      const waiting = await ask(streaming, 'What does RAG mean here? How is it different from fine-tuning?');
+      await waiting.setViewportSize({ width, height: 800 });
+      await settle(waiting);
+      assert.equal(await heading(waiting), 'Waiting for the reply to finish…');
+      await capture(waiting, 'waiting', width, theme);
+      await inShadow(waiting, '.card .btn').click();
+      await waiting.close();
+      await streaming.close();
       pass(`screenshots ${width}px ${theme}`);
     }
 
@@ -356,8 +485,17 @@ try {
     assert.equal(await inShadow(dest, '.line').count(), 0, 'line gone on another route');
     await dest.close();
     await page.close();
+    const streaming = await open('lang=zh&stream=60000');
+    const waiting = await ask(streaming, '这里的 RAG 具体指什么？和微调有什么区别？');
+    assert.equal(await heading(waiting), '正在等待回复完成…');
+    assert.equal(await waiting.title(), '正在等待回复完成…');
+    await settle(waiting);
+    await capture(waiting, 'waiting', 1280, 'light-zh');
+    await inShadow(waiting, '.card .btn').click();
+    await waiting.close();
+    await streaming.close();
     await settings({});
-    pass('Simplified Chinese strings and title; spinner still under reduced motion');
+    pass('Simplified Chinese strings and title (creating and waiting); spinner still under reduced motion');
   }
 } finally {
   await context.close();

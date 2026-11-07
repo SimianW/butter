@@ -51,7 +51,7 @@
         [...start.querySelectorAll('.katex, math, img')].some((el) => range.intersectsNode(el)));
     const identity = B.identity(location.href),
       text = s.toString();
-    if (!B.qualifies({ text, start, end, identity, excluded })) return null;
+    if (!B.qualifies({ text, start, end, identity, excluded, page: P.facts() })) return null;
     return { range: range.cloneRange(), quote: text.trim(), identity };
   };
 
@@ -81,6 +81,8 @@
       native = P.nativeAsk();
       nativeAt = now;
     }
+    // ChatGPT's toolbar offers "Ask in side chat": Work mode, where Butter has no button.
+    if (native?.sideChat) return hideSelectionUI();
     const u = getUI();
     const area = sel.range.getBoundingClientRect();
     if (native) {
@@ -360,7 +362,11 @@
       page: P.adapter(),
       clock,
       onState(state, info) {
-        if (state === 'sending') {
+        if (state === 'waiting-for-reply' || state === 'branching') {
+          const waiting = state === 'waiting-for-reply';
+          u.overlay.waiting(waiting);
+          tabTitle.set(u.strings()[waiting ? 'waiting' : 'creating']);
+        } else if (state === 'sending') {
           u.overlay.remove();
           tabTitle.clear();
           if (info.verified) line.show('ready', job.title);

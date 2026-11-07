@@ -220,10 +220,11 @@ test('"Branch in new chat" is pressed at most once, so a slow branch is never ma
 test('menus are not retried once the tab has landed on a branch', async () => {
   // The first try's submenu is slow; meanwhile the page lands on a branch. Retrying the menu
   // there would branch the branch.
+  // Menus start after the settle window that confirms no reply is streaming.
   const fake = fakePage({
-    newChatFrom: TIMING.step + 1,
+    newChatFrom: TIMING.settle + TIMING.step + 1,
     tick: (t, s) => {
-      if (t === 2000) s.id = BRANCH;
+      if (t === TIMING.settle + 1000) s.id = BRANCH;
     },
   });
   const result = await run(fake);
@@ -251,6 +252,93 @@ test('waits while the latest reply streams, then branches from the finished repl
   assert.equal(result.state, 'ready');
   assert.ok(result.states.includes('waiting-for-reply'));
   assert.ok(menuAt >= 5000);
+});
+
+// A streaming page: the latest reply keeps changing until the stream ends. `windows` are
+// [from, to) intervals of virtual time in which ChatGPT shows the reply as still being written.
+function streamingPage(windows, extra = {}) {
+  const streaming = (t) => windows.some(([from, to]) => t >= from && t < to);
+  const fake = fakePage(extra);
+  const replies = []; // the latest reply Butter opened the menu of, with its text at that moment
+  const end = Math.max(...windows.map(([, to]) => to));
+  fake.page.isStreaming = () => streaming(fake.at());
+  const latest = () => ({ name: 'more', text: fake.at() >= end ? 'final answer' : 'partial…' });
+  fake.page.latestReplyMenu = () => {
+    // ChatGPT shows no actions under a reply that is still being written.
+    if (streaming(fake.at())) return null;
+    const h = latest();
+    replies.push(h.text);
+    return h;
+  };
+  return { ...fake, replies };
+}
+
+test('waits while the latest reply streams, then branches from the finished latest reply', async () => {
+  const fake = streamingPage([[0, 5000]]);
+  const result = await run(fake);
+  assert.equal(result.state, 'ready');
+  assert.deepEqual(result.states, [
+    'loading',
+    'waiting-for-reply',
+    'branching',
+    'verifying',
+    'sending',
+    'ready',
+  ]);
+  assert.deepEqual(fake.replies, ['final answer']);
+  assert.deepEqual(fake.s.sent, [{ id: BRANCH, text: MESSAGE }]);
+});
+
+test('a stream that resumes after the page loads still holds the branch until it finishes', async () => {
+  // A freshly opened tab first renders the saved conversation, then picks up the running
+  // stream a moment later. Branching in that gap would copy a half-written reply.
+  const fake = streamingPage([[400, 6000]]);
+  const result = await run(fake);
+  assert.equal(result.state, 'ready');
+  assert.ok(result.states.includes('waiting-for-reply'));
+  assert.deepEqual(fake.replies, ['final answer']);
+});
+
+test('a short pause in the stream is not the end of the reply', async () => {
+  // e.g. ChatGPT switching from thinking to writing: streaming stops for a moment, then resumes.
+  // Every pause is shorter than the settle window; the quiet time doesn't add up across pauses.
+  const fake = streamingPage([
+    [0, 1000],
+    [1300, 3000],
+    [3300, 7000],
+  ]);
+  const result = await run(fake);
+  assert.equal(result.state, 'ready');
+  assert.deepEqual(fake.replies, ['final answer']);
+});
+
+test('the waiting state is shown before anything is pressed, and cancel there sends nothing', async () => {
+  let handle = null,
+    callsAtCancel = null;
+  // Cancel two seconds into the wait, as a user clicking Cancel would.
+  const fake = streamingPage([[0, 60_000]], {
+    tick: (t) => {
+      if (t === 2000 && handle) {
+        handle.cancel();
+        callsAtCancel = fake.calls.length;
+      }
+    },
+  });
+  let pressesWhenWaiting = null;
+  const result = await run(fake, {
+    onState: (state, _info, r) => {
+      if (state !== 'waiting-for-reply') return;
+      handle = r;
+      pressesWhenWaiting = fake.calls.filter((c) => c === 'press').length;
+    },
+  });
+  assert.equal(pressesWhenWaiting, 0);
+  assert.equal(fake.calls.length, callsAtCancel, 'no page calls after cancel');
+  assert.ok(fake.at() < 60_000, 'stopped waiting at once');
+  assert.equal(result.state, 'cancelled');
+  assert.deepEqual(fake.s.filled, []);
+  assert.deepEqual(fake.s.sent, []);
+  assert.ok(!fake.calls.includes('press'));
 });
 
 test('a page that never loads fails as "load" without typing', async () => {

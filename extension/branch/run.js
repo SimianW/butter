@@ -11,6 +11,9 @@
 // - It sends only from a verified branch. Any doubt ends in unsure: filled, not sent.
 // - It never types into or sends in the original conversation.
 // - "Branch in new chat" is pressed at most once per run, so a slow branch is never made twice.
+// - It branches only from a finished latest reply: no stream for TIMING.settle, checked after
+//   loading and before every menu attempt (a new tab may pick up a running stream late, and a
+//   stream can pause between thinking and writing). While a stream runs, it is waiting-for-reply.
 // - cancel() stops all further page calls at once.
 (() => {
   const B = globalThis.ButterBranch || require('./logic.js');
@@ -18,6 +21,7 @@
     poll: 100,
     load: 15_000, // original conversation and its latest reply rendered
     stream: 15 * 60_000, // latest reply still being written
+    settle: 1_000, // the reply counts as finished once ChatGPT shows no stream for this long
     step: 4_000, // one menu item to appear
     verify: 15_000, // route change and render after "Branch in new chat"
     recheck: 3_000, // last look for a branch before reporting failure
@@ -75,9 +79,30 @@
       }
     };
 
+    // Resolves once the latest reply has finished; enters waiting-for-reply while it streams.
+    async function finished() {
+      let quiet = null;
+      try {
+        await waitFor(() => {
+          if (page.isStreaming()) {
+            quiet = null;
+            if (state !== 'waiting-for-reply') enter('waiting-for-reply');
+            return false;
+          }
+          quiet ??= clock.now();
+          return clock.now() - quiet >= TIMING.settle;
+        }, TIMING.stream);
+      } catch (error) {
+        if (error instanceof Timeout) error.cause = 'stream';
+        throw error;
+      }
+      if (state !== 'branching') enter('branching');
+    }
+
     async function branch() {
       let cause = null;
       for (let attempt = 0; attempt < 2; attempt++) {
+        await finished();
         try {
           await step('more', () => page.latestReplyMenu());
           await step('branch', () => page.branchItem());
@@ -140,17 +165,12 @@
       }
       let attempt = { pressed: false };
       if (!already()) {
-        if (page.isStreaming()) {
-          enter('waiting-for-reply');
-          try {
-            await waitFor(() => !page.isStreaming(), TIMING.stream);
-          } catch (error) {
-            if (!(error instanceof Timeout)) throw error;
-            return { state: 'failed', cause: 'stream' };
-          }
+        try {
+          attempt = await branch();
+        } catch (error) {
+          if (!(error instanceof Timeout && error.cause === 'stream')) throw error;
+          return { state: 'failed', cause: 'stream' };
         }
-        enter('branching');
-        attempt = await branch();
       }
       enter('verifying');
       id = await verify(attempt);

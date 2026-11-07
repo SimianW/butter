@@ -94,6 +94,15 @@ room below). While the box has focus the page selection moves into it, so ChatGP
 button; Butter keeps its button where it was and paints the quote with the CSS Custom Highlight
 API. Esc gives the selection back; the unsent question is kept per tab, per quote.
 
+There is no button where ChatGPT can't make a branch (`ButterBranch.hiddenReason`, facts from
+`branch/page.js`): in Temporary Chat (`?temporary-chat=true`, or its switch shown on), on an
+unsaved new chat or unsaved branch (no saved `/c/<uuid>` id), in Work/Codex mode, and when no reply
+on the page has a More actions button. Work mode is recognised first by the composer form, which
+has `data-composer-placement` in both modes but `data-chatgpt-composer` only in Chat mode; then by
+the composer's label ("Work with ChatGPT", "使用 ChatGPT Work") or an "Ask in side chat" button in
+ChatGPT's selection toolbar. While the only reply is still streaming (no actions yet), the button
+stays available.
+
 Enter opens a new tab of the same conversation synchronously, inside the key press, so pop-up
 blocking doesn't apply. The URL carries only a job id (`#butter-branch=<uuid>`). The quote, the
 question, the original conversation id and title go to the extension worker, which keeps them in
@@ -104,7 +113,16 @@ The new tab is covered by an overlay (scrim and card, tab title "Creating branch
 `branch/run.js` drives ChatGPT's menu: More actions of the **latest** reply (not the selected one,
 so the branch keeps the whole conversation), Branch conversation, Branch in new chat. ChatGPT then
 routes the tab to an unsaved branch, `/c/local-chatgpt:<uuid>` (it calls
-`POST /backend-api/conversation/new_branch` itself).
+`POST /backend-api/conversation/new_branch` itself). Menus are matched by structure first (the
+ellipsis icon of More actions, the branch icon of a submenu item), then by English or Simplified
+Chinese labels; Branch in new chat (在新聊天中创建分支) has no icon, so only its exact label on a
+leaf item counts, never its position next to Branch into Work mode.
+
+If the latest reply is still being written (`data-talvt-turn-state="in_progress"` on its turn, or
+ChatGPT's stop button), the card says "Waiting for the reply to finish…" (the tab title too) and
+the run waits. It branches once no stream has shown for 1 s, checked again before every menu
+attempt, so a stream the new tab picks up late, or one that pauses between thinking and writing,
+still isn't branched half-written. Cancel works while waiting.
 
 The run's states are loading, waiting-for-reply, branching, verifying, sending and ready, and the
 end states unsure, failed and cancelled. Success is decided by identity, not by menu timeouts: the

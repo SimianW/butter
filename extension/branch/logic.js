@@ -31,10 +31,81 @@
   const isBranch = (current, original) =>
     validIdentity(current) && validIdentity(original) && current !== original;
 
+  // ChatGPT's labels, English and Simplified Chinese, as seen on the live page (2026-11-07).
+  // Structural cues (roles, icons, attributes) are tried first; labels are the fallback.
+  const exact = (...names) => new RegExp(`^(?:${names.join('|')})$`);
+  const labels = {
+    nativeAsk: exact(
+      'Ask ChatGPT',
+      '询问 ChatGPT',
+      '询问ChatGPT',
+      '问问 ChatGPT',
+      '向 ChatGPT 提问',
+    ),
+    sideChat: exact('Ask in side chat', '在侧边聊天中提问'),
+    workComposer: exact('Work with ChatGPT', '使用 ChatGPT Work'),
+    more: exact('More actions', '更多操作'),
+    branch: exact('Branch conversation', '创建对话分支'),
+    newChat: exact('Branch in new chat', '在新聊天中创建分支'),
+  };
+
+  // Menus and buttons as page.js describes them: { popup, icons: [href], label, testid }.
+  // Each role names its structural match and its label fallback. "Branch in new chat" has no icon
+  // or test id, so only its exact label (on a leaf item) identifies it, never its position: its
+  // sibling is "Branch into Work mode".
+  const hasIcon = (it, name) => (it.icons || []).some((href) => String(href).includes(name));
+  const ROLES = {
+    more: {
+      shape: (it) => it.testid === 'message-more-button' || hasIcon(it, 'icon-ellipsis-horizontal'),
+      label: (it) => labels.more.test(it.label),
+    },
+    branch: {
+      shape: (it) => it.popup && hasIcon(it, 'icon-branch'),
+      label: (it) => it.popup && labels.branch.test(it.label),
+    },
+    newchat: { shape: () => false, label: (it) => !it.popup && labels.newChat.test(it.label) },
+  };
+  const pick = (items, role) => {
+    const r = ROLES[role];
+    return items.find(r.shape) || items.find(r.label) || null;
+  };
+
+  // Work/Codex mode, from page.js facts: composer = { placement, chat } (the composer form's
+  // data-composer-placement and data-chatgpt-composer attributes), label = the composer's
+  // aria-label, sideChat = ChatGPT's selection toolbar offers "Ask in side chat".
+  const isWorkMode = ({ composer, label, sideChat } = {}) =>
+    !!(composer?.placement && !composer.chat) ||
+    labels.workComposer.test(label || '') ||
+    !!sideChat;
+
+  const temporaryUrl = (url) => {
+    try {
+      return new URL(url).searchParams.get('temporary-chat') === 'true';
+    } catch {
+      return false;
+    }
+  };
+
+  // Why the button stays hidden on this page, or null. Only saved Chat-mode conversations where
+  // ChatGPT offers a branch action qualify. branchAction null means unknown (e.g. the only reply
+  // is still streaming and has no actions yet), which doesn't hide the button.
+  const hiddenReason = ({ identity: id, temporary, work, branchAction } = {}) => {
+    if (temporary) return 'temporary';
+    if (!saved(id)) return 'unsaved';
+    if (work) return 'work';
+    if (branchAction === false) return 'no-branch-action';
+    return null;
+  };
+
   // A selection the button may act on: text inside one assistant reply (not an editable or a
-  // formula), in a saved conversation, since only saved conversations can be branched.
-  const qualifies = ({ text: selected, start, end, identity: id, excluded } = {}) =>
-    text(selected) && !!start && start === end && !excluded && saved(id);
+  // formula), on a page where ChatGPT can make a branch (page = facts from page.js).
+  const qualifies = ({ text: selected, start, end, identity: id, excluded, page } = {}) =>
+    text(selected) &&
+    !!start &&
+    start === end &&
+    !excluded &&
+    !!page &&
+    hiddenReason({ ...page, identity: id }) === null;
 
   // Handoff: the original tab hands { original, title, quote, question } to the worker, which
   // keeps it in session storage until the new tab claims it once. Short-lived on purpose.
@@ -90,6 +161,11 @@
     isBranch,
     validJob,
     qualifies,
+    hiddenReason,
+    temporaryUrl,
+    isWorkMode,
+    labels,
+    pick,
     jobId,
     handoff,
   };

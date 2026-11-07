@@ -11,6 +11,7 @@
       escClose: 'close',
       close: 'Close',
       creating: 'Creating branch…',
+      waiting: 'Waiting for the reply to finish…',
       creatingNote: 'Your question will be sent in the new chat when it’s ready.',
       cancel: 'Cancel',
       ready: (title) =>
@@ -29,6 +30,7 @@
       escClose: '关闭',
       close: '关闭',
       creating: '正在创建分支…',
+      waiting: '正在等待回复完成…',
       creatingNote: '完成后会在新对话中发送你的问题。',
       cancel: '取消',
       ready: (title) => (title ? `分支自《${title}》· 原对话不变` : '分支自原对话 · 原对话不变'),
@@ -307,6 +309,11 @@ svg { display: block; }
           onClose?.();
         });
         root.append(card);
+      },
+      // The working card while the latest reply is still being written: same card, own heading.
+      waiting(on) {
+        const heading = card?.querySelector('.spinner + span');
+        if (heading) heading.textContent = t()[on ? 'waiting' : 'creating'];
       },
       remove() {
         scrim?.remove();

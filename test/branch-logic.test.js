@@ -109,7 +109,8 @@ test('pruning deletes only expired branch jobs', async () => {
 test('a selection qualifies only as non-empty text inside one reply of a saved conversation', () => {
   const reply = {},
     other = {};
-  const ok = { text: ' corpus ', start: reply, end: reply, identity: SAVED, excluded: false };
+  const page = { temporary: false, work: false, branchAction: true }; // Chat mode, see branch-rules
+  const ok = { text: ' corpus ', start: reply, end: reply, identity: SAVED, excluded: false, page };
   assert.equal(branch.qualifies(ok), true);
   assert.equal(branch.qualifies({ ...ok, text: '  \n ' }), false);
   assert.equal(branch.qualifies({ ...ok, end: other }), false);
