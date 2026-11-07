@@ -1,12 +1,13 @@
 # Ask in branch #28: cancel and failure recovery, fixture check
 
 2026-11-07. Ticket [#28](https://github.com/SimianW/butter/issues/28) (parent spec #26), branch
-`t3/aib-28` off the integration branch `t3/ask-in-branch` (`19da28d`). Fixture and unit seams
+`t3/aib-28` off the integration branch `t3/ask-in-branch` (`19da28d`), then merged with it at
+`8f0d247` (#30, popup row). Fixture and unit seams
 only; no live lab run (not required for this ticket). No version bump, no package.
 
 ## Result
 
-- **Unit seam:** `node --test` passes 280/280. New or changed tests:
+- **Unit seam:** `node --test` passes 286/286 after merging #30. New or changed tests:
   - `test/branch-run.test.js`: a cancel arriving while the run waits in each non-terminal state
     (loading, waiting-for-reply, branching, verifying, sending) makes no further page call and
     sends nothing; a cancel before the first state makes no call at all; a cancel after the end
@@ -63,7 +64,8 @@ only; no live lab run (not required for this ticket). No version bump, no packag
    path stays for browsers or policies that do block it.
 3. **Popup rows are keyed by index.** Adding `branch` to `ButterStatus.groups` after `rail` (the
    agreed contract with #30) shifted the popup's fourth row ("Remember long-chat layouts") onto
-   the `branch` key. The existing test `test/layout-consent.test.js` caught it. See Deviations 4.
+   the `branch` key. The existing test `test/layout-consent.test.js` caught it. Fixed for the
+   interim by a guard, then made moot by #30's row (see Deviations 4).
 
 ## Deviations from the mockup and spec
 
@@ -79,12 +81,13 @@ only; no live lab run (not required for this ticket). No version bump, no packag
    worker's `claimed` message, so a hand-over that fails at any point, including a claim the worker
    refuses, keeps the question. If nothing is heard within the job's lifetime (60 s + 5 s), the box
    shows the hand-over reason and the new tab is left alone.
-4. **Popup guard (`extension/popup/popup.js`, one statement).** Until the popup has a row for
-   every group, `groupKeys` leaves out `branch`, so rows don't shift and `warning()` never sees a
-   group without a row. Once #30 adds the row, `T.en.groups.length` equals the group count and the
-   guard turns itself off. Without the guard, `warning()` would not throw for `branch` (index 3
-   exists) but would name it with the layout row's label, and a layout failure (index 4) would
-   throw.
+4. **No popup change in the end.** Before #30 landed, this branch carried a one-statement guard in
+   `extension/popup/popup.js`: until the popup had a row for every group, `groupKeys` left out
+   `branch`. Without it, the "Remember long-chat layouts" switch toggled `branch`, a layout
+   failure made `warning()` throw (index 4 has no row), and a branch failure was named with the
+   layout row's label. #30 (merged into this branch at `8f0d247`) adds the row, so the guard was
+   removed in the merge. `extension/popup/` and `extension/shared/status.js` are now identical to
+   the integration branch.
 5. **Esc on the failure card closes it**, like ×. The spec names Esc only for the working card.
 6. **Failure causes and status.** One sentence per cause:
    - `more`: "Couldn’t find the latest reply’s “More actions” button."
@@ -111,7 +114,7 @@ Full outputs are in [`checks/`](checks).
 | `npm ci` | `found 0 vulnerabilities` |
 | `npm run format:check` | `All matched files use Prettier code style!` |
 | `npm run lint` | no findings |
-| `node --test` | `tests 280`, `pass 280`, `fail 0` |
+| `node --test` (after merging #30) | `tests 286`, `pass 286`, `fail 0` |
 | `python3 -m unittest discover -s scripts -p 'test_*.py'` | `Ran 41 tests`, `OK` |
 | `python3 scripts/check-version.py` | `OK: 0.1.0-alpha.14 / 0.1.0.14; manifest, READMEs, and changelog agree.` |
 | `node lab/harness/branch-qa.mjs` | 20 `PASS` lines ending `PASS 25 screenshots …; no page errors; no requests left the fixture` |

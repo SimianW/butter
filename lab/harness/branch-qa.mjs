@@ -179,8 +179,13 @@ try {
     await page.evaluate(() => getSelection().removeAllRanges());
     await settle(page);
     assert.equal((await rects(page)).chip, null, 'no chip without a selection');
-    // Settings key off: no button, applied live; on again: back.
+    // Settings key off: a shown button leaves at once, with no reload; none appears; on again: back.
+    await select(page);
+    await inShadow(page, '.chip').waitFor();
     await settings({ opts: { branch: false } });
+    await settle(page);
+    assert.equal((await rects(page)).chip, null, 'shown chip leaves live when the setting turns off');
+    await page.evaluate(() => getSelection().removeAllRanges());
     await select(page);
     await settle(page);
     assert.equal((await rects(page)).chip, null, 'no chip when the setting is off');

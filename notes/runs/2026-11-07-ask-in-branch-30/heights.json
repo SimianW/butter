@@ -1,0 +1,102 @@
+{
+  "heights": {
+    "01-normal-light": 563,
+    "01-normal-dark": 563,
+    "02-problem-light": 632,
+    "02-problem-dark": 632,
+    "03-away-light": 563,
+    "03-away-dark": 563,
+    "04-paused-light": 559,
+    "04-paused-dark": 559,
+    "05-confirm-light": 563,
+    "05-confirm-dark": 563,
+    "06-cleared-light": 555,
+    "06-cleared-dark": 555,
+    "07-normal-light": 563,
+    "07-normal-dark": 563,
+    "08-problem-light": 632,
+    "08-problem-dark": 632,
+    "09-en-memory-off-light": 543,
+    "09-en-memory-off-dark": 543,
+    "10-en-paused-light": 573,
+    "10-en-paused-dark": 573,
+    "11-melt-light": 559,
+    "11-melt-dark": 559,
+    "12-melt-light": 559,
+    "12-melt-dark": 559,
+    "13-en-branch-on-light": 577,
+    "13-en-branch-on-dark": 577,
+    "14-en-branch-off-light": 577,
+    "14-en-branch-off-dark": 577,
+    "15-en-branch-failed-light": 663,
+    "15-en-branch-failed-dark": 663,
+    "16-zh-branch-on-light": 563,
+    "16-zh-branch-on-dark": 563,
+    "17-zh-branch-off-light": 563,
+    "17-zh-branch-off-dark": 563,
+    "18-zh-branch-failed-light": 632,
+    "18-zh-branch-failed-dark": 632
+  },
+  "branchRefs": [
+    {
+      "state": "13-en-branch-on-light",
+      "built": 577,
+      "reference": 577,
+      "ratio": 0.0003947621798575005
+    },
+    {
+      "state": "14-en-branch-off-light",
+      "built": 577,
+      "reference": 577,
+      "ratio": 0.0003947621798575005
+    },
+    {
+      "state": "15-en-branch-failed-light",
+      "built": 663,
+      "reference": 663,
+      "ratio": 0.00033936651583710406
+    },
+    {
+      "state": "16-zh-branch-on-light",
+      "built": 563,
+      "reference": 563,
+      "ratio": 0.00021178092986603626
+    },
+    {
+      "state": "17-zh-branch-off-light",
+      "built": 563,
+      "reference": 563,
+      "ratio": 0.00021178092986603626
+    },
+    {
+      "state": "18-zh-branch-failed-light",
+      "built": 632,
+      "reference": 632,
+      "ratio": 0.00018869580480954887
+    },
+    {
+      "state": "13-en-branch-on-dark",
+      "built": 577,
+      "reference": 577,
+      "ratio": 0.00030329289428076254
+    },
+    {
+      "state": "15-en-branch-failed-dark",
+      "built": 663,
+      "reference": 663,
+      "ratio": 0.0002639517345399698
+    },
+    {
+      "state": "16-zh-branch-on-dark",
+      "built": 563,
+      "reference": 563,
+      "ratio": 0.00013297872340425532
+    },
+    {
+      "state": "18-zh-branch-failed-dark",
+      "built": 632,
+      "reference": 632,
+      "ratio": 0.00011848341232227489
+    }
+  ]
+}
