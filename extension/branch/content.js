@@ -78,9 +78,10 @@
   };
 
   // Follow ChatGPT's button every frame while a selection is active: same top edge, 4 px to
-  // its right, shown and hidden with it. While the question box is open the page selection has
-  // moved into the box, so ChatGPT's button goes away; Butter's then stays where it last was,
-  // relative to the quote, as the box's anchor.
+  // its right, shown and hidden with it. While the question box is open, Butter's button is hidden.
+  // The page selection has moved into the box, so ChatGPT's button goes away too; the box stays
+  // anchored where ChatGPT's button last was, relative to the quote. Once the box closes, Butter's
+  // button comes back with ChatGPT's if the selection is still there.
   const tick = () => {
     frame = 0;
     if (!sel || off()) return hideSelectionUI();
@@ -111,11 +112,15 @@
       const anchor = { left: area.left + last.dx, top: area.bottom + last.dy };
       anchor.right = anchor.left + last.width;
       anchor.bottom = anchor.top + last.height;
-      const width = u.button.el.offsetWidth || 120;
-      let left = anchor.right + 4;
-      if (left + width > innerWidth - 8) left = anchor.left - 4 - width;
-      u.button.show(left, anchor.top, last.style);
-      if (boxOpen) placeBox(anchor, area);
+      if (boxOpen) {
+        u.button.hide();
+        placeBox(anchor, area);
+      } else {
+        const width = u.button.el.offsetWidth || 120;
+        let left = anchor.right + 4;
+        if (left + width > innerWidth - 8) left = anchor.left - 4 - width;
+        u.button.show(left, anchor.top, last.style);
+      }
     } else {
       u.button.hide();
       if (boxOpen) placeBox({ left: area.left, top: area.bottom, bottom: area.bottom }, area);

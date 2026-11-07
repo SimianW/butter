@@ -73,8 +73,10 @@ const select = (page, selector = '#quote') =>
     getSelection().removeAllRanges();
     getSelection().addRange(r);
   });
+// The label's text style. Live (2026-11-07), ChatGPT's label is its button's own text.
+const FONT = ['fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight', 'webkitFontSmoothing', 'color'];
 const rects = (page) =>
-  page.evaluate((host) => {
+  page.evaluate(({ host, FONT }) => {
     const box = (el) => el && el.getBoundingClientRect().toJSON();
     const nativeEl = document.querySelector('.native:not([hidden]) > div');
     const chip = document.querySelector(host)?.shadowRoot?.querySelector('.chip');
@@ -86,10 +88,10 @@ const rects = (page) =>
       chip: visible ? box(chip) : null,
       nativeCss: css(nativeEl, keys),
       chipCss: visible ? css(chip, keys) : null,
-      nativeFont: css(nativeEl?.querySelector('button'), ['fontSize']),
-      chipFont: visible ? css(chip, ['fontSize']) : null,
+      nativeFont: css(nativeEl?.querySelector('button'), FONT),
+      chipFont: visible ? css(chip.querySelector('span'), FONT) : null,
     };
-  }, HOST);
+  }, { host: HOST, FONT });
 const settle = (page) => page.waitForTimeout(150);
 // The ready line, ChatGPT's disclaimer text (null when the fixture has none) and the composer.
 const lineGeometry = (page) =>
@@ -163,7 +165,7 @@ try {
     assert.equal(Math.round(r.chip.left - r.native.right), 4, 'chip sits 4 px right of native');
     assert.equal(Math.round(r.chip.top), Math.round(r.native.top), 'top edges aligned');
     assert.deepEqual(r.chipCss, r.nativeCss, 'same height, radius, background and shadow');
-    assert.deepEqual(r.chipFont, r.nativeFont, 'same font size');
+    assert.deepEqual(r.chipFont, r.nativeFont, 'label: same font family, size, weight, spacing, line height, smoothing, color');
     // ChatGPT's button hovered: it tints itself, square; Butter's keeps the resting look.
     const resting = r.chipCss;
     await page.hover('.native button');
@@ -171,6 +173,7 @@ try {
     const tinted = await page.$eval('.native button', (b) => getComputedStyle(b).backgroundColor);
     assert.equal(tinted, 'rgba(255, 255, 255, 0.1)', 'fixture: native button shows its hover tint');
     assert.deepEqual((await rects(page)).chipCss, resting, 'native hovered: chip keeps its resting look');
+    assert.deepEqual((await rects(page)).chipFont, r.chipFont, 'native hovered: label keeps its resting font');
     if (theme === 'light') await capture(page, 'button-native-hover', 1280, theme);
     // Butter's own hover: a lighter background, same shape and shadow (mockup state 1).
     await inShadow(page, '.chip').hover();
@@ -236,10 +239,11 @@ try {
     await select(page);
     await inShadow(page, '.chip').waitFor();
     await settle(page);
-    const nativeBefore = (await rects(page)).native;
+    const { native: nativeBefore, chip: chipBefore } = await rects(page);
     await inShadow(page, '.chip').click();
     const box = inShadow(page, '.qpop');
     await box.waitFor();
+    const boxAtOpen = await box.evaluate((el) => el.getBoundingClientRect().toJSON());
     await settle(page);
     const geo = () =>
       page.evaluate((host) => {
@@ -249,7 +253,7 @@ try {
         range.selectNodeContents(document.querySelector('#quote'));
         return {
           box: r(root.querySelector('.qpop')),
-          chip: r(root.querySelector('.chip')),
+          chipShown: getComputedStyle(root.querySelector('.chip')).display !== 'none',
           native: r(document.querySelector('.native > div')),
           sel: range.getBoundingClientRect().toJSON(),
           quoteLines: Math.round(
@@ -263,8 +267,15 @@ try {
       }, HOST);
     let g = await geo();
     console.log(`INFO page selection while the box is open: ${JSON.stringify(g.pageSelection)}`);
+    // While the box is open, Butter's button is hidden; the box stays where the buttons were.
+    assert.equal(g.chipShown, false, 'button hidden while the box is open');
     assert.equal(Math.round(g.box.left), Math.round(nativeBefore.left), 'left-aligned with buttons');
-    assert.equal(Math.round(g.box.top), Math.round(g.chip.bottom + 8), 'directly under buttons');
+    assert.equal(Math.round(g.box.top), Math.round(chipBefore.bottom + 8), 'directly under buttons');
+    assert.deepEqual(
+      [g.box.left, g.box.top],
+      [boxAtOpen.left, boxAtOpen.top],
+      'box does not move once the button is hidden',
+    );
     assert.ok(g.box.top >= g.sel.bottom, 'does not cover the selection');
     assert.equal(g.quoteLines, 1, 'quote on one line');
     assert.equal(g.focused, 'TEXTAREA', 'question field focused');
@@ -277,10 +288,13 @@ try {
     await input.press('Escape');
     assert.equal(await box.count(), 0, 'Esc closes');
     assert.equal(await page.evaluate(() => getSelection().toString()), QUOTE, 'Esc restores the selection');
-    await inShadow(page, '.chip').waitFor();
+    await inShadow(page, '.chip').waitFor({ timeout: 3000 });
     await settle(page);
+    assert.notEqual((await rects(page)).chip, null, 'button back after Esc, with the selection');
     await inShadow(page, '.chip').click();
     assert.equal(await input.inputValue(), 'What is RAG?\nBriefly.', 'draft kept after Esc');
+    await settle(page);
+    assert.equal((await rects(page)).chip, null, 'button hidden again with the box reopened');
     await page.mouse.click(1200, 400);
     assert.equal(await box.count(), 0, 'click outside closes');
     assert.equal(await page.evaluate(() => fixture.sent.length), 0, 'nothing sent here');
@@ -305,7 +319,7 @@ try {
     assert.ok(flip.box.bottom <= flip.sel.top - 8 + 0.5, 'flipped above the selection');
     assert.ok(flip.box.top >= 16, 'inside the viewport');
     await low.close();
-    pass('question box: aligned under the buttons, one-line quote, keys, draft kept, flips above');
+    pass('question box: button hidden while open, aligned under the buttons, one-line quote, keys, draft kept, button back after Esc, flips above');
   }
 
   // ---- Formulas: a selection across text and KaTeX formulas, ending partway into one, quotes
@@ -409,6 +423,7 @@ try {
     assert.deepEqual(after, before, 'original tab unchanged');
     assert.equal(await page.evaluate(() => fixture.sent.length), 0, 'nothing sent in the original');
     // The job was claimed once and is gone; reopening the link does nothing.
+    assert.equal((await rects(page)).chip, null, 'button stays hidden while the box stays open');
     const rows = await worker.evaluate(() => chrome.storage.session.get(null));
     assert.deepEqual(Object.keys(rows).filter((k) => k.startsWith('butterBranch.')), []);
     // The line stays after Butter's send and disappears after the user's own next send.
@@ -823,6 +838,7 @@ try {
       true,
       'the whole reason shows, not cut off',
     );
+    assert.equal((await rects(page)).chip, null, 'button stays hidden while the box stays open');
     const rows = await worker.evaluate(() => chrome.storage.session.get(null));
     assert.deepEqual(Object.keys(rows).filter((k) => k.startsWith('butterBranch.')), [], 'job dropped');
     await settle(page);

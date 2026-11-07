@@ -210,7 +210,7 @@ svg { display: block; }
     root.append(chip);
     const button = {
       el: chip,
-      // native: computed styles of ChatGPT's own button (container and label), or null.
+      // native: computed styles of ChatGPT's own button (container, and its label's text), or null.
       show(left, top, native) {
         attach();
         chipLabel.textContent = t().ask;
@@ -220,10 +220,9 @@ svg { display: block; }
           s.borderRadius = native.borderRadius;
           s.boxShadow = native.boxShadow;
           s.border = native.border;
-          s.fontSize = native.fontSize;
-          s.fontFamily = native.fontFamily;
           s.setProperty('--native-bg', native.backgroundColor);
           s.setProperty('--native-fg', native.color);
+          Object.assign(chipLabel.style, native.font);
         }
         chip.style.left = `${left}px`;
         chip.style.top = `${top}px`;

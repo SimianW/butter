@@ -95,7 +95,7 @@ export function fixtureHtml(url) {
     : `<button aria-label="${L.more}" class="more"${fail === 'more' ? ' style="display:none"' : ''}><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button>`;
   return `<!doctype html><html lang="en" data-theme="${dark ? 'dark' : 'light'}" style="color-scheme:${dark ? 'dark' : 'light'}"><head><meta charset="utf-8"><title>${title}</title><style>
 :root{--bg:#fff;--fg:#0d0d0d;--fg2:#5d5d5d;--fg3:#8f8f8f;--bubble:#f4f4f4;--hair:rgb(0 0 0 / .1);--pop:#fff;
- --chip:#2f2f2f;--chip-fg:#fff;--sel:rgb(0 102 255 / .22)}
+ --chip:#2f2f2f;--chip-fg:#f2f2f2;--sel:rgb(0 102 255 / .22)}
 [data-theme=dark]{--bg:#212121;--fg:#ececec;--fg2:#b4b4b4;--fg3:#8f8f8f;--bubble:#303030;--hair:rgb(255 255 255 / .1);--pop:#303030;
  --chip:#3a3a3a;--sel:rgb(80 150 255 / .35)}
 *{box-sizing:border-box}html,body{margin:0;height:100%}
@@ -122,7 +122,10 @@ header .t{font-size:15px;color:var(--fg2)}
 .disclaimer{position:absolute;left:0;right:0;z-index:4;padding:0 16px 8px;text-align:center;font-size:12px;line-height:16px;color:var(--fg2);user-select:none}
 .native{position:fixed;z-index:50;pointer-events:none;width:max-content}
 .native>div{pointer-events:auto;display:flex;height:30px;border-radius:7px;background:var(--chip);box-shadow:0 2px 8px rgb(0 0 0 / .18);overflow:hidden}
-.native button{all:unset;height:30px;padding:0 9px;color:var(--chip-fg);font-size:14px;display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap}
+/* A label font unlike Butter's defaults (family, size, weight, spacing, line height, smoothing), so a
+ Butter label that doesn't copy ChatGPT's shows up. Live, the label is the button's own text. */
+.native button{all:unset;height:30px;padding:0 9px;color:var(--chip-fg);font:500 13px/20px Georgia,"Times New Roman",serif;
+ letter-spacing:.3px;-webkit-font-smoothing:antialiased;display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap}
 .native button:hover{background:rgb(255 255 255 / .1)}
 .native[hidden]{display:none}
 .katex{font:1.15em/1.2 "Times New Roman",serif;white-space:nowrap}

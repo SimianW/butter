@@ -217,13 +217,18 @@ try {
         const s = getComputedStyle(el);
         return [s.height, s.borderTopLeftRadius, s.backgroundColor, s.boxShadow].join(' | ');
       };
+      // The label's text style (live, the label is the button's own text).
+      const font = (el) => {
+        const s = getComputedStyle(el);
+        return [s.fontFamily, s.fontSize, s.fontWeight, s.letterSpacing, s.lineHeight, s.webkitFontSmoothing, s.color].join(' | ');
+      };
       return {
         gap: Math.round((c.left - a.right) * 10) / 10,
         topDelta: Math.round((c.top - a.top) * 10) / 10,
         native: css(box),
         butter: css(chip),
-        nativeFont: getComputedStyle(ask).fontSize,
-        butterFont: getComputedStyle(chip).fontSize,
+        nativeFont: font(ask),
+        butterFont: font(chip.querySelector('span')),
       };
     }, HOST);
     await mark('button shown');

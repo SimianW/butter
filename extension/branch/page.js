@@ -110,9 +110,17 @@
     }
     return { button, box, sideChat };
   };
+  // The label's text style is copied whole, so both labels render alike. Live (2026-11-07) the label
+  // is the button's own text: 14px/18px, weight 400, ChatGPT's font stack, and antialiased smoothing,
+  // without which macOS draws Butter's label heavier. A label in a child element is read there.
+  const labelOf = (button) => {
+    const walk = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+    for (let n; (n = walk.nextNode()); ) if (n.textContent.trim()) return n.parentElement;
+    return button;
+  };
   const nativeStyle = ({ button, box }) => {
     const b = getComputedStyle(box),
-      t = getComputedStyle(button);
+      t = getComputedStyle(labelOf(button));
     return {
       height: `${box.getBoundingClientRect().height}px`,
       borderRadius: b.borderRadius,
@@ -120,8 +128,15 @@
       border: b.border,
       backgroundColor: b.backgroundColor,
       color: t.color,
-      fontSize: t.fontSize,
-      fontFamily: t.fontFamily,
+      font: {
+        fontFamily: t.fontFamily,
+        fontSize: t.fontSize,
+        fontWeight: t.fontWeight,
+        fontStyle: t.fontStyle,
+        letterSpacing: t.letterSpacing,
+        lineHeight: t.lineHeight,
+        webkitFontSmoothing: t.webkitFontSmoothing,
+      },
     };
   };
 
