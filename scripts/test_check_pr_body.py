@@ -96,5 +96,14 @@ class LineEndingTest(unittest.TestCase):
         self.assertEqual(failures, [])
 
 
+class WorkflowTest(unittest.TestCase):
+    def test_checks_out_the_pr_head_not_the_merge_ref(self):
+        # A PR that adds a manifest permission main also added independently is tier 2 on its
+        # head but tier 0 on the merge ref, which would waive review.
+        workflow = (ROOT / ".github" / "workflows" / "pr-body.yml").read_text(encoding="utf-8")
+        self.assertIn("ref: ${{ github.event.pull_request.head.sha }}", workflow)
+        self.assertIn("fetch-depth: 0", workflow)
+
+
 if __name__ == "__main__":
     unittest.main()

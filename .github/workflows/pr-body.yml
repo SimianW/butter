@@ -8,8 +8,11 @@ jobs:
   pr-body:
     runs-on: ubuntu-latest
     steps:
+      # The PR head, not the default merge ref: against a moved base the merge ref can hide
+      # changes and compute a lower tier than review-tier.py does on the author's branch.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
