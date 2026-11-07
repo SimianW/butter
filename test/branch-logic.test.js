@@ -66,7 +66,7 @@ test('a handoff job is claimed once by a new tab of the same conversation, then 
     handoff = branch.handoff(store);
   assert.deepEqual(await handoff.put(ID, job, origin, 1000), { ok: true });
   assert.deepEqual(Object.keys(store.rows), [`butterBranch.${ID}`]);
-  assert.deepEqual(await handoff.claim(ID, dest, 2000), { job });
+  assert.deepEqual(await handoff.claim(ID, dest, 2000), { job, origin: 7 });
   assert.deepEqual(store.rows, {});
   assert.deepEqual(await handoff.claim(ID, dest, 2001), { missing: true });
 });
@@ -75,17 +75,21 @@ test('expired, foreign or malformed jobs are refused and deleted', async () => {
   const store = memory(),
     handoff = branch.handoff(store);
   await handoff.put(ID, job, origin, 1000);
-  assert.deepEqual(await handoff.claim(ID, dest, 1000 + branch.TTL), { error: 'expired' });
+  assert.deepEqual(await handoff.claim(ID, dest, 1000 + branch.TTL), {
+    error: 'expired',
+    origin: 7,
+  });
   assert.deepEqual(store.rows, {});
   // Claimed from the original tab itself: never run the branch where the user is reading.
   await handoff.put(ID, job, origin, 1000);
   assert.deepEqual(await handoff.claim(ID, { tab: { ...origin.tab } }, 1001), {
     error: 'sender',
+    origin: 7,
   });
   // Claimed from a tab showing a different conversation.
   await handoff.put(ID, job, origin, 1000);
   const other = { tab: { id: 9, url: `https://chatgpt.com/c/${LOCAL}` } };
-  assert.deepEqual(await handoff.claim(ID, other, 1001), { error: 'sender' });
+  assert.deepEqual(await handoff.claim(ID, other, 1001), { error: 'sender', origin: 7 });
   assert.deepEqual(store.rows, {});
   // Put from a tab that isn't the job's conversation, or with missing text, is refused.
   assert.deepEqual(await handoff.put(ID, job, other, 1000), { error: 'invalid' });
@@ -127,4 +131,11 @@ test('settings add an Ask in branch key that defaults to on and can be turned of
   assert.equal(status.normalize({ opts: { rail: false } }).opts.branch, true);
   assert.equal(status.normalize({ opts: { branch: false } }).opts.branch, false);
   assert.equal(status.classify({}, { opts: { branch: false } }).branch, 'off');
+});
+
+test('status: menu, identity, load and page-error failures count against the feature; a long reply does not', () => {
+  for (const cause of ['more', 'branch', 'newchat', 'identity', 'load', 'error'])
+    assert.equal(branch.confirmedFailure(cause), true, cause);
+  for (const cause of ['stream', undefined, 'cancelled'])
+    assert.equal(branch.confirmedFailure(cause), false);
 });

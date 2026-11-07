@@ -46,6 +46,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
       older: false,
       rail: false,
       layout: false,
+      branch: false,
       future: false,
     },
   };
@@ -82,6 +83,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     older: false,
     rail: false,
     layout: false,
+    branch: false,
     future: false,
   });
 });

@@ -53,12 +53,15 @@ export function fixtureHtml(url) {
   const work = q.has('work'); // Work mode: composer form without data-chatgpt-composer, side chat
   const side = q.has('side') || work; // the selection toolbar also offers "Ask in side chat"
   const noBranch = q.has('nobranch'); // no More actions under any reply
+  // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
+  // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
+  const fail = q.get('fail') || '';
   const conv = decodeURIComponent(/\/c\/([^/?#]+)/.exec(url.pathname)?.[1] || '');
   const isBranch = conv !== ORIGINAL;
   const title = isBranch ? 'Branch · Explain Corpus Meaning' : 'Explain Corpus Meaning';
   const more = noBranch
     ? ''
-    : `<button aria-label="${L.more}" class="more"><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button>`;
+    : `<button aria-label="${L.more}" class="more"${fail === 'more' ? ' style="display:none"' : ''}><svg width="16" height="16"><use href="#codex-icon-ellipsis-horizontal-light-16"></use></svg></button>`;
   return `<!doctype html><html lang="en" data-theme="${dark ? 'dark' : 'light'}" style="color-scheme:${dark ? 'dark' : 'light'}"><head><meta charset="utf-8"><title>${title}</title><style>
 :root{--bg:#fff;--fg:#0d0d0d;--fg2:#5d5d5d;--fg3:#8f8f8f;--bubble:#f4f4f4;--hair:rgb(0 0 0 / .1);--pop:#fff;
  --chip:#2f2f2f;--chip-fg:#fff;--sel:rgb(0 102 255 / .22)}
@@ -107,13 +110,15 @@ header .t{font-size:15px;color:var(--fg2)}
   <div class="acts"${stream ? ' hidden' : ''}><span></span><span></span><span></span>${more}</div>
  </div></div>
 </div></div>
-<form class="composer" data-composer-placement="thread"${work ? '' : ' data-chatgpt-composer'}><div class="ProseMirror" contenteditable="true" role="textbox" aria-label="${work ? L.workComposer : L.composer}"></div><span class="plus">+</span>
+<form class="composer" data-composer-placement="thread"${work ? '' : ' data-chatgpt-composer'}${fail === 'load' ? ' style="display:none"' : ''}><div class="ProseMirror" contenteditable="true" role="textbox" aria-label="${work ? L.workComposer : L.composer}"></div><span class="plus">+</span>
  <button class="send" type="submit" aria-label="${L.send}" disabled>↑</button>
  <button class="send stop" type="button" data-testid="stop-button" aria-label="${L.stop}" ${stream ? '' : 'hidden'}>■</button></form>
 <div class="native" hidden><div><button type="button">${L.ask}</button>${side ? `<button type="button">${L.side}</button>` : ''}</div></div>
 <script>
 const ORIGINAL = ${JSON.stringify(ORIGINAL)}, BRANCH = ${JSON.stringify(BRANCH)};
-window.fixture = { sent: [], branchedFrom: [], branchedText: [], workClicks: 0, nativeShift: 0 };
+window.fixture = { sent: [], branchedFrom: [], branchedText: [], workClicks: 0, nativeShift: 0, morePresses: 0,
+  noBranch: ${JSON.stringify(fail === 'branch')}, noNewChat: ${JSON.stringify(fail === 'newchat')},
+  sameRoute: ${JSON.stringify(fail === 'identity')} };
 const editor = document.querySelector('.ProseMirror'), send = document.querySelector('.send');
 document.querySelector('.composer').addEventListener('submit', (e) => e.preventDefault());
 // The latest reply is still being written: it grows, has no actions, and the composer shows Stop.
@@ -170,29 +175,29 @@ const menu = (items, x, y) => {
 const closeMenus = () => document.querySelectorAll('[role=menu]').forEach((m) => m.remove());
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(); });
 for (const more of document.querySelectorAll('.more'))
-  more.addEventListener('pointerdown', () => setTimeout(() => {
+  more.addEventListener('pointerdown', () => (fixture.morePresses++, setTimeout(() => {
     const id = more.closest('[data-chatgpt-selection-message-id]').dataset.chatgptSelectionMessageId;
     const r = more.getBoundingClientRect();
     menu([
       { label: ${JSON.stringify(L.time)} },
       { label: ${JSON.stringify(L.regen)}, sub: true, icon: 'arrows-clockwise-rotate-lg' },
-      { label: ${JSON.stringify(L.branch)}, sub: true, icon: 'branch', on: () => setTimeout(() => {
+      ...(fixture.noBranch ? [] : [{ label: ${JSON.stringify(L.branch)}, sub: true, icon: 'branch', on: () => setTimeout(() => {
         menu([
           { label: ${JSON.stringify(L.work)}, on: () => fixture.workClicks++ },
-          { label: ${JSON.stringify(L.newChat)}, on: () => {
+          ...(fixture.noNewChat ? [] : [{ label: ${JSON.stringify(L.newChat)}, on: () => {
             fixture.branchedFrom.push(id);
             fixture.branchedText.push(more.closest('[data-turn-key]').querySelector('[data-markdown-text-style]').innerText);
             closeMenus();
-            setTimeout(() => {
+            if (!fixture.sameRoute) setTimeout(() => {
               history.pushState({}, '', location.pathname.replace(ORIGINAL, encodeURIComponent(BRANCH)) + location.search);
               document.title = 'Branch · Explain Corpus Meaning';
               document.querySelector('header .t').textContent = document.title;
               for (const w of document.querySelectorAll('[data-chatgpt-selection-conversation-id]')) w.dataset.chatgptSelectionConversationId = BRANCH;
             }, ${land});
-          } },
+          } }]),
         ], r.left + 230, r.top + 60);
-      }, ${slow}) },
+      }, ${slow}) }]),
     ], r.left, r.top + 24);
-  }, ${slow}));
+  }, ${slow})));
 </script></body></html>`;
 }

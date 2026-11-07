@@ -73,7 +73,9 @@ function fakePage(o = {}) {
       s.composer = text;
       return true;
     }),
-    sendButton: record('sendButton', () => (o.noSend ? null : handle('send'))),
+    sendButton: record('sendButton', () =>
+      o.noSend || t < (o.sendFrom ?? 0) ? null : handle('send'),
+    ),
     send: record('send', () => {
       assert.notEqual(s.id, ORIGINAL, 'sent in the original conversation');
       s.sent.push({ id: s.id, text: s.composer });
@@ -341,6 +343,20 @@ test('the waiting state is shown before anything is pressed, and cancel there se
   assert.ok(!fake.calls.includes('press'));
 });
 
+test('a reply still streaming after TIMING.stream fails as "stream" from the waiting state', async () => {
+  const fake = streamingPage([[0, Infinity]]);
+  const result = await run(fake);
+  assert.equal(result.state, 'failed');
+  assert.equal(result.cause, 'stream');
+  assert.deepEqual(result.states, ['loading', 'waiting-for-reply', 'failed']);
+  assert.ok(fake.at() >= TIMING.stream, 'gave up before the streaming limit');
+  assert.ok(fake.at() < TIMING.stream + 1_000, 'kept waiting past the streaming limit');
+  assert.equal(TIMING.stream, 15 * 60_000);
+  assert.ok(!fake.calls.includes('press'));
+  assert.deepEqual(fake.s.filled, []);
+  assert.deepEqual(fake.s.sent, []);
+});
+
 test('a page that never loads fails as "load" without typing', async () => {
   const fake = fakePage({ loadedAt: Infinity });
   const result = await run(fake);
@@ -366,3 +382,103 @@ for (const at of ['loading', 'waiting-for-reply', 'branching', 'verifying', 'sen
     assert.deepEqual(fake.s.sent, []);
     assert.deepEqual(fake.s.filled, []);
   });
+
+// Cancel arriving from outside (×, Cancel, Esc) while the run waits inside a state: the next
+// page call never happens, nothing is typed or sent, and the run ends cancelled.
+const CANCEL_IN = {
+  loading: { loadedAt: 2000 },
+  'waiting-for-reply': { streamingUntil: 5000 },
+  branching: { newChatFrom: 2000 },
+  verifying: { landAfter: 3000 },
+  sending: { sendFrom: 1_000_000 }, // verified branch, filled, send button not enabled yet
+};
+for (const [at, options] of Object.entries(CANCEL_IN))
+  test(`cancel while waiting in ${at} stops every further page call and sends nothing`, async () => {
+    let r = null,
+      entered = false,
+      callsAtCancel = null;
+    const fake = fakePage({
+      ...options,
+      tick: () => {
+        if (entered && callsAtCancel === null) {
+          assert.equal(r.cancel(), true);
+          callsAtCancel = fake.calls.length;
+        }
+      },
+    });
+    const states = [];
+    r = start({
+      job,
+      page: fake.page,
+      clock: fake.clock,
+      onState: (state) => {
+        states.push(state);
+        if (state === at) entered = true;
+      },
+    });
+    const result = await r.done;
+    assert.ok(callsAtCancel !== null, `never waited in ${at}`);
+    assert.equal(result.state, 'cancelled');
+    assert.equal(states.at(-1), 'cancelled');
+    assert.equal(fake.calls.length, callsAtCancel, 'a page call after cancel');
+    assert.deepEqual(fake.s.sent, []);
+    if (at !== 'sending') assert.deepEqual(fake.s.filled, []);
+  });
+
+test('cancel before the run reaches its first state makes no page call at all', async () => {
+  const fake = fakePage();
+  const r = start({ job, page: fake.page, clock: fake.clock });
+  assert.equal(r.cancel(), true);
+  const result = await r.done;
+  assert.equal(result.state, 'cancelled');
+  assert.deepEqual(fake.calls, []);
+});
+
+test('cancel after the run ended changes nothing', async () => {
+  const fake = fakePage();
+  const r = start({ job, page: fake.page, clock: fake.clock });
+  assert.equal((await r.done).state, 'ready');
+  assert.equal(r.cancel(), false);
+  assert.equal(r.state, 'ready');
+});
+
+test('false-failure regression: a page error while verifying, with the branch landed → ready', async () => {
+  // A throwing lookup must not turn a made branch into a failure card.
+  const fake = fakePage();
+  const rendered = fake.page.isRendered;
+  let thrown = 0;
+  fake.page.isRendered = (id) => {
+    if (id !== ORIGINAL && !thrown++) throw new TypeError('detached node');
+    return rendered(id);
+  };
+  const result = await run(fake);
+  assert.equal(result.state, 'ready');
+  assert.deepEqual(fake.s.sent, [{ id: BRANCH, text: MESSAGE }]);
+});
+
+test('a page error with no branch fails only after the re-check, nothing typed or sent', async () => {
+  const fake = fakePage();
+  let thrownAt = null;
+  fake.page.isStreaming = () => {
+    thrownAt = fake.at();
+    throw new TypeError('bad selector');
+  };
+  const result = await run(fake);
+  assert.equal(result.state, 'failed');
+  assert.equal(result.cause, 'error');
+  assert.ok(fake.at() - thrownAt >= TIMING.recheck, 'failed before re-checking');
+  assert.deepEqual(fake.s.filled, []);
+  assert.deepEqual(fake.s.sent, []);
+});
+
+test('a page error after the send click never sends again: unsure', async () => {
+  const fake = fakePage();
+  const send = fake.page.send;
+  fake.page.send = (button) => {
+    send(button);
+    throw new TypeError('detached');
+  };
+  const result = await run(fake);
+  assert.equal(result.state, 'unsure');
+  assert.equal(fake.s.sent.length, 1);
+});

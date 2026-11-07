@@ -129,3 +129,61 @@ test('the worker records a branch failure as its own group and clears it on a br
   await record({ branch: 'ok' });
   assert.deepEqual(session.butterFailures, {});
 });
+
+test('Ask in branch reports a confirmed failure at once, and a later successful branch clears it', async () => {
+  const session = {},
+    record = worker(session),
+    sent = [];
+  const status = (await import('../extension/shared/status.js')).default;
+  const noop = () => {};
+  let receive;
+  const ctx = {
+    ButterStatus: status,
+    location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
+    performance: { now: () => 10000 },
+    MutationObserver: class {
+      observe() {}
+    },
+    CustomEvent: class {
+      constructor(type) {
+        this.type = type;
+      }
+    },
+    document: {
+      documentElement: {
+        toggleAttribute: noop,
+        getAttribute: () => null,
+        hasAttribute: () => false,
+        removeAttribute: noop,
+        setAttribute: noop,
+      },
+      querySelectorAll: () => [],
+      querySelector: () => null,
+      addEventListener: noop,
+      removeEventListener: noop,
+      dispatchEvent: noop,
+    },
+    chrome: {
+      storage: { local: { get: async () => ({}) }, onChanged: { addListener: noop } },
+      runtime: {
+        onMessage: { addListener: (fn) => (receive = fn) },
+        sendMessage: (m) => (sent.push(m.states), record(m.states)),
+      },
+    },
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(extension, 'shared/settings.js'), 'utf8'), ctx);
+  // The branch tab may be closed before the popup ever asks, so the report is recorded at once.
+  await ctx.ButterSettings.report('branch', { exercised: true, failed: true });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  assert.equal(sent.at(-1).branch, 'fail');
+  // Only the branch moved; other features stay idle, so their evidence is untouched.
+  assert.ok(
+    Object.entries(sent.at(-1)).every(([k, v]) => k === 'branch' || v === 'idle' || v === 'off'),
+  );
+  // The popup's probe of this tab still sees it.
+  const probed = await new Promise((resolve) => receive({ type: 'butter-status' }, {}, resolve));
+  assert.equal(probed.states.branch, 'fail');
+  assert.deepEqual({ ...probed.failures.branch }, { branch: true });
+  await ctx.ButterSettings.report('branch', { exercised: true, engaged: true });
+  assert.deepEqual(session.butterFailures, {});
+});

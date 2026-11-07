@@ -172,6 +172,45 @@
     input.setSelectionRange(input.value.length, input.value.length);
   };
 
+  // Hand-overs waiting to be claimed by their new tab, by job id. Until then the question box
+  // stays open (the new tab is in front, so it isn't seen), so a failed hand-over leaves the
+  // question where it was, with the reason.
+  const pending = new Map();
+  const handoffFailed = (id, { closeTab = true } = {}) => {
+    const p = pending.get(id);
+    if (!p) return;
+    pending.delete(id);
+    clearTimeout(p.timer);
+    if (closeTab)
+      try {
+        p.tab.close();
+      } catch {}
+    drafts.set(draftKey(p.current), p.question); // the question is not lost
+    showReason(p.current, 'handoff');
+  };
+  const handedOver = (id) => {
+    const p = pending.get(id);
+    if (!p) return;
+    pending.delete(id);
+    clearTimeout(p.timer);
+    drafts.delete(draftKey(p.current));
+    if (sel === p.current) hideSelectionUI();
+  };
+  // Keep (or reopen) the box for this selection and say why it didn't go through. A selection
+  // the user has moved on to is left alone; the draft still waits for the old one.
+  const showReason = (current, reason) => {
+    if (!sel && !boxOpen && current.range.startContainer.isConnected) {
+      sel = current;
+      follow();
+    }
+    if (sel === current && !boxOpen) openBox();
+    if (sel === current) ui.question.reason(ui.strings()[reason]);
+  };
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message?.type === 'butter-branch-claimed') handedOver(message.id);
+    else if (message?.type === 'butter-branch-unclaimed') handoffFailed(message.id);
+  });
+
   // Runs inside the Enter/click gesture: window.open must stay synchronous here.
   const submit = (current, question) => {
     const id = crypto.randomUUID();
@@ -179,6 +218,7 @@
     const title =
       raw && raw !== 'ChatGPT' ? raw.replace(/\s*[|–-]\s*ChatGPT$/, '').slice(0, 200) : undefined;
     const job = { original: current.identity, title, quote: current.quote, question };
+    ui.question.reason(null);
     const put = send({ type: 'butter-branch-put', id, job });
     const url = new URL(location.href);
     url.hash = `butter-branch=${id}`;
@@ -186,24 +226,21 @@
     if (!tab) {
       // Pop-ups blocked: keep the box and the question. A claim from this tab deletes the job.
       put.then(() => send({ type: 'butter-branch-claim', id })).catch(() => {});
+      drafts.set(draftKey(current), question);
+      ui.question.reason(ui.strings().blocked);
       return;
     }
     try {
       tab.opener = null;
     } catch {}
-    const key = draftKey(current);
-    drafts.delete(key);
-    hideSelectionUI();
+    // No word within the job's lifetime: the new tab never claimed it. Leave that tab alone.
+    const timer = setTimeout(() => handoffFailed(id, { closeTab: false }), B.TTL + 5_000);
+    pending.set(id, { current, question, tab, timer });
     put
       .then((result) => {
         if (!result?.ok) throw new Error('handoff');
       })
-      .catch(() => {
-        try {
-          tab.close();
-        } catch {}
-        drafts.set(key, question); // the question is not lost
-      });
+      .catch(() => handoffFailed(id));
   };
 
   const onSelection = () => {
@@ -276,6 +313,8 @@
     return {
       set(value) {
         saved ??= document.title;
+        // Switching between Butter's own titles (creating ↔ waiting) is not a ChatGPT retitle.
+        if (text && document.title === text) document.title = value;
         text = value;
         keep();
         observer ||= new MutationObserver(keep);
@@ -351,10 +390,60 @@
     };
   })();
 
+  // Copy the message Butter would have sent. The clipboard API needs focus; fall back to a
+  // selected textarea for pages where it refuses.
+  const copy = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = text;
+      area.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+      document.documentElement.append(area);
+      area.select();
+      const ok = document.execCommand('copy');
+      area.remove();
+      return ok;
+    }
+  };
+  const closeTab = () =>
+    send({ type: 'butter-branch-close' })
+      .then((result) => {
+        if (!result?.ok) throw new Error('close');
+      })
+      .catch(() => window.close());
+
+  // Esc on the card: cancel while working, close the failure card. Only the user's own key:
+  // the run closes ChatGPT's menus with a synthetic Escape of its own.
+  let onEscape = null;
+  document.addEventListener(
+    'keydown',
+    (e) => {
+      if (!e.isTrusted || e.key !== 'Escape' || e.isComposing || !onEscape) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      onEscape();
+    },
+    true,
+  );
+
   const runBranch = (job) => {
     const u = getUI();
     let run = null;
-    const cancel = () => run?.cancel();
+    const end = () => {
+      onEscape = null;
+      tabTitle.clear();
+    };
+    // ×, Cancel and Esc: stop at once. The run makes no further page call, and the overlay goes
+    // now rather than at the run's next step.
+    const cancel = () => {
+      if (!run?.cancel()) return;
+      end();
+      line.hide();
+      u.overlay.remove();
+    };
+    onEscape = cancel;
     u.overlay.working({ question: job.question, headerBottom: P.headerBottom(), onCancel: cancel });
     tabTitle.set(u.strings().creating);
     run = ButterBranchRun.start({
@@ -363,23 +452,38 @@
       clock,
       onState(state, info) {
         if (state === 'waiting-for-reply' || state === 'branching') {
+          // The same working card, so ×, Cancel and Esc cancel here too.
           const waiting = state === 'waiting-for-reply';
           u.overlay.waiting(waiting);
           tabTitle.set(u.strings()[waiting ? 'waiting' : 'creating']);
         } else if (state === 'sending') {
+          end();
           u.overlay.remove();
-          tabTitle.clear();
           if (info.verified) line.show('ready', job.title);
+        } else if (state === 'ready') {
+          globalThis.ButterSettings?.report('branch', { exercised: true, engaged: true });
         } else if (state === 'unsure') {
+          end();
           u.overlay.remove();
-          tabTitle.clear();
           line.show('unsure');
         } else if (state === 'failed') {
-          tabTitle.clear();
+          // Reached only after the run's re-check found no branch.
+          end();
           line.hide();
-          u.overlay.failure({ question: job.question });
+          if (B.confirmedFailure(info.cause))
+            globalThis.ButterSettings?.report('branch', { exercised: true, failed: true });
+          onEscape = () => u.overlay.close();
+          u.overlay.failure({
+            question: job.question,
+            cause: info.cause,
+            headerBottom: P.headerBottom(),
+            onRetry: () => runBranch(job),
+            onCopy: () => copy(B.formatMessage(job.quote, job.question)),
+            onCloseTab: closeTab,
+            onClose: () => (onEscape = null),
+          });
         } else if (state === 'cancelled') {
-          tabTitle.clear();
+          end();
           line.hide();
           u.overlay.remove();
         }

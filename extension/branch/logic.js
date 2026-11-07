@@ -141,10 +141,12 @@
         row = (await storage.get(key))[key];
       if (!row) return { missing: true };
       await storage.remove(key);
-      if (expired(row, now)) return { error: 'expired' };
+      // origin: the tab that put the job, so it can learn whether the hand-over happened.
+      const origin = row.tab;
+      if (expired(row, now)) return { error: 'expired', origin };
       if (sender?.tab?.id === row.tab || senderIdentity(sender) !== row.job.original)
-        return { error: 'sender' };
-      return { job: row.job };
+        return { error: 'sender', origin };
+      return { job: row.job, origin };
     },
     async prune(now) {
       const rows = await storage.get(null);
@@ -153,8 +155,14 @@
     },
   });
 
+  // Run failures that say the feature itself is broken (ChatGPT changed its menus or routes, or
+  // Butter hit a page error), as opposed to a reply that is still being written.
+  const CONFIRMED = new Set(['more', 'branch', 'newchat', 'identity', 'load', 'error']);
+  const confirmedFailure = (cause) => CONFIRMED.has(cause);
+
   globalThis.ButterBranch = {
     TTL,
+    confirmedFailure,
     formatMessage,
     identity,
     saved,
