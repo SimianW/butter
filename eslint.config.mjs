@@ -1,0 +1,76 @@
+// Only two rules: undefined names and unused names. Formatting is Prettier's job.
+import globals from 'globals';
+
+const rules = {
+  'no-undef': 'error',
+  'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+};
+
+export default [
+  { ignores: ['lab/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
+  {
+    files: ['extension/**/*.js'],
+    ignores: ['extension/storage/layout-worker.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: { ...globals.browser, chrome: 'readonly' },
+    },
+    rules,
+  },
+  // The service worker gets worker globals instead of window globals.
+  {
+    files: ['extension/storage/layout-worker.js'],
+    languageOptions: {
+      sourceType: 'script',
+      globals: { ...globals.serviceworker, chrome: 'readonly' },
+    },
+    rules,
+  },
+
+  // Content scripts, popup and worker are classic scripts: a later script reads a global that an
+  // earlier one (in manifest.json, popup.html or importScripts order) defines.
+  {
+    files: [
+      'extension/storage/layout-bridge.js',
+      'extension/shared/settings.js',
+      'extension/consent/layout-consent.js',
+      'extension/popup/popup.js',
+      'extension/storage/layout-worker.js',
+    ],
+    languageOptions: { globals: { ButterStatus: 'readonly' } }, // defined in shared/status.js
+  },
+  {
+    files: ['extension/rail/rail.js'],
+    languageOptions: { globals: { ButterSeekMeta: 'readonly' } }, // defined in seek/seek-meta.js
+  },
+  {
+    files: ['extension/popup/popup.js'],
+    languageOptions: { globals: { ButterPopup: 'readonly' } }, // defined in popup/model.js
+  },
+  {
+    files: ['extension/seek/anchor-main.js', 'extension/seek/layout-cache-main.js'],
+    languageOptions: { globals: { __butterLayoutCheck: 'readonly' } }, // defined in seek/layout-check-main.js
+  },
+  {
+    files: ['extension/seek/layout-cache-main.js', 'extension/storage/layout-worker.js'],
+    languageOptions: { globals: { ButterLayoutCodec: 'readonly' } }, // defined in seek/layout-codec.js
+  },
+  // Files that also export themselves for node --test, behind a `typeof module` check.
+  {
+    files: [
+      'extension/popup/model.js',
+      'extension/shared/status.js',
+      'extension/seek/seek-meta.js',
+      'extension/seek/layout-codec.js',
+      'extension/seek/layout-check-main.js',
+      'extension/seek/core-main.js',
+    ],
+    languageOptions: { globals: { module: 'readonly' } },
+  },
+
+  {
+    files: ['test/**/*.{js,mjs,cjs}'],
+    languageOptions: { globals: { ...globals.node } },
+    rules,
+  },
+];

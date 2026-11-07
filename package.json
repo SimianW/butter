@@ -3,9 +3,12 @@
   "private": true,
   "scripts": {
     "format": "prettier --write \"extension/**/*.{js,css,html,json}\" \"test/**\"",
-    "format:check": "prettier --check \"extension/**/*.{js,css,html,json}\" \"test/**\""
+    "format:check": "prettier --check \"extension/**/*.{js,css,html,json}\" \"test/**\"",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "eslint": "9.39.5",
+    "globals": "17.14.0",
     "prettier": "3.6.2"
   }
 }
