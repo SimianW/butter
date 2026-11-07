@@ -26,7 +26,7 @@ body {
   --dash: rgb(27 23 15 / 0.16);
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .09 0 0 0 0 .06 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
   /* Chromium owns the square popup frame and its outer shadow. */
-  width: 320px;
+  width: 360px;
   background: var(--paper) var(--noise);
   color: var(--ink);
   border-radius: 0;
@@ -60,7 +60,7 @@ body {
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  padding: 16px 18px 6px;
+  padding: 12px 18px 6px;
 }
 .hd svg {
   width: 54px;
@@ -89,7 +89,7 @@ body {
 
 .master {
   position: relative;
-  margin: 12px 16px 24px;
+  margin: 12px 16px 18px;
   padding: 14px 14px 14px 16px;
   border: 2.5px solid var(--edge);
   border-radius: 16px;
@@ -173,7 +173,7 @@ body {
 .master.off {
   background: var(--card);
   color: var(--ink);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 .master.off::before {
   display: none;
@@ -245,7 +245,7 @@ body {
 }
 
 .warn {
-  margin: 0 16px 14px;
+  margin: 0 16px 10px;
   padding: 10px 12px;
   border: 2px solid var(--edge);
   border-radius: 12px;
@@ -277,7 +277,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.08em;
   color: var(--ink-3);
-  margin: 0 18px 8px;
+  margin: 0 18px 6px;
 }
 .list {
   margin: 0 16px;
@@ -291,7 +291,7 @@ body {
   flex-wrap: wrap;
   gap: 11px;
   align-items: flex-start;
-  padding: 12px;
+  padding: 9px 12px;
 }
 .row + .row {
   border-top: 2px dashed var(--dash);
@@ -335,7 +335,7 @@ body {
   line-height: 1.4;
 }
 .row .tg {
-  margin-top: 4px;
+  margin-top: 3px;
 }
 .row.broken .ic {
   background: var(--warn-bg);
@@ -504,7 +504,7 @@ html:lang(zh-CN) .hd-side {
 }
 html,
 body {
-  width: 320px;
+  width: 360px;
   background: var(--paper) var(--noise);
   margin: 0;
 }

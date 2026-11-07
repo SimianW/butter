@@ -36,6 +36,7 @@
     streaming: ['container', 'cv', 'throttle'],
     scrolling: ['older', 'seek'],
     rail: ['rail'],
+    branch: ['branch'],
     layout: ['layout'],
   };
   const groupOn = (value, group) => groups[group].every((k) => normalize(value).opts[k]);

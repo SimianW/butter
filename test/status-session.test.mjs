@@ -117,3 +117,15 @@ test('settings probes merge seek and layout failures into their groups and clear
   await probe();
   assert.deepEqual(session.butterFailures, {});
 });
+test('the worker records a branch failure as its own group and clears it on a branch success', async () => {
+  const session = {},
+    record = worker(session);
+  assert.deepEqual(structuredClone(await record({ branch: 'fail', rail: 'ok' })), {
+    branch: { branch: true },
+  });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  await record({ branch: 'off' });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  await record({ branch: 'ok' });
+  assert.deepEqual(session.butterFailures, {});
+});

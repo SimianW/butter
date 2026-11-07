@@ -27,7 +27,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 12 states in both themes at 320 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references);
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 18 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_BRANCH_MOCKUP` to compare the Ask in branch states with their approved mockup);
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,

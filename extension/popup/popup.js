@@ -1,4 +1,6 @@
 const I = {
+  branch:
+    '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
   zap: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
   scroll: '<path d="M12 2v20"/><path d="m8 18 4 4 4-4"/><path d="m8 6 4-4 4 4"/>',
   list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
@@ -21,6 +23,7 @@ const T = {
       ['zap', '回答生成时更顺', '长回答输出时页面不卡'],
       ['scroll', '长对话滚动更顺', '拖动滚动条时先显示预览，松手再加载'],
       ['list', '问题导航条', '右侧列出你问过的问题，点一下就跳过去'],
+      ['branch', '在分支中问', '选中文字，在新分支里提问'],
       ['db', '记住长对话的布局', '再次打开时跳转更快，会占用一些存储空间'],
     ],
     pending: '还没开启 · 打开开关即表示同意',
@@ -44,6 +47,7 @@ const T = {
       ['zap', 'Smoother streaming', 'Long answers stream without lag'],
       ['scroll', 'Smoother scrolling', 'Drag the scrollbar to preview; it loads when you let go'],
       ['list', 'Question rail', 'Your questions on the right; click one to jump'],
+      ['branch', 'Ask in branch', 'Ask about a selection in a branch'],
       ['db', 'Remember long-chat layouts', 'Faster jumps when you come back; uses some storage'],
     ],
     pending: 'Not on yet · turning it on means you agree',
