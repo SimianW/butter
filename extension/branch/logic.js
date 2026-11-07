@@ -33,8 +33,8 @@
 
   // A selection the button may act on: text inside one assistant reply (not an editable or a
   // formula), in a saved conversation, since only saved conversations can be branched.
-  const qualifies = ({ text: selected, start, end, identity: id, editable } = {}) =>
-    text(selected) && !!start && start === end && !editable && saved(id);
+  const qualifies = ({ text: selected, start, end, identity: id, excluded } = {}) =>
+    text(selected) && !!start && start === end && !excluded && saved(id);
 
   // Handoff: the original tab hands { original, title, quote, question } to the worker, which
   // keeps it in session storage until the new tab claims it once. Short-lived on purpose.

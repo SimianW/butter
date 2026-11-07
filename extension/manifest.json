@@ -21,7 +21,12 @@
         "consent/layout-consent.js",
         "seek/seek-meta.js",
         "rail/rail.js",
-        "stream/offscreen.js"
+        "stream/offscreen.js",
+        "branch/logic.js",
+        "branch/run.js",
+        "branch/page.js",
+        "branch/ui.js",
+        "branch/content.js"
       ],
       "run_at": "document_start"
     },

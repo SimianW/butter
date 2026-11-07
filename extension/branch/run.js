@@ -21,6 +21,7 @@
     step: 4_000, // one menu item to appear
     verify: 15_000, // route change and render after "Branch in new chat"
     recheck: 3_000, // last look for a branch before reporting failure
+    send: 3_000, // send button enabled after filling
   };
   const END = new Set(['ready', 'unsure', 'failed', 'cancelled']);
   class Cancelled extends Error {}
@@ -170,11 +171,18 @@
       const filled = await fill(id);
       if (filled.cause === 'identity') return { state: 'failed', cause: 'identity' };
       if (filled.cause) return { state: 'unsure', cause: filled.cause, identity: id };
+      // ChatGPT enables its send button a moment after the text arrives.
+      let button;
+      try {
+        button = await waitFor(() => page.sendButton(), TIMING.send);
+      } catch (error) {
+        if (!(error instanceof Timeout)) throw error;
+        return { state: 'unsure', cause: 'send', identity: id };
+      }
       // Send only while the tab still shows the verified branch.
       if (page.identity() !== id || !page.isRendered(id))
         return { state: 'unsure', cause: 'unverified', identity: id };
-      const button = page.sendButton();
-      if (!button || !page.send(button)) return { state: 'unsure', cause: 'send', identity: id };
+      if (!page.send(button)) return { state: 'unsure', cause: 'send', identity: id };
       return { state: 'ready', identity: id };
     }
 

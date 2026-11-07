@@ -56,10 +56,17 @@ export default [
     languageOptions: { globals: { ButterLayoutCodec: 'readonly' } }, // defined in seek/layout-codec.js
   },
   {
-    // Ask in branch: logic.js defines ButterBranch; run.js defines ButterBranchRun.
+    // Ask in branch: classic scripts in manifest order (logic, run, page, ui, content).
     files: ['extension/branch/*.js'],
     ignores: ['extension/branch/logic.js'],
-    languageOptions: { globals: { ButterBranch: 'readonly', ButterBranchRun: 'readonly' } },
+    languageOptions: {
+      globals: {
+        ButterBranch: 'readonly',
+        ButterBranchRun: 'readonly',
+        ButterBranchPage: 'readonly', // page.js
+        ButterBranchUI: 'readonly', // ui.js
+      },
+    },
   },
   {
     files: ['extension/branch/run.js'],
