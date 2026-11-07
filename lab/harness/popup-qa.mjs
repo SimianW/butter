@@ -12,10 +12,10 @@ await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-qa-'));
 const browser = await chromium.launchPersistentContext(profile, {
   headless: true, channel: 'chromium',
-  viewport: { width: 320, height: 900 },
+  viewport: { width: 360, height: 900 },
   args: [`--disable-extensions-except=${repo}/extension`, `--load-extension=${repo}/extension`],
 });
-const errors = [], requests = [], files = [], comparisons = [];
+const errors = [], requests = [], files = [], comparisons = [], heights = {};
 try {
   const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
   const popupUrl = worker.url().replace('/storage/layout-worker.js', '/popup/popup.html');
@@ -56,6 +56,10 @@ try {
     ['04-paused', { paused: true }], ['05-confirm', { clear: 'confirm' }], ['06-cleared', { clear: 'done' }],
     ['07-normal', {}], ['08-problem', { broken: true }], ['09-en-memory-off', { lang: 'en', memory: false }],
     ['10-en-paused', { lang: 'en', paused: true }], ['11-melt', { animation: true }], ['12-melt', { animation: true }],
+    // Ask in branch (#30): on, off and failed in both languages; refs are panels of the approved mockup.
+    ['13-en-branch-on', { lang: 'en' }], ['14-en-branch-off', { lang: 'en', branch: false }],
+    ['15-en-branch-failed', { lang: 'en', broken: 'branch' }], ['16-zh-branch-on', { lang: 'zh' }],
+    ['17-zh-branch-off', { lang: 'zh', branch: false }], ['18-zh-branch-failed', { lang: 'zh', broken: 'branch' }],
   ];
   if (process.env.BUTTER_CASES) cases = cases.filter(([name]) => process.env.BUTTER_CASES.split(',').includes(name.slice(0, 2)));
   const mockup = process.env.BUTTER_MOCKUP;
@@ -75,8 +79,9 @@ try {
     await page.evaluate(async config => {
       clearTimeout(clearTimer); clearState = 'idle';
       fixtureConnected = !config.away;
-      const value = ButterStatus.normalize({ layoutConsent: 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false } });
-      await chrome.storage.session.set({ butterFailures: config.broken ? { rail: { rail: true } } : {} });
+      const value = ButterStatus.normalize({ layoutConsent: 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false, branch: config.branch !== false } });
+      const broken = config.broken === true ? 'rail' : config.broken;
+      await chrome.storage.session.set({ butterFailures: broken ? { [broken]: { [broken]: true } } : {} });
       await chrome.storage.local.set({ butter: value });
       await poll();
       await refreshUsage();
@@ -95,8 +100,10 @@ try {
     await page.waitForTimeout(350);
     await page.evaluate(() => document.getAnimations().forEach(a => a.finish()));
     await page.evaluate(() => document.activeElement?.blur());
-    assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 320);
-    assert.equal(await page.locator('[role="switch"]').count(), 5);
+    assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
+    assert.equal(await page.locator('[role="switch"]').count(), 6);
+    assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
+    assert.equal(await page.locator('.row.broken [data-switch="branch"]').count(), config.broken === 'branch' ? 1 : 0);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
     const metrics = () => ['.hd', '.master', '.label', '.list', '.row', '.use', '.hd-side'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
@@ -107,14 +114,15 @@ try {
     await page.locator('#popup').screenshot({ path: file }); files.push(file);
     // Also capture the native-height viewport and its scrollable bottom for tall states.
     const height = await page.locator('#popup').evaluate(e => e.offsetHeight);
+    heights[`${name}-${color}`] = height;
     // Chromium caps popups at 600px; only the warning banner may push a state past it.
     if (!config.broken) assert.ok(height <= 600, `${name}-${color} is ${height}px, over the 600px popup cap`);
     if (height > 600) {
-      await page.setViewportSize({ width: 320, height: 600 });
+      await page.setViewportSize({ width: 360, height: 600 });
       await page.screenshot({ path: `${shots}/${name}-${color}-viewport.png` });
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.screenshot({ path: `${shots}/${name}-${color}-bottom.png` });
-      await page.setViewportSize({ width: 320, height: 900 });
+      await page.setViewportSize({ width: 360, height: 900 });
       await page.evaluate(() => window.scrollTo(0, 0));
     }
     if (config.animation) {
@@ -131,7 +139,7 @@ try {
       await page.waitForTimeout(320);
       await page.locator('#popup').screenshot({ path: `${shots}/${name}-${color}-on.png` });
     }
-    if (ref) {
+    if (ref && Number(name.slice(0, 2)) <= 12) {
       const index = Number(name.slice(0, 2)) - 1;
       await ref.bringToFront();
       await ref.evaluate(({ index, color }) => {
@@ -151,6 +159,53 @@ try {
       comparisons.push({ name, color, built: builtMetrics, reference: referenceMetrics });
     }
   }
+  // BUTTER_BRANCH_MOCKUP=<popup-mockup-approved.html>: compare the branch states with the approved panels.
+  const branchMockup = process.env.BUTTER_BRANCH_MOCKUP, branchRefs = [];
+  if (branchMockup) {
+    const mock = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    await mock.goto(`file://${path.resolve(branchMockup)}`);
+    await mock.waitForFunction(() => [...document.querySelectorAll('small[id^="h"]')].every(e => /\d+ px/.test(e.textContent)));
+    const panels = { 1: '13-en-branch-on-light', 2: '14-en-branch-off-light', 3: '15-en-branch-failed-light', 5: '16-zh-branch-on-light', 6: '17-zh-branch-off-light', 7: '18-zh-branch-failed-light', 8: '13-en-branch-on-dark', 9: '15-en-branch-failed-dark', 10: '16-zh-branch-on-dark', 11: '18-zh-branch-failed-dark' };
+    const panel = await browser.newPage({ viewport: { width: 360, height: 900 } });
+    panel.on('pageerror', e => errors.push(`mockup panel: ${e.message}`));
+    const png = async file => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
+    for (const [i, state] of Object.entries(panels)) {
+      const reference = `${shots}/reference-${state}.png`;
+      // Render the panel's own document at the page origin; inside the grid its frame sits at a subpixel offset.
+      const doc = path.join(profile, `panel-${i}.html`);
+      await fs.writeFile(doc, await mock.locator(`#f${i}`).getAttribute('srcdoc'));
+      await panel.goto(`file://${doc}`);
+      await panel.evaluate(() => document.fonts.ready.then(() => new Promise(r => setTimeout(r, 500))));
+      await panel.evaluate(() => document.getAnimations().forEach(a => a.finish()));
+      await panel.locator('#popup').screenshot({ path: reference });
+      // The usage line shows seeded storage, which the worker rejects since its row validation; compare the UI around it.
+      const mask = await panel.locator('.use').evaluate(e => { const r = e.getBoundingClientRect(); return [Math.floor(r.top), Math.ceil(r.bottom)]; });
+      const refHeight = Number((await mock.locator(`#h${i}`).innerText()).match(/(\d+) px/)[1]);
+      // Share of pixels outside the usage line that differ by more than 24 in any channel.
+      const diff = await mock.evaluate(async ([a, b, mask]) => {
+        const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+        const [x, y] = await Promise.all([load(a), load(b)]);
+        if (x.width !== y.width || x.height !== y.height) return { size: [x.width, x.height, y.width, y.height] };
+        const data = img => { const c = new OffscreenCanvas(img.width, img.height), g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, img.width, img.height).data; };
+        const p = data(x), q = data(y);
+        let n = 0;
+        for (let k = 0; k < p.length; k += 4) if ((Math.floor(k / 4 / x.width) < mask[0] || Math.floor(k / 4 / x.width) >= mask[1]) && Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
+        return { ratio: n / (p.length / 4) };
+      }, [await png(`${shots}/${state}.png`), await png(reference), mask]);
+      branchRefs.push({ state, built: heights[state], reference: refHeight, ...diff });
+      assert.equal(heights[state], refHeight, `${state} is ${heights[state]}px; the approved mockup is ${refHeight}px`);
+      assert.ok(diff.ratio !== undefined && diff.ratio < 0.001, `${state} differs from the approved mockup: ${JSON.stringify(diff)}`);
+    }
+    await mock.close(); await panel.close();
+  }
+  // The branch switch writes only its own key.
+  await page.bringToFront();
+  await page.evaluate(async () => { await chrome.storage.local.set({ butter: ButterStatus.normalize({ layoutConsent: 'granted', lang: 'en' }) }); });
+  await page.locator('[data-switch="branch"]').click();
+  await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.branch === false);
+  assert.equal((await page.evaluate(() => chrome.storage.local.get('butter'))).butter.opts.rail, true);
+  await page.locator('[data-switch="branch"]').click();
+  await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.branch === true);
   // Cancel is non-destructive; language, focus, master motion and reduced motion work live.
   await page.bringToFront();
   await page.getByRole('button', { name: 'EN', exact: true }).click();
@@ -186,8 +241,9 @@ try {
     await chrome.storage.local.clear(); await chrome.storage.session.clear();
   });
   await fs.writeFile(`${shots}/geometry.json`, JSON.stringify(comparisons, null, 2));
+  await fs.writeFile(`${shots}/heights.json`, JSON.stringify({ heights, branchRefs }, null, 2));
   await fs.writeFile(`${shots}/screenshots.json`, JSON.stringify({ popupUrl, files, errors, remoteRequests: [] }, null, 2));
-  console.log(`PASS: ${files.length} full 320px state screenshots (${cases.length} states × light/dark), native-height scroll views, melt frames, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} states × light/dark), native-height scroll views, melt frames, branch switch, ${branchRefs.length} approved-mockup matches, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
 }

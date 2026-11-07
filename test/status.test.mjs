@@ -59,10 +59,13 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     streaming: ['container', 'cv', 'throttle'],
     scrolling: ['older', 'seek'],
     rail: ['rail'],
+    branch: ['branch'],
     layout: ['layout'],
   });
   for (const group of Object.keys(status.groups)) {
-    const on = status.toggleGroup(migrated, group);
+    // Keys missing from old values (such as branch) default on; start every group from off.
+    const start = status.groupOn(migrated, group) ? status.toggleGroup(migrated, group) : migrated;
+    const on = status.toggleGroup(start, group);
     assert.ok(status.groups[group].every((key) => on.opts[key]));
     const off = status.toggleGroup(on, group);
     assert.ok(status.groups[group].every((key) => !off.opts[key]));
@@ -106,4 +109,22 @@ test('only exercised failures persist; chat changes, unrelated successes and off
   assert.deepEqual(recovered, { rail: { rail: true } });
   assert.deepEqual(status.updateFailures(recovered, { rail: 'ok' }), {});
   assert.deepEqual(failed, { streaming: { cv: true }, rail: { rail: true } });
+});
+test('Ask in branch defaults on, keeps an explicit off, and toggles as its own group', () => {
+  assert.equal(status.normalize().opts.branch, true);
+  assert.equal(status.normalize({ opts: { rail: false } }).opts.branch, true);
+  assert.equal(status.normalize({ opts: { branch: false } }).opts.branch, false);
+  assert.equal(status.groupOn({}, 'branch'), true);
+  const off = status.toggleGroup({ lang: 'zh' }, 'branch');
+  assert.equal(off.opts.branch, false);
+  assert.equal(off.opts.rail, true);
+  assert.equal(status.classify({}, off).branch, 'off');
+  assert.equal(status.toggleGroup(off, 'branch').opts.branch, true);
+});
+test('a branch failure is kept as its own group and cleared only by a branch success', () => {
+  const failed = status.updateFailures({}, { branch: 'fail' });
+  assert.deepEqual(failed, { branch: { branch: true } });
+  assert.deepEqual(status.updateFailures(failed, { branch: 'idle', rail: 'ok' }), failed);
+  assert.deepEqual(status.updateFailures(failed, { branch: 'off' }), failed);
+  assert.deepEqual(status.updateFailures(failed, { branch: 'ok' }), {});
 });
