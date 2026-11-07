@@ -574,13 +574,10 @@ class MergedPullRequestTests(unittest.TestCase):
             "extension/manifest.json: background, content_scripts, permissions changed", reasons
         )
 
-    def test_pr_12_popup_code_is_tier_1(self):
+    def test_pr_12_popup_script_is_tier_2(self):
         tier, reasons = classify(PR_12_FILES, MANIFEST_ALPHA_11, MANIFEST_ALPHA_12)
-        self.assertEqual(tier, 1)
-        self.assertEqual(
-            reasons,
-            ["extension/popup/popup.css", "extension/popup/popup.js", "lab/harness/popup-qa.mjs"],
-        )
+        self.assertEqual(tier, 2)
+        self.assertEqual(reasons, ["extension/popup/popup.js (storage or consent)"])
 
     def test_pr_13_workflow_and_ci_is_tier_1(self):
         tier, reasons = classify(PR_13_FILES, None, None)
@@ -635,6 +632,14 @@ class RuleTests(unittest.TestCase):
 
     def test_markdown_in_high_risk_directory_is_tier_2(self):
         self.assertEqual(classify(["extension/storage/NOTES.md"], None, None)[0], 2)
+
+    def test_storage_and_consent_files_outside_high_risk_dirs_are_tier_2(self):
+        for path in ("extension/shared/settings.js", "extension/shared/status.js", "extension/popup/popup.js"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None), (2, [f"{path} (storage or consent)"]))
+
+    def test_other_popup_and_shared_files_are_tier_1(self):
+        self.assertEqual(classify(["extension/popup/popup.css", "extension/shared/config-main.js"], None, None)[0], 1)
 
     def test_other_extension_code_is_tier_1(self):
         self.assertEqual(classify(["extension/rail/rail.js", "README.md"], None, None), (1, ["extension/rail/rail.js"]))
