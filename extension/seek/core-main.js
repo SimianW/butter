@@ -256,6 +256,16 @@
   }
 
   // ---- 4. Preview model: turn tops + per-item layout ---------------------------------------------
+  // Shared by the model and press diagnostics so a reported reason is the actual trust decision.
+  function layoutReason(record, measured, sw) {
+    if (!record) return 'no-record';
+    if (!record.items?.length) return 'no-items';
+    if (sw != null && record.sw !== sw) return 'sw-mismatch';
+    if (record.fromStorage) return null;
+    if (!measured) return 'no-measured';
+    if (!(Math.abs(record.rowH - measured) <= 2)) return 'height-mismatch';
+    return null;
+  }
   // ids: virtualizer row order. measured[id]: ChatGPT's measured row height. records[id]: height-cache
   // entry (items with top relative to the row). texts[id]: {q, answer} markdown. anchor: one mounted
   // row's real top in scroll coordinates. gap: px between rows.
@@ -277,12 +287,7 @@
       const h = known[i] || Math.max(208, (rest * est[i]) / (weight || 1));
       const r = records?.[id];
       // Per-item layout is trusted only when the cache height agrees with ChatGPT's measured height.
-      const layout = !!(
-        r &&
-        r.items?.length &&
-        (sw == null || r.sw === sw) &&
-        (r.fromStorage || (known[i] && Math.abs(r.rowH - known[i]) <= 2))
-      );
+      const layout = layoutReason(r, known[i], sw) === null;
       const t = {
         id,
         index: i,
@@ -520,6 +525,7 @@
     mergeRecord,
     canRestore,
     coverage,
+    layoutReason,
     buildModel,
     buildPreviewModel,
     previewScrollTop,
