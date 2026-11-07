@@ -34,6 +34,8 @@
   let revealOwner = null,
     hideTimer;
   let candidate = null; // {sc, model, flat, ...} prepared at press time
+  let pressDecision = null,
+    prepareSequence = 0;
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1];
   const event = (kind, more = {}) => {
     S.events.push({ kind, t: performance.now(), ...more });
@@ -191,12 +193,36 @@
     return null;
   };
   // Built at press time (off the drag's critical path): frozen model + flattened item layout.
-  function prepare(s) {
+  function prepare(s, phase = 'press') {
     const t0 = performance.now(),
       tx = texts(),
       fib = measured(s),
       cache = globalThis.__butterLayoutCache;
     const ids = fib?.ids || Object.keys(tx.byId);
+    const threadScrollers = [...document.querySelectorAll('.thread-scroll-container')],
+      threadScroller = threadScrollers.find((sc) => sc.clientHeight > 0),
+      decision = {
+        schema: 1,
+        sequence: ++prepareSequence,
+        phase,
+        fiberFound: !!fib,
+        idsFromFallback: !fib,
+        idsReason: fib ? null : 'ids-from-fallback',
+        modelLength: ids.length,
+        scroller: {
+          matchesThreadScroller: s === threadScroller,
+          threadScrollerCount: threadScrollers.length,
+          threadScrollerSw: threadScroller?.clientWidth ?? null,
+          swBefore: s.clientWidth,
+          sw: null,
+          clientHeight: s.clientHeight,
+          scrollHeight: s.scrollHeight,
+        },
+        turns: [],
+        render: null,
+      };
+    if (phase === 'press') pressDecision = decision;
+    else if (pressDecision) pressDecision.releasePrepare = decision;
     if (!ids.length) return null;
     const sr = s.getBoundingClientRect(),
       rows = [...s.querySelectorAll('[data-turn-key]')].map((t) => ({
@@ -212,7 +238,11 @@
         if (g >= 0 && g < 64) gap = g;
       }
     }
-    const { records, storedTurns } = cache?.prepare(s, ids) || { records: {}, storedTurns: 0 };
+    const { records, storedTurns, decisions } = cache?.prepare(s, ids) || {
+      records: {},
+      storedTurns: 0,
+    };
+    const sw = s.clientWidth;
     const model = core.buildModel({
       ids,
       measured: fib?.heights || {},
@@ -221,7 +251,33 @@
       scrollHeight: s.scrollHeight,
       gap,
       anchor,
-      sw: s.clientWidth,
+      sw,
+    });
+    decision.scroller.sw = sw;
+    decision.recordCount = Object.keys(records).length;
+    decision.storedTurns = storedTurns;
+    decision.mountedTurns = rows.length;
+    const rowHeights = new Map(rows.map(({ id, r }) => [id, r.height]));
+    decision.turns = model.map((t, index) => {
+      const r = records[t.id],
+        measuredHeight = fib?.heights[t.id] || 0,
+        cacheDecision = decisions?.[index],
+        number = (value) => (Number.isFinite(value) ? value : null);
+      return {
+        index,
+        mounted: rowHeights.has(t.id),
+        rowHeightAtPrepare: number(rowHeights.get(t.id)),
+        measuredHeight: number(measuredHeight),
+        rowH: number(r?.rowH),
+        recordSw: number(r?.sw),
+        items: r?.items?.length ?? 0,
+        fromStorage: !!r?.fromStorage,
+        modelTop: number(t.top),
+        modelHeight: number(t.h),
+        layout: t.layout,
+        layoutReason: cacheDecision?.reason || core.layoutReason(r, measuredHeight, sw),
+        cache: cacheDecision ?? null,
+      };
     });
     const previewModel = core.buildPreviewModel(model, records, gap);
     const flat = core.flatten(previewModel);
@@ -231,6 +287,7 @@
     const colLeft = column?.left ?? Math.max(24, (s.clientWidth - 768) / 2);
     const colWidth = column?.w ?? Math.max(0, Math.min(768, s.clientWidth - 2 * colLeft));
     return {
+      decision,
       model,
       previewModel,
       flat,
@@ -369,6 +426,18 @@
       H = a.hostRect.height;
     const question = core.previewQuestion(a.prep.model, top, a.insetTop);
     const unseen = question && !question.layout;
+    // Diagnostics only: record which turn this press's frozen model selected.
+    if (a.prep.decision)
+      a.prep.decision.render = {
+        prepareSequence: a.prep.decision.sequence,
+        modelLength: a.prep.model.length,
+        turnIndex: question?.index ?? null,
+        layout: question?.layout ?? null,
+        unseen: !!unseen,
+        top,
+        insetTop: a.insetTop,
+        previewTop: a.previewTop,
+      };
     const vis = unseen ? [] : core.windowAt(a.prep.flat, view, H, 400),
       want = new Set();
     const estimated = unseen
@@ -872,7 +941,7 @@
       if (!decision.accept && decision.reason === 'application-adjustment') {
         // The application moved outside the frozen gesture. Commit the preserved logical row,
         // using its current estimated/measured top, so readiness does not wait on an unmounted row.
-        const fresh = prepare(a.sc),
+        const fresh = prepare(a.sc, 'release-retarget'),
           row = fresh?.model.find((t) => t.id === a.last.id);
         if (row) {
           const to = Math.max(
@@ -1329,6 +1398,10 @@
     }
     return out;
   };
+  // Snapshot only: reading this property does not touch the page/cache or mutate the frozen model.
+  Object.defineProperty(window.__seekDump, 'pressDecision', {
+    get: () => JSON.parse(JSON.stringify(pressDecision)),
+  });
   window.__seekCoverage = () => {
     const s = [...document.querySelectorAll('.thread-scroll-container')].find(
       (s) => s.clientHeight > 0,

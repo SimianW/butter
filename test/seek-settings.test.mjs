@@ -166,6 +166,7 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
         classList: { contains: () => false },
       },
       addEventListener: on,
+      querySelectorAll: () => [sc],
       dispatchEvent: (e) => emitted.push(e),
     },
     addEventListener: on,
@@ -202,6 +203,8 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
     });
   assert.equal(probe(), 'idle');
   press();
+  assert.equal(ctx.window.__seekDump.pressDecision.modelLength, 0);
+  assert.equal(ctx.window.__seekDump.pressDecision.render, null);
   fire('pointerup');
   assert.equal(probe(), 'idle');
   press();

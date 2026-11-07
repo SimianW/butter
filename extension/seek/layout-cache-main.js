@@ -24,6 +24,7 @@
     skipped = new WeakSet(),
     stale = new WeakSet(), // queued for a record that has not succeeded yet
     verified = new WeakMap(), // turn element -> the entry its last successful record produced
+    outcomes = new WeakMap(), // last completed recording attempt; reason codes only
     contentH = new WeakMap(),
     leanCache = new WeakMap(),
     applied = new WeakSet(); // turns restore() gave their recorded sizes
@@ -741,6 +742,7 @@
     return false;
   };
   function reject(t, reason) {
+    outcomes.set(t, { reason });
     S.rejected[reason] = (S.rejected[reason] || 0) + 1;
     // The class going away is not observed, and an answer revealed in full by then may not
     // resize or mutate again, so look once more shortly after.
@@ -826,6 +828,7 @@
     )
       return false;
     S.adopted = (S.adopted || 0) + 1;
+    outcomes.set(t, { reason: null });
     stale.delete(t);
     verified.set(t, prev);
     return true;
@@ -898,6 +901,7 @@
     );
     if (reason) reject(t, reason);
     else {
+      outcomes.set(t, { reason: null });
       if (prev?.ready) S.refreshes++;
       S.records++;
       stale.delete(t);
@@ -1133,11 +1137,29 @@
     });
 
   // Read API for seek/preview-main.js (same world). Records carry chat text: never dump them.
+  const recordDecision = (e, conversation) => ({
+    hasRecord: !!e,
+    convMatches: e ? e.conv === conversation : null,
+    items: e?.items?.length ?? 0,
+    blocks: e?.blocks?.length ?? 0,
+    sw: Number.isFinite(e?.sw) ? e.sw : null,
+    rowH: Number.isFinite(e?.rowH) ? e.rowH : null,
+    fromStorage: !!e?.fromStorage,
+  });
   globalThis.__butterLayoutCache = {
     ...persistence,
     column: shownColumn,
     flush: () => persistence.flush(),
     flushMeasurements: measure,
+    // Diagnostics only: recorder status for one mounted turn element, as booleans and reason codes.
+    diagnostics: (t) => ({
+      observed: meta.has(t),
+      generating: busy.has(t),
+      queued: pending.has(t),
+      measuring: job?.t === t,
+      attempted: outcomes.has(t),
+      lastRejection: outcomes.get(t)?.reason ?? null,
+    }),
     get: (key, preparedScroller) => {
       const sc = preparedScroller || scroller();
       if (!preparedScroller && turns.get(key)?.fromStorage) persistence.refreshLayout(sc);
@@ -1151,17 +1173,30 @@
     },
     // One synchronous consumer path: hydrate/adopt disk records, then validate every entry.
     prepare: (sc, ids) => {
+      const conversation = conv(),
+        before = ids.map((id) => turns.get(id)),
+        beforeDecisions = before.map((e) => recordDecision(e, conversation));
       // A press right after wheel scrolling: measure turns still waiting for the scroll to settle.
       measure();
       const stored = persistence.records(sc);
       scWidths.set(sc, sc.clientWidth);
       for (const [id, e] of Object.entries(stored)) if (!turns.has(id)) turns.set(id, e);
-      const records = {};
-      for (const id of ids) {
+      const records = {},
+        decisions = [];
+      for (const [index, id] of ids.entries()) {
+        const candidate = turns.get(id);
         const e = currentEntry(id, sc);
-        if (e?.conv === conv()) records[id] = e;
+        if (e?.conv === conversation) records[id] = e;
+        decisions.push({
+          before: beforeDecisions[index],
+          after: recordDecision(e, conversation),
+          recordChanged: before[index] !== e,
+          storedAvailable: !!stored[id],
+          retiredStored: !!candidate && !e,
+          reason: e && e.conv !== conversation ? 'conv-mismatch' : null,
+        });
       }
-      return { records, storedTurns: Object.keys(stored).length };
+      return { records, storedTurns: Object.keys(stored).length, decisions };
     },
     adopt: (records, sc) => {
       scWidths.set(sc, sc.clientWidth);
