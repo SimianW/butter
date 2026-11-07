@@ -138,8 +138,14 @@ types nothing. Nothing is ever typed into or sent in the original tab. The page 
 (`branch/page.js`) is the only part that touches ChatGPT's DOM; the run takes it as a parameter, so
 `test/branch-run.test.js` drives it with a fake page.
 
-The grey "Branched from …" line above the composer stays until you send your own next message in
-the branch, or press its ×.
+The grey "Branched from …" line above the composer fades out once ChatGPT's reply to the sent
+question starts to show (at once with reduced motion): the last reply in the conversation is one
+that wasn't there when Butter sent, keyed by its turn's `data-turn-key`, so older turns loading
+above don't count. Until then it stays; your own next send, its × or leaving the conversation hide
+it at once. It sits 8 px above the composer, or above ChatGPT's own text right on the composer's
+top edge, such as the "ChatGPT can make mistakes" disclaimer. That text is found by hit-testing the
+line's band (`document.elementsFromPoint`), skipping the conversation's turns, so no selector of
+ChatGPT's is needed.
 
 ## Privacy
 

@@ -5,10 +5,15 @@
 // Attributes and labels mirror the live page of 2026-11-07 (ask-in-branch-29 report): the composer
 // form's data-composer-placement / data-chatgpt-composer, the unlabelled submit "Send" button,
 // data-talvt-turn-state on turns, and ChatGPT's English or Simplified Chinese menu labels.
+// ChatGPT's disclaimer ("ChatGPT can make mistakes…") sits directly on the composer's top edge as
+// on the live page of 2026-11-07: a full-width data-markdown-copy="exclude" box, 12/16 px centred
+// text and 8 px padding below it, outside the composer's own subtree.
 export const ORIGINAL = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 export const BRANCH = 'local-chatgpt:0f9e2c4a-1b2c-4d3e-8f4a-5b6c7d8e9f00';
 export const QUOTE = 'RAG (Retrieval-Augmented Generation) than traditional model training';
 export const LATEST = 'Retrieval adds relevant context before an answer is generated.';
+// Live English text; the Chinese UI's wording wasn't checked, so the fixture uses this for both.
+const DISCLAIMER = 'ChatGPT can make mistakes. Check important info.';
 // ChatGPT's own labels per UI language (live, 2026-11-07).
 const LABELS = {
   en: {
@@ -54,6 +59,10 @@ export function fixtureHtml(url) {
   const work = q.has('work'); // Work mode: composer form without data-chatgpt-composer, side chat
   const side = q.has('side') || work; // the selection toolbar also offers "Ask in side chat"
   const noBranch = q.has('nobranch'); // no More actions under any reply
+  const disclaimer = !q.has('nodisclaimer'); // ChatGPT's disclaimer above the composer
+  // ms from a send to ChatGPT's reply starting to show; 0 = no reply. As live, the sent question's
+  // turn shows at once and the reply then appears, streaming, inside that same turn.
+  const reply = Number(q.get('reply') || 0);
   // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
   // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
   const fail = q.get('fail') || '';
@@ -89,6 +98,7 @@ header .t{font-size:15px;color:var(--fg2)}
 .composer .send{position:absolute;right:12px;bottom:10px;width:36px;height:36px;border-radius:50%;background:var(--fg);color:var(--bg);border:0;display:grid;place-items:center;font-size:18px}
 .composer .send:disabled{opacity:.3}
 .composer .send[hidden],.acts[hidden]{display:none}
+.disclaimer{position:absolute;left:0;right:0;z-index:4;padding:0 16px 8px;text-align:center;font-size:12px;line-height:16px;color:var(--fg2);user-select:none}
 .native{position:fixed;z-index:50;pointer-events:none;width:max-content}
 .native>div{pointer-events:auto;display:flex;height:30px;border-radius:7px;background:var(--chip);box-shadow:0 2px 8px rgb(0 0 0 / .18);overflow:hidden}
 .native button{all:unset;height:30px;padding:0 9px;color:var(--chip-fg);font-size:14px;display:inline-flex;align-items:center;cursor:pointer;white-space:nowrap}
@@ -114,6 +124,7 @@ header .t{font-size:15px;color:var(--fg2)}
 <form class="composer" data-composer-placement="thread"${work ? '' : ' data-chatgpt-composer'}${fail === 'load' ? ' style="display:none"' : ''}><div class="ProseMirror" contenteditable="true" role="textbox" aria-label="${work ? L.workComposer : L.composer}"></div><span class="plus">+</span>
  <button class="send" type="submit" aria-label="${L.send}" disabled>↑</button>
  <button class="send stop" type="button" data-testid="stop-button" aria-label="${L.stop}" ${stream ? '' : 'hidden'}>■</button></form>
+${disclaimer ? `<div class="disclaimer" data-markdown-copy="exclude"><div data-markdown-copy="exclude">${DISCLAIMER}</div></div>` : ''}
 <div class="native" hidden><div><button type="button">${L.ask}</button>${side ? `<button type="button">${L.side}</button>` : ''}</div></div>
 <script>
 const ORIGINAL = ${JSON.stringify(ORIGINAL)}, BRANCH = ${JSON.stringify(BRANCH)};
@@ -121,7 +132,16 @@ window.fixture = { sent: [], branchedFrom: [], branchedText: [], workClicks: 0, 
   noBranch: ${JSON.stringify(fail === 'branch')}, noNewChat: ${JSON.stringify(fail === 'newchat')},
   sameRoute: ${JSON.stringify(fail === 'identity')} };
 const editor = document.querySelector('.ProseMirror'), send = document.querySelector('.send');
-document.querySelector('.composer').addEventListener('submit', (e) => e.preventDefault());
+const form = document.querySelector('.composer');
+form.addEventListener('submit', (e) => e.preventDefault());
+// The disclaimer's box ends on the composer's top edge, also as the composer grows.
+const disclaimer = document.querySelector('.disclaimer');
+if (disclaimer) {
+  const stick = () => (disclaimer.style.bottom = innerHeight - form.getBoundingClientRect().top + 'px');
+  new ResizeObserver(stick).observe(form);
+  addEventListener('resize', stick);
+  stick();
+}
 // The latest reply is still being written: it grows, has no actions, and the composer shows Stop.
 if (${stream}) {
   const latest = document.querySelector('#latest'), words = ${JSON.stringify(LATEST)}.split(' ');
@@ -148,6 +168,27 @@ editor.addEventListener('input', sync);
 send.addEventListener('click', () => {
   if (send.disabled || send.hidden) return;
   fixture.sent.push({ conv: decodeURIComponent(location.pathname.split('/c/')[1] || ''), text: editor.innerText });
+  if (${reply}) {
+    const turn = document.createElement('div');
+    turn.dataset.turnKey = 't-sent-' + fixture.sent.length;
+    turn.innerHTML = '<div class="u" data-message-author-role="user"></div>';
+    turn.firstChild.textContent = editor.innerText;
+    document.querySelector('.col').append(turn);
+    setTimeout(() => {
+      const words = ${JSON.stringify(LATEST)}.split(' ');
+      const box = document.createElement('div');
+      box.innerHTML = '<div class="a" data-markdown-text-style="assistant-message"><p></p></div>';
+      const p = box.querySelector('p');
+      turn.dataset.talvtTurnState = 'in_progress';
+      turn.append(box);
+      fixture.replied = performance.now();
+      let n = 0;
+      const grow = setInterval(() => {
+        p.textContent = words.slice(0, ++n).join(' ');
+        if (n >= words.length) clearInterval(grow), (turn.dataset.talvtTurnState = 'complete');
+      }, 150);
+    }, ${reply});
+  }
   setTimeout(() => { editor.textContent = ''; sync(); }, ${hold});
 });
 // Native "Ask ChatGPT": mounts a moment after selectionchange, below the selection.

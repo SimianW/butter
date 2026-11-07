@@ -139,3 +139,22 @@ test('status: menu, identity, load and page-error failures count against the fea
   for (const cause of ['stream', undefined, 'cancelled'])
     assert.equal(branch.confirmedFailure(cause), false);
 });
+
+test('ready line: the reply has started once the last reply on the page is one that was not there at send', () => {
+  // Keys of the page's replies, in page order, when Butter sent (known) and now.
+  const known = ['turn-a', 'turn-b'];
+  assert.equal(branch.replyStarted(known, ['turn-a', 'turn-b']), false, 'no reply yet');
+  assert.equal(branch.replyStarted(known, []), false, 'replies not mounted');
+  assert.equal(
+    branch.replyStarted(known, ['turn-0', 'turn-a', 'turn-b']),
+    false,
+    'older turns loaded above',
+  );
+  assert.equal(branch.replyStarted(known, ['turn-b']), false, 'earlier turns unmounted');
+  assert.equal(
+    branch.replyStarted(known, ['turn-a', 'turn-b', 'turn-c']),
+    true,
+    'a new reply below',
+  );
+  assert.equal(branch.replyStarted([], ['turn-c']), true, 'first reply of the page');
+});

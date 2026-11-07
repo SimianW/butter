@@ -160,8 +160,15 @@
   const CONFIRMED = new Set(['more', 'branch', 'newchat', 'identity', 'load', 'error']);
   const confirmedFailure = (cause) => CONFIRMED.has(cause);
 
+  // The ready line goes once ChatGPT's reply to the sent question starts to show: the last reply
+  // on the page is one that wasn't there when Butter sent. known and now are keys of the page's
+  // replies in page order (page.js replyKeys), so older turns loading above, or remounting, don't
+  // count.
+  const replyStarted = (known, now) => now.length > 0 && !known.includes(now.at(-1));
+
   globalThis.ButterBranch = {
     TTL,
+    replyStarted,
     confirmedFailure,
     formatMessage,
     identity,

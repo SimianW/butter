@@ -45,6 +45,34 @@
     }
     return composer()?.getBoundingClientRect() || null;
   };
+  // The top edge the line goes above: the composer's, or that of ChatGPT's own text sitting within
+  // `band` px above it, such as its "ChatGPT can make mistakes" disclaimer, whose box ends on the
+  // composer's top edge (live, 2026-11-07). Found by hit-testing the band, so it needs no selector;
+  // the conversation's text scrolling behind doesn't count.
+  const ownText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+  const clearTop = (rect, band) => {
+    let top = rect.top;
+    for (let round = 0; round < 3; round++) {
+      let next = top;
+      for (let y = top - 1; y > top - band; y -= 5)
+        for (let i = 0; i < 5; i++)
+          for (const el of document.elementsFromPoint(
+            rect.left + 4 + ((rect.width - 8) * i) / 4,
+            y,
+          ))
+            if (ownText(el) && !el.closest(TURN))
+              next = Math.min(next, el.getBoundingClientRect().top);
+      if (next >= top) break;
+      top = next;
+    }
+    return top;
+  };
+  // Keys of this conversation's replies in page order (ButterBranch.replyStarted): the turn's
+  // data-turn-key (live: one turn holds a question and its reply), else the reply element.
+  const replyKeys = () =>
+    [...(scroller() || document).querySelectorAll(ASSISTANT)].map(
+      (el) => el.closest('[data-turn-key]')?.getAttribute('data-turn-key') || el,
+    );
   const headerBottom = () => {
     const header = [...document.querySelectorAll('header')].find(visible);
     const bottom = header?.getBoundingClientRect().bottom;
@@ -225,6 +253,8 @@
     replyOf,
     composer,
     composerBox,
+    clearTop,
+    replyKeys,
     headerBottom,
     nativeAsk,
     nativeStyle,

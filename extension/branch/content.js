@@ -332,23 +332,31 @@
     };
   })();
 
-  // The line above the composer stays until the user sends their own next message, or ×, or
-  // leaves this conversation. ChatGPT saving the branch after its first message (unsaved
-  // local-chatgpt id → saved id) is not leaving it.
+  // The line above the composer, clear of ChatGPT's disclaimer. The ready line fades out once
+  // ChatGPT's reply to the sent question starts to show. Any line goes at once when the user sends
+  // their own next message, presses ×, or leaves this conversation. ChatGPT saving the branch
+  // after its first message (unsaved local-chatgpt id → saved id) is not leaving it.
   const line = (() => {
     let timer = 0,
-      route = null;
+      route = null,
+      replies = null; // reply keys when Butter sent, for the ready line
     const place = () => {
       const id = B.identity(location.href);
       if (id !== route) {
         if (!(route && !B.saved(route) && B.saved(id))) return hide();
         route = id;
       }
-      ui?.note.place(P.composerBox());
+      if (replies && B.replyStarted(replies, P.replyKeys())) {
+        stop();
+        return ui?.note.fade();
+      }
+      const box = P.composerBox();
+      if (box) ui?.note.place({ ...box.toJSON(), top: P.clearTop(box, ui.note.height() + 8) });
     };
     const stop = () => {
       clearInterval(timer);
       timer = 0;
+      replies = null;
       removeEventListener('resize', place);
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKey, true);
@@ -379,6 +387,7 @@
       show(kind, title) {
         hide();
         route = B.identity(location.href);
+        if (kind === 'ready') replies = P.replyKeys();
         getUI().note.show({ kind, title, onClose: stop });
         place();
         timer = setInterval(place, 200);

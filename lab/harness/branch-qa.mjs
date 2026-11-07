@@ -2,7 +2,8 @@
 // ChatGPT-like page in branch-fixture.mjs. No ChatGPT requests: every chatgpt.com request is
 // fulfilled locally, and the run fails if anything else is requested.
 // Covers: mockup states 1–5, cancel via ×, Cancel and Esc, each failure type and its card's
-// buttons, status reporting, pop-up blocked and a failed hand-over.
+// buttons, status reporting, pop-up blocked and a failed hand-over, and the ready line's
+// placement clear of ChatGPT's disclaimer and its hiding when the reply appears.
 // Run: npm ci --prefix lab/harness && node lab/harness/branch-qa.mjs
 // SHOTS=<dir> overrides the screenshot directory.
 import { chromium } from 'playwright';
@@ -90,6 +91,18 @@ const rects = (page) =>
     };
   }, HOST);
 const settle = (page) => page.waitForTimeout(150);
+// The ready line, ChatGPT's disclaimer text (null when the fixture has none) and the composer.
+const lineGeometry = (page) =>
+  page.evaluate((host) => {
+    const box = (el) => el?.getBoundingClientRect().toJSON() || null;
+    return {
+      line: box(document.querySelector(host)?.shadowRoot?.querySelector('.line')),
+      disclaimer: box(document.querySelector('.disclaimer > div')),
+      composer: box(document.querySelector('.composer')),
+    };
+  }, HOST);
+const overlap = (a, b) =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 const files = [];
 const capture = async (page, state, width, theme) => {
   const file = `${state}-${width}-${theme}.png`;
@@ -311,17 +324,10 @@ try {
     assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), ['m-latest'], 'latest reply');
     assert.equal(await dest.evaluate(() => fixture.workClicks), 0, 'never Work mode');
     assert.equal(await dest.title(), 'Branch · Explain Corpus Meaning', 'title restored');
-    // Line placement: 8 px above the composer, spanning it. The line appears as the sent
-    // composer shrinks; let one 200 ms placement tick follow it.
+    // Line placement: spanning the composer; its height is checked against ChatGPT's disclaimer
+    // below. The line appears as the sent composer shrinks; let one 200 ms placement tick follow it.
     await dest.waitForTimeout(250);
-    const place = await dest.evaluate((host) => {
-      const line = document.querySelector(host).shadowRoot.querySelector('.line');
-      return {
-        line: line.getBoundingClientRect().toJSON(),
-        composer: document.querySelector('.composer').getBoundingClientRect().toJSON(),
-      };
-    }, HOST);
-    assert.equal(Math.round(place.composer.top - place.line.bottom), 8, 'line 8 px above composer');
+    const place = await lineGeometry(dest);
     assert.equal(Math.round(place.line.left), Math.round(place.composer.left));
     assert.equal(Math.round(place.line.width), Math.round(place.composer.width));
     // The original tab's box closes once the new tab has claimed the job.
@@ -350,6 +356,101 @@ try {
     await page.close();
     pass('new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone');
   }
+
+  // ---- Ready line and ChatGPT's disclaimer (on the composer's top edge, as live): the line sits
+  // 8 px above the disclaimer and never overlaps it; with no disclaimer, 8 px above the composer.
+  for (const theme of ['light', 'dark'])
+    for (const width of [1280, 800]) {
+      const page = await open(`theme=${theme}`, width);
+      const dest = await ask(page, { width });
+      await inShadow(dest, '.line').waitFor();
+      await dest.waitForTimeout(250);
+      const g = await lineGeometry(dest);
+      const at = `${width}px ${theme}`;
+      assert.ok(g.disclaimer, `${at}: fixture shows the disclaimer`);
+      assert.ok(!overlap(g.line, g.disclaimer), `${at}: line overlaps the disclaimer ${JSON.stringify(g)}`);
+      assert.equal(Math.round(g.disclaimer.top - g.line.bottom), 8, `${at}: line 8 px above the disclaimer`);
+      assert.ok(!overlap(g.line, g.composer), `${at}: line overlaps the composer`);
+      await dest.close();
+      await page.close();
+    }
+  {
+    const page = await open('nodisclaimer=1');
+    const dest = await ask(page);
+    await inShadow(dest, '.line').waitFor();
+    await dest.waitForTimeout(250);
+    const g = await lineGeometry(dest);
+    assert.equal(g.disclaimer, null);
+    assert.equal(Math.round(g.composer.top - g.line.bottom), 8, 'no disclaimer: line 8 px above composer');
+    await dest.close();
+    await page.close();
+  }
+  pass('ready line clear of the disclaimer at 1280/800 light/dark; 8 px above the composer without one');
+
+  // ---- Ready line and ChatGPT's reply: the line stays while no reply has appeared, and goes once
+  // the reply to Butter's question starts to show: a fade, or at once under reduced motion.
+  // lineFrames: from the reply's start, the line's opacity each frame, then null once it is gone.
+  const watchLine = (page) =>
+    page.evaluate((host) => {
+      window.lineFrames = [];
+      const tick = () => {
+        if (fixture.replied) {
+          const line = document.querySelector(host)?.shadowRoot?.querySelector('.line');
+          lineFrames.push(line ? Number(getComputedStyle(line).opacity) : null);
+          if (!line) return (window.lineGoneAfter = performance.now() - fixture.replied);
+        }
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }, HOST);
+  for (const motion of ['no-preference', 'reduce']) {
+    const page = await open();
+    const dest = await ask(page, { fixture: 'reply=2500' });
+    await dest.emulateMedia({ reducedMotion: motion });
+    await inShadow(dest, '.line').waitFor();
+    await watchLine(dest);
+    await dest.waitForTimeout(1500);
+    assert.equal(await dest.evaluate(() => fixture.replied), undefined, `${motion}: no reply yet`);
+    assert.equal(await inShadow(dest, '.line').count(), 1, `${motion}: line stays while no reply`);
+    await dest.waitForFunction(() => fixture.replied);
+    await dest
+      .waitForFunction(() => window.lineGoneAfter !== undefined, null, { timeout: 2_000 })
+      .catch(() => assert.fail(`${motion}: line still shown 2 s after the reply showed`));
+    const { frames, after } = await dest.evaluate(() => ({ frames: lineFrames, after: lineGoneAfter }));
+    const faded = frames.some((o) => o !== null && o > 0 && o < 1);
+    assert.ok(after < 700, `${motion}: line gone ${Math.round(after)} ms after the reply showed`);
+    assert.equal(faded, motion === 'no-preference', `${motion}: fade ${JSON.stringify(frames)}`);
+    console.log(`INFO ${motion}: line gone ${Math.round(after)} ms after the reply showed`);
+    await dest.close();
+    await page.close();
+  }
+  {
+    // No reply: the line stays; × hides it at once.
+    const page = await open();
+    const dest = await ask(page);
+    await inShadow(dest, '.line').waitFor();
+    await dest.waitForTimeout(3_000);
+    assert.equal(await inShadow(dest, '.line').count(), 1, 'line stays while no reply');
+    await inShadow(dest, '.line .xs').click();
+    assert.equal(await inShadow(dest, '.line').count(), 0, '× hides the line at once');
+    await dest.close();
+    await page.close();
+  }
+  // Before and after the reply, light and dark, 1280 and 800 px.
+  for (const theme of ['light', 'dark'])
+    for (const width of [1280, 800]) {
+      const page = await open(`theme=${theme}`, width);
+      const dest = await ask(page, { fixture: 'reply=1500', width });
+      await inShadow(dest, '.line').waitFor();
+      await dest.waitForTimeout(250);
+      await capture(dest, 'reply-before', width, theme);
+      await dest.waitForFunction(() => fixture.replied);
+      await inShadow(dest, '.line').waitFor({ state: 'detached' });
+      await capture(dest, 'reply-after', width, theme);
+      await dest.close();
+      await page.close();
+    }
+  pass('ready line stays while no reply, goes as the reply shows (fade; at once under reduced motion); × at once');
 
   // Ask from the original tab; returns the new tab with Butter's card up.
   const askCard = async (page, question) => {

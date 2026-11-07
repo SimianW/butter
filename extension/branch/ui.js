@@ -147,7 +147,9 @@ svg { display: block; }
 .card.err h3 svg { width: 18px; height: 18px; flex: none; }
 
 /* 4 · line above the composer */
-.line { position: fixed; display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--fg2); padding: 0 6px; }
+.line { position: fixed; display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--fg2); padding: 0 6px;
+  transition: opacity .2s ease; }
+.line.out { opacity: 0; pointer-events: none; }
 .line > svg { width: 15px; height: 15px; flex: none; }
 .line .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .line .sp { flex: 1; }
@@ -419,12 +421,27 @@ svg { display: block; }
         });
         root.append(line);
       },
-      // rect: the composer's box; the line sits 8 px above it, spanning its width.
+      // rect: { left, width } of the composer, and top, the edge to sit 8 px above.
       place(rect) {
         if (!line || !rect) return;
         line.style.left = `${rect.left}px`;
         line.style.width = `${rect.width}px`;
         line.style.bottom = `${innerHeight - rect.top + 8}px`;
+      },
+      height: () => line?.offsetHeight || 0,
+      // ChatGPT's reply has started: fade out, or go at once under reduced motion.
+      fade() {
+        const el = line;
+        line = null;
+        if (!el) return;
+        if (
+          host.hasAttribute('data-still') ||
+          matchMedia('(prefers-reduced-motion: reduce)').matches
+        )
+          return el.remove();
+        el.classList.add('out');
+        el.addEventListener('transitionend', () => el.remove(), { once: true });
+        setTimeout(() => el.remove(), 400);
       },
       remove() {
         line?.remove();
