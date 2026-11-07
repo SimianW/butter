@@ -51,7 +51,9 @@ the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
 - Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`; `implement` or `implement-spec` builds it. In Butter their test seams are
   the ones in docs/bugfix.md step 2, their review step is `review-loop`, and the work ends in a
-  PR whose body carries `Closes #<issue>` and the `Review tier` line.
+  PR whose body carries `Closes #<issue>` and the `Review tier` line. These three skills are
+  user-only, so the user starts each one: when the work reaches a step, tell the user it is time
+  and give the command to type, such as `/to-spec`.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
