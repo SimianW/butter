@@ -80,6 +80,9 @@ export function fixtureHtml(url) {
   // ms from a send to ChatGPT's reply starting to show; 0 = no reply. As live, the sent question's
   // turn shows at once and the reply then appears, streaming, inside that same turn.
   const reply = Number(q.get('reply') || 0);
+  // With reply: as ChatGPT's "thinking" state, the click mounts an empty reply in the sent turn at
+  // once; the reply's text then fills it.
+  const placeholder = q.has('placeholder');
   const math = q.has('math'); // a paragraph with inline and display formulas below the quote
   // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
   // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
@@ -203,11 +206,12 @@ send.addEventListener('click', () => {
     turn.innerHTML = '<div class="u" data-message-author-role="user"></div>';
     turn.firstChild.textContent = editor.innerText;
     document.querySelector('.col').append(turn);
+    const box = document.createElement('div');
+    box.innerHTML = '<div class="a" data-markdown-text-style="assistant-message"><p></p></div>';
+    const p = box.querySelector('p');
+    if (${placeholder}) (turn.dataset.talvtTurnState = 'in_progress'), turn.append(box);
     setTimeout(() => {
       const words = ${JSON.stringify(LATEST)}.split(' ');
-      const box = document.createElement('div');
-      box.innerHTML = '<div class="a" data-markdown-text-style="assistant-message"><p></p></div>';
-      const p = box.querySelector('p');
       turn.dataset.talvtTurnState = 'in_progress';
       turn.append(box);
       fixture.replied = performance.now();

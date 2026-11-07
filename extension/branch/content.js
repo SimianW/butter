@@ -351,14 +351,14 @@
   const line = (() => {
     let timer = 0,
       route = null,
-      replies = null; // reply keys when Butter sent, for the ready line
+      replies = null; // reply keys just before Butter's send click, for the ready line
     const place = () => {
       const id = B.identity(location.href);
       if (id !== route) {
         if (!(route && !B.saved(route) && B.saved(id))) return hide();
         route = id;
       }
-      if (replies && B.replyStarted(replies, P.replyKeys())) {
+      if (replies && B.replyStarted(replies, P.replyKeys({ written: true }))) {
         stop();
         return ui?.note.fade();
       }
@@ -396,10 +396,13 @@
         hide();
     };
     return {
-      show(kind, title) {
+      // before: every reply key just before Butter's send click. Taken after it, they would hold
+      // the empty reply ChatGPT mounts at the click, and its text would never count; that empty
+      // reply is not the reply starting either, so place() counts only replies with text.
+      show(kind, title, before) {
         hide();
         route = B.identity(location.href);
-        if (kind === 'ready') replies = P.replyKeys();
+        if (kind === 'ready') replies = before;
         getUI().note.show({ kind, title, onClose: stop });
         place();
         timer = setInterval(place, 200);
@@ -467,9 +470,17 @@
     onEscape = cancel;
     u.overlay.working({ question: job.question, headerBottom: P.headerBottom(), onCancel: cancel });
     tabTitle.set(u.strings().creating);
+    const page = P.adapter();
+    let before = null;
     run = ButterBranchRun.start({
       job,
-      page: P.adapter(),
+      page: {
+        ...page,
+        send(button) {
+          before = P.replyKeys();
+          return page.send(button);
+        },
+      },
       clock,
       onState(state, info) {
         if (state === 'waiting-for-reply' || state === 'branching') {
@@ -481,7 +492,7 @@
           // The card and its cancel stay through sending: until the click, cancel still stops it.
           end();
           u.overlay.remove();
-          line.show('ready', job.title);
+          line.show('ready', job.title, before);
           globalThis.ButterSettings?.report('branch', { exercised: true, engaged: true });
         } else if (state === 'unsure') {
           end();

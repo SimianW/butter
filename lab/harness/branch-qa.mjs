@@ -470,24 +470,36 @@ try {
       };
       tick();
     }, HOST);
-  for (const motion of ['no-preference', 'reduce']) {
+  // placeholder: the send click mounts an empty reply at once (ChatGPT's "thinking" state), which
+  // the reply's text fills later; the line still waits for that text.
+  for (const [motion, held] of [
+    ['no-preference', false],
+    ['reduce', false],
+    ['no-preference', true],
+  ]) {
+    const label = held ? `${motion} placeholder` : motion;
     const page = await open();
-    const dest = await ask(page, { fixture: 'reply=2500' });
+    const dest = await ask(page, { fixture: 'reply=2500' + (held ? '&placeholder' : '') });
     await dest.emulateMedia({ reducedMotion: motion });
     await inShadow(dest, '.line').waitFor();
     await watchLine(dest);
     await dest.waitForTimeout(1500);
-    assert.equal(await dest.evaluate(() => fixture.replied), undefined, `${motion}: no reply yet`);
-    assert.equal(await inShadow(dest, '.line').count(), 1, `${motion}: line stays while no reply`);
+    assert.equal(await dest.evaluate(() => fixture.replied), undefined, `${label}: no reply yet`);
+    assert.equal(await inShadow(dest, '.line').count(), 1, `${label}: line stays while no reply`);
+    if (held)
+      assert.ok(
+        await dest.evaluate(() => !!document.querySelector('[data-turn-key^="t-sent-"] .a')),
+        'placeholder: the empty reply is mounted',
+      );
     await dest.waitForFunction(() => fixture.replied);
     await dest
       .waitForFunction(() => window.lineGoneAfter !== undefined, null, { timeout: 2_000 })
-      .catch(() => assert.fail(`${motion}: line still shown 2 s after the reply showed`));
+      .catch(() => assert.fail(`${label}: line still shown 2 s after the reply showed`));
     const { frames, after } = await dest.evaluate(() => ({ frames: lineFrames, after: lineGoneAfter }));
     const faded = frames.some((o) => o !== null && o > 0 && o < 1);
-    assert.ok(after < 700, `${motion}: line gone ${Math.round(after)} ms after the reply showed`);
-    assert.equal(faded, motion === 'no-preference', `${motion}: fade ${JSON.stringify(frames)}`);
-    console.log(`INFO ${motion}: line gone ${Math.round(after)} ms after the reply showed`);
+    assert.ok(after < 700, `${label}: line gone ${Math.round(after)} ms after the reply showed`);
+    assert.equal(faded, motion === 'no-preference', `${label}: fade ${JSON.stringify(frames)}`);
+    console.log(`INFO ${label}: line gone ${Math.round(after)} ms after the reply showed`);
     await dest.close();
     await page.close();
   }

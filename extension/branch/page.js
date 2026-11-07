@@ -69,10 +69,11 @@
   };
   // Keys of this conversation's replies in page order (ButterBranch.replyStarted): the turn's
   // data-turn-key (live: one turn holds a question and its reply), else the reply element.
-  const replyKeys = () =>
-    [...(scroller() || document).querySelectorAll(ASSISTANT)].map(
-      (el) => el.closest('[data-turn-key]')?.getAttribute('data-turn-key') || el,
-    );
+  // written: only replies that show text, not the empty one ChatGPT mounts while it thinks.
+  const replyKeys = ({ written = false } = {}) =>
+    [...(scroller() || document).querySelectorAll(ASSISTANT)]
+      .filter((el) => !written || el.textContent.trim())
+      .map((el) => el.closest('[data-turn-key]')?.getAttribute('data-turn-key') || el);
   const headerBottom = () => {
     const header = [...document.querySelectorAll('header')].find(visible);
     const bottom = header?.getBoundingClientRect().bottom;
