@@ -84,6 +84,45 @@ scroll with unchanged selection before suppression starts. Wheel, keyboard, lost
 navigation and data changes keep the prototype's cancellation checks and time limits.
 `window.__seekDump()` is an opt-in timing and geometry diagnostic; it contains no chat text.
 
+## Ask in branch
+
+Select text in a ChatGPT reply and an **Ask in branch** button appears 4 px to the right of
+ChatGPT's own **Ask ChatGPT** button. It copies that button's height, radius, background, shadow
+and font size from its computed style every frame while a selection is active, so it moves, shows
+and hides with it. Its question box opens under the buttons (above the selection when there is no
+room below). While the box has focus the page selection moves into it, so ChatGPT hides its own
+button; Butter keeps its button where it was and paints the quote with the CSS Custom Highlight
+API. Esc gives the selection back; the unsent question is kept per tab, per quote.
+
+Enter opens a new tab of the same conversation synchronously, inside the key press, so pop-up
+blocking doesn't apply. The URL carries only a job id (`#butter-branch=<uuid>`). The quote, the
+question, the original conversation id and title go to the extension worker, which keeps them in
+`chrome.storage.session` (memory only) for at most 60 s and hands them out once, to a tab that
+shows the same conversation and isn't the original tab.
+
+The new tab is covered by an overlay (scrim and card, tab title "Creating branch…") while
+`branch/run.js` drives ChatGPT's menu: More actions of the **latest** reply (not the selected one,
+so the branch keeps the whole conversation), Branch conversation, Branch in new chat. ChatGPT then
+routes the tab to an unsaved branch, `/c/local-chatgpt:<uuid>` (it calls
+`POST /backend-api/conversation/new_branch` itself).
+
+The run's states are loading, waiting-for-reply, branching, verifying, sending and ready, and the
+end states unsure, failed and cancelled. Success is decided by identity, not by menu timeouts: the
+tab must show a readable conversation id different from the original, and that conversation must
+have rendered (composer, a reply, and message wrappers whose
+`data-chatgpt-selection-conversation-id` matches). Before reporting a failure the run re-checks for
+3 s whether the tab landed on a branch anyway; a slow step that still made a branch ends in ready.
+"Branch in new chat" is pressed at most once per run. Only from a verified branch does it type
+`> ` + each quoted line, a blank line and the question into the composer and click ChatGPT's send
+button. When it can't be sure (unreadable identity, branch not rendered, no send button) it fills
+the composer without sending and says so; when the tab still shows the original conversation it
+types nothing. Nothing is ever typed into or sent in the original tab. The page adapter
+(`branch/page.js`) is the only part that touches ChatGPT's DOM; the run takes it as a parameter, so
+`test/branch-run.test.js` drives it with a fake page.
+
+The grey "Branched from …" line above the composer stays until you send your own next message in
+the branch, or press its ×.
+
 ## Privacy
 
 Settings live in `chrome.storage.local`. Layouts live in the extension's IndexedDB
@@ -130,6 +169,11 @@ records are read or imported. See [privacy and clearing instructions](../PRIVACY
 the [runtime API](development.md#layout-storage-api), and the
 [backend/permission rationale](layout-storage-design.md).
 
+Ask in branch keeps the selected text, the question, the original conversation id and its title in
+`chrome.storage.session` only between the click in the original tab and the new tab's claim (one
+claim; expired after 60 s; pruned whenever the worker wakes). Content scripts can't read session
+storage; only the worker touches it. No permission was added for it.
+
 ## Known trade-offs
 
 - Earlier messages load after you let go of the scrollbar. Loading the whole chat takes several
@@ -150,6 +194,9 @@ the [runtime API](development.md#layout-storage-api), and the
   thread column: about 10 px wider at a 1600 px window.
 - A block that streams in while you are scrolled far up is skipped before it's ever drawn; when
   you scroll down to it, content below the viewport may settle by a few pixels.
+- Ask in branch depends on ChatGPT's message menu. The "Branch in new chat" item has no test id or
+  icon, so it is matched by its exact English label; Chinese labels and the hidden-button rules
+  come later. When the item isn't found, nothing is typed or sent and the new tab shows a failure.
 - Selectors depend on ChatGPT's current DOM (`data-turn-key`, `data-markdown-text-style`,
   `data-talvt-turn-state`, `data-user-message-bubble`, `.thread-scroll-container`, one Tailwind
   class) and the history rail on the shape of ChatGPT's conversation API responses. If ChatGPT

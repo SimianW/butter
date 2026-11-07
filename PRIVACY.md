@@ -5,7 +5,9 @@ stream, scroll and navigate. This page explains what Butter reads, what it saves
 and what it sends.
 
 **In short:** Butter runs only on `chatgpt.com` and works entirely inside your browser. It never
-saves the text of your chats, has no server, and sends nothing to anyone.
+saves the text of your chats to disk, has no server, and sends nothing to anyone. When you use
+**Ask in branch**, it hands your selected text and question to the new tab through memory for at
+most a minute, and ChatGPT sends your question in the new branch as if you had pressed send.
 
 ## What Butter reads
 
@@ -21,6 +23,8 @@ one-way hashes described under "What Butter saves" are. Nothing is sent.
   layouts of different ChatGPT accounts apart. It is turned into a one-way hash right away (see
   below), and the id itself is never saved.
 - **How the chat is laid out on screen:** heights and positions of messages, fonts and widths.
+- **Text you select in a ChatGPT reply, and the question you type into Ask in branch.** Butter
+  uses them only to ask that question in a new branch of the chat (see "Ask in branch" below).
 - **Key presses, clicks and scrollbar holds on ChatGPT.** Butter reacts to Enter and the send button
   to adjust scrolling before a question is sent, and to scrollbar holds to delay loading earlier
   messages. To tell whether the scrollbar preview works, it keeps a short rolling list of recent
@@ -67,8 +71,27 @@ as a counter and the ids of recent "clear" requests, so that a clear is never un
 feature groups recently failed to work, so the popup can warn you. It contains no chat or account
 information, and is cleared when that feature works again or when you quit Chrome.
 
-**4. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
+**4. Ask in branch handoff,** in Chrome's session storage (`chrome.storage.session`), which is kept
+in memory and never written to disk. When you ask in a branch, Butter opens a new tab and passes it,
+through the extension, the text you selected, your question, the original chat's title and its
+conversation id. The new tab takes this once and it is deleted at that moment. If the new tab
+doesn't take it, it expires after one minute and is deleted the next time the extension runs; it is
+also gone when you quit Chrome. Nothing else about the branch is stored.
+
+**5. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
 database once, without reading it.
+
+## Ask in branch
+
+When you select text in a ChatGPT reply and choose **Ask in branch**, Butter opens a new tab of the
+same chat and, in that tab only, uses ChatGPT's own "Branch in new chat" menu to make a copy of the
+conversation. Once it has checked that the tab really shows a different conversation, it types a
+quote of your selection and your question into ChatGPT's composer there and presses ChatGPT's send
+button. If it can't be sure the tab is a new branch, it fills the text in without sending. Butter
+never types into or sends in your original chat. ChatGPT handles the branch and the message as if
+you had done these steps yourself.
+
+Turning Butter off in its popup also turns Ask in branch off; then the button doesn't appear.
 
 ## How to delete saved data
 
@@ -83,7 +106,9 @@ the extension, not on the site.
 
 Nothing. Butter makes no network requests of its own and has no analytics, tracking or ads. The only
 request it touches is ChatGPT's own request for earlier messages: Butter asks for smaller pages and
-waits while you hold the scrollbar. It never changes or sends your messages.
+waits while you hold the scrollbar. It never changes your messages. It sends a message only when you
+use Ask in branch, and then through ChatGPT's own menu and send button in the new branch, never in
+your original chat.
 
 ## Sharing
 
@@ -100,4 +125,4 @@ the extension before the new practice starts.
 
 Questions: open an issue at <https://github.com/SimianW/butter/issues>.
 
-Last updated: 2026-11-03.
+Last updated: 2026-11-07.
