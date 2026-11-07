@@ -47,6 +47,10 @@ the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
   returns APPROVE on the final diff, at the round budget the tier sets. Every review in this
   repo, including when the user asks to review a PR or branch, runs `review-loop`.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
+- Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
+  `ready-for-agent`; `implement` or `implement-spec` builds it. In Butter their test seams are
+  the ones in docs/bugfix.md step 2, their review step is `review-loop`, and the work ends in a
+  PR whose body carries `Closes #<issue>` and the `Review tier` line.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.

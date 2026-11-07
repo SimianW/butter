@@ -15,6 +15,12 @@ import sys
 
 MANIFEST = "extension/manifest.json"
 HIGH_RISK_DIRS = ("extension/storage/", "extension/consent/", "extension/stream/")
+# Files outside those directories that read or write chrome.storage or layout consent.
+HIGH_RISK_FILES = (
+    "extension/shared/settings.js",
+    "extension/shared/status.js",
+    "extension/popup/popup.js",
+)
 HIGH_RISK_KEYS = (
     "permissions",
     "optional_permissions",
@@ -46,6 +52,8 @@ def classify_path(path, manifest_before, manifest_after):
     """Return (tier, reason) for one repo-relative path."""
     if path.startswith(HIGH_RISK_DIRS):
         return 2, f"{path} (high-risk directory)"
+    if path in HIGH_RISK_FILES:
+        return 2, f"{path} (storage or consent)"
     if path == MANIFEST:
         keys = changed_keys(manifest_before, manifest_after)
         risky = [key for key in keys if key in HIGH_RISK_KEYS]
