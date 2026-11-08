@@ -36,8 +36,8 @@ def dev_manifest(manifest):
         raise ValueError("expected the isolated content scripts first, then the MAIN-world ones")
     isolated, main = scripts
     # After the store scripts: the content script relays to the MAIN-world recorder, which
-    # listens to seek/preview-main.js's hooks.
-    isolated["js"].append(f"{DEV_DIR}/content.js")
+    # listens to seek/preview-main.js's hooks; the toast confirms a save on the page.
+    isolated["js"] += [f"{DEV_DIR}/content.js", f"{DEV_DIR}/toast.js"]
     main["js"] += [f"{DEV_DIR}/recorder.js", f"{DEV_DIR}/recorder-main.js"]
     # dev/worker.js imports the store worker, then adds the shortcut handling.
     manifest["background"]["service_worker"] = f"{DEV_DIR}/worker.js"

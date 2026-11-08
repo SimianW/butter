@@ -82,7 +82,7 @@ export default [
   },
   {
     // Dev build only (extension/dev/, left out of the store package).
-    files: ['extension/dev/recorder-main.js', 'extension/dev/worker.js'],
+    files: ['extension/dev/recorder-main.js', 'extension/dev/worker.js', 'extension/dev/toast.js'],
     languageOptions: {
       globals: { ButterDevRecorder: 'readonly', ButterStatus: 'readonly' }, // dev/recorder.js, shared/status.js
     },

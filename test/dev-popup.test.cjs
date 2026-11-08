@@ -41,6 +41,7 @@ function profile({ local = {}, shortcut = 'Alt+Shift+B', chat = true } = {}) {
     downloads: {
       download: async (options) => downloads.push(options),
       search: async () => [],
+      onChanged: { addListener() {}, removeListener() {} },
       show() {},
       showDefaultFolder() {},
     },

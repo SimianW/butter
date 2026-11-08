@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
@@ -58,12 +58,17 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
   `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
   wait and the hidden-button cases on the live page; see its header for how the stream is held.
-- Dev build bug capture: `test/dev-recorder.test.js` (`node --test`) covers the recorder.
+- Dev build bug capture: `test/dev-recorder.test.js` (`node --test`) covers the recorder and
+  `test/dev-toast.test.js` the toast (text in both languages, no pointer events, focus, 2 s, replace).
   `xvfb-run -a node lab/harness/dev-capture-qa.mjs` builds the dev zip, loads it in its own
   Chromium on a virtual display over a synthetic chat (no ChatGPT requests), presses the real
   shortcut through XTest (`xtest-keys.py`; keys sent over the DevTools protocol never reach
-  `chrome.commands`) and checks the files written to a temporary Downloads folder; the saved
-  files and a summary go to `notes/runs/2026-11-08-dev-capture-43/` (`OUT=` overrides).
+  `chrome.commands`) and checks the files written to a temporary Downloads folder. It also checks
+  that every save shows the toast while a held drag continues, and shoots the toast on a light and
+  a dark page; with `BUTTER_DEV_MOCKUP=<#32 mockup>` (`gh issue artifact download 32 1 -R
+  SimianW/butter`) it compares them with the mockup's `toast-light` and `toast-dark` panels (same
+  size, under 0.1% of pixels differing). The saved files, screenshots and a summary go to
+  `notes/runs/2026-11-08-dev-capture-43/` (`OUT=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.

@@ -510,7 +510,9 @@ async function devPopup() {
       chrome.downloads.download = options => (asked.push(options.filename), download(options));
       globalThis.requests = [];
       chrome.tabs.sendMessage = async (tab, message) => {
-        requests.push([tab, message.request?.trigger, message.request?.round, message.request?.bug]);
+        // The toast message (#45) that follows a completed download needs no reply here.
+        if (message.type !== 'butter-dev-snapshot') return;
+        requests.push([tab, message.request.trigger, message.request.round, message.request.bug]);
         return { snapshot: JSON.stringify({ kind: 'butter-diag', savedAt: new Date().toISOString() }) };
       };
     });
