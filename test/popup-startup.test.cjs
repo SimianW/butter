@@ -166,6 +166,29 @@ test('the header shows version_name as written and the footer links GitHub and t
   assert.match(f.html(), /PRIVACY\.zh-CN\.md"[^>]*>隐私政策<\/a>.*data-lang="zh".*data-lang="en"/s);
 });
 
+test('pending consent shows the note with the privacy link for the language, and the switch grants consent', async () => {
+  const f = popup();
+  f.finish({ butter: { lang: 'en', opts: { layout: true } } }, {});
+  await tick();
+  // The note follows the layouts row's label, inside the layouts card, and nothing else does.
+  const note = (html) => html.match(/<\/label><div class="note">(.*?)<\/div><\/div>/)?.[1];
+  assert.equal(
+    note(f.html()),
+    'Off until you turn it on. Butter saves layout numbers only, never chat text, and deletes them after 30 days. <a target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/PRIVACY.md">Privacy policy</a>',
+  );
+  assert.doesNotMatch(f.html(), /class="pend"|class="use/);
+  f.changed({ butter: { newValue: { lang: 'zh', opts: { layout: true } } } }, 'local');
+  assert.equal(
+    note(f.html()),
+    '打开前不会保存。Butter 只保存布局数字，不保存聊天内容，30 天后自动删除。<a target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/PRIVACY.zh-CN.md">隐私政策</a>',
+  );
+  f.toggle('layout');
+  await tick();
+  assert.equal(f.saved.at(-1).butter.layoutConsent, 'granted');
+  assert.equal(f.saved.at(-1).butter.opts.layout, true);
+  assert.doesNotMatch(f.html(), /class="note"/);
+});
+
 test('the branch switch writes only the branch setting', async () => {
   const f = popup();
   f.finish({ butter: { layoutConsent: 'granted', opts: { rail: false } } }, {});

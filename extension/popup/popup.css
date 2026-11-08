@@ -208,7 +208,8 @@ button {
   cursor: pointer;
 }
 .row + .row,
-.use {
+.use,
+.note {
   border-top: 1px solid var(--hair);
 }
 .row .ic {
@@ -297,6 +298,23 @@ button {
   .tg::after {
     transition: none !important;
   }
+}
+
+/* Pending consent: the note under the layouts row, the popup's only light butter surface. */
+.note {
+  padding: 9px 14px 10px 44px;
+  background: var(--butter-light);
+  font-size: 12px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.note a {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--butter-deep);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
 /* Saved layouts: the storage line and its Clear button. */
@@ -398,7 +416,7 @@ button {
   outline-offset: -3px;
 }
 
-/* Interim looks until #39 (paused, faults) and #40 (consent) restyle them. */
+/* Interim looks until #39 (paused, faults) restyles them. */
 .card.dim .row .t,
 .card.dim .row .ic {
   opacity: 0.45;
@@ -440,20 +458,4 @@ button {
   background: var(--warn-bg);
   color: var(--warn);
   white-space: nowrap;
-}
-.row .pend {
-  margin-top: 4px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink-2);
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.row .pend i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  flex: none;
 }

@@ -284,7 +284,7 @@ test('master off hides the pending card and re-enabling restores it without deci
   assert.equal(status.normalize(shared.value()).layoutConsent, 'pending');
 });
 
-test('actual popup pending switch is off, displays the consent line, and grants consent on click', async () => {
+test('actual popup pending switch is off, displays the consent note, and grants consent on click', async () => {
   const shared = sharedStorage({ lang: 'en', opts: { layout: true } });
   let click, html;
   const root = {
@@ -319,13 +319,13 @@ test('actual popup pending switch is off, displays the consent line, and grants 
   };
   vm.runInNewContext(read('popup/popup.js'), ctx);
   await tick();
-  assert.match(html, /Not on yet · turning it on means you agree/);
+  assert.match(html, /<div class="note">Off until you turn it on\./);
   assert.match(html, /aria-checked="false"[^>]*data-switch="layout"/);
   click({ target: { closest: () => ({ dataset: { switch: 'layout' } }) } });
   await tick();
   assert.equal(shared.value().layoutConsent, 'granted');
   assert.equal(shared.value().opts.layout, true);
-  assert.doesNotMatch(html, /Not on yet/);
+  assert.doesNotMatch(html, /class="note"/);
 });
 
 test('a delayed popup startup read cannot undo a newer consent choice', async () => {

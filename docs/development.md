@@ -27,7 +27,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 21 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 22 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
   `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
   (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
   (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,

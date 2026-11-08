@@ -32,7 +32,6 @@ const redesignExcluded = {
   'paused-after': 'paused look lands in #39',
   'rail-fault-after': 'in-row faults land in #39',
   'branch-fault-after': 'in-row faults land in #39',
-  'layouts-pending-after': 'consent note lands in #40',
 };
 // The header version label and the storage line show live data; both comparisons mask them.
 const liveRegions = () => [...document.querySelectorAll('.ver, .use')].map(e => {
@@ -86,6 +85,8 @@ try {
     // English states for the #35 redesign panels.
     ['19-en-rail-fault', { lang: 'en', broken: true }], ['20-en-layouts-pending', { lang: 'en', consent: 'pending' }],
     ['21-en-clear-confirm', { lang: 'en', clear: 'confirm' }],
+    // The consent note in Chinese, for the 600 px cap (05 covers the Chinese clear confirmation).
+    ['22-zh-layouts-pending', { lang: 'zh', consent: 'pending' }],
   ];
   if (process.env.BUTTER_CASES) cases = cases.filter(([name]) => process.env.BUTTER_CASES.split(',').includes(name.slice(0, 2)));
   const mockup = process.env.BUTTER_MOCKUP;

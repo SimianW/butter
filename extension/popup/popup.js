@@ -26,7 +26,7 @@ const T = {
       ['branch', '在分支中问', '选中文字，在新分支里提问'],
       ['db', '记住长对话的布局', '再次打开时跳转更快'],
     ],
-    pending: '还没开启 · 打开开关即表示同意',
+    note: '打开前不会保存。Butter 只保存布局数字，不保存聊天内容，30 天后自动删除。',
     clear: '清除',
     confirm: '清除全部已保存的布局？',
     cancel: '取消',
@@ -51,7 +51,7 @@ const T = {
       ['branch', 'Ask in branch', 'Select text, ask about it in a new branch'],
       ['db', 'Remember long-chat layouts', 'Faster jumps when you come back'],
     ],
-    pending: 'Not on yet · turning it on means you agree',
+    note: 'Off until you turn it on. Butter saves layout numbers only, never chat text, and deletes them after 30 days. ',
     clear: 'Clear',
     confirm: 'Clear all saved layouts?',
     cancel: 'Cancel',
@@ -150,14 +150,21 @@ function render() {
     const [ic, n, d] = t.groups[i],
       key = groupKeys[i],
       bad = broken.includes(key);
-    return `<label class="row ${bad ? 'broken' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div>${key === 'layout' && prefs.layoutConsent === 'pending' ? `<div class="pend"><i aria-hidden="true"></i>${t.pending}</div>` : ''}</div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
+    return `<label class="row ${bad ? 'broken' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div></div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
   };
   const features = groupKeys.flatMap((k, i) => (k === 'layout' ? [] : [row(i)]));
+  const privacy = `<a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a>`;
+  // Under the layouts row: the storage line, or the consent note while consent is pending.
+  const below = ButterStatus.groupOn(prefs, 'layout')
+    ? `<div class="use ${clearState === 'confirm' || clearState === 'clearing' ? 'confirm' : ''}">${usageRow(t)}</div>`
+    : prefs.layoutConsent === 'pending'
+      ? `<div class="note">${t.note}${privacy}</div>`
+      : '';
   const html = `<div class="hd">${pat}<div class="word">Butter</div><a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
     <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
     <div class="warning-slot">${warning(t, broken)}</div><div class="card ${paused ? 'dim' : ''}">${features.join('')}</div>
-    <div class="card">${row(groupKeys.indexOf('layout'))}${ButterStatus.groupOn(prefs, 'layout') ? `<div class="use ${clearState === 'confirm' || clearState === 'clearing' ? 'confirm' : ''}">${usageRow(t)}</div>` : ''}</div>
-    <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a><a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a><div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
+    <div class="card">${row(groupKeys.indexOf('layout'))}${below}</div>
+    <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a>${privacy}<div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
   const template = document.createElement('template');
   template.innerHTML = `<div>${html}</div>`;
   if (root.firstElementChild) patch(root.firstElementChild, template.content.firstElementChild);
