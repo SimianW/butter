@@ -164,3 +164,61 @@ lab/harness/bookmarks-live.mjs 139ms
 `node --check lab/harness/bookmarks-live.mjs` (exit 0): no stdout.
 Earlier Prettier invocations without the ignore override produced no stdout because `lab/`
 is excluded by this repository's `.prettierignore`.
+
+## Commit, update and validation
+
+`git diff --check` (exit 0): no stdout.
+
+`git add lab/harness/bookmarks-live.mjs notes/runs/2026-11-08-bookmarks-live && git commit -m "test: record bookmarks live lab blocker for #57"` (exit 0):
+
+```text
+[t3/57-bookmark-lab 7244cab] test: record bookmarks live lab blocker for #57
+ 4 files changed, 1415 insertions(+)
+ create mode 100644 lab/harness/bookmarks-live.mjs
+ create mode 100644 notes/runs/2026-11-08-bookmarks-live/commands.md
+ create mode 100644 notes/runs/2026-11-08-bookmarks-live/report.md
+ create mode 100644 notes/runs/2026-11-08-bookmarks-live/summary.json
+```
+
+`git fetch origin && git merge origin/t3/51-bookmarks` (exit 0):
+
+```text
+Already up to date.
+```
+
+`npm run format:check && npm run lint` (exit 0):
+
+```text
+> format:check
+> prettier --check "extension/**/*.{js,css,html,json}" "test/**"
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> lint
+> eslint .
+```
+
+`node_modules/.bin/prettier --check --ignore-path /dev/null lab/harness/bookmarks-live.mjs`
+(exit 0; needed because the standard format command excludes `lab/`):
+
+```text
+Checking formatting...
+All matched files use Prettier code style!
+```
+
+`node --check lab/harness/bookmarks-live.mjs && git diff --check` (exit 0): no stdout.
+
+`git diff origin/t3/51-bookmarks --stat` (exit 0, before this validation-log appendix):
+
+```text
+ lab/harness/bookmarks-live.mjs                    | 758 ++++++++++++++++++++++
+ notes/runs/2026-11-08-bookmarks-live/commands.md  | 166 +++++
+ notes/runs/2026-11-08-bookmarks-live/report.md    |  78 +++
+ notes/runs/2026-11-08-bookmarks-live/summary.json | 413 ++++++++++++
+ 4 files changed, 1415 insertions(+)
+```
+
+`git status --short` after that commit/merge (exit 0): no stdout. No extension, privacy,
+README, changelog or manifest changes appear in this branch's diff. Final log commit and push
+results are reported in the task handoff so the report need not refer to its own commit hash.
