@@ -272,7 +272,9 @@
     selectionTimer = setTimeout(onSelection, 40);
   });
   document.addEventListener('butter-settings', () => {
-    if (off()) hideSelectionUI();
+    if (!off()) return;
+    hideSelectionUI();
+    stopRun?.();
   });
   // Esc or a click outside closes the box; the draft stays for this selection.
   document.addEventListener(
@@ -446,6 +448,8 @@
   // Esc on the card: cancel while working, close the failure card. Only the user's own key:
   // the run closes ChatGPT's menus with a synthetic Escape of its own.
   let onEscape = null;
+  // Cancels the run in progress, if any: turning Butter or Ask in branch off stops it.
+  let stopRun = null;
   document.addEventListener(
     'keydown',
     (e) => {
@@ -462,6 +466,7 @@
     let run = null;
     const end = () => {
       onEscape = null;
+      stopRun = null;
       tabTitle.clear();
     };
     // ×, Cancel and Esc: stop at once. The run makes no further page call, and the overlay goes
@@ -473,6 +478,7 @@
       u.overlay.remove();
     };
     onEscape = cancel;
+    stopRun = cancel;
     u.overlay.working({ question: job.question, onCancel: cancel });
     tabTitle.set(u.strings().creating);
     const page = P.adapter();
@@ -539,7 +545,7 @@
     }
     if (!result?.job) return;
     await domReady();
-    runBranch(result.job);
+    if (!off()) runBranch(result.job);
   };
 
   if (incoming) claim(incoming);

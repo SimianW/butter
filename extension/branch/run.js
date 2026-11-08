@@ -211,6 +211,10 @@
       // Send only while the tab still shows the verified branch.
       if (page.identity() !== id || !page.isRendered(id))
         return { state: 'unsure', cause: 'unverified', identity: id };
+      // ...and while the composer still holds exactly what Butter typed.
+      const draft = page.composerText();
+      if (draft === null || draft.trim().replace(/\n{3,}/g, '\n\n') !== filled.text)
+        return { state: 'unsure', cause: 'composer', identity: id };
       if (!page.send(button)) return { state: 'unsure', cause: 'send', identity: id };
       return { state: 'ready', identity: id };
     }

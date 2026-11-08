@@ -203,6 +203,19 @@ test('no send button after filling → unsure, the message stays in the composer
   assert.deepEqual(fake.s.sent, []);
 });
 
+test('a composer edited while waiting for the send button is left unsent (unsure)', async () => {
+  const fake = fakePage({
+    sendFrom: 3000,
+    tick: (t, s) => {
+      if (s.filled.length && s.composer === MESSAGE) s.composer = MESSAGE + ' and more';
+    },
+  });
+  const result = await run(fake);
+  assert.equal(result.state, 'unsure');
+  assert.equal(result.cause, 'composer');
+  assert.deepEqual(fake.s.sent, []);
+});
+
 test('an existing different draft in the branch composer is not overwritten', async () => {
   const fake = fakePage({ composer: 'my own draft' });
   const result = await run(fake);
