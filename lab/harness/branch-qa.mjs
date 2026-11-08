@@ -783,8 +783,15 @@ try {
       );
       await dest.close();
     } else {
-      // ChatGPT's menu is back: Try again makes the branch, and the status failure clears.
+      // ChatGPT's menu is back, but Ask in branch is off: Try again does nothing.
       await dest.evaluate(() => (fixture.noNewChat = false));
+      await settings({ opts: { branch: false } });
+      await card.getByText('Try again').click();
+      await dest.waitForTimeout(3000);
+      assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), [], 'retry while off: never branched');
+      assert.equal(await dest.evaluate(() => fixture.sent.length), 0, 'retry while off: nothing sent');
+      await settings({});
+      // Back on: Try again makes the branch, and the status failure clears.
       await card.getByText('Try again').click();
       await inShadow(dest, '.card:not(.err)').waitFor();
       await inShadow(dest, '.line').waitFor({ timeout: 20_000 });

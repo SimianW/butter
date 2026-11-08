@@ -462,6 +462,8 @@
   );
 
   const runBranch = (job) => {
+    // Off (popup) means no run, also from the failure card's Try again.
+    if (off()) return;
     const u = getUI();
     let run = null;
     const end = () => {
@@ -545,7 +547,7 @@
     }
     if (!result?.job) return;
     await domReady();
-    if (!off()) runBranch(result.job);
+    runBranch(result.job);
   };
 
   if (incoming) claim(incoming);
