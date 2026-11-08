@@ -37,6 +37,14 @@
   let candidate = null; // {sc, model, flat, ...} prepared at press time
   let pressDecision = null,
     prepareSequence = 0;
+  // Dev build only: dev/recorder-main.js sets a listener through __seekDump.tap. Unset in the
+  // store build, so each hook below is one null check and builds no summary.
+  let tap = null;
+  const emit = (type, fields) => {
+    try {
+      tap(type, fields);
+    } catch {}
+  };
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1];
   const event = (kind, more = {}) => {
     S.events.push({ kind, t: performance.now(), ...more });
@@ -569,7 +577,41 @@
       a.estTurn = t.id;
       a.textFallback = true;
     }
+    if (tap) previewTap(a, question, estimated);
     return performance.now() - t0;
+  }
+  // Dev build: one preview event each time the previewed question or its mode changes, and a
+  // preview-miss when that mode shows less than the recorded layout (for the turn the estimate or
+  // excerpt stands in for, with the press's layout reason for it).
+  function previewTap(a, question, estimated) {
+    if (!question) return;
+    const mode = !question.layout
+        ? 'unseen'
+        : a.textFallback
+          ? 'text-fallback'
+          : estimated
+            ? 'estimate'
+            : 'layout',
+      seen = `${question.index}:${mode}`;
+    if (a.tapPreview === seen) return;
+    a.tapPreview = seen;
+    emit('preview', {
+      turn: question.index,
+      mode,
+      layout: question.layout,
+      unseen: mode === 'unseen',
+      items: a.rendered.size,
+      estimate: !est.hidden,
+      textFallback: !!a.textFallback,
+    });
+    if (mode === 'layout') return;
+    const shown = a.prep.model.findIndex((t) => t.id === a.estTurn),
+      turn = shown < 0 ? question.index : shown;
+    emit('preview-miss', {
+      turn,
+      reason: mode,
+      layoutReason: a.prep.decision?.turns?.[turn]?.layoutReason ?? null,
+    });
   }
   function update(e, knownTop) {
     const a = active || pendingCommit;
@@ -598,6 +640,18 @@
       renderMs,
       jsMs: performance.now() - start,
     };
+    if (tap)
+      emit('seek', {
+        top,
+        turn: m.index,
+        offset: row.offset,
+        layout: m.layout,
+        known: m.known,
+        items: row.items,
+        textFallback: row.textFallback,
+        renderMs,
+        jsMs: row.jsMs,
+      });
     S.updates.push(row);
     if (S.updates.length > 5000) S.updates.splice(0, 1000);
     requestAnimationFrame(() =>
@@ -657,12 +711,22 @@
     });
     if (S.presses.length > 200) S.presses.shift();
     if (!c.kind) {
+      if (tap && onSc) emit('press', { kind: null, reason: c.reason });
       act.cancel();
       candidate = null;
       return;
     }
     const prep = prepare(s);
     if (!prep) event('no-model');
+    if (tap)
+      emit('press', {
+        kind: c.kind,
+        sequence: pressDecision?.sequence ?? null,
+        modelLength: pressDecision?.modelLength ?? null,
+        layoutTurns: prep?.layoutTurns ?? null,
+        prepMs: prep?.prepMs ?? null,
+        scrollTop: s.scrollTop,
+      });
     candidate = {
       t: performance.now(),
       sc: s,
@@ -755,6 +819,7 @@
           }
         } else if (r === 'reject') {
           event('reject', { why: act.detail?.reason });
+          if (tap) emit('activation-reject', { reason: act.detail?.reason });
           candidate = null;
         }
         return;
@@ -782,6 +847,7 @@
     held = false;
     const r = act.up();
     if (r === 'reset' && candidate) {
+      if (tap) emit('release', { reason: type, commit: false });
       event('candidate-end', { why: 'up' });
       candidate = null;
     }
@@ -795,6 +861,7 @@
       const r = act.wheel();
       if (r === 'reject') {
         event('reject', { why: 'wheel' });
+        if (tap) emit('activation-reject', { reason: 'wheel' });
         candidate = null;
       } else if (r === 'end' && active) finish('wheel');
     },
@@ -805,6 +872,7 @@
     () => {
       if (act.key() === 'reject') {
         event('reject', { why: 'key' });
+        if (tap) emit('activation-reject', { reason: 'key' });
         candidate = null;
       }
     },
@@ -934,6 +1002,7 @@
     a.reason = reason;
     if (commit && finalTop !== a.lastTop) update({ timeStamp: performance.now() }, finalTop);
     event('release', { reason, commit, top: finalTop });
+    if (tap) emit('release', { reason, commit, top: finalTop, durationMs: a.end - a.start });
     if (commit) mask(a);
     restoreShift(a);
     if (!commit || !a.sc.isConnected || a.conv !== conv()) {
@@ -987,6 +1056,13 @@
       a.sc.dispatchEvent(new Event('scroll'));
       a.dispatched = performance.now();
       event('destination-commit', { top: currentTop });
+      if (tap)
+        emit('commit', {
+          turn: question.index,
+          top: currentTop,
+          layout: question.layout,
+          retarget: !!a.commitRetarget,
+        });
       requestAnimationFrame(ready);
     };
     a.flush = perform;
@@ -1063,6 +1139,7 @@
             quiet = 0;
             prev = 0;
             event('semantic-retarget', { to: r.to, error: r.delta });
+            if (tap) emit('retarget', { kind: 'semantic', to: r.to, error: r.delta });
             requestAnimationFrame(ready);
             return;
           }
@@ -1089,6 +1166,7 @@
               quiet = 0;
               prev = 0;
               event('semantic-question-fallback', { to: r.to });
+              if (tap) emit('retarget', { kind: 'question', to: r.to, error: r.delta });
               requestAnimationFrame(ready);
               return;
             }
@@ -1120,6 +1198,7 @@
           });
           s.scrollTop = r.to;
           event('retarget', a.retargets.at(-1));
+          if (tap) emit('retarget', { kind: 'drift', to: r.to, error: r.drift });
           quiet = 0;
           prev = 0;
           requestAnimationFrame(ready);
@@ -1148,6 +1227,7 @@
             prev = 0;
             lastTop = NaN;
             event('history-block-alignment', a.alignmentCorrection);
+            if (tap) emit('retarget', { kind: 'history-block', to, error });
             requestAnimationFrame(ready);
             return;
           }
@@ -1186,6 +1266,14 @@
           engaged: !failed && ['pointerup', 'mouseup'].includes(a.reason),
         });
         event('reveal', { ms: now - a.end, error: a.landingErrorPx, timedOut: a.timedOut });
+        if (tap)
+          emit('reveal', {
+            durationMs: now - a.end,
+            error: a.landingErrorPx,
+            timedOut: a.timedOut,
+            matched: a.semantic?.matched ?? null,
+            fallback: a.semantic?.fallback ?? null,
+          });
       } else requestAnimationFrame(ready);
     };
     requestAnimationFrame(settle);
@@ -1423,6 +1511,15 @@
   Object.defineProperty(window.__seekDump, 'pressDecision', {
     get: () => JSON.parse(JSON.stringify(pressDecision)),
   });
+  // Dev build: the recorder's listener, and whether the left button is held (for pointerHeld).
+  Object.defineProperty(window.__seekDump, 'tap', {
+    set: (listener) => {
+      tap = typeof listener === 'function' ? listener : null;
+    },
+  });
+  Object.defineProperty(window.__seekDump, 'held', { get: () => held });
+  // Dev build: the conversation the seek code is on, so the recorder can tell a switch apart.
+  Object.defineProperty(window.__seekDump, 'conv', { get: () => conv() ?? null });
   window.__seekCoverage = () => {
     const s = [...document.querySelectorAll('.thread-scroll-container')].find(
       (s) => s.clientHeight > 0,

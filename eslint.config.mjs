@@ -10,7 +10,11 @@ export default [
   { ignores: ['lab/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
   {
     files: ['extension/**/*.js'],
-    ignores: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
+    ignores: [
+      'extension/storage/layout-worker.js',
+      'extension/branch/worker.js',
+      'extension/dev/worker.js',
+    ],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.browser, chrome: 'readonly' },
@@ -19,7 +23,11 @@ export default [
   },
   // The service worker gets worker globals instead of window globals.
   {
-    files: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
+    files: [
+      'extension/storage/layout-worker.js',
+      'extension/branch/worker.js',
+      'extension/dev/worker.js',
+    ],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.serviceworker, chrome: 'readonly' },
@@ -72,6 +80,26 @@ export default [
     files: ['extension/branch/run.js'],
     languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
   },
+  {
+    files: ['extension/dev/sources.js'],
+    languageOptions: { globals: { require: 'readonly' } }, // falls back to recorder.js under node
+  },
+  {
+    // Dev build only (extension/dev/, left out of the store package).
+    files: ['extension/dev/recorder-main.js', 'extension/dev/worker.js', 'extension/dev/toast.js'],
+    languageOptions: {
+      globals: {
+        ButterDevRecorder: 'readonly', // dev/recorder.js
+        ButterDevSources: 'readonly', // dev/sources.js
+        ButterStatus: 'readonly', // shared/status.js
+      },
+    },
+  },
+  {
+    // The store worker's queue and message handler, which dev/worker.js imports.
+    files: ['extension/dev/worker.js'],
+    languageOptions: { globals: { serial: 'readonly', handle: 'readonly' } },
+  },
   // Files that also export themselves for node --test, behind a `typeof module` check.
   {
     files: [
@@ -83,6 +111,8 @@ export default [
       'extension/seek/core-main.js',
       'extension/branch/logic.js',
       'extension/branch/run.js',
+      'extension/dev/recorder.js',
+      'extension/dev/sources.js',
     ],
     languageOptions: { globals: { module: 'readonly' } },
   },

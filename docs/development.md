@@ -11,13 +11,14 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
 | `notes/review.md` | Historical risk review of the early extension code. |
 | `notes/runs/` | Curated lab reports and numeric results; private captures excluded. |
 | `report/report.html` | One-page visual summary. |
-| `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
+| `scripts/package.py` | Builds `dist/butter-<version>.zip`; `--test <tag>` and `--dev` build numbered test zips. |
 | `CHANGELOG.md` | Versions. |
 
 The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` supplies the geometry wire format before the single
@@ -35,6 +36,13 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
   version label and the storage line masked; the run prints every panel's height and diff ratio,
   then fails with a summary if any differ.
+  The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
+  it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
+  states (recording, just saved, not on a ChatGPT tab, the tallest state, Chinese recording and
+  tallest) in both themes, each at most 600 px with the dev row unclipped. It also drives the card:
+  New round survives a reload, Open round folder, and the save button through the real worker.
+  `BUTTER_DEV_MOCKUP=<path>` (`gh issue artifact download 32 1 -R SimianW/butter`) compares the
+  English and dark dev states with that mockup's `dev-*-after` panels the same way.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
@@ -50,6 +58,21 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
   `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
   wait and the hidden-button cases on the live page; see its header for how the stream is held.
+- Dev build bug capture: `test/dev-recorder.test.js` and `test/dev-sources.test.js` (`node --test`)
+  cover the recorder and the `turns`/`usage` sources against planted page state, and
+  `test/dev-toast.test.js` the toast (text in both languages, no pointer events, focus, 2 s, replace).
+  The bug-file format is in [notes/diagnostics/README.md](../notes/diagnostics/README.md#bug-files-from-the-dev-build).
+  `xvfb-run -a node lab/harness/dev-capture-qa.mjs` builds the dev zip, loads it in its own
+  Chromium on a virtual display over a long synthetic chat (`dev-capture-fixture.mjs`, no ChatGPT
+  requests), presses the real shortcut through XTest (`xtest-keys.py`; keys sent over the
+  DevTools protocol never reach `chrome.commands`) and checks the files written to a temporary
+  Downloads folder. It measures the event rate and size, the snapshot's cost, seek behaviour with
+  and without the recorder, and `data:` URL downloads. It also checks that every save shows the
+  toast while a held drag continues, and shoots the toast on a light and a dark page; with
+  `BUTTER_DEV_MOCKUP=<#32 mockup>` (`gh issue artifact download 32 1 -R SimianW/butter`) it
+  compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
+  pixels differing). The saved files, screenshots and `summary.json` go to
+  `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.
@@ -70,6 +93,20 @@ Run `npm ci` to install the pinned development formatter, then `npm run format` 
 `python3 scripts/package.py` builds the zip. Version rules are in [AGENTS.md](../AGENTS.md).
 For testing, `python3 scripts/package.py --test <tag>` builds `dist/butter-<version_name>+<tag>.<N>.zip` without changing the source manifest or consuming an alpha number (tag: `[a-z0-9-]+`; numbering starts at 1 per base version and tag).
 Test zips retain the base Chrome numeric version; remove the previous install before loading one unpacked.
+`python3 scripts/package.py --dev` builds the dev build, `dist/butter-<version_name>+dev.<N>.zip`: a test build
+that also contains `extension/dev/`, whose popup.html loads the popup's dev card, and whose manifest adds the dev scripts, the `save-bug` command (suggested
+key Alt+Shift+B, Option+Shift+B on a Mac) and the `downloads` permission. The shortcut saves a privacy-safe
+snapshot of the last 30 s on a ChatGPT chat to `Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json`.
+On Windows and Linux, Alt+Shift+B is Chrome's own "focus bookmarks bar" key, so Chrome does not assign it
+automatically; set it in `chrome://extensions/shortcuts`. Until then the popup's save button shows only its
+camera icon. Only `--dev` zips carry the dev files.
+
+The dev card keeps the round in `chrome.storage.local.butterDev` (`round`, `bugs`, and after a save the
+`file` name and its `download` id). Its save button and New round go to the dev worker as
+`butter-dev-save` (with the active `tabId`) and `butter-dev-new-round` runtime messages, which only the
+extension's own pages may send; the worker serializes them with the shortcut's saves. Open round folder
+shows the round's last saved file through the downloads API; before the round's first save, when the
+round folder does not exist yet, it opens the Downloads folder.
 
 ## Layout storage API
 

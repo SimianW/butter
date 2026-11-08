@@ -3,6 +3,8 @@
 The steps for any bug the user reports or a lab run finds. Each step ends on its completion
 criterion; finish it before starting the next.
 
+When the user attaches `butter-diag` files, read them before step 1; see [Bug files from the dev build](../notes/diagnostics/README.md#bug-files-from-the-dev-build) for the format and privacy rules.
+
 ## 1. Control
 
 Reproduce the bug in the live lab with Butter and without it (`EXT=` empty restarts the lab

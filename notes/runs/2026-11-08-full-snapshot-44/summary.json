@@ -1,0 +1,196 @@
+{
+  "build": "0.1.0-alpha.15+dev.10",
+  "chromium": "156.0.8078.4",
+  "fixture": {
+    "turns": 140,
+    "unmounted": 20
+  },
+  "files": [
+    "butter-diag/round-1/bug-01_05-55-43.json",
+    "butter-diag/round-1/bug-02_05-55-45.json",
+    "butter-diag/round-1/bug-03_05-55-50.json",
+    "butter-diag/round-1/bug-04_05-56-20.json"
+  ],
+  "otherTabSaved": 0,
+  "chatgptHomeSaved": 0,
+  "roundState": {
+    "bugs": 4,
+    "download": 4,
+    "file": "bug-04_05-56-20.json",
+    "round": 1
+  },
+  "busy": {
+    "sessionMs": 28852,
+    "drags": 11,
+    "events": 212,
+    "eventsDropped": 0,
+    "windowS": 28.8,
+    "eventsPerS": 7.4,
+    "seekPerS": 3.9,
+    "byType": {
+      "record": 34,
+      "rejection": 8,
+      "press": 11,
+      "preview": 12,
+      "seek": 113,
+      "release": 11,
+      "commit": 11,
+      "reveal": 11,
+      "retarget": 1
+    },
+    "bytesPerEvent": {
+      "mean": 145.8,
+      "p95": 184,
+      "max": 185
+    },
+    "eventBytes": 30899,
+    "fileBytes": 184000,
+    "partBytes": {
+      "pressDecision": 74177,
+      "turns.readiness": 47579,
+      "turns.active": 6331,
+      "turns.math": 19841,
+      "usage": 398
+    },
+    "activeDomNodes": 21,
+    "redacted": 0
+  },
+  "fastDrag": {
+    "ms": 3000,
+    "movesPerS": 228,
+    "seekPerS": 6.7,
+    "framesPerS": 60
+  },
+  "snapshotCost": {
+    "medianMs": 5.4,
+    "maxMs": 7.4,
+    "bytes": 181620
+  },
+  "recordingCost": {
+    "dragsEach": 3,
+    "updatesOn": 153,
+    "updatesOff": 156,
+    "jsMsMedianOn": 0.8,
+    "jsMsMedianOff": 0.8,
+    "jsMsP95On": 1,
+    "jsMsP95Off": 1,
+    "topsSeenInBoth": 19,
+    "ends": {
+      "on": [
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 130,
+          "realTop": 69800,
+          "landingErrorPx": 0
+        }
+      ],
+      "off": [
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        }
+      ]
+    },
+    "landing": {
+      "reason": "pointerup",
+      "layout": true,
+      "landingErrorPx": 0
+    }
+  },
+  "urlLimit": [
+    {
+      "fileBytes": 1572840,
+      "urlLength": 2097149,
+      "saved": true
+    },
+    {
+      "fileBytes": 4194304,
+      "urlLength": 5592437,
+      "saved": true
+    },
+    {
+      "fileBytes": 8388608,
+      "urlLength": 11184841,
+      "saved": true
+    },
+    {
+      "fileBytes": 16777216,
+      "urlLength": 22369653,
+      "saved": true
+    },
+    {
+      "fileBytes": 33554432,
+      "urlLength": 44739273,
+      "saved": true
+    },
+    {
+      "fileBytes": 67108864,
+      "urlLength": 89478517,
+      "saved": true
+    },
+    {
+      "fileBytes": 134217728,
+      "urlLength": 178957001,
+      "saved": true
+    },
+    {
+      "fileBytes": 268435456,
+      "urlLength": 357913973,
+      "saved": true
+    }
+  ],
+  "toasts": [
+    {
+      "theme": "light",
+      "ratio": 0,
+      "box": {
+        "x": 1099.390625,
+        "y": 726.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      },
+      "mockupBox": {
+        "x": 179.390625,
+        "y": 176.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      }
+    },
+    {
+      "theme": "dark",
+      "ratio": 0,
+      "box": {
+        "x": 1099.390625,
+        "y": 726.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      },
+      "mockupBox": {
+        "x": 179.390625,
+        "y": 176.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      }
+    }
+  ]
+}

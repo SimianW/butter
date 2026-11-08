@@ -715,67 +715,70 @@ test('F6 first-question and semantic landings validate the achievable scroll des
   }
 });
 
+// preview-main.js's render() over stand-in preview nodes; `lang` sets data-butter-lang.
+function renderFixture(lang = 'en') {
+  const f = fixture();
+  const element = () => ({
+    children: [],
+    style: {},
+    hidden: true,
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
+    remove() {},
+    replaceChildren(...nodes) {
+      this.children = nodes;
+    },
+    get textContent() {
+      return this.children.map((n) => n.textContent).join('');
+    },
+    getBoundingClientRect: () => ({ top: 52, bottom: 352 }),
+  });
+  f.ctx.testLayer = element();
+  f.ctx.testEst = element();
+  f.ctx.testFade = {};
+  const title = {},
+    detail = {};
+  f.ctx.testNotice = {
+    hidden: true,
+    querySelector: (selector) => (selector === 'b' ? title : detail),
+  };
+  f.ctx.document.documentElement.getAttribute = () => lang;
+  f.ctx.document.createElement = element;
+  f.ctx.document.createTextNode = (textContent) => ({ textContent });
+  f.ctx.NodeFilter = { SHOW_TEXT: 4 };
+  f.ctx.document.createTreeWalker = (el) => {
+    let first = true;
+    return {
+      nextNode() {
+        if (!first) return null;
+        first = false;
+        return { data: el.textContent };
+      },
+    };
+  };
+  f.ctx.document.createRange = () => ({
+    selectNodeContents() {},
+    getClientRects: () => [{ width: 100, height: 26, top: 52, bottom: 78, left: 0, right: 100 }],
+  });
+  const source = fs.readFileSync(
+    process.env.RENDER_SOURCE ||
+      require('node:path').join(__dirname, '../extension/seek/preview-main.js'),
+    'utf8',
+  );
+  vm.runInContext(
+    source.replace(
+      /\}\)\(\);\s*$/,
+      'layer=testLayer;est=testEst;fade=testFade;notice=testNotice;globalThis.renderForTest=render;})();',
+    ),
+    f.ctx,
+  );
+  return { f, title, detail };
+}
 test('unseen previews explain their fixed answer-start excerpt and hide the notice for measured questions', () => {
   for (const lang of ['en', 'zh']) {
     for (const measured of [{ first: 500, unseen: 10000 }, { first: 500 }]) {
-      const f = fixture();
-      const element = () => ({
-        children: [],
-        style: {},
-        hidden: true,
-        append(...nodes) {
-          this.children.push(...nodes);
-        },
-        remove() {},
-        replaceChildren(...nodes) {
-          this.children = nodes;
-        },
-        get textContent() {
-          return this.children.map((n) => n.textContent).join('');
-        },
-        getBoundingClientRect: () => ({ top: 52, bottom: 352 }),
-      });
-      f.ctx.testLayer = element();
-      f.ctx.testEst = element();
-      f.ctx.testFade = {};
-      const title = {},
-        detail = {};
-      f.ctx.testNotice = {
-        hidden: true,
-        querySelector: (selector) => (selector === 'b' ? title : detail),
-      };
-      f.ctx.document.documentElement.getAttribute = () => lang;
-      f.ctx.document.createElement = element;
-      f.ctx.document.createTextNode = (textContent) => ({ textContent });
-      f.ctx.NodeFilter = { SHOW_TEXT: 4 };
-      f.ctx.document.createTreeWalker = (el) => {
-        let first = true;
-        return {
-          nextNode() {
-            if (!first) return null;
-            first = false;
-            return { data: el.textContent };
-          },
-        };
-      };
-      f.ctx.document.createRange = () => ({
-        selectNodeContents() {},
-        getClientRects: () => [
-          { width: 100, height: 26, top: 52, bottom: 78, left: 0, right: 100 },
-        ],
-      });
-      const source = fs.readFileSync(
-        process.env.RENDER_SOURCE ||
-          require('node:path').join(__dirname, '../extension/seek/preview-main.js'),
-        'utf8',
-      );
-      vm.runInContext(
-        source.replace(
-          /\}\)\(\);\s*$/,
-          'layer=testLayer;est=testEst;fade=testFade;notice=testNotice;globalThis.renderForTest=render;})();',
-        ),
-        f.ctx,
-      );
+      const { f, title, detail } = renderFixture(lang);
       const answer = 'early answer '.repeat(600) + '\n\n' + 'late answer '.repeat(600);
       const records = { first: { ...record, rowH: 500 } };
       const model = seek.buildModel({
@@ -846,4 +849,69 @@ test('unseen previews explain their fixed answer-start excerpt and hide the noti
       assert.equal(f.ctx.testEst.textContent, early);
     }
   }
+});
+test('a dev listener hears one preview event per question or mode change, and each miss', () => {
+  const { f } = renderFixture();
+  const heard = [];
+  // Fields come from the vm realm: compare them as JSON.
+  f.ctx.window.__seekDump.tap = (type, fields) =>
+    heard.push([type, JSON.parse(JSON.stringify(fields))]);
+  const answer = 'early answer '.repeat(600);
+  const records = { first: { ...record, rowH: 500 } };
+  const model = seek.buildModel({
+    ids: ['first', 'unseen'],
+    measured: { first: 500 },
+    records,
+    texts: { unseen: { q: 'unmeasured question', answer } },
+    scrollHeight: 10512,
+    gap: 12,
+  });
+  const a = {
+    prep: {
+      decision: { sequence: 1, turns: [{ layoutReason: null }, { layoutReason: 'no-record' }] },
+      model,
+      previewModel: seek.buildPreviewModel(model, records, 12),
+      flat: seek.flatten(seek.buildPreviewModel(model, records, 12)),
+    },
+    insetTop: 52,
+    hostRect: { x: 0, y: 52, width: 768, height: 300 },
+    rendered: new Map(),
+  };
+  const unseenTop = model[1].top + 500;
+  f.ctx.renderForTest(a, unseenTop);
+  f.ctx.renderForTest(a, unseenTop + 400); // same question, same mode: nothing new
+  f.ctx.renderForTest(a, 0);
+  assert.deepEqual(heard, [
+    [
+      'preview',
+      {
+        turn: 1,
+        mode: 'unseen',
+        layout: false,
+        unseen: true,
+        items: 0,
+        estimate: true,
+        textFallback: false,
+      },
+    ],
+    ['preview-miss', { turn: 1, reason: 'unseen', layoutReason: 'no-record' }],
+    [
+      'preview',
+      {
+        turn: 0,
+        mode: 'layout',
+        layout: true,
+        unseen: false,
+        items: heard[2]?.[1].items,
+        estimate: false,
+        textFallback: false,
+      },
+    ],
+  ]);
+  assert.ok(heard[2][1].items > 0);
+  // Without a listener, render builds nothing for it.
+  f.ctx.window.__seekDump.tap = null;
+  heard.length = 0;
+  f.ctx.renderForTest(a, unseenTop);
+  assert.deepEqual(heard, []);
 });
