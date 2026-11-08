@@ -166,7 +166,10 @@ Settings live in `chrome.storage.local`. Layouts live in the extension's Indexed
 ISOLATED world to the worker. The single `seek/layout-cache-main.js` owns measured warm entries,
 prefetched geometry, source matching, adoption and restore validation. Preview text stays in page
 memory. Disk records contain sizes, positions, typography dictionaries, source block indexes,
-math offsets and hashed identities, never chat text or credentials.
+math offsets and hashed identities, never chat text or credentials. Bookmarks share the database in
+their own `bookmarks` store, the only place chat text is persisted: each keeps at most three rendered
+lines (240 characters) of what the user marked, under hashed identities, until the user deletes it
+(see [layout-storage-data.md](layout-storage-data.md)).
 
 `history/conversation-main.js` passively selects the user id from `/backend-api/me` or
 `/api/auth/session` responses already fetched by ChatGPT, hashes it immediately, and forwards only

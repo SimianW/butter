@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.1.0-alpha.16 (2026-11-08)
+
+- New: bookmarks. Hover a paragraph in a ChatGPT answer and click the bookmark button at its left
+  to bookmark it. Select text first to bookmark just that selection. Press Alt+Shift+M to bookmark
+  the selection, or, with nothing selected, the paragraph at the top of the screen; you can change
+  the key in `chrome://extensions/shortcuts`.
+- A bookmarked question gets a short butter-coloured mark under its tick in the question rail.
+  Hover the mark to see the bookmark, or a list when a question has several, and click one to jump
+  straight to that paragraph. Remove a bookmark with the × on its card, or with the filled button
+  on its paragraph.
+- When an answer is regenerated or edited, its bookmarks are kept and marked "answer changed";
+  clicking one then opens the start of the question. A question whose bookmarks have all changed
+  gets a paler mark. Switching back to the original answer makes them work again.
+- The first time you bookmark, a short notice explains what is saved; Undo removes that bookmark.
+- Bookmarks are saved only on this computer, in Butter's own storage, separately for each ChatGPT
+  account. Each keeps at most the first three lines of what you marked, and nothing is uploaded.
+  They stay until you remove them or uninstall Butter; clearing saved layouts doesn't touch them.
+  The [privacy policy](PRIVACY.md) is updated to match.
+
 ## 0.1.0-alpha.15 (2026-11-07)
 
 - New: Ask in branch. Select text in a ChatGPT answer and click Butter's "Ask in branch" button

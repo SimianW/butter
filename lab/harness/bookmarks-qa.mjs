@@ -523,6 +523,11 @@ try {
   const hoverDark = await bookmark(2, 0);
   await page.screenshot({ path: `${shots}/button-dark.png`, clip: { x: hoverDark.b.x - 60, y: hoverDark.b.y - 50, width: 820, height: 160 } });
   check('dark theme button shows', hoverDark.shown?.shown);
+  // The bookmarked paragraph's filled button, for the mockup's dark "Remove bookmark" frame.
+  const filledDark = await bookmark(TURN, PARA);
+  check('dark theme: a bookmarked paragraph shows the filled "Remove bookmark" button',
+    filledDark.kept?.on && filledDark.kept.tip === 'Remove bookmark', { button: filledDark.kept });
+  await page.screenshot({ path: `${shots}/button-remove-dark.png`, clip: { x: filledDark.b.x - 60, y: filledDark.b.y - 50, width: 820, height: 160 } });
 
   // 6b. Selection and shortcut (#54).
   await open('light');
@@ -1011,10 +1016,16 @@ try {
     const file = `${shots}/notice-${run.theme}-${run.lang}.png`;
     // On whole pixels, as the mockup's card sits (a stacked card's top can be fractional).
     const shot = await notice();
+    // The rail is hidden for this capture only: with a classic scrollbar (headed, under Xvfb) it
+    // sits 15 px further left and its ticks, which stack above cards, cross the card's right edge.
+    // notice-page-* below keeps the rail.
+    const railHost = (v) => page.evaluate((v) => (document.querySelector('chatgpt-butter-nav').style.visibility = v), v);
+    await railHost('hidden');
     await page.screenshot({
       path: file,
       clip: { x: Math.round(shot.left), y: Math.round(shot.top), width: 300, height: Math.round(shot.bottom - shot.top) },
     });
+    await railHost('');
     built.push({ ...run, file });
     await page.screenshot({ path: `${shots}/notice-page-${run.theme}-${run.lang}.png` });
     check(`notice (${name}): the save drew its segment`, (await rail()).marks.length === 1);
@@ -1266,11 +1277,22 @@ try {
   if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
     const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
     await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_MOCKUP)}`);
+    // Headed (under Xvfb) Chromium draws a 15 px classic scrollbar, which moves the centred mockup
+    // half a pixel off the grid; without it the layout is the headless one, on whole pixels.
+    await mock.addStyleTag({ content: 'html { scrollbar-width: none }' });
     for (const b of built) {
       await mock.click(`#lang button[data-l="${b.lang}"]`);
       await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
       const reference = `${shots}/mockup-notice-${b.theme}-${b.lang}.png`;
-      await mock.locator(`.frame${b.theme === 'dark' ? '.dark' : ':not(.dark)'}[data-scene="notice"] .notice`).screenshot({ path: reference });
+      // Clipped on whole pixels, as the built notice is: a locator screenshot widens a card at a
+      // fractional x by one pixel.
+      const card = mock.locator(`.frame${b.theme === 'dark' ? '.dark' : ':not(.dark)'}[data-scene="notice"] .notice`);
+      await card.scrollIntoViewIfNeeded();
+      const box = await card.boundingBox();
+      await mock.screenshot({
+        path: reference,
+        clip: { x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height) },
+      });
       const diff = await compare(mock, b.file, reference);
       check(`notice ${b.theme} ${b.lang} matches the mockup`, diff.ratio !== undefined && diff.ratio < 0.001, diff);
     }
