@@ -8,6 +8,7 @@ Dates use the primary report/result file's UTC modification time. Follow-up file
 
 | Date | Run | Question answered | Result | Build/version tested |
 |---|---|---|---|---|
+| 2026-11-08 | [dev-live-47](2026-11-08-dev-live-47/report.md) | Can the dev shortcut capture a real long chat while its thumb stays held, without interrupting the drag or leaking content? | Two live Linux captures: toast while held, continued seek in one session, press/seek events and six readiness rows; final privacy check finds zero matches for 1,263 private tokens/fragments; lab restored. Mac default binding untested. | integration `cb1cdce`, `0.1.0-alpha.15+dev.1` |
 | 2026-11-01 | [prejump](2026-11-01-prejump/report.md) | Can a pre-jump shorten a far-up send animation? | Median trigger-to-final scroll falls from 9637.4 to 2595.6 ms; cold endpoints differ. | HEAD baseline + uncommitted pre-jump; alpha.7-era |
 | 2026-11-01 | [rebase-c2ad6aab](2026-11-01-rebase-c2ad6aab/report.md) | Did the alpha.7 rebase preserve navigation behavior? | Rebase handoff includes actual navigation regression measurements and checks. | alpha.7; rebased 150bf46 onto d6f4f4c |
 | 2026-11-01 | [scroll-diagnosis](2026-11-01-scroll-diagnosis/report.md) | Is send-scroll animation triggered by focus, typing or submission? | Submission triggers ChatGPT spring scrolling; dropped render frames extend wall time. | unmodified inspected Butter build; version not specified |
