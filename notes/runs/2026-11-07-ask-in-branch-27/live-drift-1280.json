@@ -1,0 +1,361 @@
+{
+ "at": "2026-11-07T20:09:02.209Z",
+ "lab": 1,
+ "runs": [
+  {
+   "width": 1280,
+   "screenshots": [
+    "button-1280.png",
+    "question-1280.png",
+    "working-1280.png",
+    "ready-1280.png"
+   ],
+   "button": {
+    "gap": 4,
+    "topDelta": 0,
+    "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+    "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+    "nativeFont": "14px",
+    "butterFont": "14px"
+   },
+   "titleWhileWorking": "Creating branch…",
+   "end": "ready",
+   "branch": {
+    "kind": "local",
+    "sameAsOriginal": false,
+    "replies": 6,
+    "latestHash": "5921d13b3ad4"
+   },
+   "original": {
+    "latest": {
+     "replies": 5,
+     "latestHash": "5921d13b3ad4"
+    }
+   },
+   "originalUnchanged": false,
+   "originalCompare": {
+    "sameUrl": true,
+    "draftLength": [
+     0,
+     0
+    ],
+    "scroll": [
+     498,
+     520
+    ]
+   },
+   "sendClicks": [
+    {
+     "inBranch": true,
+     "ms": 8782
+    }
+   ],
+   "requests": [
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/telemetry/intake",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 1416
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/conversation/init",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 2098
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/sentinel/chat-requirements/prepare",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 2174
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/cdn-cgi/<challenge>",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 2317
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 3202
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 3203
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 3618
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 3619
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 3654
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 4348
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 4393
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 4394
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 4475
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/amphora/clear_settings_cache",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 4719
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 5107
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/telemetry/intake",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 5447
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 5480
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 6473
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 6474
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/conversation/new_branch",
+     "blocked": null,
+     "ms": 4343
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/conversations/batch",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 7061
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/conversation/init",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 7062
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/telemetry/intake",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 7493
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 7513
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 7632
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/f/conversation/prepare",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 8263
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/sentinel/chat-requirements/prepare",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 9183
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/telemetry/intake",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 10508
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 10759
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 10918
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11111
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11112
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11128
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11639
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 12208
+    },
+    {
+     "tab": "original",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 12235
+    }
+   ],
+   "afterSendClick": [
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/sentinel/chat-requirements/prepare",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 9183
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/telemetry/intake",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 10508
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/backend-api/codex/notification/subscriptions",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 10918
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11111
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11112
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11128
+    },
+    {
+     "tab": "branch",
+     "method": "POST",
+     "path": "/ces/v1/rgstr",
+     "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+     "ms": 11639
+    }
+   ],
+   "originalSendRequests": []
+  }
+ ]
+}

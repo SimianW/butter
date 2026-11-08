@@ -1,5 +1,10 @@
 // Extension-origin IndexedDB. A single queue serializes clears, LRU updates and quota eviction.
-importScripts('../seek/layout-codec.js', '../shared/status.js');
+importScripts(
+  '../seek/layout-codec.js',
+  '../shared/status.js',
+  '../branch/logic.js',
+  '../branch/worker.js',
+);
 let statusQueue = Promise.resolve();
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (sender.id !== chrome.runtime.id || message?.type !== 'butter-status-record') return;

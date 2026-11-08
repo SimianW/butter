@@ -1,6 +1,6 @@
 // Shared, pure settings normalization and probe classification. No browser APIs here.
 (() => {
-  const keys = ['container', 'cv', 'throttle', 'older', 'rail', 'seek', 'layout'];
+  const keys = ['container', 'cv', 'throttle', 'older', 'rail', 'seek', 'layout', 'branch'];
   const normalize = (value) => ({
     ...value,
     enabled: value?.enabled !== false,
@@ -36,6 +36,7 @@
     streaming: ['container', 'cv', 'throttle'],
     scrolling: ['older', 'seek'],
     rail: ['rail'],
+    branch: ['branch'],
     layout: ['layout'],
   };
   const groupOn = (value, group) => groups[group].every((k) => normalize(value).opts[k]);

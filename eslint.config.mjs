@@ -10,7 +10,7 @@ export default [
   { ignores: ['lab/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
   {
     files: ['extension/**/*.js'],
-    ignores: ['extension/storage/layout-worker.js'],
+    ignores: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.browser, chrome: 'readonly' },
@@ -19,7 +19,7 @@ export default [
   },
   // The service worker gets worker globals instead of window globals.
   {
-    files: ['extension/storage/layout-worker.js'],
+    files: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.serviceworker, chrome: 'readonly' },
@@ -55,6 +55,23 @@ export default [
     files: ['extension/seek/layout-cache-main.js', 'extension/storage/layout-worker.js'],
     languageOptions: { globals: { ButterLayoutCodec: 'readonly' } }, // defined in seek/layout-codec.js
   },
+  {
+    // Ask in branch: classic scripts in manifest order (logic, run, page, ui, content).
+    files: ['extension/branch/*.js'],
+    ignores: ['extension/branch/logic.js'],
+    languageOptions: {
+      globals: {
+        ButterBranch: 'readonly',
+        ButterBranchRun: 'readonly',
+        ButterBranchPage: 'readonly', // page.js
+        ButterBranchUI: 'readonly', // ui.js
+      },
+    },
+  },
+  {
+    files: ['extension/branch/run.js'],
+    languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
+  },
   // Files that also export themselves for node --test, behind a `typeof module` check.
   {
     files: [
@@ -64,6 +81,8 @@ export default [
       'extension/seek/layout-codec.js',
       'extension/seek/layout-check-main.js',
       'extension/seek/core-main.js',
+      'extension/branch/logic.js',
+      'extension/branch/run.js',
     ],
     languageOptions: { globals: { module: 'readonly' } },
   },

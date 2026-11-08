@@ -6,6 +6,11 @@
 | `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
+| `extension/branch/logic.js` | Ask in branch, pure: message format, conversation identity, selection rule, one-time handoff jobs. |
+| `extension/branch/run.js` | Ask in branch run in the new tab: state machine over an injected page adapter. |
+| `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
+| `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
+| `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
@@ -22,9 +27,21 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 12 states in both themes at 320 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references);
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 18 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_BRANCH_MOCKUP` to compare the Ask in branch states with their approved mockup);
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
+- Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
+  Work-mode detection, menu matching), `test/branch-run.test.js` (state machine with a fake
+  page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
+  `node lab/harness/branch-qa.mjs` loads the real extension in its own headless Chromium over the
+  synthetic page in `branch-fixture.mjs` (no ChatGPT requests; `lang=zh`, `stream=<ms>`, `work`,
+  `side`, `nobranch` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
+  screenshots to `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides).
+  `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
+  snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and
+  `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
+  `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
+  wait and the hidden-button cases on the live page; see its header for how the stream is held.
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.
@@ -89,6 +106,18 @@ The popup shows usage below Remember long-chat layouts and confirms Clear inline
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can
 save again while the setting is on. Set the option false for a persistent opt-out.
+
+## Ask in branch handoff API
+
+Runtime messages from content scripts to the service worker (`branch/worker.js`), serialized on one
+queue. Rows live in `chrome.storage.session` under `butterBranch.<id>` as `{ at, tab, job }`.
+
+| Request `type` | Fields | Response |
+|---|---|---|
+| `butter-branch-put` | `id` (UUID), `job: { original, title?, quote, question }` | `{ ok: true }`, or `{ error: 'invalid' }` when the sender's tab doesn't show `original` |
+| `butter-branch-claim` | `id` | `{ job }` once; then `{ missing: true }`. `{ error: 'expired' }` after 60 s, `{ error: 'sender' }` from the original tab or another conversation (the row is deleted either way) |
+
+The settings key is `opts.branch` (on unless `false`); there is no popup row or status group yet.
 
 ## Popup settings and status
 

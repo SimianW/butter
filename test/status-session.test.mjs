@@ -117,3 +117,136 @@ test('settings probes merge seek and layout failures into their groups and clear
   await probe();
   assert.deepEqual(session.butterFailures, {});
 });
+test('the worker records a branch failure as its own group and clears it on a branch success', async () => {
+  const session = {},
+    record = worker(session);
+  assert.deepEqual(structuredClone(await record({ branch: 'fail', rail: 'ok' })), {
+    branch: { branch: true },
+  });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  await record({ branch: 'off' });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  await record({ branch: 'ok' });
+  assert.deepEqual(session.butterFailures, {});
+});
+
+test('Ask in branch reports a confirmed failure at once, and a later successful branch clears it', async () => {
+  const session = {},
+    record = worker(session),
+    sent = [];
+  const status = (await import('../extension/shared/status.js')).default;
+  const noop = () => {};
+  let receive;
+  const ctx = {
+    ButterStatus: status,
+    location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
+    performance: { now: () => 10000 },
+    MutationObserver: class {
+      observe() {}
+    },
+    CustomEvent: class {
+      constructor(type) {
+        this.type = type;
+      }
+    },
+    document: {
+      documentElement: {
+        toggleAttribute: noop,
+        getAttribute: () => null,
+        hasAttribute: () => false,
+        removeAttribute: noop,
+        setAttribute: noop,
+      },
+      querySelectorAll: () => [],
+      querySelector: () => null,
+      addEventListener: noop,
+      removeEventListener: noop,
+      dispatchEvent: noop,
+    },
+    chrome: {
+      storage: { local: { get: async () => ({}) }, onChanged: { addListener: noop } },
+      runtime: {
+        onMessage: { addListener: (fn) => (receive = fn) },
+        sendMessage: (m) => (sent.push(m.states), record(m.states)),
+      },
+    },
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(extension, 'shared/settings.js'), 'utf8'), ctx);
+  // The branch tab may be closed before the popup ever asks, so the report is recorded at once.
+  await ctx.ButterSettings.report('branch', { exercised: true, failed: true });
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+  assert.equal(sent.at(-1).branch, 'fail');
+  // Only the branch moved; other features stay idle, so their evidence is untouched.
+  assert.ok(
+    Object.entries(sent.at(-1)).every(([k, v]) => k === 'branch' || v === 'idle' || v === 'off'),
+  );
+  // The popup's probe of this tab still sees it, from the worker's record.
+  const probed = await new Promise((resolve) => receive({ type: 'butter-status' }, {}, resolve));
+  assert.deepEqual({ ...probed.failures.branch }, { branch: true });
+  await ctx.ButterSettings.report('branch', { exercised: true, engaged: true });
+  assert.deepEqual(session.butterFailures, {});
+});
+
+// One ChatGPT tab running extension/shared/settings.js, recording to the shared worker.
+async function chatTab(record) {
+  const status = (await import('../extension/shared/status.js')).default;
+  const noop = () => {};
+  let receive;
+  const ctx = {
+    ButterStatus: status,
+    location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
+    performance: { now: () => 10000 },
+    MutationObserver: class {
+      observe() {}
+    },
+    CustomEvent: class {
+      constructor(type) {
+        this.type = type;
+      }
+    },
+    document: {
+      documentElement: {
+        toggleAttribute: noop,
+        getAttribute: () => null,
+        hasAttribute: () => false,
+        removeAttribute: noop,
+        setAttribute: noop,
+      },
+      querySelectorAll: () => [],
+      querySelector: () => null,
+      addEventListener: noop,
+      removeEventListener: noop,
+      dispatchEvent: noop,
+    },
+    chrome: {
+      storage: { local: { get: async () => ({}) }, onChanged: { addListener: noop } },
+      runtime: {
+        onMessage: { addListener: (fn) => (receive = fn) },
+        sendMessage: (m) => record(m.states),
+      },
+    },
+  };
+  vm.runInNewContext(fs.readFileSync(path.join(extension, 'shared/settings.js'), 'utf8'), ctx);
+  return {
+    report: (key, fact) => ctx.ButterSettings.report(key, fact),
+    probe: () => new Promise((resolve) => receive({ type: 'butter-status' }, {}, resolve)),
+  };
+}
+
+test('a later probe of a tab never replays its old branch outcome over a newer one', async () => {
+  const session = {},
+    record = worker(session);
+  const a = await chatTab(record),
+    b = await chatTab(record);
+  // Tab A fails, tab B then makes a branch and clears the warning.
+  await a.report('branch', { exercised: true, failed: true });
+  await b.report('branch', { exercised: true, engaged: true });
+  assert.deepEqual(session.butterFailures, {});
+  // The popup probing tab A must not bring the failure back.
+  await a.probe();
+  assert.deepEqual(session.butterFailures, {});
+  // And the other way round: probing B (older success) must not erase A's newer failure.
+  await a.report('branch', { exercised: true, failed: true });
+  await b.probe();
+  assert.deepEqual(session.butterFailures, { branch: { branch: true } });
+});

@@ -1,0 +1,15 @@
+PASS button light: 4 px gap, top aligned, mirrored style, follows/hides, setting
+PASS button dark: 4 px gap, top aligned, mirrored style, follows/hides, setting
+INFO page selection while the box is open: ""
+PASS question box: aligned under the buttons, one-line quote, keys, draft kept, flips above
+PASS new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone
+PASS streaming: button offered, new tab waits (card per mockup, title), then branches the finished latest reply
+PASS streaming: Cancel while waiting stops at once; nothing branched, typed or sent
+PASS hidden: Temporary Chat, Work mode, Work mode (side chat in the toolbar only), no branch action, Work mode, Chinese UI, unsaved branch, unsaved new chat; shown in the Chat-mode controls
+PASS Chinese ChatGPT menus: 更多操作 → 创建对话分支 → 在新聊天中创建分支; sent once in the branch
+PASS screenshots 1280px light
+PASS screenshots 800px light
+PASS screenshots 1280px dark
+PASS screenshots 800px dark
+PASS Simplified Chinese strings and title (creating and waiting); spinner still under reduced motion
+PASS 24 screenshots in notes/runs/2026-11-07-ask-in-branch-29/screenshots; no page errors; no requests left the fixture

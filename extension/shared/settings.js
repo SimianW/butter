@@ -40,6 +40,16 @@
   });
   apply();
 
+  // Facts a feature in this tab reports when they happen (Ask in branch: a confirmed failure or a
+  // made branch). Recorded at once and only then, since the tab may close before the popup asks;
+  // replaying them in later probes would let an old outcome overwrite a newer one from another tab.
+  const record = (states) => chrome.runtime.sendMessage({ type: 'butter-status-record', states });
+  globalThis.ButterSettings = {
+    report(key, fact) {
+      return record(classify({ [key]: fact }, settings)).catch(() => {});
+    },
+  };
+
   const mainFacts = () => {
     const facts = {};
     const receive = (e) => {
@@ -112,7 +122,7 @@
       },
     };
     const states = classify(facts, settings);
-    chrome.runtime.sendMessage({ type: 'butter-status-record', states }).then(
+    record(states).then(
       (failures) => respond({ states, failures }),
       () => respond({ states }),
     );

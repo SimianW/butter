@@ -1,0 +1,17 @@
+
+found 0 vulnerabilities
+
+
+> format:check
+> prettier --check "extension/**/*.{js,css,html,json}" "test/**"
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> lint
+> eslint .
+
+Ran 41 tests in 0.841s
+
+OK
+OK: 0.1.0-alpha.14 / 0.1.0.14; manifest, READMEs, and changelog agree.

@@ -1,0 +1,468 @@
+{
+ "at": "2026-11-07T20:43:43.683Z",
+ "lab": 1,
+ "lang": "zh",
+ "streamMs": 8000,
+ "control": {
+  "route": "saved",
+  "temporaryParam": null,
+  "composerForm": {
+   "data-composer-placement": "thread",
+   "data-chatgpt-composer": true
+  },
+  "composerLabel": "询问 ChatGPT",
+  "selectionToolbar": [
+   "向 ChatGPT 提问"
+  ],
+  "sideChat": false,
+  "replies": 5,
+  "repliesWithMoreActions": 5,
+  "butterButton": true
+ },
+ "stream": {
+  "waitingShown": true,
+  "titleWhileWaiting": "Waiting for the reply to finish…",
+  "screenshot": "waiting-1280-zh.png",
+  "end": "ready",
+  "streamHeldMs": 8008,
+  "holdInstalledMs": 515,
+  "markerReapplied": 1,
+  "branchRequestAfterStreamEndMs": 1664,
+  "branch": {
+   "route": "unsaved local branch",
+   "sameAsOriginal": false,
+   "sameLatestReply": true
+  },
+  "sendClicks": [
+   {
+    "inBranch": true,
+    "ms": 16129
+   }
+  ],
+  "requests": [
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 1373
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/cdn-cgi/<challenge>",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 1752
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/conversation/init",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 2154
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/sentinel/chat-requirements/prepare",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 2263
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 2550
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 3397
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 3397
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4285
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4332
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4291
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4333
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4395
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4404
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/amphora/clear_settings_cache",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 4548
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 5181
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 5377
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 5569
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 6402
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 6459
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 6666
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 6743
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 7185
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 7216
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 8670
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 9484
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 10913
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 10930
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 10963
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 11440
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 11728
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 12387
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 12673
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 13029
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/telemetry/intake",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 13380
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 13450
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/conversation/new_branch",
+    "blocked": null,
+    "ms": 13022
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/conversations/batch",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 14281
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/conversation/init",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 14282
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/codex/notification/subscriptions",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 15416
+   },
+   {
+    "tab": "original",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 16075
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/f/conversation/prepare",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 16045
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/sentinel/chat-requirements/prepare",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 16610
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 18764
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 18933
+   }
+  ],
+  "afterSendClick": [
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/backend-api/sentinel/chat-requirements/prepare",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 16610
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 18764
+   },
+   {
+    "tab": "branch",
+    "method": "POST",
+    "path": "/ces/v1/rgstr",
+    "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    "ms": 18933
+   }
+  ],
+  "originalSendRequests": [],
+  "screenshotReady": "ready-after-wait-1280-zh.png",
+  "originalUnchanged": true
+ },
+ "unsavedBranch": {
+  "route": "unsaved local branch",
+  "temporaryParam": null,
+  "composerForm": {
+   "data-composer-placement": "thread",
+   "data-chatgpt-composer": true
+  },
+  "composerLabel": "询问 ChatGPT",
+  "selectionToolbar": [
+   "向 ChatGPT 提问"
+  ],
+  "sideChat": false,
+  "replies": 6,
+  "repliesWithMoreActions": 0,
+  "butterButton": false,
+  "screenshot": "hidden-unsaved-1280-zh.png"
+ },
+ "workBranch": {
+  "route": "unsaved local branch",
+  "temporaryParam": null,
+  "composerForm": {
+   "data-composer-placement": "thread",
+   "data-chatgpt-composer": false
+  },
+  "composerLabel": "使用 ChatGPT Work",
+  "selectionToolbar": [
+   "向 ChatGPT 提问",
+   "在侧边聊天中提问"
+  ],
+  "sideChat": true,
+  "replies": 7,
+  "repliesWithMoreActions": 0,
+  "butterButton": false,
+  "screenshot": "hidden-work-1280-zh.png"
+ },
+ "temporary": {
+  "route": "none",
+  "temporaryParam": "true",
+  "composerForm": {
+   "data-composer-placement": "home",
+   "data-chatgpt-composer": true
+  },
+  "composerLabel": "询问 ChatGPT",
+  "selectionToolbar": [],
+  "sideChat": false,
+  "replies": 0,
+  "repliesWithMoreActions": 0,
+  "butterButton": false,
+  "toggle": [
+   {
+    "label": "关闭临时聊天",
+    "icon": "codex-icon-chat-bubble-checkmark-dashed-light-20"
+   }
+  ]
+ },
+ "home": {
+  "chat": {
+   "route": "none",
+   "temporaryParam": null,
+   "composerForm": {
+    "data-composer-placement": "home",
+    "data-chatgpt-composer": true
+   },
+   "composerLabel": "询问 ChatGPT",
+   "selectionToolbar": [],
+   "sideChat": false,
+   "replies": 0,
+   "repliesWithMoreActions": 0,
+   "butterButton": false
+  },
+  "work": {
+   "route": "none",
+   "temporaryParam": null,
+   "composerForm": {
+    "data-composer-placement": "home",
+    "data-chatgpt-composer": false
+   },
+   "composerLabel": "使用 ChatGPT Work",
+   "selectionToolbar": [],
+   "sideChat": false,
+   "replies": 0,
+   "repliesWithMoreActions": 0,
+   "butterButton": false
+  },
+  "switch": [
+   "聊天=false",
+   "工作=true"
+  ]
+ }
+}

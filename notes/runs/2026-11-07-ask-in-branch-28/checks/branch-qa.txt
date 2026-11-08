@@ -1,0 +1,21 @@
+PASS button light: 4 px gap, top aligned, mirrored style, follows/hides, setting
+PASS button dark: 4 px gap, top aligned, mirrored style, follows/hides, setting
+INFO page selection while the box is open: ""
+PASS question box: aligned under the buttons, one-line quote, keys, draft kept, flips above
+PASS new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone
+PASS cancel via ×, Cancel and Esc: card gone at once, no further menu press, nothing sent
+PASS failure more: card after the re-check, cause shown, nothing sent, reported; Esc
+PASS failure branch: card after the re-check, cause shown, nothing sent, reported; Close tab
+PASS failure load: card after the re-check, cause shown, nothing sent, reported; ×
+PASS failure identity: card after the re-check, cause shown, nothing sent, reported; Copy question
+PASS failure newchat: card after the re-check, cause shown, nothing sent, reported; Try again
+PASS branch landing during the re-check: ready, no failure card
+PASS pop-up blocked: no tab, question kept with the reason; a later Enter works
+PASS failed hand-over: new tab closed, question kept in the box with the reason
+PASS screenshots 1280px light
+PASS screenshots 800px light
+PASS screenshots 1280px dark
+PASS screenshots 800px dark
+PASS failure screenshots 1280/800 light/dark
+PASS Simplified Chinese strings and title; spinner still under reduced motion; zh failure card
+PASS 25 screenshots in notes/runs/2026-11-07-ask-in-branch-28/screenshots; no page errors; no requests left the fixture
