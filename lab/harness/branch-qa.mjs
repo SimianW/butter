@@ -616,6 +616,24 @@ try {
   assert.deepEqual(await failures(), {}, 'a cancel while waiting is not a failure');
   pass('streaming: ×, Cancel and Esc while waiting stop at once; nothing branched, typed or sent');
 
+  // Turning Ask in branch off while the run waits stops it like a cancel.
+  {
+    const page = await open('stream=3000');
+    const dest = await askCard(page);
+    assert.equal(await heading(dest), 'Waiting for the reply to finish…');
+    await settings({ opts: { branch: false } });
+    await dest.waitForFunction(() => fixture.streamEnded === true);
+    await dest.waitForTimeout(2500);
+    assert.equal(await inShadow(dest, '.card').count(), 0, 'setting off: card gone');
+    assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), [], 'setting off: never branched');
+    assert.deepEqual(await dest.evaluate(() => fixture.sent), [], 'setting off: nothing sent');
+    await settings({});
+    await dest.close();
+    await page.close();
+  }
+  assert.deepEqual(await failures(), {}, 'turning the setting off is not a failure');
+  pass('streaming: turning Ask in branch off while waiting stops the run; nothing branched or sent');
+
   // ---- No button where ChatGPT can't branch. ChatGPT's own button is shown in each case, so
   // its absence is Butter's rule, not a missing anchor.
   {
