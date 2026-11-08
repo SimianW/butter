@@ -57,6 +57,10 @@ other cards' row text.
   stayed enabled, and the popup kept its height. After about 4 s the card read "Round 3 · 1 bug".
   Open round folder then called `chrome.downloads.show(<that download's id>)`.
 
+After merging the #45 toast (`7216018`) into the branch (`654f1c7`), the same command passed again:
+all 9 redesign panels and all 5 dev panels matched at the same heights (largest dev diff 0.001%),
+and `dev-capture-qa.mjs` still passed with the toast after every save.
+
 Data: [results.json](results.json). The screenshots come from synthetic popup states and contain no
 private data.
 
