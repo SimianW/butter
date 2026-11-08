@@ -27,11 +27,8 @@ const redesignStates = {
   dark: '13-en-branch-on-dark', zh: '16-zh-branch-on-light',
 };
 // Panels that cannot match, with the reason; they are still measured and reported.
-// #39 and #40 delete their entries when they restyle those states.
+// #40 deletes its entry when it restyles that state.
 const redesignExcluded = {
-  'paused-after': 'paused look lands in #39',
-  'rail-fault-after': 'in-row faults land in #39',
-  'branch-fault-after': 'in-row faults land in #39',
   'layouts-pending-after': 'consent note lands in #40',
 };
 // The header version label and the storage line show live data; both comparisons mask them.
@@ -129,7 +126,7 @@ try {
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
     assert.equal(await page.locator('[role="switch"]').count(), 6);
     assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
-    assert.equal(await page.locator('.row.broken [data-switch="branch"]').count(), config.broken === 'branch' ? 1 : 0);
+    assert.equal(await page.locator('.row.bad [data-switch="branch"]').count(), config.broken === 'branch' ? 1 : 0);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
     const metrics = () => ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
@@ -138,20 +135,11 @@ try {
     const builtMetrics = await page.evaluate(metrics);
     const file = `${shots}/${name}-${color}.png`;
     await page.locator('#popup').screenshot({ path: file }); files.push(file);
-    // Also capture the native-height viewport and its scrollable bottom for tall states.
     const height = await page.locator('#popup').evaluate(e => e.offsetHeight);
     heights[`${name}-${color}`] = height;
     liveRects[`${name}-${color}`] = await page.evaluate(liveRegions);
-    // Chromium caps popups at 600px; only the warning banner may push a state past it.
-    if (!config.broken) assert.ok(height <= 600, `${name}-${color} is ${height}px, over the 600px popup cap`);
-    if (height > 600) {
-      await page.setViewportSize({ width: 360, height: 600 });
-      await page.screenshot({ path: `${shots}/${name}-${color}-viewport.png` });
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await page.screenshot({ path: `${shots}/${name}-${color}-bottom.png` });
-      await page.setViewportSize({ width: 360, height: 900 });
-      await page.evaluate(() => window.scrollTo(0, 0));
-    }
+    // Chromium caps popups at 600px; every state, faults included, must fit under it.
+    assert.ok(height <= 600, `${name}-${color} is ${height}px, over the 600px popup cap`);
     if (config.animation) {
       await page.locator('[data-switch="master"]').click();
       const frame = await page.evaluate(async () => {
@@ -268,6 +256,21 @@ try {
   // Every switch stays a named button with its checked state and stable hook.
   for (const e of await page.locator('[role="switch"]').evaluateAll(list => list.map(e => ({ tag: e.tagName, name: e.getAttribute('aria-label'), checked: e.getAttribute('aria-checked'), key: e.dataset.switch }))))
     assert.ok(e.tag === 'BUTTON' && e.name && /^(true|false)$/.test(e.checked) && e.key, JSON.stringify(e));
+  // Pausing and resuming leave the popup's height and the master switch where they were.
+  const geometry = async () => {
+    await page.evaluate(() => document.getAnimations().forEach(a => a.finish()));
+    return page.evaluate(() => {
+      const r = document.querySelector('[data-switch="master"]').getBoundingClientRect();
+      return { height: document.getElementById('popup').offsetHeight, master: [r.left, r.top, r.width, r.height] };
+    });
+  };
+  const resumed = await geometry();
+  await page.locator('[data-switch="master"]').click();
+  await page.waitForFunction(() => document.querySelector('.card.paused'));
+  assert.deepEqual(await geometry(), resumed, 'pausing moved the popup');
+  await page.locator('[data-switch="master"]').click();
+  await page.waitForFunction(() => !document.querySelector('.card.paused'));
+  assert.deepEqual(await geometry(), resumed, 'resuming moved the popup');
   // Cancel is non-destructive; language, focus, master motion and reduced motion work live.
   await page.bringToFront();
   await page.getByRole('button', { name: 'EN', exact: true }).click();
@@ -286,14 +289,16 @@ try {
     await chrome.storage.session.set({ butterFailures: { streaming: { cv: true }, rail: { rail: true } } });
     prefs.enabled = true; render();
   });
-  await page.waitForFunction(() => document.querySelectorAll('.chip').length === 2);
-  assert.equal(await page.locator('.chip').count(), 2);
-  assert.match(await page.locator('.warn').innerText(), /Smoother streaming and Question rail/);
+  // Each broken group explains itself in its own row; nothing is aggregated elsewhere.
+  await page.waitForFunction(() => document.querySelectorAll('.row.bad').length === 2);
+  const fault = 'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
+  assert.deepEqual(await page.locator('.row.bad').evaluateAll(list => list.map(e => [e.querySelector('[data-switch]').dataset.switch, e.querySelector('.d').textContent, e.querySelector('.d').getAttribute('role')])),
+    [['streaming', fault, 'status'], ['rail', fault, 'status']]);
   await page.evaluate(async () => {
     const next = await chrome.runtime.sendMessage({ type: 'butter-status-record', states: { cv: 'ok', rail: 'ok' } });
     failures = next; render();
   });
-  assert.equal(await page.locator('.warn').count(), 0);
+  assert.equal(await page.locator('.row.bad').count(), 0);
   await page.locator('[data-clear="ask"]').click(); await page.locator('[data-clear="cancel"]').click();
   assert.equal(await page.locator('[data-clear="ask"]').count(), 1);
   assert.deepEqual(errors, []);
@@ -308,7 +313,7 @@ try {
   // Fail only after every panel has been compared and reported.
   const mismatched = redesignRefs.filter(r => r.ok === false && !r.excluded);
   assert.equal(mismatched.length, 0, `${mismatched.length} of ${redesignRefs.length} ${redesignSide} panels differ from the redesign mockup: ${mismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} states × light/dark), native-height scroll views, melt frames, branch switch, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} states × light/dark), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
 }

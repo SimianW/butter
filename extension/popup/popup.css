@@ -398,49 +398,25 @@ button {
   outline-offset: -3px;
 }
 
-/* Interim looks until #39 (paused, faults) and #40 (consent) restyle them. */
-.card.dim .row .t,
-.card.dim .row .ic {
-  opacity: 0.45;
+/* Paused: row text greys out; switches keep full contrast and stay usable. */
+.card.paused .n,
+.card.paused .d {
+  color: var(--ink-3);
 }
-.warn {
-  margin: 0 16px 10px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: var(--warn-bg);
-  display: flex;
-  gap: 9px;
-  font-size: 12px;
-  line-height: 1.45;
+.card.paused .ic {
+  stroke: var(--ink-3);
+}
+
+/* Fault: a broken group explains itself in its own row. */
+.row.bad .ic {
+  stroke: var(--warn);
+}
+.row.bad .d {
+  color: var(--warn);
   font-weight: 600;
 }
-.warn svg {
-  width: 16px;
-  height: 16px;
-  flex: none;
-  margin-top: 1px;
-  fill: none;
-  stroke: var(--warn);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.warn b {
-  font-weight: 800;
-}
-.row.broken .ic {
-  stroke: var(--warn);
-}
-.chip {
-  margin-left: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--warn-bg);
-  color: var(--warn);
-  white-space: nowrap;
-}
+
+/* Interim look until #40 (consent) restyles it. */
 .row .pend {
   margin-top: 4px;
   font-size: 12px;

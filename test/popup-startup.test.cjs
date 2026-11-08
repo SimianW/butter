@@ -64,12 +64,13 @@ function popup() {
   };
 }
 
-test('a stale startup session read cannot bring back a warning that was already cleared', async () => {
+test('a stale startup session read cannot bring back a failure that was already cleared', async () => {
   const f = popup();
   f.changed({ butterFailures: { newValue: {} } }, 'session');
   f.finish({ butter: { layoutConsent: 'granted' } }, { butterFailures: { rail: { rail: true } } });
   await tick();
   assert.deepEqual(f.read('failures'), {});
+  assert.doesNotMatch(f.html(), /class="row bad"|Unavailable for now/);
 });
 
 // Each row's switch, name and description, in display order. A row is a label that wraps its
@@ -77,7 +78,7 @@ test('a stale startup session read cannot bring back a warning that was already 
 const rows = (html) =>
   [
     ...html.matchAll(
-      /<label class="row[^"]*">(?:(?!<\/label>).)*?<div class="n">(.*?)(?:<span class="chip">.*?<\/span>)?<\/div><div class="d">(.*?)<\/div>(?:(?!<\/label>).)*?<button [^>]*role="switch" aria-checked="(\w+)"[^>]*data-switch="(\w+)"[^>]*><\/button><\/label>/g,
+      /<label class="row[^"]*">(?:(?!<\/label>).)*?<div class="n">(.*?)<\/div><div class="d"[^>]*>(.*?)<\/div>(?:(?!<\/label>).)*?<button [^>]*role="switch" aria-checked="(\w+)"[^>]*data-switch="(\w+)"[^>]*><\/button><\/label>/g,
     ),
   ].map(([, name, description, on, key]) => ({ key, name, description, on: on === 'true' }));
 
@@ -180,27 +181,78 @@ test('the branch switch writes only the branch setting', async () => {
   assert.equal(f.saved.at(-1).butter.opts.branch, true);
 });
 
-test('a branch failure marks its row and names it in the warning; turning it off hides both', async () => {
+const faultEn =
+  'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
+const faultZh = '暂时不可用。ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。';
+const descriptions = (html) => Object.fromEntries(rows(html).map((r) => [r.key, r.description]));
+const faulted = (html) =>
+  [...html.matchAll(/<label class="row bad">(?:(?!<\/label>).)*?data-switch="(\w+)"/g)].map(
+    ([, key]) => key,
+  );
+
+test('a recorded failure replaces its row description with the fault text, in place of a warning card or chip', async () => {
   const f = popup();
   f.finish(
     { butter: { layoutConsent: 'granted' } },
     { butterFailures: { branch: { branch: true } } },
   );
   await tick();
-  assert.match(
-    f.html(),
-    /<label class="row broken">.*?Ask in branch<span class="chip">Unavailable<\/span>/,
-  );
-  assert.match(f.html(), /<b>Ask in branch is unavailable for now\.<\/b>/);
+  assert.deepEqual(faulted(f.html()), ['branch']);
+  assert.equal(descriptions(f.html()).branch, faultEn);
+  assert.equal(descriptions(f.html()).rail, 'Click a question on the right to jump');
+  // The description is a live region, so the fault text is announced when it appears.
+  assert.match(f.html(), /<div class="d" role="status">Unavailable for now\./);
+  assert.doesNotMatch(f.html(), /class="(?:warn|chip|warning-slot)"|<b>/);
   f.changed({ butter: { newValue: { layoutConsent: 'granted', lang: 'zh' } } }, 'local');
-  assert.match(f.html(), /在分支中问<span class="chip">暂不可用<\/span>/);
-  assert.match(f.html(), /<b>在分支中问暂时不可用。<\/b>/);
+  assert.equal(descriptions(f.html()).branch, faultZh);
+  // Turning the group off clears its fault display.
   f.changed(
     { butter: { newValue: { layoutConsent: 'granted', opts: { branch: false } } } },
     'local',
   );
-  assert.doesNotMatch(f.html(), /class="chip"|class="warn"/);
-  f.changed({ butterFailures: { newValue: {} } }, 'session');
-  f.changed({ butter: { newValue: { layoutConsent: 'granted' } } }, 'local');
-  assert.doesNotMatch(f.html(), /class="chip"|class="warn"/);
+  assert.deepEqual(faulted(f.html()), []);
+  assert.equal(descriptions(f.html()).branch, 'Select text, ask about it in a new branch');
+});
+
+test('several broken groups each show their own fault text', async () => {
+  const f = popup();
+  f.finish(
+    { butter: { layoutConsent: 'granted' } },
+    { butterFailures: { rail: { rail: true }, branch: { branch: true } } },
+  );
+  await tick();
+  assert.deepEqual(faulted(f.html()), ['rail', 'branch']);
+  assert.equal(descriptions(f.html()).rail, faultEn);
+  assert.equal(descriptions(f.html()).branch, faultEn);
+  assert.equal(descriptions(f.html()).streaming, 'Long answers stream without lag');
+});
+
+test('paused marks the features card paused, keeps every switch as set, and shows no faults', async () => {
+  const f = popup();
+  f.finish(
+    { butter: { layoutConsent: 'granted', enabled: false, opts: { rail: false } } },
+    { butterFailures: { branch: { branch: true } } },
+  );
+  await tick();
+  const cards = [...f.html().matchAll(/<div class="card( [^"]*)?">/g)].map(([, c]) =>
+    (c || '').trim(),
+  );
+  assert.deepEqual(cards, ['paused', '']);
+  assert.deepEqual(
+    rows(f.html()).map(({ key, on }) => [key, on]),
+    [
+      ['streaming', true],
+      ['scrolling', true],
+      ['rail', false],
+      ['branch', true],
+      ['layout', true],
+    ],
+  );
+  assert.deepEqual(faulted(f.html()), []);
+  assert.doesNotMatch(f.html(), /class="card dim"/);
+  f.toggle('master');
+  await tick();
+  assert.equal(f.saved.at(-1).butter.enabled, true);
+  assert.match(f.html(), /<div class="card ?">/);
+  assert.deepEqual(faulted(f.html()), ['branch']);
 });
