@@ -149,4 +149,6 @@ presentation and is hidden with it. These behaviors are unchanged.
 The popup uses the layout runtime API above, retries the same request three times, and retains
 the same UUID when retrying clear. Clear confirms inline and shows completion for two seconds.
 Usage uses decimal KB/MB and the 50,000,000-byte payload cap. Layout-off still deletes saved
-layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration.
+layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration
+and [`design/palette.md`](../design/palette.md) for the popup and consent card's colours, type
+and contrast ratios.
