@@ -17,7 +17,7 @@
 支持 Chrome、Edge、Brave 和 Arc（Chromium 111 及以上），暂不支持 Safari 和 Firefox。
 [安装与设置（英文）→](docs/install.md)
 
-当前版本：**0.1.0-alpha.14**（[更新日志](CHANGELOG.md)）。
+当前版本：**0.1.0-alpha.15**（[更新日志](CHANGELOG.md)）。
 
 ## 演示
 
