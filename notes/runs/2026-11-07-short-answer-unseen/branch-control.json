@@ -1,0 +1,128 @@
+[
+  {
+    "stage": "settled",
+    "state": {
+      "turns": 1,
+      "states": [
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "answerLength": 2657,
+      "blocks": 47,
+      "tables": 1,
+      "mathSources": 0,
+      "identity": true,
+      "recorder": {
+        "observed": true,
+        "generating": false,
+        "queued": false,
+        "measuring": false,
+        "attempted": true,
+        "lastRejection": null
+      },
+      "hasRecord": true,
+      "rejections": {}
+    }
+  },
+  {
+    "stage": "fully-seen",
+    "state": {
+      "turns": 1,
+      "states": [
+        "complete"
+      ],
+      "mdClass": "MarkdownRoot-rZKhxa [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&>*:last-child]:mb-0 [&>ol:first-child]:mt-0 [&>ul:first-child]:mt-0",
+      "answerLength": 2657,
+      "blocks": 47,
+      "tables": 1,
+      "mathSources": 0,
+      "identity": true,
+      "recorder": {
+        "observed": true,
+        "generating": false,
+        "queued": false,
+        "measuring": false,
+        "attempted": true,
+        "lastRejection": null
+      },
+      "hasRecord": true,
+      "rejections": {}
+    }
+  },
+  {
+    "stage": "held",
+    "active": true,
+    "notice": false,
+    "decision": {
+      "schema": 1,
+      "sequence": 1,
+      "phase": "press",
+      "fiberFound": true,
+      "idsFromFallback": false,
+      "idsReason": null,
+      "modelLength": 1,
+      "scroller": {
+        "matchesThreadScroller": true,
+        "threadScrollerCount": 1,
+        "threadScrollerSw": 1526,
+        "swBefore": 1526,
+        "sw": 1526,
+        "clientHeight": 912,
+        "scrollHeight": 3413
+      },
+      "turns": [
+        {
+          "index": 0,
+          "mounted": true,
+          "rowHeightAtPrepare": 3171,
+          "measuredHeight": 3170.71875,
+          "rowH": 3171,
+          "recordSw": 1526,
+          "items": 48,
+          "fromStorage": false,
+          "modelTop": 84,
+          "modelHeight": 3170.71875,
+          "layout": true,
+          "layoutReason": null,
+          "cache": {
+            "before": {
+              "hasRecord": true,
+              "convMatches": true,
+              "items": 48,
+              "blocks": 45,
+              "sw": 1526,
+              "rowH": 3171,
+              "fromStorage": false
+            },
+            "after": {
+              "hasRecord": true,
+              "convMatches": true,
+              "items": 48,
+              "blocks": 45,
+              "sw": 1526,
+              "rowH": 3171,
+              "fromStorage": false
+            },
+            "recordChanged": false,
+            "storedAvailable": false,
+            "retiredStored": false,
+            "reason": null
+          }
+        }
+      ],
+      "render": {
+        "prepareSequence": 1,
+        "modelLength": 1,
+        "turnIndex": 0,
+        "layout": true,
+        "unseen": false,
+        "top": 2501,
+        "insetTop": 52,
+        "previewTop": 2417.219005943053
+      },
+      "recordCount": 1,
+      "storedTurns": 0,
+      "mountedTurns": 1
+    }
+  }
+]
