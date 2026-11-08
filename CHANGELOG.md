@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0-alpha.15 (2026-11-07)
+
+- New: Ask in branch. Select text in a ChatGPT answer and click Butter's "Ask in branch" button
+  next to ChatGPT's own, then type a question. Butter opens the chat in a new tab, makes a
+  ChatGPT branch from the latest reply, and sends the quoted text with your question there, so
+  the original chat is left as it was. If the latest reply is still being written, Butter waits
+  for it to finish. Selected formulas are quoted as LaTeX. You can cancel at any point before the
+  question is sent, and Butter never sends in a conversation it can't confirm is the new branch.
+  Turn it off in the popup under "Ask in branch". The button is not shown in Temporary Chat,
+  Work mode or unsaved branches. Works with ChatGPT in English and Chinese.
+- Holding the scrollbar over a short answer you have already read shows that answer again,
+  instead of saying only its start can be previewed.
+
 ## 0.1.0-alpha.14 (2026-11-07)
 
 - Holding the scrollbar over an answer you have already read shows that answer again, instead of
