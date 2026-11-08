@@ -3,7 +3,7 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
+| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 360 px popup, bundled fonts, inline SVGs and translations. |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `extension/branch/logic.js` | Ask in branch, pure: message format, conversation identity, selection rule, one-time handoff jobs. |
@@ -27,9 +27,17 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 18 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_BRANCH_MOCKUP` to compare the Ask in branch states with their approved mockup);
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 22 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
+  `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
+  (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
+  (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,
+  branch off, branch fault, dark and Chinese, where that side has them. Each panel must match its
+  state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
+  version label and the storage line masked; the run prints every panel's height and diff ratio,
+  then fails with a summary if any differ.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
+- Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
   Work-mode detection, menu matching), `test/branch-run.test.js` (state machine with a fake
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
@@ -141,4 +149,6 @@ presentation and is hidden with it. These behaviors are unchanged.
 The popup uses the layout runtime API above, retries the same request three times, and retains
 the same UUID when retrying clear. Clear confirms inline and shows completion for two seconds.
 Usage uses decimal KB/MB and the 50,000,000-byte payload cap. Layout-off still deletes saved
-layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration.
+layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration
+and [`design/palette.md`](../design/palette.md) for the popup and consent card's colours, type
+and contrast ratios.

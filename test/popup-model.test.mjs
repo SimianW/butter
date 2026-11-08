@@ -2,18 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import model from '../extension/popup/model.js';
 
-test('usage formatting uses decimal cap units, one MB decimal and integer KB', () => {
+test('usage formatting uses a comma, decimal cap units, one MB decimal and integer KB', () => {
+  assert.equal(model.formatUsage({ conversations: 3, bytes: 1_200_000 }), '3 chats, about 1.2 MB');
+  assert.equal(
+    model.formatUsage({ conversations: 3, bytes: 1_200_000 }, 'zh'),
+    '3 个对话，约 1.2 MB',
+  );
   assert.equal(
     model.formatUsage({ conversations: 12, bytes: 8_400_000 }, 'zh'),
-    '12 个对话 · 约 8.4 MB',
+    '12 个对话，约 8.4 MB',
   );
   assert.equal(
     model.formatUsage({ conversations: 12, bytes: 8_400_000 }),
-    '12 chats · about 8.4 MB',
+    '12 chats, about 8.4 MB',
   );
-  assert.equal(model.formatUsage({ conversations: 1, bytes: 99_499 }), '1 chat · about 99 KB');
-  assert.equal(model.formatUsage({ conversations: 1, bytes: 100_000 }), '1 chat · about 0.1 MB');
-  assert.equal(model.formatUsage(), '0 chats · about 0 KB');
+  assert.equal(model.formatUsage({ conversations: 1, bytes: 99_499 }), '1 chat, about 99 KB');
+  assert.equal(model.formatUsage({ conversations: 1, bytes: 100_000 }), '1 chat, about 0.1 MB');
+  assert.equal(model.formatUsage(), '0 chats, about 0 KB');
   assert.equal(model.usageFill(8_400_000), 16.8);
   assert.equal(model.usageFill(70_000_000), 100);
   assert.equal(model.usageFill(-1), 0);
@@ -54,8 +59,8 @@ test('layout calls retry the same clear id three times and surface exhausted err
   );
   assert.equal(count, 3);
 });
-test('version label follows manifest alpha numbering', () => {
-  assert.equal(model.versionLabel('0.1.0-alpha.10'), 'v0.1.0 · alpha 10');
-  assert.equal(model.versionLabel('0.1.0-alpha'), 'v0.1.0 · alpha 0');
-  assert.equal(model.versionLabel('0.1.0'), 'v0.1.0');
+test('version label is the manifest version_name as written', () => {
+  assert.equal(model.versionLabel('0.1.0-alpha.15'), '0.1.0-alpha.15');
+  assert.equal(model.versionLabel('0.1.0-alpha'), '0.1.0-alpha');
+  assert.equal(model.versionLabel('0.1.0'), '0.1.0');
 });
