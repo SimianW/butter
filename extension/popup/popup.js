@@ -17,6 +17,7 @@ const T = {
       paused: '已暂停，ChatGPT 按原样运行',
     },
     fault: '暂时不可用。ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。',
+    faultShort: '暂时不可用，Butter 会自动恢复。',
     groups: [
       ['zap', '回答生成时更顺', '长回答输出时页面不卡'],
       ['scroll', '长对话滚动更顺', '拖动滚动条先看预览，松手再加载'],
@@ -42,6 +43,7 @@ const T = {
       paused: 'Paused. ChatGPT runs as is.',
     },
     fault: 'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.',
+    faultShort: 'Unavailable; resumes on its own.',
     groups: [
       ['zap', 'Smoother streaming', 'Long answers stream without lag'],
       ['scroll', 'Smoother scrolling', 'Preview while you drag the scrollbar'],
@@ -132,11 +134,13 @@ function render() {
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
   // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
   // A broken group says so in its own description, a live region so the change is announced.
+  // With two or more broken groups each says it in one line, so the popup stays under 600 px.
+  const fault = broken.length > 1 ? t.faultShort : t.fault;
   const row = (i) => {
     const [ic, n, d] = t.groups[i],
       key = groupKeys[i],
       bad = broken.includes(key);
-    return `<label class="row ${bad ? 'bad' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}</div><div class="d" role="status">${bad ? t.fault : d}</div></div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
+    return `<label class="row ${bad ? 'bad' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}</div><div class="d" role="status">${bad ? fault : d}</div></div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
   };
   const features = groupKeys.flatMap((k, i) => (k === 'layout' ? [] : [row(i)]));
   const privacy = `<a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a>`;

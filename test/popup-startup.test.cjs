@@ -237,7 +237,7 @@ test('a recorded failure replaces its row description with the fault text, in pl
   assert.equal(descriptions(f.html()).branch, 'Select text, ask about it in a new branch');
 });
 
-test('several broken groups each show their own fault text', async () => {
+test('with two or more broken groups, each faulted row shows the short one-line fault text', async () => {
   const f = popup();
   f.finish(
     { butter: { layoutConsent: 'granted' } },
@@ -245,9 +245,20 @@ test('several broken groups each show their own fault text', async () => {
   );
   await tick();
   assert.deepEqual(faulted(f.html()), ['rail', 'branch']);
-  assert.equal(descriptions(f.html()).rail, faultEn);
-  assert.equal(descriptions(f.html()).branch, faultEn);
+  assert.equal(descriptions(f.html()).rail, 'Unavailable; resumes on its own.');
+  assert.equal(descriptions(f.html()).branch, 'Unavailable; resumes on its own.');
   assert.equal(descriptions(f.html()).streaming, 'Long answers stream without lag');
+  assert.match(f.html(), /<div class="d" role="status">Unavailable; resumes/);
+  f.changed({ butter: { newValue: { layoutConsent: 'granted', lang: 'zh' } } }, 'local');
+  assert.equal(descriptions(f.html()).rail, '暂时不可用，Butter 会自动恢复。');
+  assert.equal(descriptions(f.html()).branch, '暂时不可用，Butter 会自动恢复。');
+  // Back to one broken group: its row shows the full text again.
+  f.changed(
+    { butter: { newValue: { layoutConsent: 'granted', lang: 'zh', opts: { rail: false } } } },
+    'local',
+  );
+  assert.deepEqual(faulted(f.html()), ['branch']);
+  assert.equal(descriptions(f.html()).branch, faultZh);
 });
 
 test('paused marks the features card paused, keeps every switch as set, and shows no faults', async () => {

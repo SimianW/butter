@@ -82,6 +82,10 @@ try {
     ['21-en-clear-confirm', { lang: 'en', clear: 'confirm' }],
     // The consent note in Chinese, for the 600 px cap (05 covers the Chinese clear confirmation).
     ['22-zh-layouts-pending', { lang: 'zh', consent: 'pending' }],
+    // Worst case for the 600 px cap: every group that can fail has failed, with the consent note
+    // showing (pending consent keeps the layouts group off, so it cannot fault too).
+    ['23-en-all-faults-pending', { lang: 'en', consent: 'pending', broken: ['streaming', 'scrolling', 'rail', 'branch'] }],
+    ['24-zh-all-faults-pending', { lang: 'zh', consent: 'pending', broken: ['streaming', 'scrolling', 'rail', 'branch'] }],
   ];
   if (process.env.BUTTER_CASES) cases = cases.filter(([name]) => process.env.BUTTER_CASES.split(',').includes(name.slice(0, 2)));
   const mockup = process.env.BUTTER_MOCKUP;
@@ -102,8 +106,8 @@ try {
       clearTimeout(clearTimer); clearState = 'idle';
       fixtureConnected = !config.away;
       const value = ButterStatus.normalize({ layoutConsent: config.consent || 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false, branch: config.branch !== false } });
-      const broken = config.broken === true ? 'rail' : config.broken;
-      await chrome.storage.session.set({ butterFailures: broken ? { [broken]: { [broken]: true } } : {} });
+      const broken = config.broken === true ? ['rail'] : [config.broken || []].flat();
+      await chrome.storage.session.set({ butterFailures: Object.fromEntries(broken.map(k => [k, { [k]: true }])) });
       await chrome.storage.local.set({ butter: value });
       await poll();
       await refreshUsage();
@@ -125,8 +129,11 @@ try {
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
     assert.equal(await page.locator('[role="switch"]').count(), 6);
     assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
-    assert.equal(await page.locator('.row.bad [data-switch="branch"]').count(), config.broken === 'branch' ? 1 : 0);
+    assert.equal(await page.locator('.row.bad [data-switch="branch"]').count(), [config.broken].flat().includes('branch') ? 1 : 0);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
+    // With two or more faults, every faulted row's short text fits on one line.
+    if (Array.isArray(config.broken)) for (const [text, lines] of await page.locator('.row.bad .d').evaluateAll(list => list.map(e => [e.textContent, e.getClientRects().length && Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight))])))
+      assert.equal(lines, 1, `${name}-${color}: "${text}" wraps to ${lines} lines`);
     const metrics = () => ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
       return { selector, top: r?.top, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
@@ -290,7 +297,8 @@ try {
   });
   // Each broken group explains itself in its own row; nothing is aggregated elsewhere.
   await page.waitForFunction(() => document.querySelectorAll('.row.bad').length === 2);
-  const fault = 'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
+  // Two faults: each row carries the short one-line text.
+  const fault = 'Unavailable; resumes on its own.';
   assert.deepEqual(await page.locator('.row.bad').evaluateAll(list => list.map(e => [e.querySelector('[data-switch]').dataset.switch, e.querySelector('.d').textContent, e.querySelector('.d').getAttribute('role')])),
     [['streaming', fault, 'status'], ['rail', fault, 'status']]);
   await page.evaluate(async () => {
