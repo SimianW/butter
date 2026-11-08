@@ -72,7 +72,41 @@
   }
   // Centre of a question's segment below its tick's centre, in px.
   const segmentOffset = (pitch) => (pitch < 12 ? 0.4 * pitch : 5);
-  const api = { excerpt, key, clean, hash, group, segmentOffset };
+  // What the rail's hover card shows for one question's bookmarks (`rows`, already in answer
+  // order). `at` places the question: `{ n, total }`, or `{ back }` (1 = the latest question) while
+  // earlier questions aren't loaded and the total is unknown. One bookmark gets the single card;
+  // several get a list that shows `visible` rows and scrolls for the rest. `label` is the
+  // segment's accessible name.
+  const VISIBLE = 5;
+  function card(rows, at, zh = false) {
+    const k = rows.length,
+      single = k === 1;
+    const where = zh
+      ? at.back != null
+        ? `最近第 ${at.back} 个问题`
+        : `第 ${at.n} / ${at.total} 个问题`
+      : at.back != null
+        ? at.back === 1
+          ? 'latest question'
+          : `${at.back} questions back`
+        : `question ${at.n} of ${at.total}`;
+    const meta = zh
+      ? single
+        ? `书签 · ${where}`
+        : `${where} · ${k} 个书签`
+      : single
+        ? `Bookmark · ${where}`
+        : `${where[0].toUpperCase()}${where.slice(1)} · ${k} bookmarks`;
+    return { single, meta, rows, visible: Math.min(k, VISIBLE), label: label(rows, zh) };
+  }
+  // The segment's accessible name: how many bookmarks, and their text.
+  function label(rows, zh = false) {
+    const k = rows.length,
+      texts = rows.map((b) => b.excerpt).join(zh ? '；' : '; ');
+    if (zh) return k === 1 ? `书签：${texts}` : `${k} 个书签：${texts}`;
+    return k === 1 ? `Bookmark: ${texts}` : `${k} bookmarks: ${texts}`;
+  }
+  const api = { excerpt, key, clean, hash, group, segmentOffset, card, label };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ButterBookmarks = api;
 })(globalThis);

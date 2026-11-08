@@ -3,13 +3,17 @@
 // conversation's messages, which Butter's own fetch hook reads), and the run fails if anything
 // else is requested. No ChatGPT requests.
 // Checks: hover a paragraph, the button waits 120 ms, click it, the segment appears under the right
-// question, clicking the segment lands on the paragraph, a reload shows the segment again, the same
-// paragraph is not saved twice, the conversation's bookmarks are read once and not during scrolling,
-// and with the rail off or Butter paused neither the button nor a segment shows.
+// question, clicking the segment lands on the paragraph, a reload shows the segment again, a
+// bookmarked paragraph shows the filled button, the conversation's bookmarks are read once and not
+// during scrolling, and with the rail off or Butter paused neither the button nor a segment shows.
+// The rail's hover card (#53): the single and list cards, moving onto the card, jumping from a row,
+// deleting with × and the filled button, the segment fading out, keyboard-only jump and delete, and
+// light and dark screenshots of both cards.
 // Run: npm ci --prefix lab/harness && node lab/harness/bookmarks-qa.mjs
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa).
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -173,6 +177,9 @@ const button = () =>
       radius: s.borderRadius,
       label: b.getAttribute('aria-label'),
       tip: b.querySelector('.tip').textContent,
+      on: b.classList.contains('on'),
+      fill: getComputedStyle(b.querySelector('svg path')).fill,
+      stroke: getComputedStyle(b.querySelector('svg path')).stroke,
     };
   });
 const block = (turn, k) =>
@@ -325,11 +332,11 @@ try {
     { excerpt, length: excerpt.length, cut, para: saved[0]?.para, turn: saved[0]?.turn });
   check('no raw ids reach the store', !JSON.stringify(saved).includes(CONV) && !JSON.stringify(saved).includes(answer(TURN)));
 
-  // 2. Duplicate: bookmarking the same paragraph again keeps one bookmark.
+  // 2. Hovering the bookmarked paragraph again shows the filled button (a click would remove it).
   const again = await bookmark(TURN, PARA);
-  await again.click();
-  await page.waitForTimeout(400);
-  check('the same paragraph is saved once', (await stored()).length === 1 && (await rail()).marks.length === 1);
+  check('a bookmarked paragraph shows the filled button', again.kept?.on && again.kept.tip === 'Remove bookmark',
+    { button: again.kept });
+  check('the paragraph is saved once', (await stored()).length === 1 && (await rail()).marks.length === 1);
 
   // 3. Hovering the segment grows it to 12 px; the tick's wave does not move it.
   await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
@@ -420,6 +427,230 @@ try {
   await open('light');
   await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
   check('rail back on: the segment returns', true);
+
+  // 9. The rail's hover card (#53). Seed bookmarks straight into the store, as an earlier session
+  // would have left them, then reload so the page reads them once.
+  const sha = (s) => createHash('sha256').update(s).digest('hex');
+  const [{ account: ACCOUNT, conv: CONV_HASH }] = await stored();
+  const seed = (turn, para, start = 0, end = null, time = Date.now()) => {
+    const text = PARAGRAPH(turn, para === 0 ? 0 : para - 1);
+    const excerpt = text.slice(start, end ?? 120).trim();
+    return { account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: end ?? text.length, excerpt, time };
+  };
+  // Question 3: one bookmark. Question 7: six (blocks are p, h3, p, p, p, p, ul), two of them in
+  // paragraph 2, stored out of answer order.
+  const SEEDS = [seed(2, 0), seed(TURN, 5, 0, null, 1), seed(TURN, 0, 0, null, 2), seed(TURN, 2, 20, 80, 3), seed(TURN, 2, 0, null, 4), seed(TURN, 4, 0, null, 5)];
+  await worker.evaluate(async (rows) => {
+    const db = await database(),
+      tx = db.transaction('bookmarks', 'readwrite');
+    for (const r of rows) tx.objectStore('bookmarks').put({ ...r, key: ButterBookmarks.key(r) });
+    await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
+  }, SEEDS);
+  const excerptOf = (turn, para, start = 0) =>
+    [...SEEDS, ...saved].find((b) => b.turn === turn && b.para === para && b.start === start).excerpt;
+  const ORDER = [[0], [2], [2, 20], [3], [4], [5]].map(([para, start]) => excerptOf(TURN, para, start));
+  const cardState = () =>
+    page.evaluate(() => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        c = root.querySelector('.card'),
+        s = getComputedStyle(c),
+        r = c.getBoundingClientRect(),
+        box = root.querySelector('.bmc .rows');
+      const rect = (el) => {
+        const q = el.getBoundingClientRect();
+        return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height };
+      };
+      return {
+        shown: c.classList.contains('show') && +s.opacity > 0.5,
+        bm: c.classList.contains('bm'),
+        pe: s.pointerEvents,
+        meta: root.querySelector('.bmc .meta')?.textContent,
+        text: root.querySelector('.bmc .one')?.textContent,
+        x: root.querySelector('.bmc .meta .x') && { label: root.querySelector('.bmc .meta .x').getAttribute('aria-label'), ...rect(root.querySelector('.bmc .meta .x')) },
+        rows: [...root.querySelectorAll('.bmc .it')].map((it) => ({
+          text: it.querySelector('.go').textContent,
+          bg: getComputedStyle(it).backgroundColor,
+          xOpacity: +getComputedStyle(it.querySelector('.x')).opacity,
+          xLabel: it.querySelector('.x').getAttribute('aria-label'),
+          ...rect(it),
+          xAt: rect(it.querySelector('.x')),
+        })),
+        box: box && { client: box.clientHeight, scroll: box.scrollHeight },
+        rect: { x: r.left, y: r.top, w: r.width, h: r.height },
+        active: root.activeElement ? { cls: root.activeElement.className, label: root.activeElement.getAttribute('aria-label'), text: root.activeElement.textContent } : null,
+      };
+    });
+  const markFor = (r, turn) => r.marks.find((m) => Math.abs(m.y - r.ticks[turn].y - 5) <= 1);
+  const hoverSegment = async (turn) => {
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(200);
+    const r = await rail(),
+      m = markFor(r, turn);
+    await page.mouse.move(m.right - 4, m.y, { steps: 4 });
+    await page.waitForTimeout(350);
+    return m;
+  };
+  const shoot = async (name) => {
+    const c = await cardState(),
+      r = await rail();
+    const y = Math.max(0, Math.min(c.rect.y, r.ticks[0].y) - 30);
+    await page.screenshot({ path: `${shots}/${name}.png`, clip: { x: 1400 - 420, y, width: 420, height: Math.max(c.rect.y + c.rect.h, r.ticks.at(-1).y) - y + 30 } });
+  };
+  // A wheel turn first: a user scroll ends the pin a jump leaves on its question.
+  const toTop = async () => {
+    await page.mouse.move(700, 400);
+    await page.mouse.wheel(0, -1);
+    await page.waitForTimeout(50);
+    await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
+    await page.waitForTimeout(300);
+  };
+  const cards = {};
+  for (const theme of ['light', 'dark']) {
+    await open(theme);
+    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+    await toTop();
+    await hoverSegment(2);
+    const single = await cardState();
+    await shoot(`card-single-${theme}`);
+    await hoverSegment(TURN);
+    const list = await cardState();
+    // Across the rail and the gap, onto the first row: the card stays and the row lights up.
+    await page.mouse.move(list.rows[0].x, list.rows[0].y, { steps: 12 });
+    await page.waitForTimeout(250);
+    const onCard = await cardState();
+    await shoot(`card-list-${theme}`);
+    cards[theme] = { single, list, onCard };
+  }
+  const { single, list, onCard } = cards.light;
+  check('one bookmark: the card shows "Bookmark · question 3 of 12", its excerpt and an ×',
+    single.shown && single.bm && single.meta === 'Bookmark · question 3 of 12' && single.text === excerptOf(2, 0) &&
+      single.x?.label === `Delete bookmark: ${excerptOf(2, 0)}`, { single });
+  check('the single card clamps its excerpt to three lines', single.rect.h < 13 * 1.45 * 4 + 40, { h: single.rect.h });
+  check('several: "Question 7 of 12 · 6 bookmarks" and the rows in answer order',
+    list.shown && list.meta === 'Question 7 of 12 · 6 bookmarks' && JSON.stringify(list.rows.map((x) => x.text)) === JSON.stringify(ORDER),
+    { meta: list.meta, rows: list.rows.map((x) => x.text) });
+  check('five rows show and the sixth scrolls',
+    list.box && Math.abs(list.box.client - 5 * list.rows[0].h) <= 1 && list.box.scroll > list.box.client + list.rows[0].h / 2, { box: list.box, row: list.rows[0].h });
+  check('the card takes the pointer while it shows bookmarks', list.pe === 'auto');
+  check('moving onto the card keeps it open; the hovered row has a background and an ×',
+    onCard.shown && onCard.rows[0].bg !== 'rgba(0, 0, 0, 0)' && onCard.rows[0].xOpacity === 1 && onCard.rows[1].xOpacity === 0 &&
+      onCard.rows[0].xLabel === `Delete bookmark: ${ORDER[0]}`, { rows: onCard.rows.slice(0, 2) });
+  check('dark theme: the same cards', cards.dark.single.meta === single.meta && cards.dark.onCard.shown &&
+    cards.dark.onCard.rows[0].bg !== 'rgba(0, 0, 0, 0)', { dark: cards.dark.onCard.rows[0].bg });
+
+  // Jump from a row: the fifth row (paragraph 4) lands 64 px below the scroller's top, card put away.
+  await open('light');
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2);
+  await toTop();
+  await hoverSegment(TURN);
+  let c = await cardState();
+  await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+  await page.mouse.move(c.rows[4].x, c.rows[4].y, { steps: 4 });
+  await page.mouse.click(c.rows[4].x - 40, c.rows[4].y);
+  await page.waitForTimeout(3500);
+  check('clicking a row jumps to that bookmark', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
+  check('the card goes away after the jump', !(await cardState()).shown);
+
+  // Delete the first row with its ×: the store and the card both lose it.
+  await toTop();
+  await hoverSegment(TURN);
+  c = await cardState();
+  await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+  await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
+  await page.waitForTimeout(400);
+  c = await cardState();
+  let left = (await stored()).filter((b) => b.turn === TURN);
+  check('× deletes that bookmark; the card now lists five', left.length === 5 && !left.some((b) => b.para === 0) &&
+    c.shown && c.meta === 'Question 7 of 12 · 5 bookmarks' && c.rows.length === 5, { left: left.length, meta: c.meta });
+
+  // The filled button removes every bookmark in its paragraph (two in paragraph 2).
+  await toTop();
+  const filled = await bookmark(TURN, 2);
+  check('a bookmarked paragraph: filled butter button with a dark outline, "Remove bookmark"',
+    filled.kept?.on && filled.kept.tip === 'Remove bookmark' && filled.kept.fill === 'rgb(251, 224, 122)' &&
+      filled.kept.stroke === 'rgb(27, 23, 15)' && filled.kept.label.startsWith('Remove bookmark: ') &&
+      filled.kept.label.includes(excerptOf(TURN, 2)), { button: filled.kept });
+  await page.screenshot({ path: `${shots}/button-remove-light.png`, clip: { x: filled.b.x - 60, y: filled.b.y - 50, width: 820, height: 160 } });
+  await filled.click();
+  await page.waitForTimeout(400);
+  left = (await stored()).filter((b) => b.turn === TURN);
+  check('clicking the filled button removes both bookmarks in that paragraph', left.length === 3 && !left.some((b) => b.para === 2) &&
+    !(await button()).on, { left: left.map((b) => b.para) });
+
+  // Keyboard alone: Tab into the rail, arrows to the segment, left into the card, Enter to jump.
+  await toTop();
+  await page.mouse.move(700, 300);
+  const focused = () => page.evaluate(() => {
+    const a = document.querySelector('chatgpt-butter-nav')?.shadowRoot.activeElement;
+    return a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null;
+  });
+  await page.evaluate(() => document.activeElement?.blur());
+  for (let k = 0; k < 8 && !(await focused())?.cls.startsWith('tick'); k++) await page.keyboard.press('Tab');
+  let f;
+  for (let k = 0; k < 30; k++) {
+    f = await focused();
+    if (f?.cls.startsWith('mark') && f.label.startsWith('3 bookmarks')) break;
+    await page.keyboard.press('ArrowDown');
+  }
+  await page.waitForTimeout(250); // the card fades in
+  check('arrows reach the segment; its name holds the bookmark text', f?.cls.startsWith('mark') &&
+    f.label === `3 bookmarks: ${ORDER[3]}; ${ORDER[4]}; ${ORDER[5]}` && (await cardState()).shown, { f });
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowDown');
+  f = await focused();
+  check('ArrowLeft enters the card, ArrowDown moves to the next row', f?.cls === 'go' && f.text === ORDER[4], { f });
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(3500);
+  check('Enter on a row jumps to it', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
+  f = await focused();
+  check('after the jump, focus is back on the segment', f?.cls.startsWith('mark'), { f });
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Tab');
+  f = await focused();
+  check('Tab moves from a row to its ×', f?.cls === 'x' && f.label === `Delete bookmark: ${ORDER[3]}`, { f });
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(400);
+  left = (await stored()).filter((b) => b.turn === TURN);
+  f = await focused();
+  check('Enter on × deletes it; focus stays in the card', left.length === 2 && !left.some((b) => b.para === 3) &&
+    f?.cls === 'go' && (await cardState()).rows.length === 2, { left: left.map((b) => b.para), f });
+  await page.keyboard.press('Escape');
+  await page.mouse.move(700, 300);
+
+  // The single card's × under reduced motion: the segment goes at once.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await toTop();
+  await hoverSegment(2);
+  c = await cardState();
+  await page.mouse.move(c.x.x, c.x.y, { steps: 12 });
+  await page.mouse.click(c.x.x, c.x.y);
+  await page.waitForTimeout(150);
+  let r = await rail();
+  check('the single card × deletes; under reduced motion the segment goes at once',
+    !(await stored()).some((b) => b.turn === 2) && r.marks.length === 1 && !(await cardState()).shown, { marks: r.marks.length });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+
+  // Delete question 7's last two: the last deletion fades the segment out over 160 ms.
+  await hoverSegment(TURN);
+  c = await cardState();
+  await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+  await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
+  await page.waitForTimeout(400);
+  c = await cardState();
+  check('one left: the card turns into the single card', c.shown && c.meta === 'Bookmark · question 7 of 12' && c.text === ORDER[5], { c });
+  await page.mouse.move(c.x.x, c.x.y, { steps: 6 });
+  await page.mouse.click(c.x.x, c.x.y);
+  const fading = await page.waitForFunction(
+    () => [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].some((m) => m.classList.contains('gone') && +getComputedStyle(m).opacity < 1),
+    null, { timeout: 1000 }).then(() => true, () => false);
+  await page.waitForTimeout(400);
+  r = await rail();
+  check('deleting the last bookmark fades the segment out, then removes it', fading && r.marks.length === 0 && !(await cardState()).shown, { fading, marks: r.marks.length });
+
+  // Reload: every deletion is still gone.
+  await open('light');
+  await page.waitForTimeout(500);
+  check('after a reload the deletions are still gone', (await stored()).length === 0 && (await rail()).marks.length === 0);
 } finally {
   console.log('errors', JSON.stringify(errors), 'foreign', JSON.stringify(foreign));
   await fs.writeFile(`${shots}/summary.json`, JSON.stringify({ results, errors, foreign }, null, 2));

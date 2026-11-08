@@ -1,7 +1,7 @@
 // Isolated world. Bookmarks on the page: the hover button over answer paragraphs, the client of the
 // worker's store (bookmarks/worker.js), and the marks the history rail draws (rail/rail.js). The
 // rules live in bookmarks/model.js. A conversation's bookmarks are read once when the rail shows it
-// and written on create; nothing here runs while a scrollbar drag is seeking.
+// and written on create and delete; nothing here runs while a scrollbar drag is seeking.
 (() => {
   const B = ButterBookmarks;
   // An answer's rendered content, as stream/offscreen.js finds it; its children are the paragraphs.
@@ -11,7 +11,14 @@
   const MESSAGE = '[data-message-author-role="assistant"][data-message-id]';
   const SHOW_AFTER = 120; // ms of hover before the button fades in
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
-  const strings = (zh) => (zh ? { add: '为这段加书签' } : { add: 'Bookmark paragraph' });
+  const strings = (zh) =>
+    zh
+      ? { add: '为这段加书签', remove: '删除书签', removeOf: (t) => `删除书签：${t}` }
+      : {
+          add: 'Bookmark paragraph',
+          remove: 'Remove bookmark',
+          removeOf: (t) => `Remove bookmark: ${t}`,
+        };
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   let TXT = strings(zh());
   const railOff = () =>
@@ -70,6 +77,8 @@
   // ---- Marks for the rail: one per question that holds bookmarks.
   let view = { conv: null, items: [] },
     rawOf = new Map(), // hashed message id -> raw id, for the conversation in view
+    hashOf = new Map(), // and back
+    shownList = [], // the bookmarks of the conversation in view
     serial = 0,
     seeking = false,
     deferred = false;
@@ -93,6 +102,8 @@
     ]);
     if (token !== serial) return;
     rawOf = new Map(hashes.map((h, i) => [h, items[i].id]));
+    hashOf = new Map(hashes.map((h, i) => [items[i].id, h]));
+    shownList = bookmarks;
     const questions = items.filter((x) => x.q != null);
     const marks = new Map();
     for (const g of B.group(
@@ -100,14 +111,18 @@
       items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
     )) {
       const first = g.bookmarks[0];
+      // `bookmarks` in answer order; `land(turn, b)` for the rail's jump, `remove(b)` for its ×.
       marks.set(questions[g.question].id, {
         count: g.bookmarks.length,
         fresh: g.bookmarks.some((b) => fresh.has(b.key)),
-        land: (turn) => locate(turn, first),
+        bookmarks: g.bookmarks,
+        land: (turn, b = first) => locate(turn, b),
+        remove: (b) => remove(owner, conv, [b]),
       });
     }
     fresh.clear();
     globalThis.ButterRail?.setMarks(conv, marks);
+    label();
   }
   document.addEventListener('butter-seek-state', (e) => {
     let m;
@@ -221,22 +236,50 @@
       list.push(r.bookmark);
       fresh.add(r.bookmark.key);
     }
+    hashOf.set(message.getAttribute('data-message-id'), msg);
     if (owner === account && conv === view.conv) refresh();
   }
+  // Deletes bookmarks from the store and from the page's copy of the conversation's list.
+  async function remove(owner, conv, bookmarks) {
+    const hash = await digest(conv);
+    const done = await Promise.all(
+      bookmarks.map((b) =>
+        send('butter-bookmark-delete', { account: owner, conv: hash, key: b.key }).then(
+          (r) => r.deleted !== undefined && b.key,
+        ),
+      ),
+    );
+    const list = await listOf(owner, conv);
+    for (const key of done) {
+      const at = list.findIndex((b) => b.key === key);
+      if (key && at >= 0) list.splice(at, 1);
+    }
+    if (owner === account && conv === view.conv) refresh();
+  }
+  // The bookmarks anchored to a paragraph of the conversation in view.
+  const marksOf = (block) => {
+    const msg = hashOf.get(block?.closest(MESSAGE)?.getAttribute('data-message-id'));
+    const para = block?.parentElement ? [...block.parentElement.children].indexOf(block) : -1;
+    return msg && view.conv === convOfPath()
+      ? shownList.filter((b) => b.msg === msg && b.para === para)
+      : [];
+  };
 
   // ---- The hover button, in Butter's own layer over the left margin. ChatGPT's DOM is untouched.
   const ICON =
     '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.6a.3.3 0 0 1-.48.24L8 10.9l-4.02 2.94a.3.3 0 0 1-.48-.24V3a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   const CSS = `
     :host { all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 20; display: block;
-      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; }
-    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d; }
+      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --butter: #fbe07a; --outline: #1b170f; }
+    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d;
+      --butter: #e3c766; --outline: var(--butter); }
     button { all: unset; position: fixed; left: var(--x); top: var(--y); box-sizing: border-box; width: 28px; height: 28px;
       border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--hoverbg); cursor: pointer;
       opacity: 0; visibility: hidden; pointer-events: none; -webkit-tap-highlight-color: transparent; }
     button.show { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .15s; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: 1px; }
     svg { width: 16px; height: 16px; }
+    button.on path { fill: var(--butter); stroke: var(--outline); }
     .tip { position: absolute; left: 0; bottom: calc(100% + 8px); white-space: nowrap; background: var(--tipbg); color: var(--tipfg);
       font: 600 12px/1 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif; padding: 7px 9px;
       border-radius: 8px; opacity: 0; pointer-events: none; }
@@ -274,13 +317,23 @@
     // Keep the reader's selection: a click on the button must not move it.
     button.addEventListener('mousedown', (e) => e.preventDefault());
     button.addEventListener('click', () => {
-      if (target && !railOff()) create(target);
+      if (!target || railOff()) return;
+      const marked = marksOf(target);
+      if (marked.length) {
+        if (account && view.conv) remove(account, view.conv, marked);
+      } else create(target);
     });
   };
+  // A bookmarked paragraph shows the button filled: clicking it removes the paragraph's bookmarks.
   const label = () => {
     if (!host) return;
-    button.setAttribute('aria-label', TXT.add);
-    tip.textContent = TXT.add;
+    const marked = marksOf(target);
+    button.classList.toggle('on', marked.length > 0);
+    button.setAttribute(
+      'aria-label',
+      marked.length ? TXT.removeOf(marked.map((b) => b.excerpt).join(' ')) : TXT.add,
+    );
+    tip.textContent = marked.length ? TXT.remove : TXT.add;
   };
   function hide() {
     clearTimeout(timer);
@@ -312,6 +365,7 @@
     if (!place(block)) return;
     button.classList.add('show');
     target = block;
+    label();
     // The first scroll puts the button away; pointer moves over the paragraph keep it in place
     // when content above it changes size.
     addEventListener('scroll', hide, { capture: true, passive: true, once: true });
