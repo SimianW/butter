@@ -37,6 +37,14 @@
   let candidate = null; // {sc, model, flat, ...} prepared at press time
   let pressDecision = null,
     prepareSequence = 0;
+  // Dev build only: dev/recorder-main.js sets a listener through __seekDump.tap. Unset in the
+  // store build, so each hook below is one null check and builds no summary.
+  let tap = null;
+  const emit = (type, fields) => {
+    try {
+      tap(type, fields);
+    } catch {}
+  };
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1];
   const event = (kind, more = {}) => {
     S.events.push({ kind, t: performance.now(), ...more });
@@ -598,6 +606,18 @@
       renderMs,
       jsMs: performance.now() - start,
     };
+    if (tap)
+      emit('seek', {
+        top,
+        turn: m.index,
+        offset: row.offset,
+        layout: m.layout,
+        known: m.known,
+        items: row.items,
+        textFallback: row.textFallback,
+        renderMs,
+        jsMs: row.jsMs,
+      });
     S.updates.push(row);
     if (S.updates.length > 5000) S.updates.splice(0, 1000);
     requestAnimationFrame(() =>
@@ -657,12 +677,22 @@
     });
     if (S.presses.length > 200) S.presses.shift();
     if (!c.kind) {
+      if (tap && onSc) emit('press', { kind: null, reason: c.reason });
       act.cancel();
       candidate = null;
       return;
     }
     const prep = prepare(s);
     if (!prep) event('no-model');
+    if (tap)
+      emit('press', {
+        kind: c.kind,
+        sequence: pressDecision?.sequence ?? null,
+        modelLength: pressDecision?.modelLength ?? null,
+        layoutTurns: prep?.layoutTurns ?? null,
+        prepMs: prep?.prepMs ?? null,
+        scrollTop: s.scrollTop,
+      });
     candidate = {
       t: performance.now(),
       sc: s,
@@ -782,6 +812,7 @@
     held = false;
     const r = act.up();
     if (r === 'reset' && candidate) {
+      if (tap) emit('release', { reason: type, commit: false });
       event('candidate-end', { why: 'up' });
       candidate = null;
     }
@@ -934,6 +965,7 @@
     a.reason = reason;
     if (commit && finalTop !== a.lastTop) update({ timeStamp: performance.now() }, finalTop);
     event('release', { reason, commit, top: finalTop });
+    if (tap) emit('release', { reason, commit, top: finalTop, durationMs: a.end - a.start });
     if (commit) mask(a);
     restoreShift(a);
     if (!commit || !a.sc.isConnected || a.conv !== conv()) {
@@ -1423,6 +1455,13 @@
   Object.defineProperty(window.__seekDump, 'pressDecision', {
     get: () => JSON.parse(JSON.stringify(pressDecision)),
   });
+  // Dev build: the recorder's listener, and whether the left button is held (for pointerHeld).
+  Object.defineProperty(window.__seekDump, 'tap', {
+    set: (listener) => {
+      tap = typeof listener === 'function' ? listener : null;
+    },
+  });
+  Object.defineProperty(window.__seekDump, 'held', { get: () => held });
   window.__seekCoverage = () => {
     const s = [...document.querySelectorAll('.thread-scroll-container')].find(
       (s) => s.clientHeight > 0,

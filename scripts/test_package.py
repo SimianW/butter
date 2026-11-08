@@ -29,8 +29,9 @@ class PackageTests(unittest.TestCase):
         (self.extension / ".private").mkdir()
         (self.extension / ".private" / "secret").write_bytes(b"excluded")
 
-    def write_version(self, name="0.1.0-alpha.10", numeric="0.1.0.10"):
-        manifest = {"manifest_version": 3, "name": "Butter", "version_name": name, "version": numeric}
+    def write_version(self, name="0.1.0-alpha.10", numeric="0.1.0.10", base=None):
+        manifest = base or {"manifest_version": 3, "name": "Butter"}
+        manifest = {**manifest, "version_name": name, "version": numeric}
         (self.extension / "manifest.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
         (self.root / "README.md").write_text(f"Current version: **{name}**\n", encoding="utf-8")
         (self.root / "README.zh-CN.md").write_text(f"当前版本：**{name}**\n", encoding="utf-8")
@@ -96,6 +97,81 @@ class PackageTests(unittest.TestCase):
                             archive.read(f"butter/{relative}"),
                             (self.extension / relative).read_bytes(),
                         )
+
+    def use_real_extension(self):
+        shutil.rmtree(self.extension)
+        shutil.copytree(ROOT / "extension", self.extension)
+        real = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
+        self.write_version(base=real)
+
+    def dev_files(self):
+        return sorted(
+            "butter/" + path.relative_to(self.extension).as_posix()
+            for path in (self.extension / "dev").rglob("*")
+            if path.is_file()
+        )
+
+    def test_dev_package_adds_dev_files_command_and_downloads_permission(self):
+        self.use_real_extension()
+        dev_files = self.dev_files()
+        self.assertIn("butter/dev/recorder.js", dev_files)
+        before = {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()}
+        for number in (1, 2):
+            path, result = self.package("--dev")
+            expected_name = f"0.1.0-alpha.10+dev.{number}"
+            self.assertEqual(path.name, f"butter-{expected_name}.zip")
+            self.assertIn("remove the previous install", result.stdout)
+            with zipfile.ZipFile(path) as archive:
+                names = set(archive.namelist())
+                manifest = json.loads(archive.read("butter/manifest.json"))
+            self.assertTrue(set(dev_files) <= names)
+            self.assertEqual(manifest["version_name"], expected_name)
+            self.assertEqual(manifest["version"], "0.1.0.10")
+            self.assertIn("downloads", manifest["permissions"])
+            command = manifest["commands"]["save-bug"]
+            self.assertEqual(command["suggested_key"]["default"], "Alt+Shift+B")
+            self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
+            # Every script the dev manifest names is in the zip, after the store scripts it hooks.
+            isolated, main = manifest["content_scripts"]
+            self.assertEqual(isolated["js"][-1], "dev/content.js")
+            self.assertEqual(main["js"][-2:], ["dev/recorder.js", "dev/recorder-main.js"])
+            self.assertLess(main["js"].index("seek/preview-main.js"), main["js"].index("dev/recorder-main.js"))
+            worker = manifest["background"]["service_worker"]
+            self.assertEqual(worker, "dev/worker.js")
+            for script in [*isolated["js"], *main["js"], worker]:
+                self.assertIn(f"butter/{script}", names)
+        self.assertEqual(before, {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()})
+        self.assertEqual(self.run_script("check-version.py").returncode, 0)
+
+    def test_store_and_test_packages_leave_dev_build_out(self):
+        self.use_real_extension()
+        source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
+        self.assertNotIn("commands", source)
+        self.assertNotIn("downloads", source["permissions"])
+        self.package("--dev")
+        for args in ((), ("--test", "demo")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    names = archive.namelist()
+                    manifest = json.loads(archive.read("butter/manifest.json"))
+                self.assertEqual([name for name in names if name.startswith("butter/dev/")], [])
+                self.assertNotIn("commands", manifest)
+                self.assertNotIn("downloads", manifest["permissions"])
+                self.assertEqual(manifest["background"], source["background"])
+                self.assertEqual(manifest["content_scripts"], source["content_scripts"])
+                self.assertNotIn("dev", json.dumps(manifest["content_scripts"]))
+
+    def test_dev_package_needs_both_content_script_entries(self):
+        result = self.run_script("package.py", "--dev")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected the isolated content scripts first", result.stderr)
+        self.assertFalse(any((self.root / "dist").glob("*.zip")))
+
+    def test_dev_and_test_flags_cannot_be_combined(self):
+        result = self.run_script("package.py", "--dev", "--test", "demo")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "dist").exists())
 
     def test_numbering_uses_numeric_max_for_exact_base_and_tag(self):
         dist = self.root / "dist"

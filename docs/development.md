@@ -11,13 +11,14 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut and the download). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
 | `notes/review.md` | Historical risk review of the early extension code. |
 | `notes/runs/` | Curated lab reports and numeric results; private captures excluded. |
 | `report/report.html` | One-page visual summary. |
-| `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
+| `scripts/package.py` | Builds `dist/butter-<version>.zip`; `--test <tag>` and `--dev` build numbered test zips. |
 | `CHANGELOG.md` | Versions. |
 
 The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` supplies the geometry wire format before the single
@@ -50,6 +51,12 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
   `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
   wait and the hidden-button cases on the live page; see its header for how the stream is held.
+- Dev build bug capture: `test/dev-recorder.test.js` (`node --test`) covers the recorder.
+  `xvfb-run -a node lab/harness/dev-capture-qa.mjs` builds the dev zip, loads it in its own
+  Chromium on a virtual display over a synthetic chat (no ChatGPT requests), presses the real
+  shortcut through XTest (`xtest-keys.py`; keys sent over the DevTools protocol never reach
+  `chrome.commands`) and checks the files written to a temporary Downloads folder; the saved
+  files and a summary go to `notes/runs/2026-11-08-dev-capture-43/` (`OUT=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.
@@ -70,6 +77,12 @@ Run `npm ci` to install the pinned development formatter, then `npm run format` 
 `python3 scripts/package.py` builds the zip. Version rules are in [AGENTS.md](../AGENTS.md).
 For testing, `python3 scripts/package.py --test <tag>` builds `dist/butter-<version_name>+<tag>.<N>.zip` without changing the source manifest or consuming an alpha number (tag: `[a-z0-9-]+`; numbering starts at 1 per base version and tag).
 Test zips retain the base Chrome numeric version; remove the previous install before loading one unpacked.
+`python3 scripts/package.py --dev` builds the dev build, `dist/butter-<version_name>+dev.<N>.zip`: a test build
+that also contains `extension/dev/` and whose manifest adds the dev scripts, the `save-bug` command (suggested
+key Alt+Shift+B, Option+Shift+B on a Mac) and the `downloads` permission. The shortcut saves a privacy-safe
+snapshot of the last 30 s on a ChatGPT chat to `Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json`.
+On Windows and Linux, Alt+Shift+B is Chrome's own "focus bookmarks bar" key, so Chrome does not assign it
+automatically; set it in `chrome://extensions/shortcuts`. Only `--dev` zips carry the dev files.
 
 ## Layout storage API
 
