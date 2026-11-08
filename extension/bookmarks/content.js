@@ -238,6 +238,14 @@
     }
     hashOf.set(message.getAttribute('data-message-id'), msg);
     if (owner === account && conv === view.conv) refresh();
+    // Every save, by the button or the shortcut, comes through here: the first one tells the user
+    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its segment.
+    if (r.created)
+      globalThis.ButterBookmarkNotice?.saved(r.bookmark, () => {
+        const at = list.findIndex((b) => b.key === r.bookmark.key);
+        if (at >= 0) list.splice(at, 1);
+        if (owner === account && conv === view.conv) refresh();
+      });
   }
   // Deletes bookmarks from the store and from the page's copy of the conversation's list.
   async function remove(owner, conv, bookmarks) {
