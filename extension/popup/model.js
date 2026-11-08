@@ -4,12 +4,12 @@
     const size =
       bytes < 100_000 ? `${Math.round(bytes / 1000)} KB` : `${(bytes / 1_000_000).toFixed(1)} MB`;
     return lang === 'zh'
-      ? `${conversations} 个对话 · 约 ${size}`
-      : `${conversations} ${conversations === 1 ? 'chat' : 'chats'} · about ${size}`;
+      ? `${conversations} 个对话，约 ${size}`
+      : `${conversations} ${conversations === 1 ? 'chat' : 'chats'}, about ${size}`;
   };
   const usageFill = (bytes) => Math.min(100, Math.max(0, (bytes / 50_000_000) * 100));
-  const versionLabel = (version) =>
-    `v${version.replace(/-alpha(?:\.(\d+))?$/, (_, n) => ` · alpha ${n ?? 0}`)}`;
+  // The manifest's version_name as written, for example 0.1.0-alpha.15.
+  const versionLabel = (version) => version;
   const clearFlow = (state, event) =>
     ({
       idle: { ask: 'confirm' },

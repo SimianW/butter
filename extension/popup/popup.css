@@ -1,104 +1,142 @@
+@font-face {
+  font-family: 'Bagel Fat One';
+  src: url('fonts/bagel-wordmark.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nunito';
+  src: url('fonts/nunito-latin.woff2') format('woff2');
+  font-weight: 500 900;
+  font-display: swap;
+}
+
+/* Tokens. State rules use only these; the only literals are the dark inks on butter surfaces. */
 :root {
-  --body: 'Nunito', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-  --display: 'Bagel Fat One', 'Nunito', system-ui, sans-serif;
-}
-body {
-  margin: 0;
-  font-family: var(--body);
-}
-/* ---------------- popup tokens ---------------- */
-:root,
-.popup {
   --paper: #f6f1e3;
   --card: #fffdf6;
   --ink: #1b170f;
   --ink-2: #5c5240;
-  --ink-3: #8f8470;
+  --ink-3: #776c58;
+  --line: rgb(27 23 15 / 0.16);
+  --hair: rgb(27 23 15 / 0.1);
   --edge: #1b170f;
-  --shadow: #1b170f;
   --butter: #fbe07a;
   --butter-deep: #f2c23a;
-  --butter-light: #fff1b0;
-  --on-butter: #1b170f;
+  --butter-light: #fff4c2;
   --on-butter-2: #4d3d10;
-  --warn-bg: #ffdccd;
-  --warn: #c8371f;
-  --dash: rgb(27 23 15 / 0.16);
+  --warn: #b8321a;
+  --warn-bg: #ffe3d8;
+  --track: #e3dac3;
+  --knob: #fffdf6;
+  --knob-shadow: rgb(0 0 0 / 0.22);
+  --highlight: rgb(255 255 255 / 0.7);
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .09 0 0 0 0 .06 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
-  /* Chromium owns the square popup frame and its outer shadow. */
+}
+:root.dark {
+  --paper: #1d1914;
+  --card: #26211b;
+  --ink: #ece3cf;
+  --ink-2: #b3a78e;
+  --ink-3: #948870;
+  --line: rgb(236 227 207 / 0.14);
+  --hair: rgb(236 227 207 / 0.09);
+  --edge: #4f4638;
+  --butter: #e3c766;
+  --butter-deep: #c9a53f;
+  --butter-light: #2f2816;
+  --on-butter-2: #3f3312;
+  --warn: #f0917a;
+  --warn-bg: #3d241b;
+  --track: #3a3328;
+  --knob: #1d1914;
+  --knob-shadow: rgb(0 0 0 / 0.22);
+  --highlight: rgb(255 255 255 / 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+/* Chromium owns the square popup frame and caps its height at 600 px. */
+html {
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+html,
+body {
+  margin: 0;
   width: 360px;
   background: var(--paper) var(--noise);
   color: var(--ink);
-  border-radius: 0;
-  overflow: hidden;
-  font-size: 13px;
 }
-:root.dark,
-.popup.dark {
-  --paper: #1d1914;
-  --card: #26211b;
-  --ink: #e6dcc6;
-  --ink-2: #a99d85;
-  --ink-3: #7d725f;
-  --edge: #4f4638;
-  --shadow: #0d0b08;
-  --butter: #d9bd5f;
-  --butter-deep: #b8973a;
-  --butter-light: #352c1c;
-  --on-butter: #1d1914;
-  --on-butter-2: #3f3312;
-  --warn-bg: #3a221a;
-  --warn: #e48a6f;
-  --dash: rgb(230 220 198 / 0.08);
-  --track: #1d1914;
-  --track-on: #b8973a;
-  --knob: #4f4638;
-  --knob-on: #26211b;
+body {
+  font:
+    500 13px/1.4 'Nunito',
+    'PingFang SC',
+    'Microsoft YaHei',
+    system-ui,
+    sans-serif;
+}
+a {
+  color: inherit;
+}
+button {
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid var(--butter-deep);
+  outline-offset: 3px;
 }
 
+/* Header: identity only. */
 .hd {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
-  padding: 12px 18px 6px;
+  padding: 14px 18px 6px;
 }
 .hd svg {
-  width: 54px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   flex: none;
-  margin-bottom: -2px;
-}
-.hd .stroke {
-  stroke: var(--edge);
 }
 .word {
-  font-family: var(--display);
-  font-size: 31px;
-  line-height: 0.9;
+  font-family: 'Bagel Fat One', 'Nunito', sans-serif;
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 400;
 }
 .ver {
-  display: block;
-  text-decoration: none;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--ink-3);
-  margin-top: 5px;
+  text-decoration: none;
+  padding-top: 2px;
+}
+.ver:hover {
+  color: var(--ink-2);
 }
 
+/* Master card: the one outlined object. */
 .master {
   position: relative;
-  margin: 12px 16px 18px;
-  padding: 14px 14px 14px 16px;
+  margin: 6px 16px 20px;
+  padding: 13px 14px 13px 16px;
   border: 2.5px solid var(--edge);
   border-radius: 16px;
   background: var(--butter);
-  color: var(--on-butter);
-  box-shadow: 0 4px 0 var(--shadow);
+  color: #1b170f;
+  box-shadow: 0 4px 0 var(--edge);
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: background-color 200ms;
 }
 .master::before {
   content: '';
@@ -108,41 +146,34 @@ body {
   width: 46px;
   height: 5px;
   border-radius: 4px;
-  background: rgb(255 255 255 / 0.7);
+  background: var(--highlight);
 }
 .master .t {
   flex: 1;
   min-width: 0;
 }
 .master .k {
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.3;
 }
 .master .s {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--on-butter-2);
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  margin-top: 2px;
 }
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--on-butter);
-  box-shadow: 0 0 0 3px rgb(27 23 15 / 0.14);
-  flex: none;
+.master.off {
+  background: var(--card);
+  color: var(--ink);
 }
-.dot.hollow {
-  background: transparent;
-  border: 2px solid var(--on-butter);
-  width: 4px;
-  height: 4px;
-  box-shadow: none;
+.master.off::before {
+  display: none;
 }
-/* drip: open outline that leaves the card border tangentially, so the border stays continuous */
+.master.off .s {
+  color: var(--ink-3);
+}
+/* The drip's outline leaves the card border tangentially, so the border stays continuous. */
 .drip {
   position: absolute;
   left: 30px;
@@ -153,14 +184,111 @@ body {
   transform-origin: 50% 0;
   transition: transform 300ms cubic-bezier(0.3, 1.35, 0.5, 1);
 }
-.master {
-  transition:
-    background-color 200ms ease,
-    margin-bottom 300ms ease;
-}
 .master.off .drip {
   transform: scaleY(0);
   transition-duration: 160ms;
+}
+.dark .drip-hi {
+  opacity: 0.45;
+}
+
+/* Feature and layout cards: flat sheets with hairline rows. */
+.card {
+  margin: 0 16px 10px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+.row + .row,
+.use {
+  border-top: 1px solid var(--hair);
+}
+.row .ic {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.row .t {
+  flex: 1;
+  min-width: 0;
+}
+.row .n {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.row .d {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  line-height: 1.35;
+  margin-top: 1px;
+}
+
+/* Switches: one row size; the master switch is larger. */
+.tg {
+  width: 38px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--track);
+  position: relative;
+  flex: none;
+  transition: background-color 160ms;
+}
+.tg::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--knob);
+  box-shadow: 0 1px 2px var(--knob-shadow);
+  transition: left 160ms;
+}
+.tg.on {
+  background: var(--edge);
+}
+.tg.on::after {
+  left: 19px;
+  background: var(--butter);
+}
+.dark .tg.on {
+  background: var(--butter-deep);
+}
+.dark .tg.on::after {
+  background: var(--paper);
+}
+.master .tg {
+  width: 46px;
+  height: 26px;
+}
+.master .tg::after {
+  width: 20px;
+  height: 20px;
+}
+.master .tg.on::after {
+  left: 23px;
+}
+.dark .master .tg.on {
+  background: #1d1914;
+}
+.dark .master .tg.on::after {
+  background: var(--butter);
 }
 @media (prefers-reduced-motion: reduce) {
   .drip,
@@ -170,87 +298,116 @@ body {
     transition: none !important;
   }
 }
-.master.off {
+
+/* Saved layouts: the storage line and its Clear button. */
+.use {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px 9px 44px;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.jar {
+  height: 6px;
+  width: 52px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+  flex: none;
+}
+.jar i {
+  display: block;
+  height: 100%;
+  background: var(--butter-deep);
+}
+.use.confirm {
+  padding-left: 14px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.use .sp {
+  flex: 1;
+}
+.btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
   background: var(--card);
   color: var(--ink);
-  margin-bottom: 14px;
 }
-.master.off::before {
-  display: none;
+.btn.danger {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-color: transparent;
 }
-.master.off .s {
-  color: var(--ink-3);
-}
-.master.off .dot {
-  background: var(--ink-3);
-  box-shadow: none;
+.btn:disabled {
+  cursor: progress;
+  opacity: 0.6;
 }
 
-.tg {
-  width: 44px;
-  height: 26px;
-  border: 2px solid var(--edge);
+/* Footer: links and the language switch, quiet. */
+.ft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 18px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.ft a {
+  text-decoration: none;
+}
+.ft a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--butter-deep);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.lang {
+  margin-left: auto;
+  display: flex;
+  border: 1.5px solid var(--line);
   border-radius: 999px;
-  background: var(--track, var(--card));
-  position: relative;
-  flex: none;
-  box-shadow: 0 2px 0 var(--shadow);
-  box-sizing: border-box;
+  overflow: hidden;
 }
-.tg::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
-  box-sizing: border-box;
-  border-radius: 50%;
-  background: var(--knob, var(--card));
-  border: 2px solid var(--edge);
-  transition:
-    left 160ms ease,
-    background-color 160ms;
+.lang button {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  color: var(--ink-2);
 }
-.tg {
-  transition: background-color 160ms;
+.lang button.on {
+  background: var(--edge);
+  color: var(--butter);
 }
-.tg.on {
-  background: var(--track-on, var(--edge));
-}
-.tg.on::after {
-  left: 20px;
-  background: var(--knob-on, var(--butter));
-  border-color: var(--edge);
-}
-.master .tg.on {
-  background: var(--on-butter);
-}
-.master .tg.on::after {
+.dark .lang button.on {
   background: var(--butter);
-  border-color: var(--on-butter);
+  color: #1d1914;
 }
-.tg.sm {
-  width: 36px;
-  height: 21px;
+/* The segments clip their own outline, so the ring goes on the whole switch. */
+.lang:has(button:focus-visible) {
+  outline: 3px solid var(--butter-deep);
+  outline-offset: 3px;
 }
-.tg.sm::after {
-  width: 13px;
-  height: 13px;
-  top: 2px;
-  left: 2px;
-}
-.tg.sm.on::after {
-  left: 17px;
+.lang button:focus-visible {
+  outline-offset: -3px;
 }
 
+/* Interim looks until #39 (paused, faults) and #40 (consent) restyle them. */
+.card.dim .row .t,
+.card.dim .row .ic {
+  opacity: 0.45;
+}
 .warn {
   margin: 0 16px 10px;
   padding: 10px 12px;
-  border: 2px solid var(--edge);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--warn-bg);
-  box-shadow: 0 2px 0 var(--shadow);
   display: flex;
   gap: 9px;
   font-size: 12px;
@@ -264,295 +421,31 @@ body {
   margin-top: 1px;
   fill: none;
   stroke: var(--warn);
-  stroke-width: 2.4;
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .warn b {
-  font-weight: 900;
-}
-
-.label {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  color: var(--ink-3);
-  margin: 0 18px 6px;
-}
-.list {
-  margin: 0 16px;
-  background: var(--card);
-  border: 2.5px solid var(--edge);
-  border-radius: 16px;
-  box-shadow: 0 4px 0 var(--shadow);
-}
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 11px;
-  align-items: flex-start;
-  padding: 9px 12px;
-}
-.row + .row {
-  border-top: 2px dashed var(--dash);
-}
-.ic {
-  width: 30px;
-  height: 30px;
-  box-sizing: border-box;
-  border: 2px solid var(--edge);
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  flex: none;
-  background: var(--butter-light);
-}
-.ic svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 2.3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.row .t {
-  flex: 1;
-  min-width: 0;
-}
-.row .n {
-  font-weight: 900;
-  font-size: 13.5px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.row .d {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--ink-2);
-  margin-top: 2px;
-  line-height: 1.4;
-}
-.row .tg {
-  margin-top: 3px;
+  font-weight: 800;
 }
 .row.broken .ic {
-  background: var(--warn-bg);
-}
-.row.broken .ic svg {
   stroke: var(--warn);
 }
 .chip {
-  font-size: 10.5px;
-  font-weight: 900;
-  padding: 1px 7px;
-  border-radius: 999px;
-  border: 1.5px solid var(--edge);
-  background: var(--warn-bg);
-  color: var(--ink);
-  white-space: nowrap;
-}
-.list.dim .row .t,
-.list.dim .row .ic {
-  opacity: 0.45;
-}
-.list.dim .tg {
-  opacity: 0.55;
-}
-
-.use {
-  flex-basis: 100%;
-  margin: 0 0 0 41px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  margin-left: 6px;
   font-size: 11px;
   font-weight: 700;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.jar {
-  display: inline-block;
-  height: 7px;
-  width: 40px;
-  border: 1.5px solid var(--edge);
-  border-radius: 4px;
-  background: var(--paper);
-  overflow: hidden;
-  flex: none;
-}
-.jar i {
-  display: block;
-  height: 100%;
-  background: var(--butter-deep);
-}
-.pill {
-  font: 900 11px var(--body);
-  padding: 2px 10px;
-  border: 2px solid var(--edge);
+  padding: 0 7px;
   border-radius: 999px;
-  background: var(--card);
-  color: var(--ink);
-  box-shadow: 0 2px 0 var(--shadow);
-}
-.use .pill:first-of-type {
-  margin-left: auto;
-}
-.pill.danger {
   background: var(--warn-bg);
-}
-.use .q {
-  color: var(--ink);
-  font-weight: 900;
-}
-
-/* Language switch and links share the header's top-right, so the popup fits Chromium's 600px cap. */
-.hd {
-  position: relative;
-}
-.hd-side {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  bottom: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-/* CJK line boxes are 2px taller; start higher so the link underline clears the pill. */
-html:lang(zh-CN) .hd-side {
-  top: 14px;
-}
-.hd-side .links {
-  gap: 12px;
+  color: var(--warn);
   white-space: nowrap;
 }
-/* The removed footer used to supply this space; it keeps the list's shadow inside the popup. */
-.list {
-  margin-bottom: 18px;
-}
-.lang {
-  display: flex;
-  border: 2px solid var(--edge);
-  border-radius: 999px;
-  overflow: hidden;
-  box-shadow: 0 2px 0 var(--shadow);
-}
-.lang button {
-  font-weight: 900;
-  font-size: 11px;
-  padding: 2px 11px;
-  background: var(--card);
-}
-.lang button.on {
-  background: var(--edge);
-  color: var(--butter);
-}
-.popup.dark .lang button.on {
-  color: #1d1914;
-  background: var(--butter);
-}
-.popup.dark .master::before {
-  background: rgb(255 255 255 / 0.35);
-}
-.popup.dark .hd .pat-light {
-  opacity: 0.5;
-}
-.popup.dark .pat-face {
-  filter: saturate(0.8) brightness(0.88);
-}
-.popup.dark .drip-hi {
-  opacity: 0.45;
-}
-.demo-fig .tg[data-master] {
-  cursor: pointer;
-}
-.demo {
-  font-size: 11.5px;
-  font-weight: 800;
-  margin-top: 8px;
-  color: #1b170f;
-}
-.links {
-  display: flex;
-  gap: 14px;
-  font-size: 12px;
-  font-weight: 800;
-}
-.links a {
-  color: var(--ink);
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--butter-deep);
-}
-
-@font-face {
-  font-family: 'Bagel Fat One';
-  src: url('fonts/bagel-wordmark.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Nunito';
-  src: url('fonts/nunito-latin.woff2') format('woff2');
-  font-weight: 500 900;
-  font-display: swap;
-}
-html,
-body {
-  width: 360px;
-  background: var(--paper) var(--noise);
-  margin: 0;
-}
-.popup,
-.popup.dark {
-  box-shadow: none;
-}
-button {
-  font: inherit;
-  color: inherit;
-  padding: 0;
-  cursor: pointer;
-}
-:focus-visible {
-  outline: 3px solid var(--butter-deep);
-  outline-offset: 3px;
-}
-.lang button {
-  border: 0;
-}
-.pill:disabled {
-  cursor: progress;
-  opacity: 0.6;
-}
-/* Chromium caps the native popup height at 600px. Keep tall translations scrollable. */
-html {
-  overflow-y: auto;
-  scrollbar-width: none;
-  box-shadow: none;
-}
-/* Native buttons replace the mockup's spans without changing their inline spacing. */
-.use .pill:first-of-type {
-  margin-left: 0;
-}
-
-.lang:has(button:focus-visible) {
-  outline: 3px solid var(--butter-deep);
-  outline-offset: 3px;
-}
-.lang button:focus-visible {
-  outline-offset: -3px;
-}
-
 .row .pend {
-  margin-top: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #8a6a12;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
   display: flex;
   gap: 6px;
   align-items: center;
@@ -562,14 +455,5 @@ html {
   height: 7px;
   border-radius: 50%;
   border: 2px solid currentColor;
-  box-sizing: border-box;
   flex: none;
-}
-.dark .row .pend {
-  color: var(--butter);
-}
-
-/* The version label is a quiet link to the changelog: no link styling until hovered. */
-.ver:hover {
-  color: var(--ink-2);
 }

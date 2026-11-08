@@ -8,55 +8,58 @@ const I = {
   alert:
     '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
-const svg = (k) => `<svg viewBox="0 0 24 24">${I[k]}</svg>`;
+const svg = (k, cls = '') =>
+  `<svg ${cls ? `class="${cls}" ` : ''}viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
 const T = {
   zh: {
     on: '启用 Butter',
     st: {
       ok: '已在当前对话生效',
       away: '打开一个 ChatGPT 对话即可生效',
-      paused: '已暂停 · ChatGPT 按原样运行',
+      paused: '已暂停，ChatGPT 按原样运行',
     },
-    label: '让 ChatGPT 更顺',
     warn: '<b>问题导航条暂时不可用。</b>ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。',
     groups: [
       ['zap', '回答生成时更顺', '长回答输出时页面不卡'],
-      ['scroll', '长对话滚动更顺', '拖动滚动条时先显示预览，松手再加载'],
+      ['scroll', '长对话滚动更顺', '拖动滚动条先看预览，松手再加载'],
       ['list', '问题导航条', '右侧列出你问过的问题，点一下就跳过去'],
       ['branch', '在分支中问', '选中文字，在新分支里提问'],
-      ['db', '记住长对话的布局', '再次打开时跳转更快，会占用一些存储空间'],
+      ['db', '记住长对话的布局', '再次打开时跳转更快'],
     ],
     pending: '还没开启 · 打开开关即表示同意',
     clear: '清除',
-    confirm: '确定清除全部？',
+    confirm: '清除全部已保存的布局？',
     cancel: '取消',
     cleared: '已清除',
     bad: '暂不可用',
     log: '更新日志',
+    privacy: '隐私政策',
+    policy: 'PRIVACY.zh-CN.md',
   },
   en: {
     on: 'Enable Butter',
     st: {
       ok: 'Working in this chat',
       away: 'Open a ChatGPT chat to start',
-      paused: 'Paused · ChatGPT runs as is',
+      paused: 'Paused. ChatGPT runs as is.',
     },
-    label: 'Make ChatGPT smoother',
     warn: '<b>The question rail is unavailable for now.</b> ChatGPT may have changed its page; Butter resumes on its own.',
     groups: [
       ['zap', 'Smoother streaming', 'Long answers stream without lag'],
-      ['scroll', 'Smoother scrolling', 'Drag the scrollbar to preview; it loads when you let go'],
-      ['list', 'Question rail', 'Your questions on the right; click one to jump'],
-      ['branch', 'Ask in branch', 'Ask about a selection in a branch'],
-      ['db', 'Remember long-chat layouts', 'Faster jumps when you come back; uses some storage'],
+      ['scroll', 'Smoother scrolling', 'Preview while you drag the scrollbar'],
+      ['list', 'Question rail', 'Click a question on the right to jump'],
+      ['branch', 'Ask in branch', 'Select text, ask about it in a new branch'],
+      ['db', 'Remember long-chat layouts', 'Faster jumps when you come back'],
     ],
     pending: 'Not on yet · turning it on means you agree',
     clear: 'Clear',
-    confirm: 'Clear all?',
+    confirm: 'Clear all saved layouts?',
     cancel: 'Cancel',
     cleared: 'Cleared',
     bad: 'Unavailable',
     log: 'Changelog',
+    privacy: 'Privacy policy',
+    policy: 'PRIVACY.md',
   },
 };
 // y = 1.25 is the centre line of the card's 2.5 px bottom border; the outline leaves and rejoins it horizontally.
@@ -90,14 +93,20 @@ const theme = () => {
 };
 scheme.addEventListener('change', theme);
 theme();
-const switchButton = (key, on, name, small = false) =>
-  `<button class="tg ${small ? 'sm' : ''} ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${name}" data-switch="${key}"></button>`;
+const repo = 'https://github.com/SimianW/butter';
+const switchButton = (key, on, name) =>
+  `<button class="tg ${on ? 'on' : ''}" role="switch" aria-checked="${on}" aria-label="${name}" data-switch="${key}"></button>`;
 function usageRow(t) {
   if (clearState === 'confirm' || clearState === 'clearing')
-    return `<span class="q">${t.confirm}</span><button class="pill danger" data-clear="confirm" ${clearState === 'clearing' ? 'disabled' : ''}>${t.clear}</button><button class="pill" data-clear="cancel" ${clearState === 'clearing' ? 'disabled' : ''}>${t.cancel}</button>`;
+    return `<span>${t.confirm}</span><span class="sp"></span><button class="btn danger" data-clear="confirm" ${clearState === 'clearing' ? 'disabled' : ''}>${t.clear}</button><button class="btn" data-clear="cancel" ${clearState === 'clearing' ? 'disabled' : ''}>${t.cancel}</button>`;
   const done = clearState === 'done',
-    unavailable = !usageAvailable || clearState === 'error';
-  return `<span class="jar"><i style="width:${done || unavailable ? 0 : ButterPopup.usageFill(usage.bytes)}%"></i></span><span role="status">${done ? t.cleared : unavailable ? t.bad : ButterPopup.formatUsage(usage, prefs.lang)}</span>${done ? '' : `<button class="pill" data-clear="ask">${t.clear}</button>`}`;
+    unavailable = !usageAvailable || clearState === 'error',
+    // Anything saved shows at least a 3 px sliver, so "3 chats" never reads as an empty bar.
+    fill =
+      done || unavailable
+        ? 'width:0'
+        : `width:${ButterPopup.usageFill(usage.bytes)}%${usage.bytes > 0 ? ';min-width:3px' : ''}`;
+  return `<span class="jar"><i style="${fill}"></i></span><span role="status">${done ? t.cleared : unavailable ? t.bad : ButterPopup.formatUsage(usage, prefs.lang)}</span><span class="sp"></span>${done ? '' : `<button class="btn" data-clear="ask">${t.clear}</button>`}`;
 }
 function warning(t, broken) {
   if (!broken.length) return '';
@@ -136,17 +145,19 @@ function render() {
     paused = state === 'paused';
   const broken = groupKeys.filter((k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused);
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
-  const rows = t.groups
-    .map(([ic, n, d], i) => {
-      const key = groupKeys[i],
-        bad = broken.includes(key),
-        on = ButterStatus.groupOn(prefs, key);
-      return `<div class="row ${bad ? 'broken' : ''}"><span class="ic" aria-hidden="true">${svg(ic)}</span><div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div>${key === 'layout' && prefs.layoutConsent === 'pending' ? `<div class="pend"><i aria-hidden="true"></i>${t.pending}</div>` : ''}</div>${switchButton(key, on, n, true)}${key === 'layout' && on ? `<div class="use">${usageRow(t)}</div>` : ''}</div>`;
-    })
-    .join('');
-  const html = `<div class="hd">${pat}<div><div class="word">Butter</div><a class="ver" target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div><div class="hd-side"><span class="links"><a target="_blank" rel="noopener" href="https://github.com/SimianW/butter">GitHub</a></span><div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div></div>
-    <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status"><span class="dot ${state === 'away' ? 'hollow' : ''}"></span>${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
-    <div class="warning-slot">${warning(t, broken)}</div><div class="label">${t.label}</div><div class="list ${paused ? 'dim' : ''}">${rows}</div>`;
+  // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
+  const row = (i) => {
+    const [ic, n, d] = t.groups[i],
+      key = groupKeys[i],
+      bad = broken.includes(key);
+    return `<label class="row ${bad ? 'broken' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div>${key === 'layout' && prefs.layoutConsent === 'pending' ? `<div class="pend"><i aria-hidden="true"></i>${t.pending}</div>` : ''}</div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
+  };
+  const features = groupKeys.flatMap((k, i) => (k === 'layout' ? [] : [row(i)]));
+  const html = `<div class="hd">${pat}<div class="word">Butter</div><a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
+    <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
+    <div class="warning-slot">${warning(t, broken)}</div><div class="card ${paused ? 'dim' : ''}">${features.join('')}</div>
+    <div class="card">${row(groupKeys.indexOf('layout'))}${ButterStatus.groupOn(prefs, 'layout') ? `<div class="use ${clearState === 'confirm' || clearState === 'clearing' ? 'confirm' : ''}">${usageRow(t)}</div>` : ''}</div>
+    <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a><a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a><div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
   const template = document.createElement('template');
   template.innerHTML = `<div>${html}</div>`;
   if (root.firstElementChild) patch(root.firstElementChild, template.content.firstElementChild);

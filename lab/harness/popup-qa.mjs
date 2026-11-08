@@ -27,7 +27,13 @@ const redesignStates = {
   dark: '13-en-branch-on-dark', zh: '16-zh-branch-on-light',
 };
 // Panels that cannot match, with the reason; they are still measured and reported.
-const redesignExcluded = {};
+// #39 and #40 delete their entries when they restyle those states.
+const redesignExcluded = {
+  'paused-after': 'paused look lands in #39',
+  'rail-fault-after': 'in-row faults land in #39',
+  'branch-fault-after': 'in-row faults land in #39',
+  'layouts-pending-after': 'consent note lands in #40',
+};
 // The header version label and the storage line show live data; both comparisons mask them.
 const liveRegions = () => [...document.querySelectorAll('.ver, .use')].map(e => {
   const r = e.getBoundingClientRect();
@@ -125,7 +131,7 @@ try {
     assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
     assert.equal(await page.locator('.row.broken [data-switch="branch"]').count(), config.broken === 'branch' ? 1 : 0);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
-    const metrics = () => ['.hd', '.master', '.label', '.list', '.row', '.use', '.hd-side'].map(selector => {
+    const metrics = () => ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
       return { selector, top: r?.top, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
     });
@@ -172,7 +178,7 @@ try {
       await ref.locator('.popup').first().screenshot({ path: reference });
       const referenceMetrics = await ref.locator('.popup').first().evaluate(el => {
         const base = el.getBoundingClientRect().top;
-        return ['.hd', '.master', '.label', '.list', '.row', '.use', '.hd-side'].map(selector => {
+        return ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
           const e = el.querySelector(selector), r = e?.getBoundingClientRect();
           return { selector, top: r ? r.top - base : undefined, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
         });
@@ -248,6 +254,20 @@ try {
   assert.equal((await page.evaluate(() => chrome.storage.local.get('butter'))).butter.opts.rail, true);
   await page.locator('[data-switch="branch"]').click();
   await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.branch === true);
+  // Each row is a label around its switch: a click on its description toggles exactly that group.
+  const opts = async () => (await page.evaluate(() => chrome.storage.local.get('butter'))).butter.opts;
+  const railRow = page.locator('.row', { has: page.locator('[data-switch="rail"]') });
+  const beforeRow = await opts();
+  await railRow.locator('.d').click();
+  await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.rail === false);
+  assert.deepEqual(await opts(), { ...beforeRow, rail: false });
+  assert.equal(await page.locator('[data-switch="rail"]').getAttribute('aria-checked'), 'false');
+  await railRow.locator('.n').click();
+  await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.rail === true);
+  assert.deepEqual(await opts(), beforeRow);
+  // Every switch stays a named button with its checked state and stable hook.
+  for (const e of await page.locator('[role="switch"]').evaluateAll(list => list.map(e => ({ tag: e.tagName, name: e.getAttribute('aria-label'), checked: e.getAttribute('aria-checked'), key: e.dataset.switch }))))
+    assert.ok(e.tag === 'BUTTON' && e.name && /^(true|false)$/.test(e.checked) && e.key, JSON.stringify(e));
   // Cancel is non-destructive; language, focus, master motion and reduced motion work live.
   await page.bringToFront();
   await page.getByRole('button', { name: 'EN', exact: true }).click();

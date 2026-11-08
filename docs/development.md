@@ -3,7 +3,7 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 320 px popup, bundled fonts, inline SVGs and translations. |
+| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 360 px popup, bundled fonts, inline SVGs and translations. |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `extension/branch/logic.js` | Ask in branch, pure: message format, conversation identity, selection rule, one-time handoff jobs. |
