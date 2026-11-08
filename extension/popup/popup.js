@@ -5,8 +5,6 @@ const I = {
   scroll: '<path d="M12 2v20"/><path d="m8 18 4 4 4-4"/><path d="m8 6 4-4 4 4"/>',
   list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
   db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
-  alert:
-    '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
 };
 const svg = (k, cls = '') =>
   `<svg ${cls ? `class="${cls}" ` : ''}viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
@@ -18,7 +16,7 @@ const T = {
       away: '打开一个 ChatGPT 对话即可生效',
       paused: '已暂停，ChatGPT 按原样运行',
     },
-    warn: '<b>问题导航条暂时不可用。</b>ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。',
+    fault: '暂时不可用。ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。',
     groups: [
       ['zap', '回答生成时更顺', '长回答输出时页面不卡'],
       ['scroll', '长对话滚动更顺', '拖动滚动条先看预览，松手再加载'],
@@ -43,7 +41,7 @@ const T = {
       away: 'Open a ChatGPT chat to start',
       paused: 'Paused. ChatGPT runs as is.',
     },
-    warn: '<b>The question rail is unavailable for now.</b> ChatGPT may have changed its page; Butter resumes on its own.',
+    fault: 'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.',
     groups: [
       ['zap', 'Smoother streaming', 'Long answers stream without lag'],
       ['scroll', 'Smoother scrolling', 'Preview while you drag the scrollbar'],
@@ -108,19 +106,6 @@ function usageRow(t) {
         : `width:${ButterPopup.usageFill(usage.bytes)}%${usage.bytes > 0 ? ';min-width:3px' : ''}`;
   return `<span class="jar"><i style="${fill}"></i></span><span role="status">${done ? t.cleared : unavailable ? t.bad : ButterPopup.formatUsage(usage, prefs.lang)}</span><span class="sp"></span>${done ? '' : `<button class="btn" data-clear="ask">${t.clear}</button>`}`;
 }
-function warning(t, broken) {
-  if (!broken.length) return '';
-  let text;
-  if (broken.length === 1 && broken[0] === 'rail') text = t.warn;
-  else {
-    const names = broken.map((k) => t.groups[groupKeys.indexOf(k)][1]);
-    text =
-      prefs.lang === 'zh'
-        ? `<b>${names.join('、')}暂时不可用。</b>ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。`
-        : `<b>${names.join(' and ')} ${names.length === 1 ? 'is' : 'are'} unavailable for now.</b> ChatGPT may have changed its page; Butter resumes on its own.`;
-  }
-  return `<div class="warn" role="status">${svg('alert')}<span>${text}</span></div>`;
-}
 // Preserve nodes so switches animate and keyboard focus survives live polling.
 function patch(old, next) {
   if (old.nodeType !== next.nodeType || old.nodeName !== next.nodeName) {
@@ -146,11 +131,12 @@ function render() {
   const broken = groupKeys.filter((k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused);
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
   // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
+  // A broken group says so in its own description, a live region so the change is announced.
   const row = (i) => {
     const [ic, n, d] = t.groups[i],
       key = groupKeys[i],
       bad = broken.includes(key);
-    return `<label class="row ${bad ? 'broken' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}${bad ? `<span class="chip">${t.bad}</span>` : ''}</div><div class="d">${d}</div></div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
+    return `<label class="row ${bad ? 'bad' : ''}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}</div><div class="d" role="status">${bad ? t.fault : d}</div></div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
   };
   const features = groupKeys.flatMap((k, i) => (k === 'layout' ? [] : [row(i)]));
   const privacy = `<a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a>`;
@@ -162,7 +148,7 @@ function render() {
       : '';
   const html = `<div class="hd">${pat}<div class="word">Butter</div><a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
     <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
-    <div class="warning-slot">${warning(t, broken)}</div><div class="card ${paused ? 'dim' : ''}">${features.join('')}</div>
+    <div class="card ${paused ? 'paused' : ''}">${features.join('')}</div>
     <div class="card">${row(groupKeys.indexOf('layout'))}${below}</div>
     <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a>${privacy}<div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
   const template = document.createElement('template');
