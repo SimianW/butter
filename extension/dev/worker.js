@@ -55,29 +55,51 @@ importScripts('../storage/layout-worker.js', 'recorder.js');
       return { error: 'not-chatgpt' }; // no Butter content script in this tab
     }
     if (!reply?.snapshot) return { error: reply?.error || 'no-snapshot' };
-    const filename = ButterDevRecorder.downloadPath(
-      round,
-      bug,
-      new Date(JSON.parse(reply.snapshot).savedAt),
-    );
-    await chrome.downloads.download({
+    const savedAt = new Date(JSON.parse(reply.snapshot).savedAt);
+    const filename = ButterDevRecorder.downloadPath(round, bug, savedAt);
+    const download = await chrome.downloads.download({
       url: dataUrl(reply.snapshot),
       filename,
       saveAs: false,
       conflictAction: 'uniquify',
     });
-    await chrome.storage.local.set({ [KEY]: { round, bugs: bug } });
+    // The popup shows the file name, and Open round folder shows the download in its folder.
+    const file = ButterDevRecorder.fileName(bug, savedAt);
+    await chrome.storage.local.set({ [KEY]: { round, bugs: bug, file, download } });
     return { saved: filename, round, bug };
   }
 
-  // One save at a time, so two quick presses get consecutive bug numbers.
+  // New round: the next save goes to round-<N+1>/bug-01.
+  async function newRound() {
+    const { round } = await roundState();
+    await chrome.storage.local.set({ [KEY]: { round: round + 1, bugs: 0 } });
+    return { round: round + 1, bugs: 0 };
+  }
+
+  // One change to the round state at a time, so two quick presses get consecutive bug numbers
+  // and New round never interleaves with a save.
   let queue = Promise.resolve();
-  const enqueue = (trigger, tab) => {
-    const run = queue.then(() => save(trigger, tab));
+  const enqueue = (task) => {
+    const run = queue.then(task);
     queue = run.catch(() => {});
     return run;
   };
   chrome.commands.onCommand.addListener((command, tab) => {
-    if (command === 'save-bug') enqueue('shortcut', tab).catch(() => {});
+    if (command === 'save-bug') enqueue(() => save('shortcut', tab)).catch(() => {});
+  });
+  // The popup's dev card: its save button takes the shortcut's path, with trigger "button".
+  // Only the extension's own pages may ask; content scripts run on chatgpt.com and cannot.
+  chrome.runtime.onMessage.addListener((message, sender, respond) => {
+    if (sender.id !== chrome.runtime.id || !sender.url?.startsWith(chrome.runtime.getURL('')))
+      return;
+    const task =
+      message?.type === 'butter-dev-save' && Number.isInteger(message.tabId)
+        ? () => save('button', { id: message.tabId })
+        : message?.type === 'butter-dev-new-round'
+          ? newRound
+          : null;
+    if (!task) return;
+    enqueue(task).then(respond, () => respond({ error: 'failed' }));
+    return true;
   });
 })();

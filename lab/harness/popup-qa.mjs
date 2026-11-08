@@ -1,7 +1,10 @@
 // Real extension page + real storage/worker. Only the active-tab probe is forced for design states.
-// Separate headless Chromium: this never touches the shared lab browser.
+// Separate headless Chromium: this never touches the shared lab browser. Then the dev build's
+// popup (#46) in its own profile; see devPopup() at the end.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
@@ -15,7 +18,7 @@ const browser = await chromium.launchPersistentContext(profile, {
   viewport: { width: 360, height: 900 },
   args: [`--disable-extensions-except=${repo}/extension`, `--load-extension=${repo}/extension`],
 });
-const errors = [], requests = [], files = [], comparisons = [], heights = {}, liveRects = {};
+const errors = [], requests = [], files = [], comparisons = [], heights = {}, liveRects = {}, cleanup = [];
 // BUTTER_REDESIGN_MOCKUP=<#35 Mockup.html> compares built states with the mockup's panels on the
 // BUTTER_REDESIGN_SIDE (`before` or `after`, default `after`). Panel key -> built state.
 const redesignMockup = process.env.BUTTER_REDESIGN_MOCKUP, redesignSide = process.env.BUTTER_REDESIGN_SIDE || 'after';
@@ -33,6 +36,67 @@ const liveRegions = () => [...document.querySelectorAll('.ver, .use')].map(e => 
   const r = e.getBoundingClientRect();
   return [Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)];
 });
+// Compares built states with an approved mockup's panels: [panel name, built state, excluded?].
+// Each panel must match its state's height and differ in under 0.1% of pixels (by more than 24 in
+// a channel), with the live regions masked. Prints every panel's height and diff ratio.
+async function compareMockup(mockupFile, panels, title) {
+  const rows = [];
+  const mock = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+  await mock.goto(`file://${path.resolve(mockupFile)}`);
+  // The page script measures each panel on load and again up to 3 s later, once its fonts settle.
+  await mock.waitForFunction(() => [...document.querySelectorAll('iframe[data-panel]')].every(f => f.dataset.h));
+  await mock.waitForTimeout(3200);
+  const panel = await browser.newPage({ viewport: { width: 360, height: 900 } });
+  panel.on('pageerror', e => errors.push(`mockup panel: ${e.message}`));
+  const png = async file => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
+  for (const [name, state, excluded] of panels) {
+    const frame = mock.locator(`iframe[data-panel="${name}"]`);
+    const row = { panel: name, state, excluded };
+    if (!(await frame.count())) { rows.push({ ...row, skipped: 'no panel on this side' }); continue; }
+    if (!heights[state]) { rows.push({ ...row, skipped: 'state not captured (BUTTER_CASES)' }); continue; }
+    row.built = heights[state];
+    row.reference = Number(await frame.getAttribute('data-h'));
+    // Render the panel's own document (placeholders already substituted) at the page origin;
+    // inside the grid its frame sits at a subpixel offset.
+    const doc = path.join(profile, `${name}.html`);
+    await fs.writeFile(doc, await frame.getAttribute('srcdoc'));
+    await panel.emulateMedia({ colorScheme: state.endsWith('-dark') ? 'dark' : 'light', reducedMotion: 'no-preference' });
+    await panel.goto(`file://${doc}`);
+    await panel.evaluate(() => document.fonts.ready.then(() => new Promise(r => setTimeout(r, 300))));
+    // The numbered badges in the default panels annotate the mockup; they are not UI.
+    await panel.evaluate(() => {
+      // Infinite animations (the dev card's recording dot) hold their first frame.
+      document.getAnimations().forEach(a => { if (a.effect.getComputedTiming().endTime === Infinity) { a.pause(); a.currentTime = 0; } else a.finish(); });
+      document.querySelectorAll('.mk').forEach(e => { e.style.visibility = 'hidden'; });
+    });
+    const reference = `${shots}/reference-${name}.png`;
+    await panel.screenshot({ path: reference, clip: { x: 0, y: 0, width: 360, height: row.reference } });
+    // Mask the live regions where either document draws them; their markup differs per side.
+    const mask = [...liveRects[state], ...(await panel.evaluate(liveRegions))];
+    // Share of unmasked pixels that differ by more than 24 in any channel. Each image is cut to
+    // its measured height (an element screenshot rounds a fractional bottom up a row); area
+    // outside the shorter one counts as different, so a height mismatch still yields a ratio.
+    row.ratio = await mock.evaluate(async ([a, b, ha, hb, mask]) => {
+      const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
+      const data = (img, h) => { const c = new OffscreenCanvas(360, h), g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, 360, h).data; };
+      const [x, y] = await Promise.all([load(a), load(b)]), p = data(x, ha), q = data(y, hb), h = Math.max(ha, hb);
+      let n = 0;
+      for (let j = 0; j < h; j++) for (let i = 0; i < 360; i++) {
+        if (mask.some(([l, t, r, b]) => i >= l && i < r && j >= t && j < b)) continue;
+        if (j >= ha || j >= hb) { n++; continue; }
+        const k = (j * 360 + i) * 4;
+        if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
+      }
+      return n / (360 * h);
+    }, [await png(`${shots}/${state}.png`), await png(reference), row.built, row.reference, mask]);
+    row.ok = row.built === row.reference && row.ratio < 0.001;
+    rows.push(row);
+  }
+  await mock.close(); await panel.close();
+  console.log(`${title}:`);
+  for (const r of rows) console.log(`  ${r.panel.padEnd(24)} ${r.skipped ? `skipped: ${r.skipped}` : `${r.ok ? 'match' : 'DIFF '}  height ${r.built}/${r.reference} px  diff ${(r.ratio * 100).toFixed(3)}%`}${r.excluded ? `  (excluded: ${r.excluded})` : ''}`);
+  return rows;
+}
 try {
   const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
   const popupUrl = worker.url().replace('/storage/layout-worker.js', '/popup/popup.html');
@@ -128,6 +192,8 @@ try {
     await page.evaluate(() => document.activeElement?.blur());
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
     assert.equal(await page.locator('[role="switch"]').count(), 6);
+    // The store popup has no dev script, so its slot renders nothing.
+    assert.equal(await page.locator('.devtag, .card.dev').count(), 0, `${name}-${color} shows the dev card`);
     assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
     assert.equal(await page.locator('.row.bad [data-switch="branch"]').count(), [config.broken].flat().includes('branch') ? 1 : 0);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
@@ -180,62 +246,9 @@ try {
       comparisons.push({ name, color, built: builtMetrics, reference: referenceMetrics });
     }
   }
-  const redesignRefs = [];
-  if (redesignMockup) {
-    const mock = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-    await mock.goto(`file://${path.resolve(redesignMockup)}`);
-    // The page script measures each panel on load and again up to 3 s later, once its fonts settle.
-    await mock.waitForFunction(() => [...document.querySelectorAll('iframe[data-panel]')].every(f => f.dataset.h));
-    await mock.waitForTimeout(3200);
-    const panel = await browser.newPage({ viewport: { width: 360, height: 900 } });
-    panel.on('pageerror', e => errors.push(`mockup panel: ${e.message}`));
-    const png = async file => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
-    for (const [key, state] of Object.entries(redesignStates)) {
-      const name = `${key}-${redesignSide}`, frame = mock.locator(`iframe[data-panel="${name}"]`);
-      const row = { panel: name, state, excluded: redesignExcluded[name] };
-      if (!(await frame.count())) { redesignRefs.push({ ...row, skipped: 'no panel on this side' }); continue; }
-      if (!heights[state]) { redesignRefs.push({ ...row, skipped: 'state not captured (BUTTER_CASES)' }); continue; }
-      row.built = heights[state];
-      row.reference = Number(await frame.getAttribute('data-h'));
-      // Render the panel's own document (placeholders already substituted) at the page origin;
-      // inside the grid its frame sits at a subpixel offset.
-      const doc = path.join(profile, `${name}.html`);
-      await fs.writeFile(doc, await frame.getAttribute('srcdoc'));
-      await panel.emulateMedia({ colorScheme: state.endsWith('-dark') ? 'dark' : 'light', reducedMotion: 'no-preference' });
-      await panel.goto(`file://${doc}`);
-      await panel.evaluate(() => document.fonts.ready.then(() => new Promise(r => setTimeout(r, 300))));
-      // The numbered badges in default-after annotate the mockup; they are not UI.
-      await panel.evaluate(() => {
-        document.getAnimations().forEach(a => a.finish());
-        document.querySelectorAll('.mk').forEach(e => { e.style.visibility = 'hidden'; });
-      });
-      const reference = `${shots}/reference-${name}.png`;
-      await panel.screenshot({ path: reference, clip: { x: 0, y: 0, width: 360, height: row.reference } });
-      // Mask the live regions where either document draws them; their markup differs per side.
-      const mask = [...liveRects[state], ...(await panel.evaluate(liveRegions))];
-      // Share of unmasked pixels that differ by more than 24 in any channel. Each image is cut to
-      // its measured height (an element screenshot rounds a fractional bottom up a row); area
-      // outside the shorter one counts as different, so a height mismatch still yields a ratio.
-      row.ratio = await mock.evaluate(async ([a, b, ha, hb, mask]) => {
-        const load = src => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; });
-        const data = (img, h) => { const c = new OffscreenCanvas(360, h), g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, 360, h).data; };
-        const [x, y] = await Promise.all([load(a), load(b)]), p = data(x, ha), q = data(y, hb), h = Math.max(ha, hb);
-        let n = 0;
-        for (let j = 0; j < h; j++) for (let i = 0; i < 360; i++) {
-          if (mask.some(([l, t, r, b]) => i >= l && i < r && j >= t && j < b)) continue;
-          if (j >= ha || j >= hb) { n++; continue; }
-          const k = (j * 360 + i) * 4;
-          if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
-        }
-        return n / (360 * h);
-      }, [await png(`${shots}/${state}.png`), await png(reference), row.built, row.reference, mask]);
-      row.ok = row.built === row.reference && row.ratio < 0.001;
-      redesignRefs.push(row);
-    }
-    await mock.close(); await panel.close();
-    console.log(`Redesign mockup, ${redesignSide} panels:`);
-    for (const r of redesignRefs) console.log(`  ${r.panel.padEnd(24)} ${r.skipped ? `skipped: ${r.skipped}` : `${r.ok ? 'match' : 'DIFF '}  height ${r.built}/${r.reference} px  diff ${(r.ratio * 100).toFixed(3)}%`}${r.excluded ? `  (excluded: ${r.excluded})` : ''}`);
-  }
+  const redesignRefs = redesignMockup
+    ? await compareMockup(redesignMockup, Object.entries(redesignStates).map(([key, state]) => [`${key}-${redesignSide}`, state, redesignExcluded[`${key}-${redesignSide}`]]), `Redesign mockup, ${redesignSide} panels`)
+    : [];
   // The branch switch writes only its own key.
   await page.bringToFront();
   // The last case may leave the clear flow open; the live checks start from idle.
@@ -314,13 +327,217 @@ try {
     await chrome.runtime.sendMessage({ version: 1, type: 'butter-layout-clear', requestId: crypto.randomUUID() });
     await chrome.storage.local.clear(); await chrome.storage.session.clear();
   });
+  const dev = process.env.BUTTER_DEV === '0' ? null : await devPopup();
   await fs.writeFile(`${shots}/geometry.json`, JSON.stringify(comparisons, null, 2));
-  await fs.writeFile(`${shots}/heights.json`, JSON.stringify({ heights, redesignRefs }, null, 2));
+  await fs.writeFile(`${shots}/heights.json`, JSON.stringify({ heights, redesignRefs, devRefs: dev?.refs ?? [], devRows: dev?.rows ?? {} }, null, 2));
   await fs.writeFile(`${shots}/screenshots.json`, JSON.stringify({ popupUrl, files, errors, remoteRequests: [] }, null, 2));
   // Fail only after every panel has been compared and reported.
   const mismatched = redesignRefs.filter(r => r.ok === false && !r.excluded);
   assert.equal(mismatched.length, 0, `${mismatched.length} of ${redesignRefs.length} ${redesignSide} panels differ from the redesign mockup: ${mismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} states × light/dark), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  const devMismatched = (dev?.refs ?? []).filter(r => r.ok === false && !r.excluded);
+  assert.equal(devMismatched.length, 0, `${devMismatched.length} of ${dev?.refs.length} dev panels differ from the #32 mockup: ${devMismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches${dev ? `, ${dev.refs.filter(r => r.ok).length} dev-mockup matches, dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
+  for (const dir of cleanup) await fs.rm(dir, { recursive: true, force: true });
+}
+
+// ---- Dev build (#46): the DEV tag and the dev card ----
+// Builds the dev zip (python3 scripts/package.py --dev) unless BUTTER_DEV_ZIP names one, loads it
+// unpacked in its own headless profile, and captures the dev states. BUTTER_DEV_MOCKUP=<#32
+// Mockup.html> (gh issue artifact download 32 1 -R SimianW/butter) compares the English and dark
+// states with its dev-*-after panels. BUTTER_DEV=0 skips the dev build.
+async function devPopup() {
+  const zip = process.env.BUTTER_DEV_ZIP || execFileSync('python3', [path.join(repo, 'scripts/package.py'), '--dev'], { encoding: 'utf8' }).split('\n')[0].trim();
+  const unpacked = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-dev-')); cleanup.push(unpacked);
+  execFileSync('python3', ['-I', '-c', 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])', zip, unpacked]);
+  const extension = path.join(unpacked, 'butter');
+  const versionName = JSON.parse(await fs.readFile(path.join(extension, 'manifest.json'), 'utf8')).version_name;
+  assert.match(versionName, /\+dev\.\d+$/);
+  // Chrome does not assign Alt+Shift+B on Linux (it is the bookmarks-bar key), so seed the binding
+  // chrome://extensions/shortcuts would save, as dev-capture-qa.mjs does. The id of an unpacked
+  // extension is the SHA-256 of its path, first 32 hex digits mapped to a-p.
+  const id = [...crypto.createHash('sha256').update(extension).digest('hex').slice(0, 32)].map(h => String.fromCharCode(97 + parseInt(h, 16))).join('');
+  const devProfile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-dev-profile-')); cleanup.push(devProfile);
+  const downloads = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-dev-downloads-')); cleanup.push(downloads);
+  await fs.mkdir(path.join(devProfile, 'Default'));
+  await fs.writeFile(path.join(devProfile, 'Default', 'Preferences'), JSON.stringify({
+    download: { default_directory: downloads, prompt_for_download: false },
+    extensions: { commands: { 'linux:Alt+Shift+B': { command_name: 'save-bug', extension: id, global: false } } },
+  }));
+  const context = await chromium.launchPersistentContext(devProfile, {
+    headless: true, channel: 'chromium',
+    viewport: { width: 360, height: 900 },
+    args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`],
+  });
+  try {
+    const worker = context.serviceWorkers()[0] || await context.waitForEvent('serviceworker');
+    assert.match(worker.url(), /\/dev\/worker\.js$/);
+    const page = await context.newPage();
+    page.on('pageerror', e => errors.push(`dev: ${e.message}`));
+    page.on('request', r => requests.push(r.url()));
+    await page.goto(worker.url().replace('/dev/worker.js', '/popup/popup.html'));
+    await page.waitForSelector('.card.dev');
+    // The active tab is forced, as in the store run: a ChatGPT chat answers both the status probe
+    // and the dev card's ping; anywhere else nothing answers.
+    const fixtureTab = async () => page.evaluate(() => {
+      globalThis.fixtureConnected = true;
+      chrome.tabs.query = async () => [{ id: 1 }];
+      chrome.tabs.sendMessage = async (_tab, message) => {
+        if (!globalThis.fixtureConnected) throw new Error('No receiver');
+        return message?.type === 'butter-dev-ping' ? { chat: true } : { states: {} };
+      };
+      globalThis.shown = [];
+      chrome.downloads.show = id => shown.push(['show', id]);
+      chrome.downloads.showDefaultFolder = () => shown.push(['default']);
+    });
+    await fixtureTab();
+    // The storage line is live data; the mockup comparison masks it, so it is not seeded here.
+    const allFaults = ['streaming', 'scrolling', 'rail', 'branch'];
+    // Name, config, colour scheme, and the #32 panel it must match (English and dark only).
+    const devCases = [
+      ['d1-en-recording', {}, 'light', 'dev-default-after'],
+      ['d2-en-saved', { saved: true }, 'light', 'dev-saved-after'],
+      ['d3-en-away', { away: true }, 'light', 'dev-away-after'],
+      ['d1-en-recording', {}, 'dark', 'dev-dark-after'],
+      ['d4-en-tallest', { consent: 'pending', broken: allFaults }, 'light', 'dev-worst-after'],
+      ['d5-zh-recording', { lang: 'zh' }, 'light'],
+      ['d6-zh-tallest', { lang: 'zh', consent: 'pending', broken: allFaults }, 'light'],
+      // The rest in the other theme too: every dev state stays under the cap in both.
+      ['d2-en-saved', { saved: true }, 'dark'], ['d3-en-away', { away: true }, 'dark'],
+      ['d4-en-tallest', { consent: 'pending', broken: allFaults }, 'dark'],
+      ['d5-zh-recording', { lang: 'zh' }, 'dark'],
+      ['d6-zh-tallest', { lang: 'zh', consent: 'pending', broken: allFaults }, 'dark'],
+    ];
+    const panels = [], rows = {};
+    for (const [name, config, color, panel] of devCases) {
+      const state = `${name}-${color}`;
+      await page.bringToFront();
+      await page.emulateMedia({ colorScheme: color, reducedMotion: 'no-preference' });
+      await page.evaluate(async config => {
+        fixtureConnected = !config.away;
+        const value = ButterStatus.normalize({ layoutConsent: config.consent || 'granted', lang: config.lang || 'en' });
+        await chrome.storage.session.set({ butterFailures: Object.fromEntries((config.broken || []).map(k => [k, { [k]: true }])) });
+        await chrome.storage.local.set({ butter: value, butterDev: { round: 2, bugs: 3 } });
+        await poll();
+        await refreshUsage();
+      }, config);
+      // The dev card polls its tab once a second.
+      await page.waitForFunction(away => !!document.querySelector('.strip.idle') === away, !!config.away, { timeout: 3000 });
+      // Just saved: the worker records bug 4's file; the card shows it for about 4 s.
+      if (config.saved) await page.evaluate(() => chrome.storage.local.set({ butterDev: { round: 2, bugs: 4, file: 'bug-04_21-14-03.json', download: 1 } }));
+      await page.waitForTimeout(350);
+      await page.evaluate(() => {
+        document.getAnimations().forEach(a => { if (a.effect.getComputedTiming().endTime === Infinity) { a.pause(); a.currentTime = 0; } else a.finish(); });
+        document.activeElement?.blur();
+      });
+      const row = await page.evaluate(() => {
+        const box = e => e.getBoundingClientRect(), strip = document.querySelector('.strip'), s = box(strip);
+        const inside = [...strip.children].every(c => { const r = box(c); return r.width === 0 || (r.left >= s.left - 0.5 && r.right <= s.right + 0.5); });
+        const msg = document.querySelector('.msg');
+        return {
+          text: strip.innerText.replace(/\s+/g, ' ').trim(),
+          height: s.height, inside, overflow: strip.scrollWidth > strip.clientWidth, truncated: msg.scrollWidth > msg.clientWidth,
+          // The status text lines up with the other cards' row text.
+          textLeft: box(msg).left, rowTextLeft: box(document.querySelector('.row .t')).left,
+          tag: document.querySelector('.hd .word + .devtag')?.textContent, version: document.querySelector('.ver').textContent,
+          snapDisabled: document.querySelector('[data-dev="save"]').disabled,
+          iconButtons: document.querySelectorAll('.strip .ib').length,
+        };
+      });
+      rows[state] = row;
+      assert.equal(row.height, 36, `${state}: the dev row is ${row.height}px`);
+      assert.ok(row.inside && !row.overflow && !row.truncated, `${state}: the dev row overflows: ${JSON.stringify(row)}`);
+      assert.equal(row.textLeft, row.rowTextLeft, `${state}: status text is not in line with the row text`);
+      assert.equal(row.tag, 'DEV');
+      assert.equal(row.version, versionName);
+      assert.equal(row.snapDisabled, !!config.away);
+      assert.equal(row.iconButtons, config.saved ? 0 : 2);
+      const expected = config.saved ? 'Saved bug-04_21-14-03.json Alt+Shift+B'
+        : config.away ? (config.lang === 'zh' ? '未在记录 Alt+Shift+B' : 'Not recording Alt+Shift+B')
+          : config.lang === 'zh' ? '第 2 轮 · 3 个 bug Alt+Shift+B' : 'Round 2 · 3 bugs Alt+Shift+B';
+      // innerText skips the visually hidden "Saved " only if it is clipped; compare accessible text.
+      assert.equal(row.text.replace(/^Saved\s*/, config.saved ? 'Saved ' : ''), expected, state);
+      const file = `${shots}/${state}.png`;
+      await page.locator('#popup').screenshot({ path: file }); files.push(file);
+      heights[state] = await page.locator('#popup').evaluate(e => e.offsetHeight);
+      liveRects[state] = await page.evaluate(liveRegions);
+      assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);
+      if (panel) panels.push([panel, state]);
+    }
+    // The mockup's measured heights: 568 px by default, 597 px for the tallest English state.
+    assert.equal(heights['d1-en-recording-light'], 568);
+    assert.equal(heights['d4-en-tallest-light'], 597);
+    console.log('Dev states:');
+    for (const [name, , color] of devCases) console.log(`  ${`${name}-${color}`.padEnd(24)} ${heights[`${name}-${color}`]} px  row "${rows[`${name}-${color}`].text}"`);
+    const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels') : [];
+
+    // ---- actions, keyboard, focus and motion ----
+    await page.bringToFront();
+    await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'no-preference' });
+    await page.evaluate(async () => {
+      fixtureConnected = true;
+      await chrome.storage.local.set({ butter: ButterStatus.normalize({ layoutConsent: 'granted', lang: 'en' }), butterDev: { round: 2, bugs: 3 } });
+    });
+    const strip = () => page.locator('.strip').innerText().then(t => t.replace(/\s+/g, ' ').trim());
+    await page.waitForFunction(() => /Round 2 · 3 bugs/.test(document.querySelector('.strip').textContent));
+    // The dot pulses at 1.6 s and stands still under reduced motion.
+    assert.deepEqual(await page.locator('.rec').evaluate(e => [getComputedStyle(e).animationName, getComputedStyle(e).animationDuration]), ['rec', '1.6s']);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    assert.equal(await page.locator('.rec').evaluate(e => getComputedStyle(e).animationName), 'none');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    // New round from the keyboard: the focus ring shows, the count resets, and a reopened popup
+    // reads the new round back.
+    await page.keyboard.press('Tab');
+    await page.locator('[data-dev="new-round"]').focus();
+    assert.equal(await page.locator('[data-dev="new-round"]').evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => /Round 3 · 0 bugs/.test(document.querySelector('.strip').textContent));
+    assert.deepEqual(await page.evaluate(() => chrome.storage.local.get('butterDev').then(r => r.butterDev)), { round: 3, bugs: 0 });
+    await page.reload(); await page.waitForSelector('.card.dev'); await fixtureTab();
+    await page.waitForFunction(() => /Round 3 · 0 bugs/.test(document.querySelector('.strip').textContent));
+    // Open round folder before the round's first save: the round folder does not exist yet, so it
+    // opens the Downloads folder.
+    await page.locator('[data-dev="open"]').click();
+    await page.waitForFunction(() => shown.length === 1);
+    assert.deepEqual(await page.evaluate(() => shown), [['default']]);
+    // The save button takes the shortcut's path through the real worker, with trigger "button".
+    // Only the tab's snapshot reply is a fixture; the download is real.
+    await worker.evaluate(() => {
+      // Playwright stores downloads under its own names, so record the path the worker asks for.
+      const download = chrome.downloads.download.bind(chrome.downloads);
+      globalThis.asked = [];
+      chrome.downloads.download = options => (asked.push(options.filename), download(options));
+      globalThis.requests = [];
+      chrome.tabs.sendMessage = async (tab, message) => {
+        requests.push([tab, message.request?.trigger, message.request?.round, message.request?.bug]);
+        return { snapshot: JSON.stringify({ kind: 'butter-diag', savedAt: new Date().toISOString() }) };
+      };
+    });
+    const before = await page.locator('#popup').evaluate(e => e.offsetHeight);
+    await page.keyboard.press('Tab'); // keyboard modality, so focus() shows the ring
+    await page.locator('[data-dev="save"]').focus();
+    assert.equal(await page.locator('[data-dev="save"]').evaluate(e => getComputedStyle(e).outlineStyle), 'solid');
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => /bug-01_\d\d-\d\d-\d\d\.json/.test(document.querySelector('.strip').textContent));
+    assert.deepEqual(await worker.evaluate(() => requests), [[1, 'button', 3, 1]]);
+    const saved = await page.evaluate(() => chrome.storage.local.get('butterDev').then(r => r.butterDev));
+    assert.equal(saved.round, 3); assert.equal(saved.bugs, 1); assert.match(saved.file, /^bug-01_/);
+    assert.deepEqual(await worker.evaluate(() => asked), [`butter-diag/round-3/${saved.file}`]);
+    const [item] = await worker.evaluate(id => chrome.downloads.search({ id }), saved.download);
+    assert.ok(item, 'the saved download exists');
+    assert.equal(await page.locator('.strip .vh').textContent(), 'Saved ');
+    assert.equal(await page.locator('.strip .ib').count(), 0);
+    assert.equal(await page.locator('[data-dev="save"]').isEnabled(), true);
+    assert.equal(await page.locator('#popup').evaluate(e => e.offsetHeight), before, 'just saved changed the height');
+    // After about 4 s the card counts again, and Open round folder shows the saved file.
+    await page.waitForFunction(() => /Round 3 · 1 bug(?!s)/.test(document.querySelector('.strip').textContent), null, { timeout: 5000 });
+    await page.locator('[data-dev="open"]').click();
+    await page.waitForFunction(() => shown.length === 2);
+    assert.deepEqual(await page.evaluate(() => shown[1]), ['show', saved.download]);
+    console.log(`Dev actions: New round -> "${'Round 3 · 0 bugs'}" (kept after reload), save -> butter-diag/round-3/${saved.file} (download ${item.state}), then "${await strip()}"`);
+    return { refs, rows, states: devCases.length };
+  } finally {
+    await context.close();
+  }
 }

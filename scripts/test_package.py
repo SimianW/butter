@@ -1,6 +1,8 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
 import json
 from pathlib import Path
+import posixpath
+import re
 import shutil
 import subprocess
 import sys
@@ -142,6 +144,32 @@ class PackageTests(unittest.TestCase):
                 self.assertIn(f"butter/{script}", names)
         self.assertEqual(before, {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()})
         self.assertEqual(self.run_script("check-version.py").returncode, 0)
+
+    def test_dev_popup_loads_the_dev_card_before_popup_js(self):
+        self.use_real_extension()
+        path, _ = self.package("--dev")
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            html = archive.read("butter/popup/popup.html").decode()
+        self.assertIn("butter/dev/popup.js", names)
+        self.assertIn("butter/dev/popup.css", names)
+        # The dev stylesheet follows popup.css; the dev script defines its renderer before
+        # popup.js's first render, and every popup script still loads.
+        self.assertLess(html.index('href="popup.css"'), html.index('href="../dev/popup.css"'))
+        scripts = re.findall(r'<script src="([^"]+)" defer></script>', html)
+        self.assertEqual(scripts, ["../shared/status.js", "model.js", "../dev/popup.js", "popup.js"])
+        for script in scripts:
+            self.assertIn("butter/" + posixpath.normpath(posixpath.join("popup", script)), names)
+
+    def test_store_and_test_popups_load_no_dev_script(self):
+        self.use_real_extension()
+        source = (self.extension / "popup" / "popup.html").read_bytes()
+        self.assertNotIn(b"dev/", source)
+        for args in ((), ("--test", "demo")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    self.assertEqual(archive.read("butter/popup/popup.html"), source)
 
     def test_store_and_test_packages_leave_dev_build_out(self):
         self.use_real_extension()

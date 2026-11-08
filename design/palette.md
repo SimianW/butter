@@ -26,12 +26,16 @@ this page and the stylesheet disagree, the stylesheet wins. Fix the page.
 | `--butter-deep`  | `#f2c23a`               | `#c9a53f`                | focus ring, link underlines, storage bar fill, dark-theme switch on track               |
 | `--butter-light` | `#fff4c2`               | `#2f2816`                | the consent note band, and nothing else                                                 |
 | `--on-butter-2`  | `#4d3d10`               | `#3f3312`                | master card status line while on                                                        |
-| `--warn`         | `#b8321a`               | `#f0917a`                | fault text and icon, destructive Clear                                                  |
+| `--warn`         | `#b8321a`               | `#f0917a`                | fault text and icon, destructive Clear, the dev build's recording dot                   |
 | `--warn-bg`      | `#ffe3d8`               | `#3d241b`                | destructive Clear background                                                            |
 | `--track`        | `#e3dac3`               | `#3a3328`                | switch off track, storage bar, No thanks hover                                          |
 | `--knob`         | `#fffdf6`               | `#1d1914`                | switch knob off (`--paper` is the dark-theme knob on)                                   |
 | `--knob-shadow`  | `rgb(0 0 0 / .22)`      | `rgb(0 0 0 / .22)`       | the knob's 1 px shadow                                                                  |
 | `--highlight`    | `rgb(255 255 255 / .7)` | `rgb(255 255 255 / .35)` | the master card's highlight bar                                                         |
+
+The dev build's popup card (`extension/dev/popup.css`, dev zip only) uses the same tokens: a
+dashed `--line` border, `--ink-2` text and icons, `--ink-3` with a hollow `--ink-3` dot while not
+recording, and a pulsing `--warn` dot while recording. The dot is the card's only new use of a token.
 
 Dark ink on butter: text on a butter surface is `#1b170f` in both themes. This is the only literal
 colour in state rules.

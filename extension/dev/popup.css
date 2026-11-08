@@ -1,0 +1,143 @@
+/* Dev build only: the popup's DEV tag and dev card, from the approved #32 mockup. Loaded after
+   popup.css in the dev zip; uses its tokens only. The recording dot is the one new use of --warn. */
+.devtag {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 16px;
+  padding: 0 7px;
+  color: var(--ink-2);
+  border: 1.5px dashed var(--line);
+  border-radius: 999px;
+  margin-top: 2px;
+}
+.card.dev {
+  position: relative;
+  border-style: dashed;
+  margin-bottom: 8px;
+}
+/* One 36 px row. Its height never changes, so the popup keeps its height between states. */
+.strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 8px 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.strip.idle {
+  color: var(--ink-3);
+}
+.strip .msg {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.strip b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.strip .sp {
+  flex: 1;
+}
+/* The status mark sits in the 18 px icon column, so the text lines up with the other cards at 44 px. */
+.lead {
+  width: 18px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  margin-right: 6px;
+}
+.lead svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rec {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warn);
+  animation: rec 1.6s ease-in-out infinite;
+}
+@keyframes rec {
+  50% {
+    opacity: 0.3;
+  }
+}
+.rec.idle {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--ink-3);
+  animation: none;
+}
+.ibs {
+  display: flex;
+  flex: none;
+}
+.ib {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  flex: none;
+}
+.ib:hover {
+  background: var(--track);
+}
+.ib svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.snap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 2px 10px 2px 8px;
+  margin-left: 2px;
+}
+.snap svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.snap kbd {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.snap:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rec {
+    animation: none;
+  }
+}

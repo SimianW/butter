@@ -12,8 +12,9 @@ alpha X.Y.Z (equivalent to X.Y.Z.0). A fifth component is invalid. Consequently
 tests cannot be ordered above the base and below the next alpha; remove the
 previous install before loading a test build unpacked from its zip.
 
---dev builds the dev build: a test build tagged "dev" that also contains extension/dev/
-and a manifest adding the dev scripts, the save-bug shortcut and the downloads permission.
+--dev builds the dev build: a test build tagged "dev" that also contains extension/dev/,
+a manifest adding the dev scripts, the save-bug shortcut and the downloads permission, and a
+popup.html that loads the popup's dev card (dev/popup.css and dev/popup.js).
 Every other build leaves extension/dev/ out.
 """
 import argparse
@@ -48,6 +49,37 @@ def dev_manifest(manifest):
         }
     }
     return manifest
+
+
+# The dev popup: dev/popup.css after the store stylesheet, and dev/popup.js before popup.js, so
+# its renderer exists for popup.js's first render.
+POPUP_HTML = "popup/popup.html"
+POPUP_DEV = (
+    (
+        '<link rel="stylesheet" href="popup.css" />\n',
+        f'<link rel="stylesheet" href="../{DEV_DIR}/popup.css" />\n',
+        "after",
+    ),
+    (
+        '<script src="popup.js" defer></script>',
+        f'<script src="../{DEV_DIR}/popup.js" defer></script>\n',
+        "before",
+    ),
+)
+
+
+def dev_popup_html(html):
+    """Return the dev build's popup.html: the store popup plus the dev card's stylesheet and script."""
+    for anchor, tag, where in POPUP_DEV:
+        if html.count(anchor) != 1:
+            raise ValueError(f"popup.html must contain {anchor.strip()!r} exactly once")
+        start = html.index(anchor)
+        indent = html[html.rindex("\n", 0, start) + 1 : start]
+        if where == "after":
+            html = html.replace(anchor, anchor + indent + tag)
+        else:
+            html = html.replace(anchor, tag + indent + anchor)
+    return html
 
 
 def package(root, tag=None, dev=False):
@@ -97,6 +129,8 @@ def package(root, tag=None, dev=False):
                 archive_name = "butter/" + path.relative_to(extension).as_posix()
                 if tag is not None and path == manifest_path:
                     archive.writestr(archive_name, json.dumps(manifest, indent=2) + "\n")
+                elif dev and path == extension / POPUP_HTML:
+                    archive.writestr(archive_name, dev_popup_html(path.read_text(encoding="utf-8")))
                 else:
                     archive.write(path, archive_name)
     return out, manifest["version"]

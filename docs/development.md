@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut and the download). |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
@@ -36,6 +36,13 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
   version label and the storage line masked; the run prints every panel's height and diff ratio,
   then fails with a summary if any differ.
+  The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
+  it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
+  states (recording, just saved, not on a ChatGPT tab, the tallest state, Chinese recording and
+  tallest) in both themes, each at most 600 px with the dev row unclipped. It also drives the card:
+  New round survives a reload, Open round folder, and the save button through the real worker.
+  `BUTTER_DEV_MOCKUP=<path>` (`gh issue artifact download 32 1 -R SimianW/butter`) compares the
+  English and dark dev states with that mockup's `dev-*-after` panels the same way.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
@@ -78,11 +85,19 @@ Run `npm ci` to install the pinned development formatter, then `npm run format` 
 For testing, `python3 scripts/package.py --test <tag>` builds `dist/butter-<version_name>+<tag>.<N>.zip` without changing the source manifest or consuming an alpha number (tag: `[a-z0-9-]+`; numbering starts at 1 per base version and tag).
 Test zips retain the base Chrome numeric version; remove the previous install before loading one unpacked.
 `python3 scripts/package.py --dev` builds the dev build, `dist/butter-<version_name>+dev.<N>.zip`: a test build
-that also contains `extension/dev/` and whose manifest adds the dev scripts, the `save-bug` command (suggested
+that also contains `extension/dev/`, whose popup.html loads the popup's dev card, and whose manifest adds the dev scripts, the `save-bug` command (suggested
 key Alt+Shift+B, Option+Shift+B on a Mac) and the `downloads` permission. The shortcut saves a privacy-safe
 snapshot of the last 30 s on a ChatGPT chat to `Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json`.
 On Windows and Linux, Alt+Shift+B is Chrome's own "focus bookmarks bar" key, so Chrome does not assign it
-automatically; set it in `chrome://extensions/shortcuts`. Only `--dev` zips carry the dev files.
+automatically; set it in `chrome://extensions/shortcuts`. Until then the popup's save button shows only its
+camera icon. Only `--dev` zips carry the dev files.
+
+The dev card keeps the round in `chrome.storage.local.butterDev` (`round`, `bugs`, and after a save the
+`file` name and its `download` id). Its save button and New round go to the dev worker as
+`butter-dev-save` (with the active `tabId`) and `butter-dev-new-round` runtime messages, which only the
+extension's own pages may send; the worker serializes them with the shortcut's saves. Open round folder
+shows the round's last saved file through the downloads API; before the round's first save, when the
+round folder does not exist yet, it opens the Downloads folder.
 
 ## Layout storage API
 
