@@ -31,6 +31,25 @@ importScripts('../storage/layout-worker.js', 'recorder.js');
     return `data:application/json;base64,${btoa(binary)}`;
   };
 
+  // Resolves true when the download completes, false when it is interrupted.
+  const completed = (id) =>
+    new Promise((resolve) => {
+      const finish = (state) => {
+        if (state === 'in_progress') return;
+        chrome.downloads.onChanged.removeListener(changed);
+        resolve(state === 'complete');
+      };
+      const changed = (delta) => {
+        if (delta.id === id && delta.state) finish(delta.state.current);
+      };
+      chrome.downloads.onChanged.addListener(changed);
+      // It may already have finished before the listener was added.
+      chrome.downloads.search({ id }).then(
+        ([item]) => item && finish(item.state),
+        () => {},
+      );
+    });
+
   async function save(trigger, tab) {
     if (!tab?.id) [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     if (!tab?.id) return { error: 'no-tab' };
@@ -60,13 +79,20 @@ importScripts('../storage/layout-worker.js', 'recorder.js');
       bug,
       new Date(JSON.parse(reply.snapshot).savedAt),
     );
-    await chrome.downloads.download({
+    const id = await chrome.downloads.download({
       url: dataUrl(reply.snapshot),
       filename,
       saveAs: false,
       conflictAction: 'uniquify',
     });
     await chrome.storage.local.set({ [KEY]: { round, bugs: bug } });
+    // Once the file is on disk, the tab's dev/toast.js confirms the save on the page.
+    completed(id).then((ok) => {
+      if (ok)
+        chrome.tabs
+          .sendMessage(tab.id, { type: 'butter-dev-saved', bug, round }, { frameId: 0 })
+          .catch(() => {});
+    });
     return { saved: filename, round, bug };
   }
 
