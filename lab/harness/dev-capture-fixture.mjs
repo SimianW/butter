@@ -80,6 +80,9 @@ pre { background:#f6f6f6; padding:12px; white-space:pre-wrap }
 .katex { position:relative; font:1.15em/1.2 "Times New Roman",serif; white-space:nowrap }
 .katex-mathml { position:absolute; clip:rect(1px,1px,1px,1px); padding:0; border:0; height:1px; width:1px; overflow:hidden }
 .math-display { display:block; margin:0 0 14px } .katex-display { display:block; text-align:center }
+/* ChatGPT's dark theme, for the toast's dark check (#45). */
+.dark body { background:#212121; color:#ececec }
+.dark [data-user-message-bubble] { background:#303030 }
 </style></head><body><div class="thread-scroll-container"><div class="content"><div class="spacer"></div>${turns.join('')}</div></div><script>
 (() => {
   const TURNS = ${TURNS}, UNMOUNTED = ${UNMOUNTED};

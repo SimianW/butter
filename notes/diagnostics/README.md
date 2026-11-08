@@ -183,7 +183,7 @@ structure nodes, cache items) has one object per line.
 | `formatVersion` | `1`. It stands in for the snippets' `schema: 1`. |
 | `bug`, `round` | The bug number in this round, and the round. They match the file path. |
 | `savedAt` | The save time, ISO 8601 in UTC. Event times are relative to it. |
-| `version` | The manifest's `version_name`, for example `0.1.0-alpha.15+dev.9`. |
+| `version` | The manifest's `version_name`, for example `0.1.0-alpha.15+dev.10`. |
 | `trigger` | `shortcut` or `button`. |
 | `pointerHeld` | Whether the left button was down when the snapshot was taken (a drag in progress). |
 | `settings` | Butter's normalized settings (`shared/status.js`). |
@@ -311,23 +311,23 @@ has only passive hooks, each one null check while no dev listener is set:
 ### Caps and cost
 
 These are measured with `xvfb-run -a node lab/harness/dev-capture-qa.mjs` (Chromium
-156.0.8078.4, a 140-turn fixture chat, dev build `0.1.0-alpha.15+dev.9`). The results are in
+156.0.8078.4, a 140-turn fixture chat, dev build `0.1.0-alpha.15+dev.10`). The results are in
 [the run report](../runs/2026-11-08-full-snapshot-44/report.md) and its `summary.json`.
 
 | | Measured | Cap |
 |---|---|---|
 | Event size | 146 bytes mean, 185 at most (seek events are the largest) | |
-| Event rate | 7.8 a second in a busy 28 s session (wheel reading and 11 drags). Of these, 3.5 a second were not seeks. | |
-| Seek rate | 4–7 a second under Xvfb, where the thumb drag scrolls at that rate even with 234 mouse moves and 60 frames a second. Scroll events come at most once a frame, so the bound is 120 a second at 120 Hz. | |
+| Event rate | 7.4 a second in a busy 29 s session (wheel reading and 11 drags). Of these, 3.4 a second were not seeks. | |
+| Seek rate | 3.9–6.7 a second under Xvfb, where the thumb drag scrolls at that rate even with 228 mouse moves and 60 frames a second. Scroll events come at most once a frame, so the bound is 120 a second at 120 Hz. | |
 | Events | about 3,700 in 30 s at 120 Hz | `MAX_EVENTS` 4,000 |
 | Event bytes | 3,700 × 185 ≈ 690 KB | `MAX_BYTES` 750,000 |
 | `pressDecision` | 74 KB for 140 turns (about 530 bytes a turn) | |
 | `turns.readiness` | 48 KB for 140 turns (about 340 bytes a turn) | |
 | `turns.math` | 20 KB for 120 mounted turns (about 165 bytes a turn; ChatGPT mounts only the turns near the viewport) | |
 | `turns.active` | 6 KB; structure rows average 170 bytes, at most 1,000 rows ≈ 170 KB | 1,000 nodes |
-| Whole file | 186 KB for the busy session | `MAX_FILE_BYTES` 1,400,000 |
-| Snapshot | 5.7 ms median, 7.1 ms at most to build and serialize in the page | |
-| Recording | 2.5 µs per `record()` call. A seek update's script time was 0.7 ms median with and without the listener, and 1.1 ms p95 with it against 1.0 ms without. The same scroll positions previewed the same turns the same way, and every release landed with 0 px error. | |
+| Whole file | 184 KB for the busy session | `MAX_FILE_BYTES` 1,400,000 |
+| Snapshot | 5.4 ms median, 7.4 ms at most to build and serialize in the page | |
+| Recording | 2.5 µs per `record()` call. A seek update's script time was 0.8 ms median and 1.0 ms p95, both with and without the listener. The same scroll positions previewed the same turns the same way, and every release landed with 0 px error. | |
 
 Over `MAX_FILE_BYTES`, the snapshot drops whole parts first, largest first, as
 `{ "unavailable": "too-large" }`, until the rest fits without events. Then it drops the oldest

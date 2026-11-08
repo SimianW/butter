@@ -1,9 +1,12 @@
 # Bug file: full event vocabulary and the four snippets' state (#44)
 
-Build: `t3/44-full-snapshot`, packaged with `python3 scripts/package.py --dev` as
-`0.1.0-alpha.15+dev.9`. The run used Playwright's Chromium 156.0.8078.4 on Linux under Xvfb.
+Build: `t3/44-full-snapshot` after merging the integration branch with #45 (toast) and #46 (popup
+card), packaged with `python3 scripts/package.py --dev` as `0.1.0-alpha.15+dev.10`. The run used
+Playwright's Chromium 156.0.8078.4 on Linux under Xvfb.
 
-`xvfb-run -a node lab/harness/dev-capture-qa.mjs`
+`BUTTER_DEV_MOCKUP=<#32 mockup> xvfb-run -a node lab/harness/dev-capture-qa.mjs`
+
+The mockup is `gh issue artifact download 32 1 -R SimianW/butter`.
 
 The harness loads the unzipped dev zip in its own profile. For every `chatgpt.com` request it
 serves the long synthetic chat in `lab/harness/dev-capture-fixture.mjs`, and it aborts every
@@ -19,11 +22,11 @@ reads through the chat with the wheel, so the layout cache records the turns it 
 
 | Step | File | Result |
 |---|---|---|
-| Drag, release, press Alt+Shift+B | [bug-01](bug-01_05-50-53.json) | 273 events: record, rejection, press, preview, seek, preview-miss, release, commit, reveal. `pointerHeld: false`. 140 readiness rows, active turn 91 (`last-seek-update`). |
-| Drag and press while holding | [bug-02](bug-02_05-50-55.json) | 307 events, the last a seek. `pointerHeld: true`, active turn 125 (`active-preview-update`). The drag continued and ended on `pointerup`. |
+| Drag, release, press Alt+Shift+B | [bug-01](bug-01_05-55-43.json) | 270 events: record, rejection, press, preview, seek, preview-miss, release, commit, reveal. `pointerHeld: false`. 140 readiness rows, active turn 91 (`last-seek-update`). |
+| Drag and press while holding | [bug-02](bug-02_05-55-45.json) | 304 events, the last a seek. `pointerHeld: true`, active turn 125 (`active-preview-update`). The drag continued and ended on `pointerup`. |
 | Press on `https://other.test/` and on `https://chatgpt.com/` | none | The command fired in that tab; nothing saved. |
 | Back on the chat | bug-03 | Saved (not kept here). |
-| Busy session, then press | [bug-04](bug-04_05-51-30.json) | 221 events over 28.4 s, 185,531 bytes. |
+| Busy session, then press | [bug-04](bug-04_05-56-20.json) | 212 events over 28.8 s, 184,000 bytes. |
 
 The harness checked every file for:
 
@@ -40,16 +43,24 @@ turn or message IDs, the planted link, `example.org` or `chatgpt.com`. None matc
 a 32-hex-digit run or `http`. `redacted` is 0: the sources never pass anything outside the
 allowlist. [summary.json](summary.json) holds every measured number below.
 
+The same run passed #45's toast checks on this fixture:
+
+- every save showed its toast, and a held drag continued through it;
+- no toast appeared where nothing saved;
+- the light and dark toasts differed from the mockup panels in 0 pixels.
+
+Its screenshots are not kept here; see #45's run notes.
+
 ## Measurements
 
 | | Result |
 |---|---|
-| Busy session | 28.5 s of wheel reading and 11 thumb drags of about 2 s each. 221 events: 122 seek, 34 record, 12 preview, 11 each of press, release, commit and reveal, 8 rejection, 1 retarget. That is 7.8 events a second, 3.5 of them not seeks. |
-| Event size | 146.6 bytes mean, 185 at most, as serialized lines |
-| Seek rate | 4.3 a second in the busy session. A 3 s drag with 231 unawaited protocol mouse moves a second and 60 frames a second still made 6.7 seek updates a second, because the thumb drag itself scrolls that slowly under Xvfb. The caps therefore rest on the bound of one scroll event per frame, 120 a second at 120 Hz, not on this rate. |
-| File parts (busy) | `pressDecision` 74,177 bytes, `turns.readiness` 47,579, `turns.math` 19,841, `turns.active` 6,331 (21 structure nodes), `usage` 429 |
-| Snapshot cost | 5.7 ms median and 7.1 ms at most to build and serialize in the page (7 runs, 183 KB each) |
-| Recording on and off | 3 identical drags with the listeners set and 3 with them cleared, after one warm-up. 24 scroll positions occurred in both sets, and each previewed the same turn, layout and known flag. Every release ended on `pointerup` with a layout destination and 0 px landing error. Update script time was 0.7 ms median in both sets, with p95 1.1 ms on and 1.0 ms off. Where a drag ended varied by one or two turns in both sets alike: mouse input timing, not the recorder. |
+| Busy session | 28.9 s of wheel reading and 11 thumb drags of about 2 s each. 212 events: 113 seek, 34 record, 12 preview, 11 each of press, release, commit and reveal, 8 rejection, 1 retarget. That is 7.4 events a second, 3.4 of them not seeks. |
+| Event size | 145.8 bytes mean, 185 at most, as serialized lines |
+| Seek rate | 3.9 a second in the busy session. A 3 s drag with 228 unawaited protocol mouse moves a second and 60 frames a second still made 6.7 seek updates a second, because the thumb drag itself scrolls that slowly under Xvfb. The caps therefore rest on the bound of one scroll event per frame, 120 a second at 120 Hz, not on this rate. |
+| File parts (busy) | `pressDecision` 74,177 bytes, `turns.readiness` 47,579, `turns.math` 19,841, `turns.active` 6,331 (21 structure nodes), `usage` 398 |
+| Snapshot cost | 5.4 ms median and 7.4 ms at most to build and serialize in the page (7 runs, 182 KB each) |
+| Recording on and off | 3 identical drags with the listeners set and 3 with them cleared, after one warm-up. 19 scroll positions occurred in both sets, and each previewed the same turn, layout and known flag. Every release ended on `pointerup` with a layout destination and 0 px landing error. Update script time was 0.8 ms median and 1.0 ms p95 in both sets. Where a drag ended varied by one or two turns in both sets alike: mouse input timing, not the recorder. |
 | `record()` cost | 2.46 µs per seek event on a full buffer (command below) |
 | `data:` URL downloads | `chrome.downloads` saved base64 `data:` URLs from 2,097,149 characters (a 1,572,840-byte file, just under the 2 MiB `url::kMaxURLChars`) up to 357,913,973 characters (a 256 MiB file). Chromium 156 enforces no 2 MiB limit on this path. |
 
@@ -68,7 +79,7 @@ record() per seek event: 2.46 us
 
 ## Caps set from these numbers
 
-- `MAX_EVENTS` is 4,000: 120 seeks a second plus 3.5 others for 30 s is about 3,700 events.
+- `MAX_EVENTS` is 4,000: 120 seeks a second plus 3.4 others for 30 s is about 3,700 events.
 - `MAX_BYTES` (events) is 750,000: 3,700 events at 185 bytes is about 690 KB.
 - `MAX_FILE_BYTES` (the whole file) is 1,400,000.
   - That keeps the base64 URL under 2 MiB, the most #43 assumed, even though Chromium 156 took far

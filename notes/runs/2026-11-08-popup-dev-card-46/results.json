@@ -1,0 +1,290 @@
+{
+  "devHeights": {
+    "d1-en-recording-light": 568,
+    "d2-en-saved-light": 568,
+    "d3-en-away-light": 568,
+    "d1-en-recording-dark": 568,
+    "d4-en-tallest-light": 597,
+    "d5-zh-recording-light": 568,
+    "d6-zh-tallest-light": 581,
+    "d2-en-saved-dark": 568,
+    "d3-en-away-dark": 568,
+    "d4-en-tallest-dark": 597,
+    "d5-zh-recording-dark": 568,
+    "d6-zh-tallest-dark": 581
+  },
+  "devRefs": [
+    {
+      "panel": "dev-default-after",
+      "state": "d1-en-recording-light",
+      "built": 568,
+      "reference": 568,
+      "ratio": 1.4671361502347417e-05,
+      "ok": true
+    },
+    {
+      "panel": "dev-saved-after",
+      "state": "d2-en-saved-light",
+      "built": 568,
+      "reference": 568,
+      "ratio": 0,
+      "ok": true
+    },
+    {
+      "panel": "dev-away-after",
+      "state": "d3-en-away-light",
+      "built": 568,
+      "reference": 568,
+      "ratio": 0,
+      "ok": true
+    },
+    {
+      "panel": "dev-dark-after",
+      "state": "d1-en-recording-dark",
+      "built": 568,
+      "reference": 568,
+      "ratio": 0,
+      "ok": true
+    },
+    {
+      "panel": "dev-worst-after",
+      "state": "d4-en-tallest-light",
+      "built": 597,
+      "reference": 597,
+      "ratio": 0,
+      "ok": true
+    }
+  ],
+  "devRows": {
+    "d1-en-recording-light": {
+      "text": "Round 2 \u00b7 3 bugs Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d2-en-saved-light": {
+      "text": "Saved bug-04_21-14-03.json Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 0
+    },
+    "d3-en-away-light": {
+      "text": "Not recording Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": true,
+      "iconButtons": 2
+    },
+    "d1-en-recording-dark": {
+      "text": "Round 2 \u00b7 3 bugs Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d4-en-tallest-light": {
+      "text": "Round 2 \u00b7 3 bugs Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d5-zh-recording-light": {
+      "text": "\u7b2c 2 \u8f6e \u00b7 3 \u4e2a bug Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d6-zh-tallest-light": {
+      "text": "\u7b2c 2 \u8f6e \u00b7 3 \u4e2a bug Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d2-en-saved-dark": {
+      "text": "Saved bug-04_21-14-03.json Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 0
+    },
+    "d3-en-away-dark": {
+      "text": "Not recording Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": true,
+      "iconButtons": 2
+    },
+    "d4-en-tallest-dark": {
+      "text": "Round 2 \u00b7 3 bugs Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d5-zh-recording-dark": {
+      "text": "\u7b2c 2 \u8f6e \u00b7 3 \u4e2a bug Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    },
+    "d6-zh-tallest-dark": {
+      "text": "\u7b2c 2 \u8f6e \u00b7 3 \u4e2a bug Alt+Shift+B",
+      "height": 36,
+      "inside": true,
+      "overflow": false,
+      "truncated": false,
+      "textLeft": 61,
+      "rowTextLeft": 61,
+      "tag": "DEV",
+      "version": "0.1.0-alpha.15+dev.12",
+      "snapDisabled": false,
+      "iconButtons": 2
+    }
+  },
+  "redesignRefs": [
+    {
+      "panel": "default-after",
+      "state": "13-en-branch-on-light",
+      "built": 522,
+      "reference": 522,
+      "ratio": 2.6607066836951895e-05,
+      "ok": true
+    },
+    {
+      "panel": "paused-after",
+      "state": "10-en-paused-light",
+      "built": 522,
+      "reference": 522,
+      "ratio": 1.596424010217114e-05,
+      "ok": true
+    },
+    {
+      "panel": "rail-fault-after",
+      "state": "19-en-rail-fault-light",
+      "built": 554,
+      "reference": 554,
+      "ratio": 2.5070196550340953e-05,
+      "ok": true
+    },
+    {
+      "panel": "layouts-pending-after",
+      "state": "20-en-layouts-pending-light",
+      "built": 551,
+      "reference": 551,
+      "ratio": 2.5206694898164952e-05,
+      "ok": true
+    },
+    {
+      "panel": "clear-confirm-after",
+      "state": "21-en-clear-confirm-light",
+      "built": 522,
+      "reference": 522,
+      "ratio": 2.6607066836951895e-05,
+      "ok": true
+    },
+    {
+      "panel": "branch-off-after",
+      "state": "14-en-branch-off-light",
+      "built": 522,
+      "reference": 522,
+      "ratio": 2.6607066836951895e-05,
+      "ok": true
+    },
+    {
+      "panel": "branch-fault-after",
+      "state": "15-en-branch-failed-light",
+      "built": 554,
+      "reference": 554,
+      "ratio": 2.5070196550340953e-05,
+      "ok": true
+    },
+    {
+      "panel": "dark-after",
+      "state": "13-en-branch-on-dark",
+      "built": 522,
+      "reference": 522,
+      "ratio": 0,
+      "ok": true
+    },
+    {
+      "panel": "zh-after",
+      "state": "16-zh-branch-on-light",
+      "built": 522,
+      "reference": 522,
+      "ratio": 2.6607066836951895e-05,
+      "ok": true
+    }
+  ]
+}

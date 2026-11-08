@@ -1,0 +1,49 @@
+{
+  "build": "0.1.0-alpha.15+dev.8",
+  "chromium": "156.0.8078.4",
+  "files": [
+    "butter-diag/round-1/bug-01_05-29-51.json",
+    "butter-diag/round-1/bug-02_05-29-53.json",
+    "butter-diag/round-1/bug-03_05-29-58.json"
+  ],
+  "otherTabSaved": 0,
+  "chatgptHomeSaved": 0,
+  "roundState": {
+    "bugs": 3,
+    "round": 1
+  },
+  "toasts": [
+    {
+      "theme": "light",
+      "ratio": 0,
+      "box": {
+        "x": 1099.390625,
+        "y": 726.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      },
+      "mockupBox": {
+        "x": 179.390625,
+        "y": 176.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      }
+    },
+    {
+      "theme": "dark",
+      "ratio": 0,
+      "box": {
+        "x": 1099.390625,
+        "y": 726.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      },
+      "mockupBox": {
+        "x": 179.390625,
+        "y": 176.265625,
+        "width": 156.609375,
+        "height": 55.734375
+      }
+    }
+  ]
+}

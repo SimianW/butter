@@ -3,6 +3,11 @@
 (() => {
   const CHAT = /\/c\/[0-9a-f-]{36}(?:\/|$)/;
   chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+    // The popup's dev card: recording, and the save button enabled, only on a chat.
+    if (message?.type === 'butter-dev-ping') {
+      respond({ chat: CHAT.test(location.pathname) });
+      return;
+    }
     if (message?.type !== 'butter-dev-snapshot') return;
     if (!CHAT.test(location.pathname)) {
       respond({ error: 'not-chat' });

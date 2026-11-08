@@ -1,6 +1,8 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
 import json
 from pathlib import Path
+import posixpath
+import re
 import shutil
 import subprocess
 import sys
@@ -116,6 +118,7 @@ class PackageTests(unittest.TestCase):
         dev_files = self.dev_files()
         self.assertIn("butter/dev/recorder.js", dev_files)
         self.assertIn("butter/dev/sources.js", dev_files)
+        self.assertIn("butter/dev/toast.js", dev_files)
         before = {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()}
         for number in (1, 2):
             path, result = self.package("--dev")
@@ -134,7 +137,8 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
             # Every script the dev manifest names is in the zip, after the store scripts it hooks.
             isolated, main = manifest["content_scripts"]
-            self.assertEqual(isolated["js"][-1], "dev/content.js")
+            self.assertEqual(isolated["js"][-2:], ["dev/content.js", "dev/toast.js"])
+            self.assertLess(isolated["js"].index("shared/status.js"), isolated["js"].index("dev/toast.js"))
             self.assertEqual(
                 main["js"][-3:], ["dev/recorder.js", "dev/sources.js", "dev/recorder-main.js"]
             )
@@ -149,6 +153,32 @@ class PackageTests(unittest.TestCase):
         self.assertEqual(before, {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()})
         self.assertEqual(self.run_script("check-version.py").returncode, 0)
 
+    def test_dev_popup_loads_the_dev_card_before_popup_js(self):
+        self.use_real_extension()
+        path, _ = self.package("--dev")
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            html = archive.read("butter/popup/popup.html").decode()
+        self.assertIn("butter/dev/popup.js", names)
+        self.assertIn("butter/dev/popup.css", names)
+        # The dev stylesheet follows popup.css; the dev script defines its renderer before
+        # popup.js's first render, and every popup script still loads.
+        self.assertLess(html.index('href="popup.css"'), html.index('href="../dev/popup.css"'))
+        scripts = re.findall(r'<script src="([^"]+)" defer></script>', html)
+        self.assertEqual(scripts, ["../shared/status.js", "model.js", "../dev/popup.js", "popup.js"])
+        for script in scripts:
+            self.assertIn("butter/" + posixpath.normpath(posixpath.join("popup", script)), names)
+
+    def test_store_and_test_popups_load_no_dev_script(self):
+        self.use_real_extension()
+        source = (self.extension / "popup" / "popup.html").read_bytes()
+        self.assertNotIn(b"dev/", source)
+        for args in ((), ("--test", "demo")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    self.assertEqual(archive.read("butter/popup/popup.html"), source)
+
     def test_store_and_test_packages_leave_dev_build_out(self):
         self.use_real_extension()
         source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
@@ -162,6 +192,7 @@ class PackageTests(unittest.TestCase):
                     names = archive.namelist()
                     manifest = json.loads(archive.read("butter/manifest.json"))
                 self.assertEqual([name for name in names if name.startswith("butter/dev/")], [])
+                self.assertNotIn("butter/dev/toast.js", names)
                 self.assertNotIn("commands", manifest)
                 self.assertNotIn("downloads", manifest["permissions"])
                 self.assertEqual(manifest["background"], source["background"])
