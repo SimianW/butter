@@ -10,10 +10,12 @@ computes against base. When that tier is 1 or 2, it must also carry a review lin
 
 that is, a line starting `Reviewed with review-loop:`, ending `Verdict: approved`, and naming the
 approved commit as `at <sha>` (7 to 40 hex digits). When several such lines exist, the last one
-counts. The sha must exist in this checkout, and nothing after it may reach tier 1 or 2: the
-paths that differ between <sha> and the working tree, limited to paths the PR changed at review
-time or changes now (so a base-branch merge after the review does not count), are classified
-with review_tier.classify. Markdown or notes added after the approval pass.
+counts. The sha must exist in this checkout, and nothing after it may reach tier 1 or 2: <sha> is
+replayed onto the current base with `git merge-tree` (so a base-branch merge or rebase after the
+review does not count, even in files the PR also changed), and the paths that differ between that
+tree and the working tree are classified with review_tier.classify. When the replay conflicts,
+the check falls back to the paths that differ between <sha> and the working tree, limited to paths
+the PR changed at review time or changes now. Markdown or notes added after the approval pass.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
 import importlib.util
@@ -97,15 +99,33 @@ def check_body(body, tier, reasons, review_gate=None, head=None):
     return failures, passes
 
 
+def replayed_tree(sha, base, root):
+    """The tree of sha's PR changes replayed onto the current base, or None when that conflicts."""
+    old_base = review_tier.git("merge-base", sha, base, cwd=root).decode().strip()
+    new_base = review_tier.git("merge-base", "HEAD", base, cwd=root).decode().strip()
+    try:
+        out = review_tier.git(
+            "merge-tree", "--write-tree", f"--merge-base={old_base}", sha, new_base, cwd=root
+        )
+    except review_tier.GitError:
+        return None
+    return out.decode().splitlines()[0].strip()
+
+
 def post_review_paths(sha, base, paths, root):
-    """Paths the PR changed after sha: the diff from sha to the working tree, untracked files
-    included, limited to paths the PR changed at review time or changes now."""
+    """Return (paths, rev): the paths the PR changed after sha, and the rev holding their
+    reviewed state. rev is sha replayed onto the current base; when that conflicts, rev is sha
+    and the paths that differ from it are limited to paths the PR changed at review time or
+    changes now."""
+    tree = replayed_tree(sha, base, root)
+    if tree is not None:
+        return review_tier.changed_since(tree, root), tree
     review_base = review_tier.git("merge-base", sha, base, cwd=root).decode().strip()
     at_review = review_tier.git(
         "diff", "--name-only", "--no-renames", "-z", review_base, sha, "--", cwd=root
     )
     pr_paths = {path for path in at_review.decode("utf-8").split("\0") if path} | set(paths)
-    return [path for path in review_tier.changed_since(sha, root) if path in pr_paths]
+    return [path for path in review_tier.changed_since(sha, root) if path in pr_paths], sha
 
 
 def check_after_review(sha, base, paths, root):
@@ -118,10 +138,10 @@ def check_after_review(sha, base, paths, root):
             "run another review-loop round and update `at <sha>` in the review line"
         ], []
     full = full.decode().strip()
-    changed = post_review_paths(full, base, paths, root)
+    changed, reviewed = post_review_paths(full, base, paths, root)
     if not changed:
         return [], [f"nothing changed after the reviewed commit {sha}"]
-    before = review_tier.manifest_at(full, root) if review_tier.MANIFEST in changed else None
+    before = review_tier.manifest_at(reviewed, root) if review_tier.MANIFEST in changed else None
     after = review_tier.working_manifest(root) if review_tier.MANIFEST in changed else None
     tier, reasons = review_tier.classify(changed, before, after)
     if tier >= 1:
