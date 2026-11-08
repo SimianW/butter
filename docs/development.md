@@ -27,7 +27,14 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 ## Tests
 
 - Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 18 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_BRANCH_MOCKUP` to compare the Ask in branch states with their approved mockup);
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 21 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
+  `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
+  (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
+  (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,
+  branch off, branch fault, dark and Chinese, where that side has them. Each panel must match its
+  state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
+  version label and the storage line masked; the run prints every panel's height and diff ratio,
+  then fails with a summary if any differ.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
