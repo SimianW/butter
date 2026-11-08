@@ -109,6 +109,8 @@
     'retarget',
     'refresh',
     'approx',
+    // the conversation event's per-page ordinal
+    'conversation',
     // turns: order, readiness (capture-record-readiness.js)
     'order',
     'readiness',
@@ -221,6 +223,7 @@
     'record',
     'rejection',
     'restore',
+    'conversation',
   ]);
   // HTML, SVG and MathML tag names a turn's structure may hold; any other tag is reported as
   // 'other' by dev/sources.js and dropped here if it gets through.
@@ -368,6 +371,7 @@
     'redacted',
     'no-scroller',
     'too-large',
+    'conversation-changed',
   ]);
 
   // Returns [filtered value, number of dropped values]; `undefined` means drop this value.

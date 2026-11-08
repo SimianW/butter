@@ -189,7 +189,7 @@ structure nodes, cache items) has one object per line.
 | `settings` | Butter's normalized settings (`shared/status.js`). |
 | `events` | The last 30 s of events, oldest first (see below). |
 | `eventsDropped` | Only present when the whole-file cap dropped the oldest events: how many. |
-| `pressDecision` | `__seekDump.pressDecision`: the last qualifying press's summary (capture-press-decision.js). |
+| `pressDecision` | `__seekDump.pressDecision`: the last qualifying press's summary (capture-press-decision.js). `{ "unavailable": "conversation-changed" }` when that press was in an earlier conversation. |
 | `turns` | `order`, `active`, `readiness`, `math` (see below). |
 | `failures` | `chrome.storage.session.butterFailures`, the popup's session failures. |
 | `usage` | `saved`, `store`, `cache` (see below). |
@@ -197,8 +197,9 @@ structure nodes, cache items) has one object per line.
 
 A part that could not be read is `{ "unavailable": <reason> }`, and the rest of the file still
 saves. The reasons are `missing` (no such source in this build), `error` (it threw), `redacted`
-(nothing allowed was left), `no-scroller` (no visible conversation scroller) and `too-large` (cut
-by the whole-file cap).
+(nothing allowed was left), `no-scroller` (no visible conversation scroller), `too-large` (cut
+by the whole-file cap) and `conversation-changed` (`pressDecision` only: the press was in an
+earlier conversation, see below).
 
 **Events.** Every event has `t`, in ms before the save (negative, rounded), and a `type`.
 Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtualizer's order.
@@ -217,14 +218,26 @@ Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtual
 | `record` | The layout cache records a turn. | `turn`, `items`, `blocks`, `refresh` (replaces a record), `approx` (has estimated formula boxes) |
 | `rejection` | The layout cache rejects a turn's snapshot. | `turn`, `reason` (`core.validateSnapshot` reasons such as `math-pending`, `placeholder`, `zero-block`, and `estimated`) |
 | `restore` | Remount restore gives a turn its recorded sizes. | `turn`, `blocks` |
+| `conversation` | The page is on a different conversation than before, without a page load (ChatGPT switches chats in place). | `conversation`: the new conversation's ordinal on this page. The one the page loaded on is 0, and each switch adds 1, also back to an earlier chat or to a new-chat page. |
+
+**Conversation changes.** The recorder asks the seek code which conversation it is on
+(`__seekDump.conv`, the same URL check that ends a drag with `chat-switch`) before each event,
+every 250 ms and at the save. It keeps the answer only to compare it, and the file holds only the
+ordinal. A `conversation` event comes before every event from the new conversation, so the events
+after the last `conversation` event are from the conversation the file was saved in; with no
+`conversation` event, all of them are. A `release` with `chat-switch` follows the
+`conversation` event it was caused by. After a switch, `turns.active` drops the earlier
+conversation's seek (it reads `selection: "none"` until the next seek), and `pressDecision` is
+`{ "unavailable": "conversation-changed" }` until the next press. It is dropped rather than marked,
+because its turn indexes and counts describe another chat's turns.
 
 **`turns.order`**: `count` (turns in the order), `mounted`, `fiberFound`, `idsFromFallback` and
 `idsReason`. Without ChatGPT's virtualizer, the order is the mounted turns in DOM order, with
 `idsReason: "ids-from-dom"`.
 
-**`turns.active`**: the turn the seek last showed. It has `turnIndex` and `selection`
-(`active-preview-update` during a drag, `last-seek-update` after one, `none` before any seek,
-with nothing else), plus `preview`, `memory` and `dom`.
+**`turns.active`**: the turn the seek last showed in this conversation. It has `turnIndex` and
+`selection` (`active-preview-update` during a drag, `last-seek-update` after one, `none` before any
+seek in this conversation, with nothing else), plus `preview`, `memory` and `dom`.
 
 **`turns.readiness`**: `rejectionDiagnosticsAvailable`, `currentSw` and `turns`, one row for every
 turn in the order.
@@ -271,7 +284,8 @@ capture-record-readiness.js:
 The snippet refuses to run during a hold. The bug file reads readiness during a hold too, because
 the memory is copied first and the rows are only measured.
 
-capture-press-decision.js: the whole `__seekDump.pressDecision` is `pressDecision`, unchanged.
+capture-press-decision.js: the whole `__seekDump.pressDecision` is `pressDecision`, unchanged, unless the
+press was in an earlier conversation (`conversation-changed`).
 
 capture-math-pending.js:
 
@@ -305,7 +319,8 @@ fingerprint (one column read), exactly as the readiness snippet does. `usage.sav
 the same worker handler as the popup, which prunes expired rows as a popup open does. Store code
 has only passive hooks, each one null check while no dev listener is set:
 
-- `seek/preview-main.js`: `__seekDump.tap`;
+- `seek/preview-main.js`: `__seekDump.tap`, and the getter `__seekDump.conv` (the current
+  conversation, read by the recorder only to notice a switch);
 - `seek/layout-cache-main.js`: `__butterLayoutCache.tap`.
 
 ### Caps and cost

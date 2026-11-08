@@ -1518,6 +1518,8 @@
     },
   });
   Object.defineProperty(window.__seekDump, 'held', { get: () => held });
+  // Dev build: the conversation the seek code is on, so the recorder can tell a switch apart.
+  Object.defineProperty(window.__seekDump, 'conv', { get: () => conv() ?? null });
   window.__seekCoverage = () => {
     const s = [...document.querySelectorAll('.thread-scroll-container')].find(
       (s) => s.clientHeight > 0,

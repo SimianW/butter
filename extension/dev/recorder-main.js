@@ -6,8 +6,36 @@
   const dump = globalThis.__seekDump,
     cache = globalThis.__butterLayoutCache;
   const recorder = ButterDevRecorder.createRecorder();
-  // The last seek update, for the active turn (capture-preview-record.js uses __seekDump's).
-  let lastSeek = null;
+
+  // Which conversation the page is on, as a per-page ordinal (0 for the one it loaded on). The
+  // seek code's own detector (__seekDump.conv) says which; its ID is compared here and never
+  // stored. A switch is recorded as a `conversation` event, before any event from the new one.
+  let convId = null,
+    conversation = 0;
+  const readConv = () => {
+    try {
+      return dump?.conv ?? null;
+    } catch {
+      return null;
+    }
+  };
+  convId = readConv();
+  const currentConversation = () => {
+    const id = readConv();
+    if (id !== convId) {
+      convId = id;
+      conversation++;
+      recorder.record('conversation', { conversation }, performance.now());
+    }
+    return conversation;
+  };
+  // ChatGPT switches chats without a page load; the seek code polls for that as well.
+  setInterval(currentConversation, 250);
+
+  // The last seek update, for the active turn (capture-preview-record.js uses __seekDump's), and
+  // the conversation of the last qualifying press. Neither is used once the conversation changes.
+  let lastSeek = null,
+    lastPress = null;
 
   // Layout-cache hooks name a turn by its key; the file has its index in the turn order instead.
   // The order is looked up again when a key is missing from it, at most once a second.
@@ -26,7 +54,10 @@
   };
 
   const listen = (type, fields, key) => {
-    if (type === 'seek') lastSeek = { ...fields };
+    const c = currentConversation();
+    if (type === 'seek') lastSeek = { fields: { ...fields }, conversation: c };
+    if (type === 'press' && Number.isInteger(fields?.sequence))
+      lastPress = { sequence: fields.sequence, conversation: c };
     const t = performance.now();
     recorder.record(type, key === undefined ? fields : { ...fields, turn: turnIndex(key) }, t);
   };
@@ -40,6 +71,7 @@
     } catch {
       return;
     }
+    const current = currentConversation();
     const now = performance.now(),
       date = new Date();
     // Butter's memory is copied here, before any of the DOM reads the snapshot runs below.
@@ -53,7 +85,7 @@
         core: globalThis.__butterSeekCore,
         heightCache: globalThis.__heightCacheDump,
         seeking: globalThis.__butterSeeking,
-        lastSeek,
+        lastSeek: lastSeek?.conversation === current ? lastSeek.fields : null,
         previewRoot: () => document.querySelector('butter-seek-preview')?.shadowRoot,
       });
     } catch {
@@ -69,7 +101,14 @@
       sources: {
         pointerHeld: () => dump.held,
         settings: () => request.settings,
-        pressDecision: () => dump.pressDecision,
+        pressDecision: () => {
+          const decision = dump.pressDecision;
+          return decision &&
+            decision.sequence === lastPress?.sequence &&
+            lastPress.conversation !== current
+            ? { unavailable: 'conversation-changed' }
+            : decision;
+        },
         turns: page.turns,
         failures: () => request.failures,
         usage: { saved: () => request.usage, ...page.usage },
