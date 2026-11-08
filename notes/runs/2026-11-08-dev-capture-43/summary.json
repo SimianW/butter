@@ -1,0 +1,15 @@
+{
+  "build": "0.1.0-alpha.15+dev.6",
+  "chromium": "156.0.8078.4",
+  "files": [
+    "butter-diag/round-1/bug-01_05-19-10.json",
+    "butter-diag/round-1/bug-02_05-19-12.json",
+    "butter-diag/round-1/bug-03_05-19-18.json"
+  ],
+  "otherTabSaved": 0,
+  "chatgptHomeSaved": 0,
+  "roundState": {
+    "bugs": 3,
+    "round": 1
+  }
+}
