@@ -429,6 +429,15 @@
       if (flat[i].abs + flat[i].h >= lo) res.push(i);
     return res;
   }
+  // History markdown shown as fallback text: drop citation tags, heading marks and bold markers, and
+  // show unordered list items as bullets. The result is only ever inserted as text nodes.
+  function fallbackText(block) {
+    return block
+      .replace(/[ \t]*<Cite\b[\s\S]*?\/>/g, '')
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/^([ \t]*)[-*+][ \t]+/gm, '$1• ')
+      .replace(/\*\*([^*]+)\*\*/g, '$1');
+  }
   // Pure fallback shared by estimated rows and measured rows whose lean text has been clipped.
   // Clamp stale/shifted model offsets and use a question or explicit placeholder if source is absent.
   function previewExcerpt(t, offset) {
@@ -564,6 +573,7 @@
     flatten,
     windowAt,
     previewExcerpt,
+    fallbackText,
     retarget,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

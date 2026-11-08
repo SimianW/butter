@@ -52,7 +52,7 @@ function fixture() {
   const turn = {
     dataset: { turnKey: 't' },
     style: {},
-    parentElement: { getBoundingClientRect: () => ({ top: 0, bottom: 520 }) },
+    parentElement: { getBoundingClientRect: () => ({ top: 0, bottom: 520, height: 520 }) },
     matches: (s) => s.includes('complete'),
     closest: () => sc,
     querySelector: (s) =>
