@@ -42,10 +42,15 @@ export default [
       'extension/storage/layout-bridge.js',
       'extension/shared/settings.js',
       'extension/consent/layout-consent.js',
+      'extension/bookmarks/notice.js',
       'extension/popup/popup.js',
       'extension/storage/layout-worker.js',
     ],
     languageOptions: { globals: { ButterStatus: 'readonly' } }, // defined in shared/status.js
+  },
+  {
+    files: ['extension/consent/layout-consent.js', 'extension/bookmarks/notice.js'],
+    languageOptions: { globals: { ButterCard: 'readonly' } }, // defined in consent/card.js
   },
   {
     files: ['extension/rail/rail.js'],

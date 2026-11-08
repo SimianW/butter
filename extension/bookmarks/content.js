@@ -1,7 +1,7 @@
 // Isolated world. Bookmarks on the page: the hover button over answer paragraphs, the client of the
 // worker's store (bookmarks/worker.js), and the marks the history rail draws (rail/rail.js). The
 // rules live in bookmarks/model.js. A conversation's bookmarks are read once when the rail shows it
-// and written on create; nothing here runs while a scrollbar drag is seeking.
+// and written on create and delete; nothing here runs while a scrollbar drag is seeking.
 (() => {
   const B = ButterBookmarks;
   // An answer's rendered content, as stream/offscreen.js finds it; its children are the paragraphs.
@@ -14,8 +14,18 @@
   const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
   const strings = (zh) =>
     zh
-      ? { add: '为这段加书签', sel: '为选中内容加书签' }
-      : { add: 'Bookmark paragraph', sel: 'Bookmark selection' };
+      ? {
+          add: '为这段加书签',
+          sel: '为选中内容加书签',
+          remove: '删除书签',
+          removeOf: (t) => `删除书签：${t}`,
+        }
+      : {
+          add: 'Bookmark paragraph',
+          sel: 'Bookmark selection',
+          remove: 'Remove bookmark',
+          removeOf: (t) => `Remove bookmark: ${t}`,
+        };
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   let TXT = strings(zh());
   const railOff = () =>
@@ -74,6 +84,8 @@
   // ---- Marks for the rail: one per question that holds bookmarks.
   let view = { conv: null, items: [] },
     rawOf = new Map(), // hashed message id -> raw id, for the conversation in view
+    hashOf = new Map(), // and back
+    shownList = [], // the bookmarks of the conversation in view
     serial = 0,
     seeking = false,
     deferred = false;
@@ -97,6 +109,8 @@
     ]);
     if (token !== serial) return;
     rawOf = new Map(hashes.map((h, i) => [h, items[i].id]));
+    hashOf = new Map(hashes.map((h, i) => [items[i].id, h]));
+    shownList = bookmarks;
     const questions = items.filter((x) => x.q != null);
     const marks = new Map();
     for (const g of B.group(
@@ -104,14 +118,18 @@
       items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
     )) {
       const first = g.bookmarks[0];
+      // `bookmarks` in answer order; `land(turn, b)` for the rail's jump, `remove(b)` for its ×.
       marks.set(questions[g.question].id, {
         count: g.bookmarks.length,
         fresh: g.bookmarks.some((b) => fresh.has(b.key)),
-        land: (turn) => locate(turn, first),
+        bookmarks: g.bookmarks,
+        land: (turn, b = first) => locate(turn, b),
+        remove: (b) => remove(owner, conv, [b]),
       });
     }
     fresh.clear();
     globalThis.ButterRail?.setMarks(conv, marks);
+    label();
   }
   document.addEventListener('butter-seek-state', (e) => {
     let m;
@@ -335,22 +353,58 @@
       list.push(r.bookmark);
       fresh.add(r.bookmark.key);
     }
+    hashOf.set(message.getAttribute('data-message-id'), msg);
+    if (owner === account && conv === view.conv) refresh();
+    // Every save, by the button or the shortcut, comes through here: the first one tells the user
+    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its segment.
+    if (r.created)
+      globalThis.ButterBookmarkNotice?.saved(r.bookmark, () => {
+        const at = list.findIndex((b) => b.key === r.bookmark.key);
+        if (at >= 0) list.splice(at, 1);
+        if (owner === account && conv === view.conv) refresh();
+      });
+  }
+  // Deletes bookmarks from the store and from the page's copy of the conversation's list.
+  async function remove(owner, conv, bookmarks) {
+    const hash = await digest(conv);
+    const done = await Promise.all(
+      bookmarks.map((b) =>
+        send('butter-bookmark-delete', { account: owner, conv: hash, key: b.key }).then(
+          (r) => r.deleted !== undefined && b.key,
+        ),
+      ),
+    );
+    const list = await listOf(owner, conv);
+    for (const key of done) {
+      const at = list.findIndex((b) => b.key === key);
+      if (key && at >= 0) list.splice(at, 1);
+    }
     if (owner === account && conv === view.conv) refresh();
   }
+  // The bookmarks anchored to a paragraph of the conversation in view.
+  const marksOf = (block) => {
+    const msg = hashOf.get(block?.closest(MESSAGE)?.getAttribute('data-message-id'));
+    const para = block?.parentElement ? [...block.parentElement.children].indexOf(block) : -1;
+    return msg && view.conv === convOfPath()
+      ? shownList.filter((b) => b.msg === msg && b.para === para)
+      : [];
+  };
 
   // ---- The hover button, in Butter's own layer over the left margin. ChatGPT's DOM is untouched.
   const ICON =
     '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.6a.3.3 0 0 1-.48.24L8 10.9l-4.02 2.94a.3.3 0 0 1-.48-.24V3a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   const CSS = `
     :host { all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 20; display: block;
-      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --tipmute: #b4b4b4; }
-    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d; --tipmute: #6b6b6b; }
+      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --tipmute: #b4b4b4; --butter: #fbe07a; --outline: #1b170f; }
+    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d; --tipmute: #6b6b6b;
+      --butter: #e3c766; --outline: var(--butter); }
     button { all: unset; position: fixed; left: var(--x); top: var(--y); box-sizing: border-box; width: 28px; height: 28px;
       border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--hoverbg); cursor: pointer;
       opacity: 0; visibility: hidden; pointer-events: none; -webkit-tap-highlight-color: transparent; }
     button.show { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .15s; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: 1px; }
     svg { width: 16px; height: 16px; }
+    button.on path { fill: var(--butter); stroke: var(--outline); }
     .tip { position: absolute; left: 0; bottom: calc(100% + 8px); white-space: nowrap; background: var(--tipbg); color: var(--tipfg);
       font: 600 12px/1 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif; padding: 7px 9px;
       border-radius: 8px; opacity: 0; pointer-events: none; }
@@ -393,19 +447,35 @@
     button.addEventListener('mousedown', (e) => e.preventDefault());
     button.addEventListener('click', () => {
       if (!target || railOff()) return;
+      // A selection that touches the paragraph is saved on its own, even in a bookmarked paragraph.
       const s = selection();
       if (s?.blocks.includes(target)) create(s.block, s);
-      else create(target);
+      else {
+        const marked = marksOf(target);
+        if (marked.length) {
+          if (account && view.conv) remove(account, view.conv, marked);
+        } else create(target);
+      }
     });
   };
-  // "Bookmark selection" while the reader's selection touches the paragraph, with the key Chrome
-  // reports for the bookmark command (none when it has no key).
+  // Three states: "Bookmark selection" while the reader's selection touches the paragraph; filled
+  // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark paragraph". The
+  // first two show the key Chrome reports for the bookmark command (none when it has no key).
   const label = () => {
     if (!host) return;
-    const text = target && selection()?.blocks.includes(target) ? TXT.sel : TXT.add;
-    button.setAttribute('aria-label', text);
-    tip.textContent = text;
-    kbd.textContent = keys;
+    const sel = !!target && !!selection()?.blocks.includes(target),
+      marked = sel ? [] : marksOf(target);
+    button.classList.toggle('on', marked.length > 0);
+    button.setAttribute(
+      'aria-label',
+      sel
+        ? TXT.sel
+        : marked.length
+          ? TXT.removeOf(marked.map((b) => b.excerpt).join(' '))
+          : TXT.add,
+    );
+    tip.textContent = sel ? TXT.sel : marked.length ? TXT.remove : TXT.add;
+    kbd.textContent = marked.length ? '' : keys;
   };
   let keys = '';
   const readKey = async () => {
