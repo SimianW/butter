@@ -106,6 +106,9 @@ class PackageTests(unittest.TestCase):
         real = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
         self.write_version(base=real)
 
+    def source_commands(self):
+        return json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))["commands"]
+
     def dev_files(self):
         return sorted(
             "butter/" + path.relative_to(self.extension).as_posix()
@@ -135,6 +138,8 @@ class PackageTests(unittest.TestCase):
             command = manifest["commands"]["save-bug"]
             self.assertEqual(command["suggested_key"]["default"], "Alt+Shift+B")
             self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
+            # The dev build keeps the store's bookmark shortcut beside its own.
+            self.assertEqual(manifest["commands"]["bookmark"], self.source_commands()["bookmark"])
             # Every script the dev manifest names is in the zip, after the store scripts it hooks.
             isolated, main = manifest["content_scripts"]
             self.assertEqual(isolated["js"][-2:], ["dev/content.js", "dev/toast.js"])
@@ -182,7 +187,8 @@ class PackageTests(unittest.TestCase):
     def test_store_and_test_packages_leave_dev_build_out(self):
         self.use_real_extension()
         source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
-        self.assertNotIn("commands", source)
+        # The store manifest's only command is the bookmark shortcut; save-bug is dev-only.
+        self.assertEqual(list(source["commands"]), ["bookmark"])
         self.assertNotIn("downloads", source["permissions"])
         self.package("--dev")
         for args in ((), ("--test", "demo")):
@@ -193,7 +199,7 @@ class PackageTests(unittest.TestCase):
                     manifest = json.loads(archive.read("butter/manifest.json"))
                 self.assertEqual([name for name in names if name.startswith("butter/dev/")], [])
                 self.assertNotIn("butter/dev/toast.js", names)
-                self.assertNotIn("commands", manifest)
+                self.assertEqual(manifest["commands"], source["commands"])
                 self.assertNotIn("downloads", manifest["permissions"])
                 self.assertEqual(manifest["background"], source["background"])
                 self.assertEqual(manifest["content_scripts"], source["content_scripts"])

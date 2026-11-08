@@ -11,9 +11,9 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
-| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
-| `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages. |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
+| `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
 | `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
 | `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
@@ -79,13 +79,15 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
 - Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset),
-  `test/bookmark-card.test.js` (the hover card's meta line, rows, five-row limit and names),
-  `test/bookmark-stale.test.js` (live and stale resolution: a regenerated answer, an edited one, a
-  vanished message, a version switched back; the all-stale segment; the stale card in both languages),
-  `test/bookmark-store.test.js` (the worker store) and `test/bookmark-notice.test.js` (the first
-  bookmark notice: copy, Undo, Got it, independence from the layout switch and consent) run under
-  `node --test`.
-  `node lab/harness/bookmarks-qa.mjs` loads the real extension in its own headless Chromium over a
+  `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
+  CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
+  line, rows, five-row limit and names), `test/bookmark-stale.test.js` (live and stale resolution: a
+  regenerated answer, an edited one, a vanished message, a version switched back; the all-stale
+  segment; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
+  relay and the key query) and `test/bookmark-notice.test.js` (the first bookmark notice: copy, Undo,
+  Got it, independence from the layout switch and consent) run under `node --test`.
+  `xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs` loads the real
+  extension in its own Chromium over a
   synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
   conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
   paragraph, the segment under its question, landing on the paragraph from the segment, reload,
@@ -100,6 +102,12 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   stale single card and its footer, jumps landing at the question's start, a switched-back version
   turning live again, and the Chinese strings, and shoots `card-stale-*` and `card-list-stale-*`
   (with the mockup set, also its `mockup-card-stale-*` and `mockup-card-list-*` to look at side by side).
+  It also bookmarks a selection with the button and with the shortcut (across paragraphs too), the
+  top paragraph with the shortcut and nothing selected, and nothing for a selection in a question,
+  each landing on its text, and checks that the tooltip shows the key Chrome reports and no hint once
+  the key is cleared in `chrome://extensions/shortcuts`. Under an X display it runs headed and
+  presses the real key through XTest (`xtest-keys.py`); without one it runs headless and asks the
+  worker to relay the command instead, which skips Chrome's key handling.
   It then drives the first bookmark notice in light and dark, English and Chinese:
   Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
   and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
@@ -198,11 +206,22 @@ stored ones also carry their `key`.
 | `butter-bookmark-list` | `account`, `conv` | `{ bookmarks }` for that conversation |
 | `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
 | `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
+| `butter-bookmark-key` | None | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
 
 Unknown or raw account/conversation ids get `{ error: 'bookmark-identity' }`, a malformed bookmark or
 another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
 `{ error: 'bookmark-storage' }` (retry the same request up to three times). None of these depend on
 the layout setting, `layoutConsent` or layout Clear.
+
+The `bookmark` command (manifest `commands`, suggested key Alt+Shift+M, Option+Shift+M on a Mac,
+rebindable in `chrome://extensions/shortcuts`) makes the worker send `{ version: 1, type:
+'butter-bookmark-shortcut' }` to the tab it was pressed in. The content script bookmarks the selection
+inside one answer (anchored to its first paragraph), or with nothing selected the first answer
+paragraph whose top is at or below ChatGPT's 52 px header; a selection outside the answers creates
+nothing. Alt+Shift+M is in neither Chrome's accelerator table (Windows, Linux; on a Mac Chrome binds
+no Option+Shift letter) nor ChatGPT's documented shortcuts, and is not the dev build's Alt+Shift+B,
+which Chrome reserves on Windows and Linux for its bookmarks bar. `--dev` zips keep the `bookmark`
+command beside `save-bug`.
 
 On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
 it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever it renders
@@ -226,7 +245,7 @@ stale row grey with "answer changed", and a single stale bookmark with "Bookmark
 grey text and a footer saying a click opens its question instead.
 
 The rail draws the hover card for a segment from `ButterBookmarks.card(bookmarks, at, zh)`
-(`{ single, meta, rows, visible, label }`); the card takes the pointer while it shows bookmarks.
+(`{ single, meta, rows, visible, label, stale, warn, tag }`); the card takes the pointer while it shows bookmarks.
 Keyboard: the arrow keys walk the ticks and, after a question's tick, its segment; ArrowLeft enters
 the card, arrows move between rows, Enter jumps, Tab reaches a row's ×, Delete removes the row, and
 ArrowRight or Escape returns to the segment. A segment whose last bookmark is deleted fades out over

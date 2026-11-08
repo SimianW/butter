@@ -11,11 +11,18 @@
   const MESSAGE = '[data-message-author-role="assistant"][data-message-id]';
   const SHOW_AFTER = 120; // ms of hover before the button fades in
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
+  const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
   const strings = (zh) =>
     zh
-      ? { add: '为这段加书签', remove: '删除书签', removeOf: (t) => `删除书签：${t}` }
+      ? {
+          add: '为这段加书签',
+          sel: '为选中内容加书签',
+          remove: '删除书签',
+          removeOf: (t) => `删除书签：${t}`,
+        }
       : {
           add: 'Bookmark paragraph',
+          sel: 'Bookmark selection',
           remove: 'Remove bookmark',
           removeOf: (t) => `Remove bookmark: ${t}`,
         };
@@ -209,38 +216,139 @@
     }
     return nodes;
   };
+  const textOf = (block) =>
+    textNodes(block)
+      .map((x) => x.n.data)
+      .join('');
   // A rendered answer's paragraphs, as text.
   const paragraphs = (message) => {
     const answer = message.querySelector(ANSWER);
-    return answer
-      ? [...answer.children].map((p) =>
-          textNodes(p)
-            .map((x) => x.n.data)
-            .join(''),
-        )
-      : undefined;
+    return answer ? [...answer.children].map(textOf) : undefined;
   };
-  // The paragraph's text and where its first rendered lines end, measured character by character.
-  const lines = (block) => {
-    const nodes = textNodes(block),
-      r = document.createRange(),
+  // Where the first rendered lines of a run of text end, measured character by character. `parts`
+  // are `{ block, from, to }` ranges in paragraph offsets, in order; the run's text joins them with
+  // one separator each, as ButterBookmarks.anchor does, and `ends` are offsets into that text.
+  const measure = (parts) => {
+    const r = document.createRange(),
       ends = [];
     let top = null,
-      mid = 0;
-    for (const { n, start } of nodes)
-      for (let i = 0; i < n.data.length && ends.length < 3 && start + i < MEASURE; i++) {
-        if (/\s/.test(n.data[i])) continue;
-        r.setStart(n, i);
-        r.setEnd(n, i + 1);
-        const q = r.getClientRects()[0];
-        if (!q?.height) continue;
-        if (top !== null && q.top > mid) ends.push(start + i);
-        if (top === null || q.top > mid) {
-          top = q.top;
-          mid = q.top + q.height / 2;
+      mid = 0,
+      base = 0;
+    for (const { block, from, to } of parts) {
+      for (const { n, start } of textNodes(block)) {
+        if (start + n.data.length <= from) continue;
+        for (let i = Math.max(0, from - start); i < n.data.length && start + i < to; i++) {
+          if (ends.length >= 3 || base + start + i - from >= MEASURE) return ends;
+          if (/\s/.test(n.data[i])) continue;
+          r.setStart(n, i);
+          r.setEnd(n, i + 1);
+          const q = r.getClientRects()[0];
+          if (!q?.height) continue;
+          if (top !== null && q.top > mid) ends.push(base + start + i - from);
+          if (top === null || q.top > mid) {
+            top = q.top;
+            mid = q.top + q.height / 2;
+          }
         }
       }
-    return { text: nodes.map((x) => x.n.data).join(''), ends };
+      base += to - from + 1;
+    }
+    return ends;
+  };
+  // A range boundary (node, offset) as an offset into the block's rendered text.
+  const offsetOf = (block, node, offset) => {
+    const nodes = textNodes(block),
+      own = nodes.find((x) => x.n === node);
+    if (own) return own.start + Math.min(offset, node.data.length);
+    const r = document.createRange();
+    r.setStart(node, offset);
+    let at = 0;
+    for (const x of nodes)
+      if (r.comparePoint(x.n, 0) < 0) at = x.start + x.n.data.length;
+      else break;
+    return at;
+  };
+  // The reader's selection inside one answer, as a bookmark's range: anchored to its first
+  // paragraph, ending at that answer's last selected paragraph. `blocks` are the paragraphs it
+  // touches. Null when nothing is selected or the selection holds no answer text.
+  const selection = () => {
+    const s = getSelection();
+    if (!s || s.isCollapsed || !s.rangeCount) return null;
+    const r = s.getRangeAt(0),
+      common = r.commonAncestorContainer,
+      el = common.nodeType === Node.ELEMENT_NODE ? common : common.parentElement;
+    if (!el) return null;
+    const inside = el.closest(BLOCK);
+    let blocks = inside
+      ? [inside]
+      : [...el.querySelectorAll(BLOCK)].filter((b) => r.intersectsNode(b));
+    blocks = blocks.filter(
+      (b) => b.closest(MESSAGE) && b.parentElement === blocks[0].parentElement,
+    );
+    if (!blocks.length) return null;
+    const siblings = [...blocks[0].parentElement.children],
+      first = blocks[0],
+      last = blocks.at(-1),
+      paras = [];
+    for (const b of blocks) paras[siblings.indexOf(b)] = textOf(b);
+    const from = siblings.indexOf(first),
+      to = siblings.indexOf(last);
+    const a = B.anchor(
+      paras,
+      {
+        para: from,
+        offset: first.contains(r.startContainer)
+          ? offsetOf(first, r.startContainer, r.startOffset)
+          : 0,
+      },
+      {
+        para: to,
+        offset: last.contains(r.endContainer)
+          ? offsetOf(last, r.endContainer, r.endOffset)
+          : paras[to].length,
+      },
+    );
+    if (!a) return null;
+    const parts = [];
+    for (let p = a.para; p <= a.last.para; p++)
+      parts.push({
+        block: siblings[p],
+        from: p === a.para ? a.start : 0,
+        to: p === a.last.para ? a.last.offset : paras[p].length,
+      });
+    return {
+      block: siblings[a.para],
+      blocks,
+      start: a.start,
+      end: a.end,
+      excerpt: B.excerpt(a.text, measure(parts)),
+    };
+  };
+  // With nothing selected: the first answer paragraph whose top is at or below ChatGPT's header.
+  // Turns off screen skip layout (stream/containment.css), so their blocks' boxes are stale: only
+  // the turns showing below the header are read, and only their answers' blocks measured.
+  const topBlock = () => {
+    const turns = [...document.querySelectorAll('[data-turn-key]')],
+      boxes = turns.map((t) => t.getBoundingClientRect()),
+      seen = boxes.findIndex((b) => b.height && b.bottom > HEADER);
+    if (seen < 0) return null;
+    let scroller = turns[seen].parentElement;
+    while (
+      scroller &&
+      !(
+        scroller.scrollHeight > scroller.clientHeight &&
+        /auto|scroll/.test(getComputedStyle(scroller).overflowY)
+      )
+    )
+      scroller = scroller.parentElement;
+    const box = scroller?.getBoundingClientRect(),
+      line = Math.max(0, box?.top ?? 0) + HEADER,
+      bottom = box?.bottom ?? innerHeight;
+    const blocks = turns
+      .filter((t, i) => boxes[i].height && boxes[i].bottom > line && boxes[i].top < bottom)
+      .flatMap((t) => [...t.querySelectorAll(BLOCK)].filter((b) => b.closest(MESSAGE)));
+    const tops = blocks.map((b) => b.getBoundingClientRect().top);
+    return blocks[B.topParagraph(tops, line)] ?? null;
   };
   // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
   // the question's start) when it is stale now: its answer, paragraph or text no longer there.
@@ -262,15 +370,18 @@
     return top - turn.getBoundingClientRect().top;
   };
 
-  async function create(block) {
+  // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt }`) within it.
+  async function create(block, range = null) {
     const message = block.closest(MESSAGE),
       turn = block.closest('[data-turn-key]'),
       conv = convOfPath(),
       owner = account;
     if (!message || !turn || !conv || !owner || !block.parentElement) return;
     const para = [...block.parentElement.children].indexOf(block),
-      { text, ends } = lines(block),
-      excerpt = B.excerpt(text, ends);
+      text = textOf(block),
+      excerpt = range
+        ? range.excerpt
+        : B.excerpt(text, measure([{ block, from: 0, to: text.length }]));
     if (!excerpt) return;
     const questions = view.conv === conv ? view.items.filter((x) => x.q != null) : [];
     const [convHash, msg] = await Promise.all([
@@ -286,8 +397,8 @@
         questions.findIndex((x) => x.id === turn.getAttribute('data-turn-key')),
       ),
       para,
-      start: 0,
-      end: text.length,
+      start: range ? range.start : 0,
+      end: range ? range.end : text.length,
       excerpt,
       time: Date.now(),
     };
@@ -340,8 +451,8 @@
     '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.6a.3.3 0 0 1-.48.24L8 10.9l-4.02 2.94a.3.3 0 0 1-.48-.24V3a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   const CSS = `
     :host { all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 20; display: block;
-      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --butter: #fbe07a; --outline: #1b170f; }
-    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d;
+      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --tipmute: #b4b4b4; --butter: #fbe07a; --outline: #1b170f; }
+    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d; --tipmute: #6b6b6b;
       --butter: #e3c766; --outline: var(--butter); }
     button { all: unset; position: fixed; left: var(--x); top: var(--y); box-sizing: border-box; width: 28px; height: 28px;
       border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--hoverbg); cursor: pointer;
@@ -353,11 +464,14 @@
     .tip { position: absolute; left: 0; bottom: calc(100% + 8px); white-space: nowrap; background: var(--tipbg); color: var(--tipfg);
       font: 600 12px/1 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif; padding: 7px 9px;
       border-radius: 8px; opacity: 0; pointer-events: none; }
+    .tip kbd { font: inherit; color: var(--tipmute); margin-left: 8px; }
+    .tip kbd:empty { display: none; }
     button:hover .tip, button:focus-visible .tip { opacity: 1; }
     @media (prefers-reduced-motion: reduce) { button.show { transition: none; } }`;
   let host = null,
     button,
     tip,
+    kbd,
     target = null, // the paragraph the button is shown for
     zone = null, // its box extended over the margin to the button: the pointer may cross it
     waiting = null,
@@ -365,9 +479,10 @@
   const build = () => {
     host = document.createElement('chatgpt-butter-bookmark');
     const root = host.attachShadow({ mode: 'open' });
-    root.innerHTML = `<style>${CSS}</style><button type="button">${ICON}<span class="tip"></span></button>`;
+    root.innerHTML = `<style>${CSS}</style><button type="button">${ICON}<span class="tip"><span></span><kbd></kbd></span></button>`;
     button = root.querySelector('button');
-    tip = root.querySelector('.tip');
+    tip = root.querySelector('.tip span');
+    kbd = root.querySelector('.tip kbd');
     label();
     document.body.append(host);
     const dark = () =>
@@ -388,23 +503,47 @@
     button.addEventListener('mousedown', (e) => e.preventDefault());
     button.addEventListener('click', () => {
       if (!target || railOff()) return;
-      const marked = marksOf(target);
-      if (marked.length) {
-        if (account && view.conv) remove(account, view.conv, marked);
-      } else create(target);
+      // A selection that touches the paragraph is saved on its own, even in a bookmarked paragraph.
+      const s = selection();
+      if (s?.blocks.includes(target)) create(s.block, s);
+      else {
+        const marked = marksOf(target);
+        if (marked.length) {
+          if (account && view.conv) remove(account, view.conv, marked);
+        } else create(target);
+      }
     });
   };
-  // A bookmarked paragraph shows the button filled: clicking it removes the paragraph's bookmarks.
+  // Three states: "Bookmark selection" while the reader's selection touches the paragraph; filled
+  // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark paragraph". The
+  // first two show the key Chrome reports for the bookmark command (none when it has no key).
   const label = () => {
     if (!host) return;
-    const marked = marksOf(target);
+    const sel = !!target && !!selection()?.blocks.includes(target),
+      marked = sel ? [] : marksOf(target);
     button.classList.toggle('on', marked.length > 0);
     button.setAttribute(
       'aria-label',
-      marked.length ? TXT.removeOf(marked.map((b) => b.excerpt).join(' ')) : TXT.add,
+      sel
+        ? TXT.sel
+        : marked.length
+          ? TXT.removeOf(marked.map((b) => b.excerpt).join(' '))
+          : TXT.add,
     );
-    tip.textContent = marked.length ? TXT.remove : TXT.add;
+    tip.textContent = sel ? TXT.sel : marked.length ? TXT.remove : TXT.add;
+    kbd.textContent = marked.length ? '' : keys;
   };
+  let keys = '';
+  const readKey = async () => {
+    try {
+      const r = await chrome.runtime.sendMessage({ version: 1, type: 'butter-bookmark-key' });
+      keys = B.keyHint(r?.shortcut);
+    } catch {}
+    label();
+  };
+  document.addEventListener('selectionchange', () => {
+    if (target) label();
+  });
   function hide() {
     clearTimeout(timer);
     waiting = null;
@@ -436,6 +575,7 @@
     button.classList.add('show');
     target = block;
     label();
+    readKey(); // the reader may have changed it in Chrome's shortcut settings since
     // The first scroll puts the button away; pointer moves over the paragraph keep it in place
     // when content above it changes size.
     addEventListener('scroll', hide, { capture: true, passive: true, once: true });
@@ -478,5 +618,21 @@
     TXT = strings(zh());
     label();
     if (railOff()) hide();
+  });
+
+  // ---- The bookmark shortcut (a Chrome command; bookmarks/worker.js relays it to this tab). It
+  // bookmarks the selection inside one answer, or with nothing selected the paragraph at the top.
+  // A selection outside the answers creates nothing.
+  chrome.runtime.onMessage.addListener((m) => {
+    if (m?.type !== 'butter-bookmark-shortcut' || m.version !== 1) return;
+    if (railOff() || !account || seeking || !convOfPath()) return;
+    const s = getSelection();
+    if (s && !s.isCollapsed) {
+      const range = selection();
+      if (range) create(range.block, range);
+      return;
+    }
+    const block = topBlock();
+    if (block) create(block);
   });
 })();
