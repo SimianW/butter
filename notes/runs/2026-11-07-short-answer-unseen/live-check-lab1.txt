@@ -1,0 +1,92 @@
+{
+  "recording": {
+    "recorder": {
+      "observed": true,
+      "generating": false,
+      "queued": false,
+      "measuring": false,
+      "attempted": true,
+      "lastRejection": null
+    },
+    "hasRecord": true,
+    "items": 29,
+    "blocks": 26,
+    "rejections": {}
+  },
+  "preview": {
+    "active": true,
+    "notice": false,
+    "decision": {
+      "schema": 1,
+      "sequence": 1,
+      "phase": "press",
+      "fiberFound": true,
+      "idsFromFallback": false,
+      "idsReason": null,
+      "modelLength": 1,
+      "scroller": {
+        "matchesThreadScroller": true,
+        "threadScrollerCount": 1,
+        "threadScrollerSw": 1238,
+        "swBefore": 1238,
+        "sw": 1238,
+        "clientHeight": 860,
+        "scrollHeight": 2110
+      },
+      "turns": [
+        {
+          "index": 0,
+          "mounted": true,
+          "rowHeightAtPrepare": 1920,
+          "measuredHeight": 1920,
+          "rowH": 1920,
+          "recordSw": 1238,
+          "items": 29,
+          "fromStorage": false,
+          "modelTop": 32,
+          "modelHeight": 1920,
+          "layout": true,
+          "layoutReason": null,
+          "cache": {
+            "before": {
+              "hasRecord": true,
+              "convMatches": true,
+              "items": 29,
+              "blocks": 26,
+              "sw": 1238,
+              "rowH": 1920,
+              "fromStorage": false
+            },
+            "after": {
+              "hasRecord": true,
+              "convMatches": true,
+              "items": 29,
+              "blocks": 26,
+              "sw": 1238,
+              "rowH": 1920,
+              "fromStorage": false
+            },
+            "recordChanged": false,
+            "storedAvailable": false,
+            "retiredStored": false,
+            "reason": null
+          }
+        }
+      ],
+      "render": {
+        "prepareSequence": 1,
+        "modelLength": 1,
+        "turnIndex": 0,
+        "layout": true,
+        "unseen": false,
+        "top": 1250,
+        "insetTop": 0,
+        "previewTop": 1218
+      },
+      "recordCount": 1,
+      "storedTurns": 0,
+      "mountedTurns": 1
+    }
+  }
+}
+PASS fully read single citation answer has a record and no unseen notice

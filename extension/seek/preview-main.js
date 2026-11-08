@@ -244,9 +244,13 @@
       storedTurns: 0,
     };
     const sw = s.clientWidth;
+    // A mounted row's live height is the truth; ChatGPT's height map can hold a stale value for it
+    // (macOS: 266 for a settled 1896 row). Unmounted turns still use the virtualizer heights.
+    const rowHeights = new Map(rows.map(({ id, r }) => [id, r.height]));
+    const heights = { ...fib?.heights, ...Object.fromEntries(rowHeights) };
     const model = core.buildModel({
       ids,
-      measured: fib?.heights || {},
+      measured: heights,
       records,
       texts: tx.byId,
       scrollHeight: s.scrollHeight,
@@ -258,7 +262,6 @@
     decision.recordCount = Object.keys(records).length;
     decision.storedTurns = storedTurns;
     decision.mountedTurns = rows.length;
-    const rowHeights = new Map(rows.map(({ id, r }) => [id, r.height]));
     decision.turns = model.map((t, index) => {
       const r = records[t.id],
         measuredHeight = fib?.heights[t.id] || 0,
@@ -276,7 +279,7 @@
         modelTop: number(t.top),
         modelHeight: number(t.h),
         layout: t.layout,
-        layoutReason: cacheDecision?.reason || core.layoutReason(r, measuredHeight, sw),
+        layoutReason: cacheDecision?.reason || core.layoutReason(r, heights[t.id] || 0, sw),
         cache: cacheDecision ?? null,
       };
     });
@@ -480,10 +483,7 @@
           if (!block) continue;
           const heading = /^#{1,6}\s+/.test(block);
           const paragraph = document.createElement(heading ? 'h4' : 'p');
-          estimatedContent(
-            paragraph,
-            block.replace(/^#{1,6}\s+/, '').replace(/\*\*([^*]+)\*\*/g, '$1'),
-          );
+          estimatedContent(paragraph, core.fallbackText(block));
           answer.append(paragraph);
         }
         est.append(q, answer);
