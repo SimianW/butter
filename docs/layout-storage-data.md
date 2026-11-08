@@ -1,7 +1,8 @@
 # Persisted data inventory
 
-This is a factual implementation inventory, not a replacement privacy policy. No chat text,
-raw account id, auth token or cookie is persisted. All processing and storage remain on the device;
+This is a factual implementation inventory, not a replacement privacy policy. No raw account id,
+auth token or cookie is persisted. The only chat text persisted is a bookmark's excerpt (below):
+at most the first three rendered lines, capped at 240 characters, of what the user bookmarked. All processing and storage remain on the device;
 Butter has no network sender. The observer clones responses the page already requested and selects
 only the appropriate user-id field; it never accesses credential fields or cookies.
 
@@ -81,3 +82,26 @@ from chat text. Pending usage returns zero.
   extension-owned layouts. The lab removes all extension keys and its experimental database at end.
 - Preview/source text lives only in page memory and is not included in runtime geometry messages.
   Raw lab captures remain under `/tmp`; they are not part of the extension or committed docs.
+
+## Object store `bookmarks` (database version 2)
+
+Written only when the user bookmarks a paragraph, and deleted only by the user or by uninstalling.
+Independent of the layout setting, `layoutConsent`, TTL, the byte cap, eviction and layout Clear.
+`storage/layout-worker.js` imports `bookmarks/worker.js`, which owns this store; each row is
+rebuilt through the allowlist in `bookmarks/model.js` (`ButterBookmarks.clean`) before it is written
+or returned.
+
+| Field | Shape/example (synthetic) | Derivation |
+|---|---|---|
+| `account` | 64 lowercase hexadecimal characters | SHA-256 of the ChatGPT user id, as for layouts. Unknown accounts are rejected. |
+| `conv` | 64 lowercase hexadecimal characters | SHA-256 of the conversation id. |
+| `msg` | 64 lowercase hexadecimal characters | SHA-256 of the assistant message id the bookmark is in. |
+| `turn` | `6` | Index of the bookmark's question in the chat when it was made (0 = first question). |
+| `para` | `3` | Index of the paragraph among the answer's top-level rendered blocks. |
+| `start`, `end` | `0`, `412` | Character range within the paragraph's rendered text; the whole paragraph is `0` to its length. |
+| `excerpt` | `"Fixture answer 7 paragraph 3: the planner compares…"` | **Chat text the user chose**: the marked text cut to its first three rendered lines and at most 240 characters, whitespace collapsed. |
+| `time` | `1793740000000` | Creation time in milliseconds since Unix epoch. |
+| `key` | JSON string of `[account,conv,msg,para,start,end]` | Identity: the same paragraph and range is one bookmark. |
+
+An index named `conversation` indexes `[account,conv]`, as for `geometry`.
+

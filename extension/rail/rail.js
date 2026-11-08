@@ -130,6 +130,7 @@
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur); // a new chat got its id
     convId = c;
     cur = c ? stateOf(c) : { items: [], hasPrev: false };
+    marks = new Map();
     clearTimeout(seekTimer);
     seek = null;
     pos.clear();
@@ -463,9 +464,9 @@
     :host { all: initial; position: fixed; top: 0; right: 0; width: 0; height: 0; z-index: 20; display: block;
       color: #0d0d0d; font: 13px/1.45 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
       --surface: #fff; --line: rgb(0 0 0 / .08); --muted: #8f8f8f; --streak: rgb(0 0 0 / .09);
-      --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08); }
+      --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08); --page: #fff; --butter: #fbe07a; }
     :host([data-dark]) { color: #ececec; --surface: #2f2f2f; --line: rgb(255 255 255 / .1); --muted: #a3a3a3; --streak: rgb(255 255 255 / .1);
-      --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3); }
+      --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3); --page: #212121; --butter: #e3c766; }
     .rail { position: absolute; top: 0; right: 0; width: ${RAIL_W}px; box-sizing: border-box; padding: ${PAD}px 6px;
       transform: translate(calc(-1 * var(--r)), var(--y)); opacity: 0; pointer-events: none; will-change: transform;
       transition: opacity .3s; }
@@ -486,6 +487,14 @@
     .bar { width: 12px; height: 2px; border-radius: 2px; background: currentColor; opacity: ${REST.o};
       transform-origin: right center; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: -1px; border-radius: 4px; }
+    .marks { position: absolute; inset: 0; pointer-events: none; }
+    .mark { position: absolute; right: 6px; top: 0; width: 8px; height: 2px; border-radius: 2px; background: var(--butter);
+      box-shadow: 0 0 0 1px var(--page); transform-origin: right center; }
+    .rail.hot .mark { box-shadow: 0 0 0 1px var(--surface); }
+    .mark.hover { width: 12px; }
+    .mark.new { animation: mark-in .18s cubic-bezier(.2, .8, .2, 1), mark-pulse .6s .18s; }
+    @keyframes mark-in { from { transform: scaleX(0); } }
+    @keyframes mark-pulse { 50% { box-shadow: 0 0 0 1px var(--page), 0 0 0 5px color-mix(in srgb, var(--butter) 35%, transparent); } }
     .cardpos { position: absolute; top: 0; right: 0; pointer-events: none;
       transform: translate(calc(-1 * var(--r) - ${RAIL_W + 8}px), var(--cy));
       transition: transform .18s cubic-bezier(.2, .8, .2, 1); }
@@ -510,12 +519,13 @@
     .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
       background: var(--streak); will-change: transform;
       -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
-    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .tick.busy .bar { animation: none; } }`;
+    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .tick.busy .bar, .mark.new { animation: none; } }`;
 
   let host = null,
     rail,
     more,
     tickBox,
+    markBox,
     cardPos,
     card,
     meta,
@@ -535,13 +545,14 @@
     const root = host.attachShadow({ mode: 'open' });
     root.innerHTML =
       `<style>${CSS}</style><nav class="rail" aria-label="${TXT.label}"><div class="pill"></div>` +
-      `<button class="more" aria-label="${TXT.more}"><i></i><i></i><i></i></button><div class="ticks"></div></nav>` +
+      `<button class="more" aria-label="${TXT.more}"><i></i><i></i><i></i></button><div class="ticks"></div><div class="marks" aria-hidden="true"></div></nav>` +
       `<div class="cardpos instant"><div class="card" role="tooltip"><div class="meta"></div><div class="text"></div></div></div>` +
       `<div class="warp"><div class="streak"></div></div>`;
-    [rail, more, tickBox, cardPos, card, meta, text, warp, streak] = [
+    [rail, more, tickBox, markBox, cardPos, card, meta, text, warp, streak] = [
       '.rail',
       '.more',
       '.ticks',
+      '.marks',
       '.cardpos',
       '.card',
       '.meta',
@@ -571,11 +582,14 @@
     });
     rail.addEventListener('pointermove', (e) => {
       pointerY = e.clientY;
-      hover(indexAt(e.clientY));
+      const m = markAt(e.clientY);
+      hoverMark(m);
+      hover(m >= 0 ? m : indexAt(e.clientY));
       kick();
     });
     rail.addEventListener('pointerleave', () => {
       rail.classList.remove('hot');
+      hoverMark(-1);
       pointerY = null;
       hover(-2);
       kick();
@@ -590,8 +604,15 @@
     rail.addEventListener('click', (e) => {
       if (railOff()) return;
       endOpening();
+      const m = e.detail === 0 ? -1 : markAt(e.clientY);
       const i =
-        e.target === more ? -1 : e.detail === 0 ? ticks.indexOf(e.target) : indexAt(e.clientY);
+        m >= 0
+          ? m
+          : e.target === more
+            ? -1
+            : e.detail === 0
+              ? ticks.indexOf(e.target)
+              : indexAt(e.clientY);
       // The click starts the trip: put the card away until the pointer comes back to the rail. While
       // the page is busy, moves on the way out and the leave event arrive late and would hold it up.
       if (i >= -1 && e.detail !== 0) {
@@ -599,6 +620,7 @@
         held = true;
       }
       if (i === -1) loadEarlier();
+      else if (m >= 0) jump(i, false, marks.get(qs[i].id)?.land);
       else if (i >= 0) jump(i);
     });
     rail.addEventListener('keydown', (e) => {
@@ -619,6 +641,61 @@
     return Math.max(0, Math.min(qs.length - 1, Math.floor(r)));
   };
   const tickY = (i) => geo.top + (i + 0.5) * geo.pitch;
+
+  // ---- Bookmark segments: one under each question that holds bookmarks (bookmarks/content.js
+  // sends them). They stay out of the hover wave; within 4 px the segment wins the pointer.
+  let marks = new Map(), // question id -> { count, fresh, land(turn) -> px below the turn's top }
+    hotMark = -1;
+  const markEls = new Map();
+  const markY = (i) => tickY(i) + ButterBookmarks.segmentOffset(geo.pitch);
+  const markAt = (y) => {
+    if (!geo || !marks.size) return -1;
+    let best = -1;
+    for (const id of marks.keys()) {
+      const i = idxOf.get(id);
+      if (
+        i != null &&
+        Math.abs(markY(i) - y) <= 4 &&
+        (best < 0 || Math.abs(markY(i) - y) < Math.abs(markY(best) - y))
+      )
+        best = i;
+    }
+    return best;
+  };
+  const hoverMark = (i) => {
+    if (i === hotMark) return;
+    markEls.get(qs[hotMark]?.id)?.classList.remove('hover');
+    hotMark = i;
+    markEls.get(qs[i]?.id)?.classList.add('hover');
+  };
+  const drawMarks = () => {
+    for (const [id, el] of markEls)
+      if (!marks.has(id) || !idxOf.has(id) || !geo) {
+        el.remove();
+        markEls.delete(id);
+      }
+    if (!geo) return;
+    for (const [id, m] of marks) {
+      const i = idxOf.get(id);
+      if (i == null) continue;
+      let el = markEls.get(id);
+      if (!el) {
+        el = document.createElement('span');
+        el.className = m.fresh ? 'mark new' : 'mark';
+        markBox.append(el);
+        markEls.set(id, el);
+      }
+      el.style.top = `${(markY(i) - geo.y - 1).toFixed(2)}px`;
+      el.classList.toggle('hover', i === hotMark);
+    }
+  };
+  globalThis.ButterRail = {
+    setMarks(conv, next) {
+      if (conv !== convId) return;
+      marks = next;
+      if (host) drawMarks();
+    },
+  };
 
   let seek = null,
     seekTimer;
@@ -845,6 +922,8 @@
     const h = 2 * PAD + moreH + n * pitch;
     const y = Math.round((top + bottom) / 2 - h / 2);
     geo = { y, top: y + PAD + moreH, pitch };
+    globalThis.ButterBookmarkPage?.sync(convId, cur.items);
+    drawMarks();
     more.hidden = !cur.hasPrev;
     host.style.setProperty(
       '--r',
@@ -958,6 +1037,10 @@
     return y(lo) + ((y(hi) - y(lo)) * (i - lo)) / (hi - lo);
   };
 
+  // A bookmark jump lands on the bookmarked text instead of the question: px below the turn's top.
+  let landing = null;
+  const landOff = (el) =>
+    (landing && el.getAttribute('data-turn-key') === landing.id && landing.land(el)) || 0;
   const targetTop = (el, off = 0) =>
     Math.max(
       0,
@@ -967,11 +1050,13 @@
           el.getBoundingClientRect().top -
           sc.getBoundingClientRect().top -
           TOP_INSET +
-          off,
+          off +
+          landOff(el),
       ),
     );
 
-  const jump = async (i, earlier = false) => {
+  const jump = async (i, earlier = false, land = null) => {
+    landing = land && !earlier ? { id: qs[i].id, land } : null;
     // Repeated input for the current destination keeps its in-progress readiness work.
     // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
     if (!earlier && trip && !journey?.earlier && busyId === qs[i].id) return;
@@ -1195,7 +1280,10 @@
         state.top = top;
         state.since = performance.now();
       }
-      const t = Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, top - TOP_INSET + off));
+      const t = Math.max(
+        0,
+        Math.min(sc.scrollHeight - sc.clientHeight, top - TOP_INSET + off + landOff(el)),
+      );
       if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t;
       if (performance.now() - state.since >= span) return el;
       await frame();

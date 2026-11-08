@@ -11,10 +11,12 @@ function workerFixture({
 } = {}) {
   const disk = new Map(),
     state = new Map(),
+    marks = new Map(),
     changes = [],
     events = [],
     settings = { butter: initialSettings };
-  let listener, changed;
+  let changed;
+  const listeners = [];
   const counters = { opens: 0, reads: 0, writes: 0 };
   const database = {
     transaction() {
@@ -25,7 +27,7 @@ function workerFixture({
         completion = setImmediate(() => tx.oncomplete?.());
       };
       tx.objectStore = (name) => {
-        const data = name === 'state' ? state : disk;
+        const data = name === 'state' ? state : name === 'bookmarks' ? marks : disk;
         const req = (fn) => {
           const r = {};
           touch();
@@ -69,7 +71,7 @@ function workerFixture({
     },
   };
   const chrome = {
-    runtime: { id: 'butter-test', onMessage: { addListener: (fn) => (listener = fn) } },
+    runtime: { id: 'butter-test', onMessage: { addListener: (fn) => listeners.push(fn) } },
     storage: {
       local: {
         get: async () => structuredClone(settings),
@@ -87,7 +89,6 @@ function workerFixture({
     },
   };
   const ctx = {
-    importScripts() {},
     ButterLayoutCodec: codec,
     ButterStatus: require('../../extension/shared/status.js'),
     crypto,
@@ -112,23 +113,43 @@ function workerFixture({
     'utf8',
   );
   if (cap) source = source.replace('50_000_000', String(cap));
-  vm.runInNewContext(source, ctx);
+  // The worker's imports are globals here, except the bookmark store, which runs in the worker.
+  const boot = (c) => {
+    vm.createContext(c);
+    c.importScripts = (...files) => {
+      for (const file of files)
+        if (file.startsWith('../bookmarks/'))
+          vm.runInContext(
+            fs.readFileSync(path.join(__dirname, '../../extension/storage', file), 'utf8'),
+            c,
+          );
+    };
+    vm.runInContext(source, c);
+  };
+  boot(ctx);
   return {
     disk,
     state,
-    restart: () => vm.runInNewContext(source, { ...ctx }),
+    marks,
+    restart: () => {
+      listeners.length = 0; // the old worker is gone
+      boot({ ...ctx });
+    },
     counters,
     changes,
     settings,
     events,
     message: (message, sender = { id: 'butter-test' }) =>
       new Promise((resolve) => {
-        const handled = listener(
-          { version: 1, requestId: crypto.randomUUID(), ...message },
-          sender,
-          resolve,
-        );
-        if (!handled) resolve(undefined);
+        // As in Chrome: every listener sees the message, and the first response wins.
+        const m = { version: 1, requestId: crypto.randomUUID(), ...message };
+        let responded = false;
+        const respond = (x) => {
+          if (!responded) resolve(x);
+          responded = true;
+        };
+        const handled = listeners.map((fn) => fn(m, sender, respond)).some((x) => x === true);
+        if (!handled && !responded) resolve(undefined);
       }),
     setting: (layout) => {
       settings.butter = { layoutConsent: 'granted', opts: { layout } };

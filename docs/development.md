@@ -11,6 +11,9 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, the rail segment's offset. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
+| `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
@@ -73,6 +76,14 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
+- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset)
+  and `test/bookmark-store.test.js` (the worker store) run under `node --test`.
+  `node lab/harness/bookmarks-qa.mjs` loads the real extension in its own headless Chromium over a
+  synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
+  conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
+  paragraph, the segment under its question, landing on the paragraph from the segment, reload,
+  duplicates, one read per conversation and none while scrolling, dark theme, and the rail off or
+  Butter paused. Screenshots and `summary.json` go to `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.
@@ -151,6 +162,31 @@ The popup shows usage below Remember long-chat layouts and confirms Clear inline
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can
 save again while the setting is on. Set the option false for a persistent opt-out.
+
+## Bookmarks store API
+
+Version-1 runtime messages from content scripts to the service worker (`bookmarks/worker.js`),
+on the layout store's queue. Ids are SHA-256 hex, as layouts hash them; a bookmark is
+`{ account, conv, msg, turn, para, start, end, excerpt, time }` (see
+[layout-storage-data.md](layout-storage-data.md#object-store-bookmarks-database-version-2)), and
+stored ones also carry their `key`.
+
+| Request `type` | Fields | Response |
+|---|---|---|
+| `butter-bookmark-list` | `account`, `conv` | `{ bookmarks }` for that conversation |
+| `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
+| `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
+
+Unknown or raw account/conversation ids get `{ error: 'bookmark-identity' }`, a malformed bookmark or
+another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
+`{ error: 'bookmark-storage' }` (retry the same request up to three times). None of these depend on
+the layout setting, `layoutConsent` or layout Clear.
+
+On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
+it, and the rail calls `ButterBookmarkPage.sync(conv, items)` whenever it renders. The content
+script answers with `ButterRail.setMarks(conv, marks)`: a `Map` from question id to
+`{ count, fresh, land }`, where `fresh` grows the segment in and `land(turnElement)` returns the
+bookmarked text's offset below the turn's top for the rail's jump (or null to land on the question).
 
 ## Ask in branch handoff API
 

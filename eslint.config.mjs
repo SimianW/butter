@@ -49,7 +49,29 @@ export default [
   },
   {
     files: ['extension/rail/rail.js'],
-    languageOptions: { globals: { ButterSeekMeta: 'readonly' } }, // defined in seek/seek-meta.js
+    languageOptions: {
+      globals: {
+        ButterSeekMeta: 'readonly', // defined in seek/seek-meta.js
+        ButterBookmarks: 'readonly', // defined in bookmarks/model.js
+      },
+    },
+  },
+  {
+    files: ['extension/bookmarks/content.js'],
+    languageOptions: { globals: { ButterBookmarks: 'readonly' } }, // defined in bookmarks/model.js
+  },
+  {
+    // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
+    files: ['extension/bookmarks/worker.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        ButterBookmarks: 'readonly',
+        database: 'readonly',
+        request: 'readonly',
+        serial: 'readonly',
+      },
+    },
   },
   {
     files: ['extension/popup/popup.js'],
@@ -111,6 +133,7 @@ export default [
       'extension/seek/core-main.js',
       'extension/branch/logic.js',
       'extension/branch/run.js',
+      'extension/bookmarks/model.js',
       'extension/dev/recorder.js',
       'extension/dev/sources.js',
     ],
