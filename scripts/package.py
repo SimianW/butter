@@ -35,9 +35,9 @@ def dev_manifest(manifest):
         raise ValueError("expected the isolated content scripts first, then the MAIN-world ones")
     isolated, main = scripts
     # After the store scripts: the content script relays to the MAIN-world recorder, which
-    # listens to seek/preview-main.js's hooks.
+    # listens to the seek and layout-cache hooks; sources.js reads the turns and usage it saves.
     isolated["js"].append(f"{DEV_DIR}/content.js")
-    main["js"] += [f"{DEV_DIR}/recorder.js", f"{DEV_DIR}/recorder-main.js"]
+    main["js"] += [f"{DEV_DIR}/recorder.js", f"{DEV_DIR}/sources.js", f"{DEV_DIR}/recorder-main.js"]
     # dev/worker.js imports the store worker, then adds the shortcut handling.
     manifest["background"]["service_worker"] = f"{DEV_DIR}/worker.js"
     manifest["permissions"] = [*manifest.get("permissions", []), "downloads"]

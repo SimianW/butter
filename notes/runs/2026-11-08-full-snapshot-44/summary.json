@@ -1,0 +1,160 @@
+{
+  "build": "0.1.0-alpha.15+dev.9",
+  "chromium": "156.0.8078.4",
+  "fixture": {
+    "turns": 140,
+    "unmounted": 20
+  },
+  "files": [
+    "butter-diag/round-1/bug-01_05-50-53.json",
+    "butter-diag/round-1/bug-02_05-50-55.json",
+    "butter-diag/round-1/bug-03_05-51-00.json",
+    "butter-diag/round-1/bug-04_05-51-30.json"
+  ],
+  "otherTabSaved": 0,
+  "chatgptHomeSaved": 0,
+  "roundState": {
+    "bugs": 4,
+    "round": 1
+  },
+  "busy": {
+    "sessionMs": 28477,
+    "drags": 11,
+    "events": 221,
+    "eventsDropped": 0,
+    "windowS": 28.4,
+    "eventsPerS": 7.8,
+    "seekPerS": 4.3,
+    "byType": {
+      "record": 34,
+      "rejection": 8,
+      "press": 11,
+      "preview": 12,
+      "seek": 122,
+      "release": 11,
+      "commit": 11,
+      "reveal": 11,
+      "retarget": 1
+    },
+    "bytesPerEvent": {
+      "mean": 146.6,
+      "p95": 185,
+      "max": 185
+    },
+    "eventBytes": 32391,
+    "fileBytes": 185531,
+    "partBytes": {
+      "pressDecision": 74177,
+      "turns.readiness": 47579,
+      "turns.active": 6331,
+      "turns.math": 19841,
+      "usage": 429
+    },
+    "activeDomNodes": 21,
+    "redacted": 0
+  },
+  "fastDrag": {
+    "ms": 3001,
+    "movesPerS": 231.3,
+    "seekPerS": 6.7,
+    "framesPerS": 60
+  },
+  "snapshotCost": {
+    "medianMs": 5.7,
+    "maxMs": 7.1,
+    "bytes": 183435
+  },
+  "recordingCost": {
+    "dragsEach": 3,
+    "updatesOn": 156,
+    "updatesOff": 159,
+    "jsMsMedianOn": 0.7,
+    "jsMsMedianOff": 0.7,
+    "jsMsP95On": 1.1,
+    "jsMsP95Off": 1,
+    "topsSeenInBoth": 24,
+    "ends": {
+      "on": [
+        {
+          "turn": 133,
+          "realTop": 71200,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 130,
+          "realTop": 69800,
+          "landingErrorPx": 0
+        }
+      ],
+      "off": [
+        {
+          "turn": 133,
+          "realTop": 71200,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        },
+        {
+          "turn": 132,
+          "realTop": 70500,
+          "landingErrorPx": 0
+        }
+      ]
+    },
+    "landing": {
+      "reason": "pointerup",
+      "layout": true,
+      "landingErrorPx": 0
+    }
+  },
+  "urlLimit": [
+    {
+      "fileBytes": 1572840,
+      "urlLength": 2097149,
+      "saved": true
+    },
+    {
+      "fileBytes": 4194304,
+      "urlLength": 5592437,
+      "saved": true
+    },
+    {
+      "fileBytes": 8388608,
+      "urlLength": 11184841,
+      "saved": true
+    },
+    {
+      "fileBytes": 16777216,
+      "urlLength": 22369653,
+      "saved": true
+    },
+    {
+      "fileBytes": 33554432,
+      "urlLength": 44739273,
+      "saved": true
+    },
+    {
+      "fileBytes": 67108864,
+      "urlLength": 89478517,
+      "saved": true
+    },
+    {
+      "fileBytes": 134217728,
+      "urlLength": 178957001,
+      "saved": true
+    },
+    {
+      "fileBytes": 268435456,
+      "urlLength": 357913973,
+      "saved": true
+    }
+  ]
+}

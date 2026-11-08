@@ -81,11 +81,24 @@ export default [
     languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
   },
   {
+    files: ['extension/dev/sources.js'],
+    languageOptions: { globals: { require: 'readonly' } }, // falls back to recorder.js under node
+  },
+  {
     // Dev build only (extension/dev/, left out of the store package).
     files: ['extension/dev/recorder-main.js', 'extension/dev/worker.js'],
     languageOptions: {
-      globals: { ButterDevRecorder: 'readonly', ButterStatus: 'readonly' }, // dev/recorder.js, shared/status.js
+      globals: {
+        ButterDevRecorder: 'readonly', // dev/recorder.js
+        ButterDevSources: 'readonly', // dev/sources.js
+        ButterStatus: 'readonly', // shared/status.js
+      },
     },
+  },
+  {
+    // The store worker's queue and message handler, which dev/worker.js imports.
+    files: ['extension/dev/worker.js'],
+    languageOptions: { globals: { serial: 'readonly', handle: 'readonly' } },
   },
   // Files that also export themselves for node --test, behind a `typeof module` check.
   {
@@ -99,6 +112,7 @@ export default [
       'extension/branch/logic.js',
       'extension/branch/run.js',
       'extension/dev/recorder.js',
+      'extension/dev/sources.js',
     ],
     languageOptions: { globals: { module: 'readonly' } },
   },

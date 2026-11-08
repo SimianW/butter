@@ -1422,3 +1422,40 @@ test('an estimate never replaces a record measured in full', () => {
   assert.equal(get().items[1].h, 95, 'measured again once it is on screen');
   assert.ok(!get().items.some((it) => it.approx));
 });
+test('a dev listener hears each record, rejection and restore with its turn key', () => {
+  const f = fixture();
+  const heard = [];
+  // Fields come from the vm realm: compare them as JSON.
+  f.context.__butterLayoutCache.tap = (type, fields, key) =>
+    heard.push([type, JSON.parse(JSON.stringify(fields)), key]);
+  f.blocks.push(f.item);
+  f.c.math = false;
+  f.mutation([{ target: {}, addedNodes: [f.turn], removedNodes: [] }]);
+  f.resize([
+    { target: f.turn, contentRect: { height: 500 } },
+    { target: f.item, contentRect: { height: 26 } },
+  ]);
+  f.flush();
+  f.c.math = true;
+  f.mutation([{ target: f.turn, addedNodes: [], removedNodes: [] }]);
+  f.flush();
+  assert.deepEqual(heard, [
+    ['rejection', { reason: 'math-pending' }, 'a'],
+    ['record', { items: 1, blocks: 1, refresh: false, approx: false }, 'a'],
+  ]);
+  heard.length = 0;
+  f.context.__butterLayoutCache.get('a').removed = true;
+  const bubble = Object.assign(new f.Element(), {
+    firstElementChild: { classList: { contains: () => true } },
+    closest: (s) => (s === '.thread-scroll-container' ? f.sc : {}),
+  });
+  void bubble.clientWidth;
+  assert.deepEqual(heard, [['restore', { blocks: 1 }, 'a']]);
+  // A listener that throws never breaks recording.
+  f.context.__butterLayoutCache.tap = () => {
+    throw new Error('listener');
+  };
+  f.resize([{ target: f.item, contentRect: { height: 80 } }]);
+  f.flush();
+  assert.equal(f.context.__butterLayoutCache.get('a').blocks[0], 80);
+});

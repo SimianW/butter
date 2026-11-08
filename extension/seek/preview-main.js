@@ -577,7 +577,41 @@
       a.estTurn = t.id;
       a.textFallback = true;
     }
+    if (tap) previewTap(a, question, estimated);
     return performance.now() - t0;
+  }
+  // Dev build: one preview event each time the previewed question or its mode changes, and a
+  // preview-miss when that mode shows less than the recorded layout (for the turn the estimate or
+  // excerpt stands in for, with the press's layout reason for it).
+  function previewTap(a, question, estimated) {
+    if (!question) return;
+    const mode = !question.layout
+        ? 'unseen'
+        : a.textFallback
+          ? 'text-fallback'
+          : estimated
+            ? 'estimate'
+            : 'layout',
+      seen = `${question.index}:${mode}`;
+    if (a.tapPreview === seen) return;
+    a.tapPreview = seen;
+    emit('preview', {
+      turn: question.index,
+      mode,
+      layout: question.layout,
+      unseen: mode === 'unseen',
+      items: a.rendered.size,
+      estimate: !est.hidden,
+      textFallback: !!a.textFallback,
+    });
+    if (mode === 'layout') return;
+    const shown = a.prep.model.findIndex((t) => t.id === a.estTurn),
+      turn = shown < 0 ? question.index : shown;
+    emit('preview-miss', {
+      turn,
+      reason: mode,
+      layoutReason: a.prep.decision?.turns?.[turn]?.layoutReason ?? null,
+    });
   }
   function update(e, knownTop) {
     const a = active || pendingCommit;
@@ -785,6 +819,7 @@
           }
         } else if (r === 'reject') {
           event('reject', { why: act.detail?.reason });
+          if (tap) emit('activation-reject', { reason: act.detail?.reason });
           candidate = null;
         }
         return;
@@ -826,6 +861,7 @@
       const r = act.wheel();
       if (r === 'reject') {
         event('reject', { why: 'wheel' });
+        if (tap) emit('activation-reject', { reason: 'wheel' });
         candidate = null;
       } else if (r === 'end' && active) finish('wheel');
     },
@@ -836,6 +872,7 @@
     () => {
       if (act.key() === 'reject') {
         event('reject', { why: 'key' });
+        if (tap) emit('activation-reject', { reason: 'key' });
         candidate = null;
       }
     },
@@ -1019,6 +1056,13 @@
       a.sc.dispatchEvent(new Event('scroll'));
       a.dispatched = performance.now();
       event('destination-commit', { top: currentTop });
+      if (tap)
+        emit('commit', {
+          turn: question.index,
+          top: currentTop,
+          layout: question.layout,
+          retarget: !!a.commitRetarget,
+        });
       requestAnimationFrame(ready);
     };
     a.flush = perform;
@@ -1095,6 +1139,7 @@
             quiet = 0;
             prev = 0;
             event('semantic-retarget', { to: r.to, error: r.delta });
+            if (tap) emit('retarget', { kind: 'semantic', to: r.to, error: r.delta });
             requestAnimationFrame(ready);
             return;
           }
@@ -1121,6 +1166,7 @@
               quiet = 0;
               prev = 0;
               event('semantic-question-fallback', { to: r.to });
+              if (tap) emit('retarget', { kind: 'question', to: r.to, error: r.delta });
               requestAnimationFrame(ready);
               return;
             }
@@ -1152,6 +1198,7 @@
           });
           s.scrollTop = r.to;
           event('retarget', a.retargets.at(-1));
+          if (tap) emit('retarget', { kind: 'drift', to: r.to, error: r.drift });
           quiet = 0;
           prev = 0;
           requestAnimationFrame(ready);
@@ -1180,6 +1227,7 @@
             prev = 0;
             lastTop = NaN;
             event('history-block-alignment', a.alignmentCorrection);
+            if (tap) emit('retarget', { kind: 'history-block', to, error });
             requestAnimationFrame(ready);
             return;
           }
@@ -1218,6 +1266,14 @@
           engaged: !failed && ['pointerup', 'mouseup'].includes(a.reason),
         });
         event('reveal', { ms: now - a.end, error: a.landingErrorPx, timedOut: a.timedOut });
+        if (tap)
+          emit('reveal', {
+            durationMs: now - a.end,
+            error: a.landingErrorPx,
+            timedOut: a.timedOut,
+            matched: a.semantic?.matched ?? null,
+            fallback: a.semantic?.fallback ?? null,
+          });
       } else requestAnimationFrame(ready);
     };
     requestAnimationFrame(settle);

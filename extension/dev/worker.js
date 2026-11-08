@@ -21,8 +21,19 @@ importScripts('../storage/layout-worker.js', 'recorder.js');
       return { unavailable: 'error' };
     }
   };
-  // Service workers have no URL.createObjectURL; base64 keeps a ~1 MB file under Chrome's
-  // 2 MB URL limit.
+  // Saved-layout usage across accounts, as the popup shows it: the store worker's own
+  // butter-layout-usage handler, on its queue (it prunes expired rows, as a popup open does).
+  const savedUsage = async () => {
+    try {
+      const usage = await serial(() => handle({ version: 1, type: 'butter-layout-usage' }));
+      return { conversations: usage.conversations, bytes: usage.bytes };
+    } catch {
+      return { unavailable: 'error' };
+    }
+  };
+  // Service workers have no URL.createObjectURL, so the file goes as a base64 data: URL. The
+  // recorder keeps a file under 1.4 MB, so its URL stays under Chrome's 2 MiB URL constant
+  // (1,572,840 bytes of file). Chromium 156's chrome.downloads took up to 256 MB in #44's run.
   const dataUrl = (text) => {
     const bytes = new TextEncoder().encode(text);
     let binary = '';
@@ -43,6 +54,7 @@ importScripts('../storage/layout-worker.js', 'recorder.js');
       version: chrome.runtime.getManifest().version_name,
       settings: await read('local', 'butter', ButterStatus.normalize),
       failures: await read('session', 'butterFailures', (value) => value || {}),
+      usage: await savedUsage(),
     };
     let reply;
     try {

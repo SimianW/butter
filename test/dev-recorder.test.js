@@ -212,3 +212,137 @@ test('a serialized snapshot parses back to itself and puts each event on its own
   assert.ok(lines.includes('  "kind": "butter-diag",'), text);
   assert.deepEqual(JSON.parse(serialize(rec.snapshot(meta(99_000)))).events, []);
 });
+
+test('turns and usage are groups: each part is read alone and fails alone', () => {
+  const rec = createRecorder();
+  const snap = rec.snapshot(
+    meta(1_000, {
+      sources: {
+        turns: {
+          order: () => ({ count: 2, fiberFound: true }),
+          readiness: () => {
+            throw new Error('cache gone');
+          },
+          active: () => ({ turnIndex: 1, selection: 'last-seek-update' }),
+          math: () => [{ index: 0, formulas: 3, withoutKatex: 1 }],
+        },
+        usage: {
+          saved: () => ({ conversations: 4, bytes: 1200 }),
+          store: () => {
+            throw new TypeError('x');
+          },
+          cache: () => ({ records: 7 }),
+        },
+      },
+    }),
+  );
+  assert.deepEqual(snap.turns, {
+    order: { count: 2, fiberFound: true },
+    readiness: { unavailable: 'error' },
+    active: { turnIndex: 1, selection: 'last-seek-update' },
+    math: [{ index: 0, formulas: 3, withoutKatex: 1 }],
+  });
+  assert.deepEqual(snap.usage, {
+    saved: { conversations: 4, bytes: 1200 },
+    store: { unavailable: 'error' },
+    cache: { records: 7 },
+  });
+  assert.equal(snap.redacted, 0);
+});
+
+test('text, IDs and URLs planted in turns and usage are dropped and counted', () => {
+  const rec = createRecorder();
+  const text = 'Prove that the sum of two odd numbers is even',
+    tex = '\\int_0^1 x^2 \\, dx',
+    id = '6a1f0c2e-8b7d-4c3e-9f10-2d4b6a8c0e12',
+    url = 'https://chatgpt.com/c/6a1f0c2e-8b7d-4c3e-9f10-2d4b6a8c0e12';
+  const snap = rec.snapshot(
+    meta(1_000, {
+      sources: {
+        turns: {
+          readiness: () => ({ turns: [{ index: 0, layoutReason: id, hasRecord: true }] }),
+          active: () => ({
+            selection: url,
+            memory: { items: [{ index: 0, kind: 'paragraph', text, textLength: 45 }] },
+            dom: { turn: [{ index: 0, tag: 'div', classes: ['markdown', tex] }] },
+          }),
+          math: () => [{ index: 0, formulas: 1, source: tex }],
+        },
+        usage: { saved: () => ({ bytes: 10, account: id }), cache: () => ({ records: url }) },
+      },
+    }),
+  );
+  const json = JSON.stringify(snap);
+  for (const planted of [text, tex, id, url, 'chatgpt.com'])
+    assert.ok(!json.includes(planted), planted);
+  assert.deepEqual(snap.turns.readiness, { turns: [{ index: 0, hasRecord: true }] });
+  assert.deepEqual(snap.turns.active.memory.items, [
+    { index: 0, kind: 'paragraph', textLength: 45 },
+  ]);
+  assert.deepEqual(snap.turns.active.dom.turn, [{ index: 0, tag: 'div', classes: ['markdown'] }]);
+  // layoutReason id, selection url, item text, class tex, math source, account, records url.
+  assert.equal(snap.redacted, 7);
+});
+
+test('the whole file stays under its cap: oldest events go first, then the largest part', () => {
+  const rows = (n) => Array.from({ length: n }, (_, index) => ({ index, height: 26, top: index }));
+  const rec = createRecorder({ maxFileBytes: 20_000 });
+  for (let i = 0; i < 400; i++) rec.record('seek', { top: i, turn: 3, offset: 120 }, 1_000 + i);
+  // Small enough with fewer events: only old events are dropped.
+  let snap = rec.snapshot(meta(2_000, { sources: { turns: { order: () => ({ count: 3 }) } } }));
+  let text = serialize(snap);
+  assert.ok(text.length <= 20_000, `${text.length} bytes`);
+  assert.ok(snap.eventsDropped > 0 && snap.events.length > 0);
+  assert.equal(snap.events.at(-1).top, 399);
+  assert.equal(snap.events.length + snap.eventsDropped, 400);
+  assert.deepEqual(snap.turns.order, { count: 3 });
+  // A source part larger than the cap on its own: all events go, then that part.
+  snap = rec.snapshot(
+    meta(2_000, {
+      sources: {
+        turns: { order: () => ({ count: 3 }), active: () => ({ dom: { turn: rows(2_000) } }) },
+      },
+    }),
+  );
+  text = serialize(snap);
+  assert.ok(text.length <= 20_000, `${text.length} bytes`);
+  assert.deepEqual(snap.turns.active, { unavailable: 'too-large' });
+  assert.deepEqual(snap.turns.order, { count: 3 });
+  assert.ok(snap.events.length > 0, 'events come back once the large part is gone');
+});
+
+test('a snapshot under the file cap has no eventsDropped field', () => {
+  const rec = createRecorder();
+  rec.record('seek', { top: 1 }, 0);
+  assert.equal('eventsDropped' in rec.snapshot(meta(0)), false);
+});
+
+test('serialized turns put each readiness row and structure node on its own line', () => {
+  const rec = createRecorder();
+  const snap = rec.snapshot(
+    meta(0, {
+      sources: {
+        turns: {
+          readiness: () => ({
+            currentSw: 900,
+            turns: [
+              { index: 0, hasRecord: true, recorder: { observed: true } },
+              { index: 1, hasRecord: false, recorder: null },
+            ],
+          }),
+          active: () => ({ dom: { mounted: true, turn: [{ index: 0, tag: 'div', classes: [] }] } }),
+        },
+      },
+    }),
+  );
+  const text = serialize(snap);
+  assert.deepEqual(JSON.parse(text), snap);
+  const lines = text.split('\n');
+  assert.ok(
+    lines.includes('        {"index":0,"hasRecord":true,"recorder":{"observed":true}},'),
+    text,
+  );
+  assert.ok(lines.includes('        {"index":1,"hasRecord":false,"recorder":null}'), text);
+  assert.ok(lines.includes('          {"index":0,"tag":"div","classes":[]}'), text);
+  assert.ok(lines.includes('      "currentSw": 900,'), text);
+});

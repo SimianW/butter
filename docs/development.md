@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `recorder-main.js` (MAIN world, listens to the seek hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut and the download). |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut and the download). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
@@ -51,12 +51,16 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
   `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
   wait and the hidden-button cases on the live page; see its header for how the stream is held.
-- Dev build bug capture: `test/dev-recorder.test.js` (`node --test`) covers the recorder.
+- Dev build bug capture: `test/dev-recorder.test.js` and `test/dev-sources.test.js` (`node --test`)
+  cover the recorder and the `turns`/`usage` sources against planted page state; the bug-file
+  format is in [notes/diagnostics/README.md](../notes/diagnostics/README.md#bug-files-from-the-dev-build).
   `xvfb-run -a node lab/harness/dev-capture-qa.mjs` builds the dev zip, loads it in its own
-  Chromium on a virtual display over a synthetic chat (no ChatGPT requests), presses the real
-  shortcut through XTest (`xtest-keys.py`; keys sent over the DevTools protocol never reach
-  `chrome.commands`) and checks the files written to a temporary Downloads folder; the saved
-  files and a summary go to `notes/runs/2026-11-08-dev-capture-43/` (`OUT=` overrides).
+  Chromium on a virtual display over a long synthetic chat (`dev-capture-fixture.mjs`, no ChatGPT
+  requests), presses the real shortcut through XTest (`xtest-keys.py`; keys sent over the
+  DevTools protocol never reach `chrome.commands`), checks the files written to a temporary
+  Downloads folder, and measures the event rate and size, the snapshot's cost, seek behaviour with
+  and without the recorder, and `data:` URL downloads; the saved files and `summary.json` go to
+  `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.

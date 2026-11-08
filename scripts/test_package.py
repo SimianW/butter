@@ -115,6 +115,7 @@ class PackageTests(unittest.TestCase):
         self.use_real_extension()
         dev_files = self.dev_files()
         self.assertIn("butter/dev/recorder.js", dev_files)
+        self.assertIn("butter/dev/sources.js", dev_files)
         before = {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()}
         for number in (1, 2):
             path, result = self.package("--dev")
@@ -134,7 +135,12 @@ class PackageTests(unittest.TestCase):
             # Every script the dev manifest names is in the zip, after the store scripts it hooks.
             isolated, main = manifest["content_scripts"]
             self.assertEqual(isolated["js"][-1], "dev/content.js")
-            self.assertEqual(main["js"][-2:], ["dev/recorder.js", "dev/recorder-main.js"])
+            self.assertEqual(
+                main["js"][-3:], ["dev/recorder.js", "dev/sources.js", "dev/recorder-main.js"]
+            )
+            # The recorder listens to both hook owners, so it runs after the last of them.
+            for hooked in ("seek/layout-cache-main.js", "seek/preview-main.js"):
+                self.assertLess(main["js"].index(hooked), main["js"].index("dev/recorder.js"))
             self.assertLess(main["js"].index("seek/preview-main.js"), main["js"].index("dev/recorder-main.js"))
             worker = manifest["background"]["service_worker"]
             self.assertEqual(worker, "dev/worker.js")
