@@ -214,7 +214,9 @@ function cardTab(shared) {
     requestAnimationFrame: (fn) => fn(),
     addEventListener: (type, fn) => (events[type] = fn),
   };
-  vm.runInNewContext(read('consent/layout-consent.js'), ctx);
+  vm.createContext(ctx);
+  vm.runInContext(read('consent/card.js'), ctx);
+  vm.runInContext(read('consent/layout-consent.js'), ctx);
   return {
     host: () => host,
     card,

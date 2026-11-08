@@ -6,8 +6,14 @@
 // question, clicking the segment lands on the paragraph, a reload shows the segment again, the same
 // paragraph is not saved twice, the conversation's bookmarks are read once and not during scrolling,
 // and with the rail off or Butter paused neither the button nor a segment shows.
+// First-use notice (#56): the first save shows it, Undo deletes the bookmark and its segment and the
+// next save shows it again (light and dark, English and Chinese, with layout consent pending,
+// declined, granted and switched off), Got it keeps it away on a third save and after a reload.
 // Run: npm ci --prefix lab/harness && node lab/harness/bookmarks-qa.mjs
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa).
+// BUTTER_BOOKMARKS_MOCKUP=<1-Mockup.html> (gh issue artifact download 51 1 -R SimianW/butter) also
+// compares the notice in each theme and language with the mockup's section 4: same size, under 0.1%
+// of pixels differing by more than 24 in a channel.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -73,7 +79,12 @@ const context = await chromium.launchPersistentContext(profile, {
   headless: true,
   channel: 'chromium',
   viewport: { width: 1400, height: 900 },
-  args: [`--disable-extensions-except=${repo}/extension`, `--load-extension=${repo}/extension`],
+  args: [
+    `--disable-extensions-except=${repo}/extension`,
+    `--load-extension=${repo}/extension`,
+    // Grayscale text, as the notice's own compositing layer draws it, for the mockup comparison.
+    '--disable-lcd-text',
+  ],
 });
 const errors = [],
   foreign = [];
@@ -123,6 +134,36 @@ const stored = () =>
         };
       }),
   );
+
+const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
+// Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
+async function compare(page, a, b) {
+  return page.evaluate(
+    async ([a, b]) => {
+      const load = (src) =>
+        new Promise((r) => {
+          const i = new Image();
+          i.onload = () => r(i);
+          i.src = src;
+        });
+      const [x, y] = await Promise.all([load(a), load(b)]);
+      if (x.width !== y.width || x.height !== y.height) return { size: [x.width, x.height, y.width, y.height] };
+      const data = (img) => {
+        const c = new OffscreenCanvas(img.width, img.height),
+          g = c.getContext('2d');
+        g.drawImage(img, 0, 0);
+        return g.getImageData(0, 0, img.width, img.height).data;
+      };
+      const p = data(x),
+        q = data(y);
+      let n = 0;
+      for (let k = 0; k < p.length; k += 4)
+        if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
+      return { ratio: n / (p.length / 4) };
+    },
+    [await png(a), await png(b)],
+  );
+}
 
 const results = [];
 const check = (name, pass, detail = {}) => {
@@ -420,6 +461,169 @@ try {
   await open('light');
   await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
   check('rail back on: the segment returns', true);
+
+  // 9. First-use notice (#56). Each run below starts unacknowledged: `settings` replaces the whole
+  // settings object. The first three save, check the notice and press Undo; the last presses Got it.
+  const notice = () =>
+    page.evaluate(() => {
+      const host = document.querySelector('chatgpt-butter-bookmark-notice');
+      if (!host) return { shown: false };
+      const card = host.shadowRoot.querySelector('.card'),
+        r = card.getBoundingClientRect();
+      return {
+        shown: !host.hidden && host.hasAttribute('data-visible') && !host.inert,
+        lang: card.lang,
+        title: card.querySelector('.t')?.textContent,
+        body: card.querySelector('.d')?.textContent,
+        href: card.querySelector('a')?.getAttribute('href'),
+        buttons: [...card.querySelectorAll('button')].map((b) => b.textContent),
+        top: r.top,
+        bottom: r.bottom,
+        left: r.left,
+        right: r.right,
+        width: r.width,
+        z: getComputedStyle(host).zIndex,
+        font: getComputedStyle(card).fontFamily,
+      };
+    });
+  const consentCard = () =>
+    page.evaluate(() => {
+      const host = document.querySelector('chatgpt-butter-consent');
+      if (!host || host.hidden) return null;
+      const r = host.shadowRoot.querySelector('.card').getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, z: getComputedStyle(host).zIndex };
+    });
+  const press = async (which) => {
+    const at = await page.evaluate((which) => {
+      const b = document
+        .querySelector('chatgpt-butter-bookmark-notice')
+        .shadowRoot.querySelector(`button[data-notice="${which}"]`)
+        .getBoundingClientRect();
+      return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+    }, which);
+    await page.mouse.click(at.x, at.y);
+  };
+  const acknowledged = () =>
+    worker.evaluate(() => chrome.storage.local.get('butter').then(({ butter }) => butter.bookmarkNotice));
+  const waitNotice = () =>
+    page
+      .waitForFunction(() => document.querySelector('chatgpt-butter-bookmark-notice')?.hasAttribute('data-visible'), null, {
+        timeout: 5000,
+      })
+      .then(() => page.waitForTimeout(400)); // the 200 ms enter motion
+  await worker.evaluate(() =>
+    database().then(
+      (db) =>
+        new Promise((done) => {
+          const tx = db.transaction('bookmarks', 'readwrite');
+          tx.objectStore('bookmarks').clear();
+          tx.oncomplete = done;
+        }),
+    ),
+  );
+  const COPY = {
+    en: {
+      title: 'Bookmark saved',
+      body: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail. Privacy policy',
+      href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.md',
+      buttons: ['Undo', 'Got it'],
+    },
+    zh: {
+      title: '书签已保存',
+      body: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。 隐私政策',
+      href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.zh-CN.md',
+      buttons: ['撤销', '知道了'],
+    },
+  };
+  const built = [];
+  for (const [i, run] of [
+    { theme: 'light', lang: 'en', butter: {}, consent: 'declined' },
+    { theme: 'dark', lang: 'en', butter: { layoutConsent: 'pending' }, consent: 'pending' },
+    { theme: 'light', lang: 'zh', butter: { lang: 'zh', layoutConsent: 'granted', opts: { layout: true } }, consent: 'granted' },
+    { theme: 'dark', lang: 'zh', butter: { lang: 'zh', layoutConsent: 'granted', opts: { layout: false } }, consent: 'layouts off' },
+  ].entries()) {
+    const name = `${run.theme} ${run.lang}, consent ${run.consent}`;
+    await settings(run.butter);
+    await open(run.theme);
+    const save = await bookmark(TURN, PARA);
+    check(`notice (${name}): nothing before the save`, !(await notice()).shown);
+    await save.click();
+    await waitNotice().catch(() => {});
+    const n = await notice();
+    const c = COPY[run.lang];
+    check(`notice (${name}): shown after the save, with the approved copy`,
+      n.shown && n.title === c.title && n.body === c.body && n.href === c.href &&
+        JSON.stringify(n.buttons) === JSON.stringify(c.buttons) && n.lang === (run.lang === 'zh' ? 'zh-CN' : 'en'),
+      n);
+    check(`notice (${name}): the consent card's place, width and stacking`,
+      // With consent pending, the consent card may already show: then the notice stacks above it.
+      n.width === 300 && Math.round(1400 - n.right) === 30 && n.z === '19' &&
+        (run.consent === 'pending' || Math.round(900 - n.bottom) === 82) &&
+        n.font.includes('ButterConsentNunito'),
+      { right: 1400 - n.right, bottom: 900 - n.bottom, width: n.width, z: n.z });
+    if (run.consent === 'pending') {
+      await page.waitForSelector('chatgpt-butter-consent[data-visible]', { state: 'attached', timeout: 5000 });
+      await page.waitForTimeout(400);
+      const [m, k] = [await notice(), await consentCard()];
+      check(`notice (${name}): stacks above the pending consent card, not over it`,
+        k && m.shown && m.bottom <= k.top - 12 + 0.5 && Math.abs(m.right - k.right) < 0.5, { notice: m, consent: k });
+    }
+    const file = `${shots}/notice-${run.theme}-${run.lang}.png`;
+    // On whole pixels, as the mockup's card sits (a stacked card's top can be fractional).
+    const shot = await notice();
+    await page.screenshot({
+      path: file,
+      clip: { x: Math.round(shot.left), y: Math.round(shot.top), width: 300, height: Math.round(shot.bottom - shot.top) },
+    });
+    built.push({ ...run, file });
+    await page.screenshot({ path: `${shots}/notice-page-${run.theme}-${run.lang}.png` });
+    check(`notice (${name}): the save drew its segment`, (await rail()).marks.length === 1);
+    if (i < 3) {
+      await press('undo');
+      await page
+        .waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 0, null, { timeout: 5000 })
+        .catch(() => {});
+      await page.waitForTimeout(300);
+      const after = await notice();
+      check(`notice (${name}): Undo deletes the bookmark, its segment goes, the notice hides unacknowledged`,
+        (await stored()).length === 0 && (await rail()).marks.length === 0 && !after.shown &&
+          (await acknowledged()) === undefined,
+        { stored: (await stored()).length, marks: (await rail()).marks.length, after: after.shown });
+    } else {
+      await press('ok');
+      await page.waitForTimeout(400);
+      check(`notice (${name}): Got it keeps the bookmark and records the acknowledgement`,
+        !(await notice()).shown && (await stored()).length === 1 && (await rail()).marks.length === 1 &&
+          (await acknowledged()) === 'acknowledged');
+    }
+  }
+  // A third save, and one after a reload: no notice.
+  const third = await bookmark(TURN, 0);
+  await third.click();
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1);
+  await page.waitForTimeout(800);
+  check('after Got it, a third save shows no notice', !(await notice()).shown && (await stored()).length === 2);
+  await open('light');
+  const fourth = await bookmark(2, 0);
+  await fourth.click();
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+  await page.waitForTimeout(800);
+  check('after Got it and a reload, a save shows no notice', !(await notice()).shown && (await stored()).length === 3);
+
+  // Against the mockup's section 4, when given.
+  if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
+    const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
+    await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_MOCKUP)}`);
+    for (const b of built) {
+      await mock.click(`#lang button[data-l="${b.lang}"]`);
+      await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
+      const reference = `${shots}/mockup-notice-${b.theme}-${b.lang}.png`;
+      await mock.locator(`.frame${b.theme === 'dark' ? '.dark' : ':not(.dark)'}[data-scene="notice"] .notice`).screenshot({ path: reference });
+      const diff = await compare(mock, b.file, reference);
+      check(`notice ${b.theme} ${b.lang} matches the mockup`, diff.ratio !== undefined && diff.ratio < 0.001, diff);
+    }
+    await mock.close();
+  }
 } finally {
   console.log('errors', JSON.stringify(errors), 'foreign', JSON.stringify(foreign));
   await fs.writeFile(`${shots}/summary.json`, JSON.stringify({ results, errors, foreign }, null, 2));

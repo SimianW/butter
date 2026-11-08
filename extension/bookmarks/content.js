@@ -222,6 +222,14 @@
       fresh.add(r.bookmark.key);
     }
     if (owner === account && conv === view.conv) refresh();
+    // Every save, by the button or the shortcut, comes through here: the first one tells the user
+    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its segment.
+    if (r.created)
+      globalThis.ButterBookmarkNotice?.saved(r.bookmark, () => {
+        const at = list.findIndex((b) => b.key === r.bookmark.key);
+        if (at >= 0) list.splice(at, 1);
+        if (owner === account && conv === view.conv) refresh();
+      });
   }
 
   // ---- The hover button, in Butter's own layer over the left margin. ChatGPT's DOM is untouched.

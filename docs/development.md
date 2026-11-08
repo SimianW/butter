@@ -14,6 +14,8 @@
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, the rail segment's offset. |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the hover button, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages. |
+| `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
+| `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
@@ -76,14 +78,21 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
-- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset)
-  and `test/bookmark-store.test.js` (the worker store) run under `node --test`.
+- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset),
+  `test/bookmark-store.test.js` (the worker store) and `test/bookmark-notice.test.js` (the first
+  bookmark notice: copy, Undo, Got it, independence from the layout switch and consent) run under
+  `node --test`.
   `node lab/harness/bookmarks-qa.mjs` loads the real extension in its own headless Chromium over a
   synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
   conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
   paragraph, the segment under its question, landing on the paragraph from the segment, reload,
   duplicates, one read per conversation and none while scrolling, dark theme, and the rail off or
-  Butter paused. Screenshots and `summary.json` go to `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
+  Butter paused. It then drives the first bookmark notice in light and dark, English and Chinese:
+  Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
+  and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
+  (`gh issue artifact download 51 1 -R SimianW/butter`) compares the four notices with section 4 (same
+  size, under 0.1% of pixels differing). Screenshots and `summary.json` go to
+  `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.
@@ -187,6 +196,12 @@ it, and the rail calls `ButterBookmarkPage.sync(conv, items)` whenever it render
 script answers with `ButterRail.setMarks(conv, marks)`: a `Map` from question id to
 `{ count, fresh, land }`, where `fresh` grows the segment in and `land(turnElement)` returns the
 bookmarked text's offset below the turn's top for the rail's jump (or null to land on the question).
+
+The first saved bookmark shows a notice (`bookmarks/notice.js`), whatever the layout switch and
+`layoutConsent` say. Undo sends `butter-bookmark-delete` for that bookmark and leaves the notice
+unacknowledged; Got it writes `bookmarkNotice: 'acknowledged'` into the `butter` settings, once per
+browser profile. `bookmarks/content.js`'s `create` is the only save path, so the button and the
+shortcut both reach it.
 
 ## Ask in branch handoff API
 
