@@ -222,3 +222,12 @@ All matched files use Prettier code style!
 `git status --short` after that commit/merge (exit 0): no stdout. No extension, privacy,
 README, changelog or manifest changes appear in this branch's diff. Final log commit and push
 results are reported in the task handoff so the report need not refer to its own commit hash.
+
+A final overbroad report scan initially printed `AssertionError: commands.md` because the actual
+npm warning above includes the public ESLint documentation link. Inspection found only that
+public URL. A corrected scan permits that exact public link and rejects private URLs, raw UUIDs
+and email addresses (exit 0):
+
+```text
+PASS 3 report artifacts: 0 private URLs, raw UUIDs or emails; 1 public ESLint documentation URL retained in actual npm output
+```
