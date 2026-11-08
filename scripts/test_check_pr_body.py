@@ -282,6 +282,65 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertIn("extension/dev/capture.js", result.stdout)
         self.assertNotIn("scripts/main_only.py", result.stdout)
 
+    def share_a_file_with_main(self):
+        """PR edits the first line of a tier 1 file main also has; review at that commit."""
+        lines = [f"line {n}" for n in range(1, 11)]
+        self.git("checkout", "-q", "main")
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("main adds tool")
+        self.git("checkout", "-q", "pr")
+        self.git("merge", "-q", "--no-edit", "main")
+        lines[0] = "line 1 by pr"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("pr edits tool")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        lines[0], lines[9] = "line 1", "line 10 by main"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("main edits tool")
+        self.git("checkout", "-q", "pr")
+        return lines
+
+    def test_base_merged_into_a_shared_file_after_the_sha_passes(self):
+        self.share_a_file_with_main()
+        self.git("merge", "-q", "--no-edit", "main")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+
+    def test_base_merged_into_a_shared_file_then_pr_change_fails(self):
+        lines = self.share_a_file_with_main()
+        self.git("merge", "-q", "--no-edit", "main")
+        lines[0], lines[4] = "line 1 by pr", "line 5 by pr after review"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 1", result.stdout)
+        self.assertIn("scripts/tool.py", result.stdout)
+
+    def test_rebased_onto_a_newer_base_passes(self):
+        self.share_a_file_with_main()
+        self.git("rebase", "-q", "main")
+        self.assertNotEqual(self.rev("HEAD")[:7], self.reviewed)
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+
+    def test_base_merge_with_a_resolved_conflict_stays_strict(self):
+        self.git("checkout", "-q", "main")
+        self.write("extension/dev/capture.js", "export const a = 5;\n")
+        self.commit("main edits the same line")
+        self.git("checkout", "-q", "pr")
+        merge = subprocess.run(["git", "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
+        self.assertNotEqual(merge.returncode, 0)
+        self.write("extension/dev/capture.js", "export const a = 2 + 5;\n")
+        self.commit("resolve by combining both sides")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 1", result.stdout)
+        self.assertIn("extension/dev/capture.js", result.stdout)
+
     def test_tier_zero_pr_needs_no_review_line(self):
         self.git("checkout", "-q", "-b", "docs", "main")
         self.write("docs/guide.md", "Guide\n")
