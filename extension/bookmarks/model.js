@@ -1,5 +1,5 @@
-// Bookmarks, pure: the excerpt rule. No DOM or chrome.* here; loaded by the content scripts and
-// the service worker, and by node --test.
+// Bookmarks, pure: the excerpt rule, grouping, resolution to live or stale, and the hover card.
+// No DOM or chrome.* here; loaded by the content scripts and the service worker, and by node --test.
 ((root) => {
   const LINES = 3,
     CHARS = 240;
@@ -70,6 +70,45 @@
     }
     return out;
   }
+  // Resolution (#55): whether each bookmark still points at its text. `view` is what the page
+  // shows now: `paragraphs(msg)` gives a rendered answer's paragraph texts by hashed message id
+  // (undefined when that message isn't rendered), `mounted(question)` whether that question's turn
+  // is in the DOM, and `complete` whether `items` reaches back to the conversation's start.
+  // A bookmark is live when its message is rendered, its paragraph exists and the paragraph's text
+  // still contains the excerpt's first line. It is stale when the paragraph or its text no longer
+  // matches, when its question is shown with another answer (regenerated), or when its message has
+  // left a complete conversation. Otherwise (not rendered now) it keeps what `last` remembers for
+  // it, live by default. Returns `group`'s groups with each bookmark copied with its `stale` flag,
+  // plus `stale` on a group whose bookmarks are all stale; `last` is updated. Nothing is stored, so
+  // a bookmark that resolves again (the original version switched back) is live again.
+  const flat = (s) => s.replace(/\s+/g, ' ').trim();
+  const HEAD = 40; // about one rendered line: the excerpt's first line, which survives a rewrap
+  function matches(b, paragraphs) {
+    const own = flat(paragraphs[b.para] ?? '');
+    if (!own) return false;
+    const head = [...flat(b.excerpt)].slice(0, HEAD).join('');
+    // A selection that ran on into the next paragraphs: its first line starts in this one.
+    const at = paragraphs.slice(b.para).map(flat).filter(Boolean).join(' ').indexOf(head);
+    return at >= 0 && at < own.length;
+  }
+  function resolve(bookmarks, items, view, last = new Map()) {
+    const listed = new Set(items.map((x) => x.msg));
+    return group(bookmarks, items).map((g) => {
+      const rows = g.bookmarks.map((b) => {
+        const shown = view.paragraphs(b.msg);
+        let stale = null;
+        if (shown) stale = !matches(b, shown);
+        else if (!listed.has(b.msg)) stale = view.complete ? true : null;
+        else if (view.mounted(g.question)) stale = true;
+        if (stale === null) stale = last.get(b.key) ?? false;
+        last.set(b.key, stale);
+        return { ...b, stale };
+      });
+      return { question: g.question, bookmarks: rows, stale: pale(rows) };
+    });
+  }
+  // A question's segment turns pale only when every one of its bookmarks is stale.
+  const pale = (rows) => rows.length > 0 && rows.every((b) => b.stale);
   // Centre of a question's segment below its tick's centre, in px.
   const segmentOffset = (pitch) => (pitch < 12 ? 0.4 * pitch : 5);
   // What the rail's hover card shows for one question's bookmarks (`rows`, already in answer
@@ -97,16 +136,53 @@
       : single
         ? `Bookmark · ${where}`
         : `${where[0].toUpperCase()}${where.slice(1)} · ${k} bookmarks`;
-    return { single, meta, rows, visible: Math.min(k, VISIBLE), label: label(rows, zh) };
+    const tag = zh ? '回答已变化' : 'answer changed';
+    // One stale bookmark: the meta line says so and a footer explains where a click lands.
+    const stale = single && !!rows[0].stale;
+    const warn = !stale
+      ? null
+      : zh
+        ? `找不到这一段了。点击会跳到${at.back != null ? '这个问题' : `第 ${at.n} 个问题`}的开头。`
+        : `This paragraph can't be found any more. Clicking opens ${at.back != null ? 'its question' : `question ${at.n}`} instead.`;
+    return {
+      single,
+      meta: stale ? (zh ? `书签 · ${tag}` : `Bookmark · ${tag}`) : meta,
+      rows,
+      visible: Math.min(k, VISIBLE),
+      label: label(rows, zh),
+      stale,
+      warn,
+      tag,
+    };
   }
   // The segment's accessible name: how many bookmarks, and their text.
   function label(rows, zh = false) {
     const k = rows.length,
-      texts = rows.map((b) => b.excerpt).join(zh ? '；' : '; ');
+      texts = rows
+        .map((b) =>
+          !b.stale
+            ? b.excerpt
+            : zh
+              ? `${b.excerpt}（回答已变化）`
+              : `${b.excerpt} (answer changed)`,
+        )
+        .join(zh ? '；' : '; ');
     if (zh) return k === 1 ? `书签：${texts}` : `${k} 个书签：${texts}`;
     return k === 1 ? `Bookmark: ${texts}` : `${k} bookmarks: ${texts}`;
   }
-  const api = { excerpt, key, clean, hash, group, segmentOffset, card, label };
+  const api = {
+    excerpt,
+    key,
+    clean,
+    hash,
+    group,
+    resolve,
+    matches,
+    pale,
+    segmentOffset,
+    card,
+    label,
+  };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ButterBookmarks = api;
 })(globalThis);

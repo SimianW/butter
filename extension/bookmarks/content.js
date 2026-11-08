@@ -81,11 +81,14 @@
     shownList = [], // the bookmarks of the conversation in view
     serial = 0,
     seeking = false,
-    deferred = false;
+    deferred = false,
+    sent = ''; // what the rail was last sent: question, bookmarks and their stale flags
   const fresh = new Set(); // keys of bookmarks just made in this tab: their segment grows in
-  async function refresh() {
+  const seen = new Map(); // key -> stale, as last resolved in this tab; never stored (#55)
+  // `quiet`: only a re-check of staleness, so the rail hears nothing when nothing changed.
+  async function refresh(quiet = false) {
     const token = ++serial,
-      { conv, items } = view,
+      { conv, items, complete } = view,
       owner = account;
     if (seeking) {
       deferred = true;
@@ -96,26 +99,56 @@
       globalThis.ButterRail?.setMarks(conv, new Map());
       return;
     }
-    const [bookmarks, hashes] = await Promise.all([
+    // The answers rendered now, by hashed id: a version the list doesn't hold can be on screen.
+    const rendered = [...document.querySelectorAll(MESSAGE)],
+      ids = rendered.map((m) => m.getAttribute('data-message-id'));
+    const [bookmarks, hashes, shown] = await Promise.all([
       listOf(owner, conv),
       Promise.all(items.map((x) => digest(x.id))),
+      Promise.all(ids.map(digest)),
     ]);
     if (token !== serial) return;
     rawOf = new Map(hashes.map((h, i) => [h, items[i].id]));
     hashOf = new Map(hashes.map((h, i) => [items[i].id, h]));
+    shown.forEach((h, i) => {
+      rawOf.set(h, ids[i]);
+      hashOf.set(ids[i], h);
+    });
     shownList = bookmarks;
     const questions = items.filter((x) => x.q != null);
-    const marks = new Map();
-    for (const g of B.group(
+    const onPage = new Map(shown.map((h, i) => [h, rendered[i]]));
+    const groups = B.resolve(
       bookmarks,
       items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
-    )) {
+      {
+        complete,
+        paragraphs: (msg) => {
+          const m = onPage.get(msg);
+          return m?.isConnected ? paragraphs(m) : undefined;
+        },
+        // Its turn is mounted with an answer in it: an answer that isn't the bookmarked one replaced it.
+        mounted: (q) =>
+          !![...document.querySelectorAll('[data-turn-key]')]
+            .find((t) => t.getAttribute('data-turn-key') === questions[q].id)
+            ?.querySelector(MESSAGE),
+      },
+      seen,
+    );
+    const sig = JSON.stringify(
+      groups.map((g) => [questions[g.question].id, g.bookmarks.map((b) => [b.key, b.stale])]),
+    );
+    if (quiet && sig === sent && !fresh.size) return;
+    sent = sig;
+    const marks = new Map();
+    for (const g of groups) {
       const first = g.bookmarks[0];
-      // `bookmarks` in answer order; `land(turn, b)` for the rail's jump, `remove(b)` for its ×.
+      // `bookmarks` in answer order, each with its `stale` flag; `stale` when all of them are;
+      // `land(turn, b)` for the rail's jump, `remove(b)` for its ×.
       marks.set(questions[g.question].id, {
         count: g.bookmarks.length,
         fresh: g.bookmarks.some((b) => fresh.has(b.key)),
         bookmarks: g.bookmarks,
+        stale: g.stale,
         land: (turn, b = first) => locate(turn, b),
         remove: (b) => remove(owner, conv, [b]),
       });
@@ -124,6 +157,22 @@
     globalThis.ButterRail?.setMarks(conv, marks);
     label();
   }
+  // Staleness follows the page between renders: a regenerated answer or a switched version shows
+  // after a click on the page, and the rail is checked again as the pointer or focus reaches it.
+  // Neither happens while scrolling.
+  let checks = [];
+  const recheck = () => {
+    if (seeking || !shownList.length) return;
+    checks.forEach(clearTimeout);
+    checks = [600, 2500].map((ms) => setTimeout(() => refresh(true), ms));
+  };
+  document.addEventListener('click', recheck, { capture: true, passive: true });
+  const toRail = (e) => {
+    if (e.target?.localName === 'chatgpt-butter-nav' && e.relatedTarget !== e.target)
+      if (!seeking && shownList.length) refresh(true);
+  };
+  document.addEventListener('pointerover', toRail, { capture: true, passive: true });
+  document.addEventListener('focusin', toRail, { capture: true });
   document.addEventListener('butter-seek-state', (e) => {
     let m;
     try {
@@ -139,10 +188,11 @@
     }
   });
   // Called by the rail whenever it renders a conversation's questions.
+  // `complete`: `items` reach back to the conversation's start (no earlier page left to load).
   globalThis.ButterBookmarkPage = {
-    sync(conv, items) {
-      if (conv === view.conv && items === view.items) return;
-      view = { conv, items };
+    sync(conv, items, complete = false) {
+      if (conv === view.conv && items === view.items && complete === view.complete) return;
+      view = { conv, items, complete };
       refresh();
     },
   };
@@ -158,6 +208,17 @@
       at += n.data.length;
     }
     return nodes;
+  };
+  // A rendered answer's paragraphs, as text.
+  const paragraphs = (message) => {
+    const answer = message.querySelector(ANSWER);
+    return answer
+      ? [...answer.children].map((p) =>
+          textNodes(p)
+            .map((x) => x.n.data)
+            .join(''),
+        )
+      : undefined;
   };
   // The paragraph's text and where its first rendered lines end, measured character by character.
   const lines = (block) => {
@@ -181,12 +242,13 @@
       }
     return { text: nodes.map((x) => x.n.data).join(''), ends };
   };
-  // Where a bookmark's text is, in px below the top of its question's turn; null if not found.
+  // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
+  // the question's start) when it is stale now: its answer, paragraph or text no longer there.
   const locate = (turn, b) => {
     const raw = rawOf.get(b.msg),
       msg = raw && [...turn.querySelectorAll(MESSAGE)].find((m) => m.dataset.messageId === raw),
       block = msg?.querySelector(ANSWER)?.children[b.para];
-    if (!block) return null;
+    if (!block || !B.matches(b, paragraphs(msg))) return null;
     let top = block.getBoundingClientRect().top;
     if (b.start > 0) {
       const at = textNodes(block).findLast((x) => x.start <= b.start);

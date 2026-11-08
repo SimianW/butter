@@ -499,6 +499,7 @@
       box-shadow: 0 0 0 1px var(--page); transform-origin: right center; }
     .rail.hot .mark { box-shadow: 0 0 0 1px var(--surface); }
     .mark.hover { width: 12px; }
+    .mark.stale { opacity: .4; }
     .mark:focus-visible { outline-offset: 2px; border-radius: 2px; }
     .mark.gone { opacity: 0; transition: opacity .16s; }
     .mark.new { animation: mark-in .18s cubic-bezier(.2, .8, .2, 1), mark-pulse .6s .18s; }
@@ -536,6 +537,11 @@
     .tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .bmc .it .x { width: 18px; height: 18px; margin: 0 6px 0 7px; opacity: 0; }
     .it:hover .x, .it:focus-within .x { opacity: 1; }
+    .bmc.stale .one, .it.stale .go { color: var(--muted); }
+    .bmc.stale .meta .flag path, .it.stale .flag path { opacity: .45; }
+    .why { font-size: 11px; color: var(--muted); flex: none; }
+    .warn { font-size: 11px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line);
+      max-width: 236px; }
     .seek-card { max-width: 260px; }
     .seek-card .text { -webkit-line-clamp: 3; }
     .spin { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; border-radius: 50%;
@@ -742,7 +748,7 @@
 
   // ---- Bookmark segments: one under each question that holds bookmarks (bookmarks/content.js
   // sends them). They stay out of the hover wave; within 4 px the segment wins the pointer.
-  let marks = new Map(), // question id -> { count, fresh, land(turn) -> px below the turn's top }
+  let marks = new Map(), // question id -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
     hotMark = -1;
   const markEls = new Map();
   const markY = (i) => tickY(i) + ButterBookmarks.segmentOffset(geo.pitch);
@@ -796,6 +802,8 @@
         markEls.set(id, el);
       }
       el.setAttribute('aria-label', ButterBookmarks.label(m.bookmarks, TXT.zh));
+      // Pale only when every bookmark under the question is stale (#55).
+      el.classList.toggle('stale', ButterBookmarks.pale(m.bookmarks));
       el.style.top = `${(markY(i) - geo.y - 1).toFixed(2)}px`;
       el.classList.toggle('hover', i === hotMark);
     }
@@ -848,6 +856,7 @@
       TXT.zh,
     );
     card.classList.toggle('list', !c.single);
+    bmc.classList.toggle('stale', c.stale);
     card.setAttribute('role', 'group');
     card.setAttribute('aria-label', c.meta);
     const x = (b) => {
@@ -868,7 +877,9 @@
       head.append(make('span', null, c.meta), x(c.rows[0]));
       const one = go(c.rows[0], 'one');
       one.append(make('span', null, c.rows[0].excerpt));
-      bmc.replaceChildren(head, one);
+      // A stale bookmark: its paragraph is gone, and a click lands at the question's start.
+      if (c.warn) bmc.replaceChildren(head, one, make('div', 'warn', c.warn));
+      else bmc.replaceChildren(head, one);
     } else {
       head.append(make('span', null, c.meta));
       const rows = make('div', 'rows');
@@ -878,6 +889,10 @@
           g = go(b, 'go');
         g.innerHTML = FLAG;
         g.append(make('span', 'tx', b.excerpt));
+        if (b.stale) {
+          it.classList.add('stale');
+          g.append(' ', make('span', 'why', c.tag)); // the space only separates them in its name
+        }
         it.append(g, x(b));
         rows.append(it);
       }
@@ -1158,7 +1173,7 @@
     const h = 2 * PAD + moreH + n * pitch;
     const y = Math.round((top + bottom) / 2 - h / 2);
     geo = { y, top: y + PAD + moreH, pitch };
-    globalThis.ButterBookmarkPage?.sync(convId, cur.items);
+    globalThis.ButterBookmarkPage?.sync(convId, cur.items, !cur.hasPrev);
     drawMarks();
     more.hidden = !cur.hasPrev;
     host.style.setProperty(

@@ -9,6 +9,13 @@
 // The rail's hover card (#53): the single and list cards, moving onto the card, jumping from a row,
 // deleting with × and the filled button, the segment fading out, keyboard-only jump and delete, and
 // light and dark screenshots of both cards.
+// Stale bookmarks (#55): regenerating a bookmarked answer in the fixture (in the page, then as the
+// conversation's current version after a reload) and editing a bookmarked paragraph: the grey row
+// with "answer changed", the pale segment only when every bookmark under the question is stale,
+// the stale single card with its footer, the jump landing at the question's start, a bookmark
+// turning live again when the original version is switched back, and light and dark screenshots
+// of the stale cards (`card-stale-*`, `card-list-stale-*`; with BUTTER_BOOKMARKS_MOCKUP also the
+// mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them).
 // First-use notice (#56): the first save shows it, Undo deletes the bookmark and its segment and the
 // next save shows it again (light and dark, English and Chinese, with layout consent pending,
 // declined, granted and switched off), Got it keeps it away on a third save and after a reload.
@@ -42,20 +49,30 @@ const PARAGRAPH = (i, k) =>
   'reads the table statistics gathered by ANALYZE, weighs the share of rows a predicate is expected to match, and picks ' +
   'whichever plan reads fewer pages overall, which is why a selective predicate on a well-analysed column usually ' +
   'gets the index while a broad one gets the scan, and why stale statistics after a bulk load mislead it.';
+// Regenerated answers (#55): a new message id and other text. Edited ones keep the id, but their
+// third paragraph (block 2) says something else.
+const regen = (i) => hex('5c7d2e90', i);
+const REGENERATED = (i, k) =>
+  `Regenerated answer ${i + 1}, point ${k + 1}: a different explanation of when an index helps a query.`;
+const EDITED = (i) => `Edited answer ${i + 1}: this paragraph now says something else entirely.`;
 const blocks = (i) =>
-  [
+  page$.regen.has(i)
+    ? [0, 1, 2, 3].map((k) => `<p>${REGENERATED(i, k)}</p>`).join('')
+    : [
     `<p>${PARAGRAPH(i, 0)}</p>`,
     `<h3>Fixture heading ${i + 1}</h3>`,
     ...[1, 2, 3, 4].map((k) => `<p${k === 2 ? ' class="narrow"' : ''}>${PARAGRAPH(i, k)}</p>`),
     `<ul><li>Fixture list item one</li><li>Fixture list item two</li></ul>`,
-  ].join('');
-const messages = [];
-for (let i = 0; i < TURNS; i++)
-  messages.push(
+  ]
+      .map((b, k) => (k === 2 && page$.edited.has(i) ? `<p>${EDITED(i)}</p>` : b))
+      .join('');
+const answerId = (i) => (page$.regen.has(i) ? regen(i) : answer(i));
+const messages = () =>
+  Array.from({ length: TURNS }, (_, i) => [
     { id: question(i), author: { role: 'user' }, content: { content_type: 'text', parts: [QUESTION(i)] } },
-    { id: answer(i), author: { role: 'assistant' }, content: { content_type: 'text', parts: ['answer'] } },
-  );
-const page$ = { theme: 'light' };
+    { id: answerId(i), author: { role: 'assistant' }, content: { content_type: 'text', parts: ['answer'] } },
+  ]).flat();
+const page$ = { theme: 'light', regen: new Set(), edited: new Set() };
 const html = () => `<!doctype html><html lang="en" class="${page$.theme}"><head><meta charset="utf-8"><title>Fixture chat</title><style>
 body { margin:0; overflow:hidden; font:16px/26px system-ui, sans-serif; background:#fff; color:#0d0d0d }
 .dark body { background:#212121; color:#ececec }
@@ -73,7 +90,7 @@ article { display:block; width:720px; margin:0 auto 24px }
   { length: TURNS },
   (_, i) =>
     `<div><article data-turn-key="${question(i)}" data-testid="conversation-turn-${i + 1}"><div class="user"><div data-message-author-role="user" data-message-id="${question(i)}"><div data-user-message-bubble>${QUESTION(i)}</div></div></div>` +
-    `<div data-message-author-role="assistant" data-message-id="${answer(i)}"><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}</div></div></article></div>`,
+    `<div data-message-author-role="assistant" data-message-id="${answerId(i)}"><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}</div></div></article></div>`,
 ).join('')}</div></div><script>
 fetch('/backend-api/me');
 fetch('/backend-api/conversation/${CONV}');
@@ -103,7 +120,7 @@ await context.route('**/*', (route) => {
   if (url.pathname === '/backend-api/me')
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ id: 'user-fixture' }) });
   if (url.pathname === `/backend-api/conversation/${CONV}`)
-    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ messages }) });
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ messages: messages() }) });
   return route.fulfill({ contentType: 'text/html', body: html() });
 });
 const worker = context.serviceWorkers()[0] || (await context.waitForEvent('serviceworker'));
@@ -841,6 +858,218 @@ try {
   await page.waitForTimeout(800);
   check('after Got it and a reload, a save shows no notice', !(await notice()).shown && (await stored()).length === 3);
 
+  // 11. Stale bookmarks (#55). Start over with seeded bookmarks: question 10 holds one, question 7
+  // three (blocks 0, 2 and 4). English, the notice already acknowledged.
+  await settings({ bookmarkNotice: 'acknowledged' });
+  await worker.evaluate(async () => {
+    const db = await database(),
+      tx = db.transaction('bookmarks', 'readwrite');
+    tx.objectStore('bookmarks').clear();
+    await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
+  });
+  const LONE = 9;
+  const STALE_SEEDS = [seed(LONE, 0), seed(TURN, 0, 0, null, 1), seed(TURN, 2, 0, null, 2), seed(TURN, 4, 0, null, 3)];
+  await worker.evaluate(async (rows) => {
+    const db = await database(),
+      tx = db.transaction('bookmarks', 'readwrite');
+    for (const r of rows) tx.objectStore('bookmarks').put({ ...r, key: ButterBookmarks.key(r) });
+    await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
+  }, STALE_SEEDS);
+  const staleState = () =>
+    page.evaluate(() => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        bmc = root.querySelector('.bmc'),
+        one = bmc.querySelector('.one');
+      return {
+        shown: root.querySelector('.card').classList.contains('show'),
+        stale: bmc.classList.contains('stale'),
+        meta: bmc.querySelector('.meta')?.textContent,
+        warn: bmc.querySelector('.warn')?.textContent ?? null,
+        textColor: one && getComputedStyle(one.querySelector('span')).color,
+        metaColor: getComputedStyle(bmc.querySelector('.meta')).color,
+        flag: one && +getComputedStyle(bmc.querySelector('.meta .flag path')).opacity,
+        one: one && (() => {
+          const r = one.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        })(),
+        rows: [...bmc.querySelectorAll('.it')].map((it) => ({
+          stale: it.classList.contains('stale'),
+          why: it.querySelector('.why')?.textContent ?? null,
+          color: getComputedStyle(it.querySelector('.tx')).color,
+          go: it.querySelector('.go').textContent,
+        })),
+      };
+    });
+  const segments = async () => {
+    const r = await rail(),
+      opacity = (turn) => page.evaluate((y) => {
+        const m = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].find(
+          (el) => Math.abs(el.getBoundingClientRect().top + 1 - y) <= 1.5);
+        return m ? { stale: m.classList.contains('stale'), opacity: +getComputedStyle(m).opacity, label: m.getAttribute('aria-label') } : null;
+      }, r.ticks[turn].y + 5);
+    return { lone: await opacity(LONE), turn: await opacity(TURN), count: r.marks.length };
+  };
+  // A control in the fixture page that stands in for ChatGPT's regenerate, edit and version arrows:
+  // a real click, as the user's click on ChatGPT's own button would be.
+  const act = async (fn, turn) => {
+    await page.evaluate(
+      ([fn, turn, id, regenId, regenHtml, editHtml]) => {
+        let b = document.getElementById('fx');
+        if (!b) {
+          b = document.createElement('button');
+          b.id = 'fx';
+          b.textContent = 'fixture';
+          b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:10';
+          document.body.append(b);
+        }
+        b.onclick = () => {
+          globalThis.fxKept ??= {};
+          const m = document.querySelector(`[data-message-id="${id}"]`);
+          if (fn === 'regen') {
+            // A new answer replaces the bookmarked one in its turn; the old one is kept for the arrows.
+            const n = document.createElement('div');
+            n.setAttribute('data-message-author-role', 'assistant');
+            n.setAttribute('data-message-id', regenId);
+            n.innerHTML = `<div data-markdown-text-style="assistant-message" class="markdown prose">${regenHtml}</div>`;
+            globalThis.fxKept[turn] = m;
+            m.replaceWith(n);
+          } else if (fn === 'back') document.querySelector(`[data-message-id="${regenId}"]`).replaceWith(globalThis.fxKept[turn]);
+          else if (fn === 'edit') m.querySelector('[data-markdown-text-style]').children[2].outerHTML = editHtml;
+        };
+      },
+      [fn, turn, answer(turn), regen(turn), [0, 1, 2, 3].map((k) => `<p>${REGENERATED(turn, k)}</p>`).join(''), `<p>${EDITED(turn)}</p>`],
+    );
+    await page.mouse.click(20, 888);
+    await page.waitForTimeout(900); // the page re-checks staleness 600 ms after a click
+  };
+  await open('light');
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+  await toTop();
+  let seg = await segments();
+  check('stale: before any change, both segments are live and full colour', seg.lone && !seg.lone.stale && seg.lone.opacity === 1 && seg.turn && !seg.turn.stale, { seg });
+
+  // Regenerate question 10's answer and edit paragraph 2 of question 7's, in the page.
+  await act('regen', LONE);
+  await act('edit', TURN);
+  await page.mouse.move(700, 300);
+  seg = await segments();
+  check('regenerated: the segment of a question whose only bookmark is stale turns pale (40 %)',
+    seg.lone?.stale && Math.abs(seg.lone.opacity - 0.4) < 0.01 && seg.lone.label.endsWith('(answer changed)'), { seg });
+  check('edited: one stale bookmark of three keeps the segment full colour', seg.turn && !seg.turn.stale && seg.turn.opacity === 1, { seg });
+  check('nothing about staleness is stored', (await stored()).length === 4 && (await stored()).every((b) => !('stale' in b)));
+
+  const muted = { light: 'rgb(143, 143, 143)', dark: 'rgb(163, 163, 163)' };
+  await hoverSegment(LONE);
+  let st = await staleState();
+  check('the stale single card: "Bookmark · answer changed", grey text, faded flag and the footer',
+    st.shown && st.stale && st.meta === 'Bookmark · answer changed' && st.textColor === muted.light && st.flag < 0.5 &&
+      st.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { st });
+  await hoverSegment(TURN);
+  st = await staleState();
+  check('the list: the edited paragraph\'s row is grey with "answer changed", the others are not',
+    st.shown && st.rows.length === 3 && JSON.stringify(st.rows.map((r) => r.stale)) === '[false,true,false]' &&
+      st.rows[1].why === 'answer changed' && st.rows[1].color === muted.light && st.rows[0].why === null && st.rows[0].color !== muted.light, { rows: st.rows });
+
+  // A jump to a stale bookmark lands at the start of its question: from the single card's text,
+  // then from the segment itself.
+  const questionTop = (turn) =>
+    page.evaluate((id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top, question(turn));
+  await toTop();
+  await hoverSegment(LONE);
+  st = await staleState();
+  await page.mouse.move(st.one.x, st.one.y, { steps: 12 });
+  await page.mouse.click(st.one.x, st.one.y);
+  await page.waitForTimeout(3500);
+  let top = await questionTop(LONE);
+  check('clicking the stale bookmark lands at the start of its question', Math.abs(top - 64) <= 3, { top });
+  await toTop();
+  const m10 = await hoverSegment(LONE);
+  await page.mouse.click(m10.right - 4, m10.y);
+  await page.waitForTimeout(3500);
+  top = await questionTop(LONE);
+  check('clicking the pale segment lands at the start of its question', Math.abs(top - 64) <= 3, { top });
+  // The edited row too; a live row still lands on its paragraph.
+  await toTop();
+  await hoverSegment(TURN);
+  c = await cardState();
+  await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+  await page.mouse.move(c.rows[1].x, c.rows[1].y, { steps: 4 });
+  await page.mouse.click(c.rows[1].x - 40, c.rows[1].y);
+  await page.waitForTimeout(3500);
+  top = await questionTop(TURN);
+  check('clicking the grey row lands at the start of its question', Math.abs(top - 64) <= 3, { top });
+  await toTop();
+  await hoverSegment(TURN);
+  c = await cardState();
+  await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+  await page.mouse.move(c.rows[2].x, c.rows[2].y, { steps: 4 });
+  await page.mouse.click(c.rows[2].x - 40, c.rows[2].y);
+  await page.waitForTimeout(3500);
+  check('a live row next to it still lands on its paragraph', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
+
+  // The original version switched back: live again.
+  await toTop();
+  await act('back', LONE);
+  await page.mouse.move(700, 300);
+  seg = await segments();
+  await hoverSegment(LONE);
+  st = await staleState();
+  check('switched back to the original answer: the bookmark is live again', seg.lone && !seg.lone.stale && seg.lone.opacity === 1 &&
+    !st.stale && st.meta === 'Bookmark · question 10 of 12' && st.warn === null, { seg, st: st.meta });
+
+  // Regenerating every bookmarked answer under question 7 turns its segment pale.
+  await act('regen', TURN);
+  await page.mouse.move(700, 300);
+  seg = await segments();
+  check('all of question 7\'s bookmarks stale: now its segment is pale too', seg.turn?.stale && Math.abs(seg.turn.opacity - 0.4) < 0.01, { seg });
+
+  // After a reload the regenerated answer is the conversation's version: the old message is gone
+  // from the list, and the bookmark is still kept, stale, under question 10. Light and dark shots.
+  page$.regen = new Set([LONE]);
+  page$.edited = new Set([TURN]);
+  const staleShots = {};
+  for (const theme of ['light', 'dark']) {
+    await open(theme);
+    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+    await toTop();
+    seg = await segments();
+    await hoverSegment(LONE);
+    const single = await staleState();
+    await shoot(`card-stale-${theme}`);
+    await hoverSegment(TURN);
+    const list = await staleState();
+    c = await cardState();
+    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+    await page.waitForTimeout(250);
+    await shoot(`card-list-stale-${theme}`);
+    staleShots[theme] = { seg, single, list };
+  }
+  for (const theme of ['light', 'dark']) {
+    const { seg, single, list } = staleShots[theme];
+    check(`after a reload (${theme}): the vanished message's bookmark is kept, stale and pale under question 10`,
+      seg.lone?.stale && Math.abs(seg.lone.opacity - 0.4) < 0.01 && single.stale && single.textColor === muted[theme] &&
+        single.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { seg, single: single.meta });
+    check(`after a reload (${theme}): the edited row stays grey, its segment full colour`,
+      !seg.turn?.stale && JSON.stringify(list.rows.map((r) => r.stale)) === '[false,true,false]' && list.rows[1].color === muted[theme], { rows: list.rows });
+  }
+  check('after the reload, all four bookmarks are still stored', (await stored()).length === 4);
+
+  // Chinese: the stale strings.
+  await settings({ lang: 'zh', bookmarkNotice: 'acknowledged' });
+  await open('light');
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+  await toTop();
+  await hoverSegment(LONE);
+  const zhSingle = await staleState();
+  await hoverSegment(TURN);
+  const zhList = await staleState();
+  check('Chinese: "书签 · 回答已变化", its footer and the "回答已变化" row',
+    zhSingle.meta === '书签 · 回答已变化' && zhSingle.warn === '找不到这一段了。点击会跳到第 10 个问题的开头。' && zhList.rows[1].why === '回答已变化',
+    { meta: zhSingle.meta, warn: zhSingle.warn, why: zhList.rows[1].why });
+  await settings({ bookmarkNotice: 'acknowledged' });
+  page$.regen = new Set();
+  page$.edited = new Set();
+
   // Against the mockup's section 4, when given.
   if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
     const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
@@ -853,6 +1082,13 @@ try {
       const diff = await compare(mock, b.file, reference);
       check(`notice ${b.theme} ${b.lang} matches the mockup`, diff.ratio !== undefined && diff.ratio < 0.001, diff);
     }
+    // Section 3's stale states, for a side-by-side look at card-stale-* and card-list-stale-*.
+    await mock.click('#lang button[data-l="en"]');
+    for (const theme of ['light', 'dark'])
+      for (const [scene, name] of [['stale', 'card-stale'], ['list', 'card-list']])
+        await mock
+          .locator(`.frame${theme === 'dark' ? '.dark' : ':not(.dark)'}[data-scene="${scene}"]`)
+          .screenshot({ path: `${shots}/mockup-${name}-${theme}.png` });
     await mock.close();
   }
 } finally {

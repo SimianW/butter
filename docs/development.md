@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the hover button, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages. |
 | `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
@@ -80,6 +80,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
 - Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset),
   `test/bookmark-card.test.js` (the hover card's meta line, rows, five-row limit and names),
+  `test/bookmark-stale.test.js` (live and stale resolution: a regenerated answer, an edited one, a
+  vanished message, a version switched back; the all-stale segment; the stale card in both languages),
   `test/bookmark-store.test.js` (the worker store) and `test/bookmark-notice.test.js` (the first
   bookmark notice: copy, Undo, Got it, independence from the layout switch and consent) run under
   `node --test`.
@@ -92,6 +94,12 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   moving onto the card, a jump from a row, × and the filled button deleting (the segment fading out,
   or going at once under reduced motion), keyboard-only jump and delete, and a reload; it shoots
   `card-single-*` and `card-list-*` in light and dark for comparison with the #51 mockup's section 3.
+  Stale bookmarks: it regenerates a bookmarked answer and edits a bookmarked paragraph in the page,
+  then serves the regenerated answer as the conversation's version and reloads; it checks the grey
+  "answer changed" row, the pale segment only when every bookmark under the question is stale, the
+  stale single card and its footer, jumps landing at the question's start, a switched-back version
+  turning live again, and the Chinese strings, and shoots `card-stale-*` and `card-list-stale-*`
+  (with the mockup set, also its `mockup-card-stale-*` and `mockup-card-list-*` to look at side by side).
   It then drives the first bookmark notice in light and dark, English and Chinese:
   Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
   and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
@@ -197,12 +205,25 @@ another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
 the layout setting, `layoutConsent` or layout Clear.
 
 On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
-it, and the rail calls `ButterBookmarkPage.sync(conv, items)` whenever it renders. The content
-script answers with `ButterRail.setMarks(conv, marks)`: a `Map` from question id to
-`{ count, fresh, bookmarks, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
-question's bookmarks in answer order, `land(turnElement, bookmark = bookmarks[0])` returns that
-bookmark's offset below the turn's top for the rail's jump (or null to land on the question), and
-`remove(bookmark)` deletes it from the store and sends the marks again.
+it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever it renders
+(`complete`: no earlier page is left to load). The content script answers with
+`ButterRail.setMarks(conv, marks)`: a `Map` from question id to
+`{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
+question's bookmarks in answer order, each with its `stale` flag, `stale` is set when all of them are
+stale (the segment shows at 40 % opacity), `land(turnElement, bookmark = bookmarks[0])` returns that
+bookmark's offset below the turn's top for the rail's jump (or null to land on the question, as a
+stale bookmark does), and `remove(bookmark)` deletes it from the store and sends the marks again.
+
+Staleness (`ButterBookmarks.resolve`) is computed on the page and never stored. A bookmark is live
+when its answer is rendered, its paragraph exists and that paragraph still contains the excerpt's
+first 40 characters (about its first line). It is stale when the paragraph or its text changed (an
+edited answer), when its question's turn is mounted with another answer (regenerated, or another
+version shown), or when its message is no longer in a fully loaded conversation; a turn that isn't
+mounted keeps the state last seen in the tab. The content script resolves on every rail render, about
+0.6 s and 2.5 s after a click on the page (regenerate, edit and the version arrows are clicks), and
+when the pointer or focus reaches the rail; never while a scrollbar drag is seeking. The card shows a
+stale row grey with "answer changed", and a single stale bookmark with "Bookmark · answer changed",
+grey text and a footer saying a click opens its question instead.
 
 The rail draws the hover card for a segment from `ButterBookmarks.card(bookmarks, at, zh)`
 (`{ single, meta, rows, visible, label }`); the card takes the pointer while it shows bookmarks.
