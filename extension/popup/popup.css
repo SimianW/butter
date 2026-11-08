@@ -285,7 +285,7 @@ button {
   left: 23px;
 }
 .dark .master .tg.on {
-  background: #1d1914;
+  background: var(--paper);
 }
 .dark .master .tg.on::after {
   background: var(--butter);
@@ -387,7 +387,7 @@ button {
 }
 .dark .lang button.on {
   background: var(--butter);
-  color: #1d1914;
+  color: #1b170f;
 }
 /* The segments clip their own outline, so the ring goes on the whole switch. */
 .lang:has(button:focus-visible) {
