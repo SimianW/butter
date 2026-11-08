@@ -554,7 +554,7 @@ try {
   };
   const heading = (dest) => inShadow(dest, '.card h3').innerText();
   // The working card per the mockup (state 3): 400 px wide, centred, 250 px from the top at
-  // 800 px height; the scrim starts below the 56 px header.
+  // 800 px height; the scrim covers the whole page, header included (user decision).
   const cardGeometry = (dest) =>
     dest.evaluate((host) => {
       const root = document.querySelector(host).shadowRoot;
@@ -577,7 +577,8 @@ try {
     assert.equal(Math.round(g.card.width), 400);
     assert.equal(Math.round(g.card.top), 250);
     assert.equal(Math.round(g.card.left + g.card.width / 2), g.width / 2, 'centred');
-    assert.equal(Math.round(g.scrim.top), 56, 'scrim below the header');
+    assert.equal(Math.round(g.scrim.top), 0, 'scrim covers the header too');
+    assert.equal(Math.round(g.scrim.height), 800, 'scrim covers the full height');
     assert.equal(await dest.evaluate(() => fixture.branchedFrom.length), 0, 'no branch while streaming');
     // Then branches from the finished latest reply and sends there.
     await inShadow(dest, '.line').waitFor({ timeout: 20000 });
@@ -930,7 +931,7 @@ try {
         width,
       });
       await inShadow(dest, '.card.err').waitFor({ timeout: 40_000 });
-      await dest.locator('body').click({ position: { x: 5, y: 5 } }); // no focus ring in the shot
+      await dest.mouse.click(5, 5); // no focus ring in the shot (lands on the full-page cover)
       await settle(dest);
       await capture(dest, 'failure', width, theme);
       await dest.close();
@@ -1001,7 +1002,7 @@ try {
       '找不到 ChatGPT 的 “Branch in new chat” 菜单。没有发送任何内容。',
     );
     assert.deepEqual(await card.locator('.btns .btn').allInnerTexts(), ['关闭标签页', '复制问题', '重试']);
-    await failed.locator('body').click({ position: { x: 5, y: 5 } });
+    await failed.mouse.click(5, 5); // lands on the full-page cover
     await settle(failed);
     await capture(failed, 'failure', 1280, 'light-zh');
     await failed.close();

@@ -74,11 +74,6 @@
     [...(scroller() || document).querySelectorAll(ASSISTANT)]
       .filter((el) => !written || el.textContent.trim())
       .map((el) => el.closest('[data-turn-key]')?.getAttribute('data-turn-key') || el);
-  const headerBottom = () => {
-    const header = [...document.querySelectorAll('header')].find(visible);
-    const bottom = header?.getBoundingClientRect().bottom;
-    return bottom > 0 && bottom < 120 ? bottom : 56;
-  };
 
   // ChatGPT's own "Ask ChatGPT" selection button, and the box that draws it (the first
   // ancestor with a background), whose geometry and colors Butter's button copies.
@@ -301,7 +296,6 @@
     composerBox,
     clearTop,
     replyKeys,
-    headerBottom,
     nativeAsk,
     nativeBusy: ({ button }) => busy(button),
     nativeStyle,

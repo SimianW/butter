@@ -473,7 +473,7 @@
       u.overlay.remove();
     };
     onEscape = cancel;
-    u.overlay.working({ question: job.question, headerBottom: P.headerBottom(), onCancel: cancel });
+    u.overlay.working({ question: job.question, onCancel: cancel });
     tabTitle.set(u.strings().creating);
     const page = P.adapter();
     let before = null;
@@ -513,7 +513,6 @@
           u.overlay.failure({
             question: job.question,
             cause: info.cause,
-            headerBottom: P.headerBottom(),
             onRetry: () => runBranch(job),
             onCopy: () => copy(B.formatMessage(job.quote, job.question)),
             onCloseTab: closeTab,

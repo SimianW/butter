@@ -121,7 +121,8 @@ svg { display: block; }
 .qpop kbd { font: 11px ui-monospace, monospace; border: 1px solid var(--hair); border-radius: 4px; padding: 0 4px; }
 
 /* 3 · new tab: cover and card while Butter drives ChatGPT's menu */
-.scrim { position: fixed; left: 0; right: 0; bottom: 0; top: 56px; background: var(--scrim); }
+/* The cover takes the whole page, header included, so nothing under it can be clicked mid-run. */
+.scrim { position: fixed; inset: 0; background: var(--scrim); }
 .card { position: fixed; left: 50vw; top: clamp(72px, 31.25vh, 250px); transform: translateX(-50%);
   width: min(400px, calc(100vw - 32px)); border-radius: 20px; background: var(--pop); box-shadow: var(--pop-shadow);
   padding: 20px 22px 18px; font-size: 15px; }
@@ -315,12 +316,11 @@ svg { display: block; }
       card = null,
       onFailureClose = null;
     const overlay = {
-      working({ question: text, headerBottom = 56, onCancel }) {
+      working({ question: text, onCancel }) {
         overlay.remove();
         attach();
         const s = t();
         scrim = el('div', 'scrim');
-        scrim.style.top = `${headerBottom}px`;
         card = el(
           'div',
           'card',
@@ -337,12 +337,11 @@ svg { display: block; }
         root.append(scrim, card);
       },
       // Mockup state 5. × (and Esc) close only the card and keep the tab.
-      failure({ question: text, cause, headerBottom = 56, onRetry, onCopy, onCloseTab, onClose }) {
+      failure({ question: text, cause, onRetry, onCopy, onCloseTab, onClose }) {
         overlay.remove();
         attach();
         const s = t();
         scrim = el('div', 'scrim');
-        scrim.style.top = `${headerBottom}px`;
         card = el(
           'div',
           'card err',
