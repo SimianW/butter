@@ -50,6 +50,12 @@
     }
   ],
   "permissions": ["storage", "unlimitedStorage"],
+  "commands": {
+    "bookmark": {
+      "suggested_key": { "default": "Alt+Shift+M", "mac": "Alt+Shift+M" },
+      "description": "__MSG_bookmarkCommand__"
+    }
+  },
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {

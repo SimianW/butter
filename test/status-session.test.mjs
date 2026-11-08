@@ -13,6 +13,7 @@ function worker(session) {
     crypto: globalThis.crypto,
     chrome: {
       runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
+      commands: { onCommand: { addListener() {} } },
       storage: {
         local: { get: async () => ({}) },
         session: {

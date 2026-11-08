@@ -6,5 +6,9 @@
   "appDesc": {
     "message": "Makes long ChatGPT chats smooth: no freezes while answers stream, instant scrollbar previews, and a question rail.",
     "description": "Short extension summary shown in Chrome and the Chrome Web Store; maximum 132 characters."
+  },
+  "bookmarkCommand": {
+    "message": "Bookmark the selection, or the paragraph at the top of the chat",
+    "description": "Name of the bookmark keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

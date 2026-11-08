@@ -6,5 +6,9 @@
   "appDesc": {
     "message": "让 ChatGPT 长对话保持流畅：回答输出时不卡顿，拖动滚动条即时预览，还有问题导航条。",
     "description": "Short extension summary shown in Chrome and the Chrome Web Store; maximum 132 characters."
+  },
+  "bookmarkCommand": {
+    "message": "为选中内容加书签，没有选中时为对话顶部的段落加书签",
+    "description": "Name of the bookmark keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

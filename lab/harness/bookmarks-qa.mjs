@@ -6,10 +6,18 @@
 // question, clicking the segment lands on the paragraph, a reload shows the segment again, the same
 // paragraph is not saved twice, the conversation's bookmarks are read once and not during scrolling,
 // and with the rail off or Butter paused neither the button nor a segment shows.
-// Run: npm ci --prefix lab/harness && node lab/harness/bookmarks-qa.mjs
+// Selection and shortcut (#54): a selection's tooltip and the key Chrome reports, a selection saved
+// with the button and with the shortcut (also across paragraphs), the top paragraph with the
+// shortcut and nothing selected, nothing for a selection outside the answers, each landing on its
+// text, and no key hint once the command's key is cleared in chrome://extensions/shortcuts.
+// The shortcut must be real keyboard input (chrome.commands ignores DevTools key events): with an X
+// display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
+// below. Without a display the run asks the worker to relay the command instead and says so.
+// Run: npm ci --prefix lab/harness && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa).
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -69,11 +77,16 @@ fetch('/backend-api/me');
 fetch('/backend-api/conversation/${CONV}');
 </script></body></html>`;
 
+const headed = !!process.env.DISPLAY;
 const context = await chromium.launchPersistentContext(profile, {
-  headless: true,
+  headless: !headed,
   channel: 'chromium',
   viewport: { width: 1400, height: 900 },
-  args: [`--disable-extensions-except=${repo}/extension`, `--load-extension=${repo}/extension`],
+  args: [
+    `--disable-extensions-except=${repo}/extension`,
+    `--load-extension=${repo}/extension`,
+    '--window-position=0,0',
+  ],
 });
 const errors = [],
   foreign = [];
@@ -172,7 +185,9 @@ const button = () =>
       h: r.height,
       radius: s.borderRadius,
       label: b.getAttribute('aria-label'),
-      tip: b.querySelector('.tip').textContent,
+      tip: b.querySelector('.tip span').textContent,
+      kbd: b.querySelector('.tip kbd').textContent,
+      kbdShown: getComputedStyle(b.querySelector('.tip kbd')).display !== 'none',
     };
   });
 const block = (turn, k) =>
@@ -190,6 +205,62 @@ const scrollTo = (turn) =>
     const sc = document.querySelector('.thread-scroll-container');
     sc.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - 120;
   }, question(turn));
+// Select text in answer paragraphs: from `start` in paragraph k to `end` in paragraph k2.
+const select = (turn, k, start, k2, end) =>
+  page.evaluate(
+    ([id, k, start, k2, end]) => {
+      const blocks = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children;
+      const r = document.createRange();
+      r.setStart(blocks[k].firstChild, start);
+      r.setEnd(blocks[k2].firstChild, end);
+      getSelection().removeAllRanges();
+      getSelection().addRange(r);
+    },
+    [answer(turn), k, start, k2, end],
+  );
+// Press the bookmark command's key as real input, with the X pointer parked on the header; without
+// a display, the worker relays the command to the tab as Chrome would.
+// The X pointer stays on the tab strip (screen y 20, above the page): over the page, its own moves
+// would compete with the harness's hover. Without a window manager, keys go where the pointer is.
+const xkeys = (chord) =>
+  execFileSync('python3', [path.join(repo, 'lab/harness/xtest-keys.py'), chord, '700', '20']);
+if (headed) xkeys('Shift');
+async function shortcut() {
+  if (headed) xkeys('Alt+Shift+M');
+  else
+    await worker.evaluate(async () => {
+      // Reading tab urls needs a permission Butter doesn't have: only the chat's tab listens.
+      for (const tab of await chrome.tabs.query({ active: true }))
+        await chrome.tabs.sendMessage(tab.id, { version: 1, type: 'butter-bookmark-shortcut' }).catch(() => {});
+    });
+  await page.waitForTimeout(600);
+}
+// Where a stored bookmark's text starts, in px below the scroller's top.
+const textTop = (turn, k, offset) =>
+  page.evaluate(
+    ([id, k, offset]) => {
+      const node = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[k].firstChild;
+      const r = document.createRange();
+      r.setStart(node, offset);
+      r.setEnd(node, offset + 1);
+      return r.getClientRects()[0].top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top;
+    },
+    [answer(turn), k, offset],
+  );
+// Click question `turn`'s segment from the top of the chat and wait for the jump.
+async function jumpBySegment(turn) {
+  await page.mouse.move(10, 10);
+  await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
+  await page.waitForTimeout(300);
+  const r = await rail();
+  const m = r.marks.find((x) => Math.abs(x.y - r.ticks[turn].y - 5) <= 0.6);
+  if (!m) return false;
+  await page.mouse.click(m.right - 4, m.y + 3);
+  await page.waitForTimeout(3500);
+  return true;
+}
+const markUnder = (r, turn) => r.marks.some((m) => Math.abs(m.y - r.ticks[turn].y - 5) <= 0.6);
+
 // Hover a paragraph (away from its first line), then click the button.
 async function bookmark(turn, k) {
   await scrollTo(turn);
@@ -279,6 +350,12 @@ try {
     Math.abs(hover.shown.x - (hover.first.x - 38)) <= 1 && Math.abs(hover.shown.y + 14 - (hover.first.y + 13)) <= 3,
     { button: hover.shown, block: hover.first });
   check('tooltip and name say "Bookmark paragraph"', hover.shown?.tip === 'Bookmark paragraph' && hover.shown.label === 'Bookmark paragraph');
+  // Chrome assigned the suggested key (it does not when the key is one of its own), and the
+  // tooltip shows it as the mockup writes keys.
+  const commands = await worker.evaluate(() => chrome.commands.getAll());
+  check('Chrome reports Alt+Shift+M for the bookmark command, and the tooltip shows it',
+    commands.find((c) => c.name === 'bookmark')?.shortcut === 'Alt+Shift+M' && hover.shown.kbd === 'Alt Shift M' && hover.shown.kbdShown,
+    { commands, kbd: hover.shown.kbd });
   check('button follows its paragraph when content above it settles',
     Math.abs(hover.placed.x - (hover.b.x - 38)) <= 1 && Math.abs(hover.placed.y + 14 - (hover.b.y + 13)) <= 3,
     { button: hover.placed, block: hover.b });
@@ -385,6 +462,115 @@ try {
   await page.screenshot({ path: `${shots}/button-dark.png`, clip: { x: hoverDark.b.x - 60, y: hoverDark.b.y - 50, width: 820, height: 160 } });
   check('dark theme button shows', hoverDark.shown?.shown);
 
+  // 6b. Selection and shortcut (#54).
+  await open('light');
+  // (a) A selection inside one paragraph, saved with the button: question 3, paragraph 2.
+  const SEL = 'reads the table statistics gathered by ANALYZE',
+    selText = PARAGRAPH(2, 1),
+    selStart = selText.indexOf(SEL);
+  await scrollTo(2);
+  await select(2, 2, selStart, 2, selStart + SEL.length);
+  const selHover = await bookmark(2, 2);
+  check('with a selection, the tooltip and name say "Bookmark selection", with the key',
+    selHover.kept?.tip === 'Bookmark selection' && selHover.kept.label === 'Bookmark selection' && selHover.kept.kbd === 'Alt Shift M',
+    { tip: selHover.kept?.tip, kbd: selHover.kept?.kbd });
+  await page.screenshot({ path: `${shots}/button-selection-light.png`, clip: { x: selHover.b.x - 60, y: selHover.b.y - 50, width: 820, height: 160 } });
+  await selHover.click();
+  await page.waitForTimeout(600);
+  let all = await stored();
+  const bySel = all.find((b) => b.turn === 2);
+  check('the button saves only the selection: its offsets and its text',
+    bySel && bySel.para === 2 && bySel.start === selStart && bySel.end === selStart + SEL.length && bySel.excerpt === SEL,
+    { bySel });
+  check('the selection survives the click', await page.evaluate(() => getSelection().toString()) === SEL);
+  check('the selection bookmark has its segment under question 3', markUnder(await rail(), 2));
+  await page.evaluate(() => getSelection().removeAllRanges());
+  check('clicking its segment lands on the selected text, not the paragraph',
+    (await jumpBySegment(2)) && Math.abs((await textTop(2, 2, selStart)) - 64) <= 3,
+    { fromTop: await textTop(2, 2, selStart), paragraph: (await block(2, 2)).fromTop });
+
+  // (b) A selection across paragraphs, saved with the shortcut: question 5, paragraphs 2 to 3.
+  const crossStart = PARAGRAPH(4, 1).indexOf('weighs the share');
+  await scrollTo(4);
+  await page.mouse.move(10, 10);
+  await select(4, 2, crossStart, 3, 'Fixture answer 5 paragraph 3'.length);
+  await shortcut();
+  all = await stored();
+  const cross = all.find((b) => b.turn === 4);
+  check('the shortcut saves a selection across paragraphs, anchored to its first paragraph',
+    cross && cross.para === 2 && cross.start === crossStart && cross.end === PARAGRAPH(4, 1).length &&
+      cross.excerpt.startsWith('weighs the share') && [...cross.excerpt].length <= 240,
+    { cross, via: headed ? 'Alt+Shift+M through XTest' : 'the worker relaying the command' });
+  check('its segment is under question 5', markUnder(await rail(), 4));
+  await page.evaluate(() => getSelection().removeAllRanges());
+  check('clicking it lands on the selection\'s start',
+    (await jumpBySegment(4)) && Math.abs((await textTop(4, 2, crossStart)) - 64) <= 3, { fromTop: await textTop(4, 2, crossStart) });
+
+  // (c) Nothing selected: the shortcut bookmarks the first answer paragraph at or below the header.
+  // Question 9's paragraph 2 sits 40 px down, under the 52 px header: paragraph 3 is the one.
+  // Off-screen turns skip layout, so their boxes are estimates until they come into view: scroll,
+  // let layout catch up, and measure again until the paragraph sits there.
+  for (let k = 0; k < 8; k++) {
+    const off = await page.evaluate((id) => {
+      const sc = document.querySelector('.thread-scroll-container');
+      const p = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[2];
+      const d = p.getBoundingClientRect().top - sc.getBoundingClientRect().top - 40;
+      sc.scrollTop += d;
+      return d;
+    }, answer(8));
+    await page.waitForTimeout(150);
+    if (Math.abs(off) < 1) break;
+  }
+  await page.waitForTimeout(300);
+  await shortcut();
+  all = await stored();
+  const top = all.find((b) => b.turn === 8);
+  check('with nothing selected the shortcut bookmarks the top paragraph below the header',
+    top && top.para === 3 && top.start === 0 && top.end === PARAGRAPH(8, 2).length && PARAGRAPH(8, 2).startsWith(top.excerpt),
+    { top });
+  check('its segment is under question 9', markUnder(await rail(), 8));
+  check('clicking it lands on that paragraph', (await jumpBySegment(8)) && Math.abs((await block(8, 3)).fromTop - 64) <= 3,
+    { fromTop: (await block(8, 3)).fromTop });
+
+  // (d) A selection outside the answers (the user's question) creates nothing.
+  const count = (await stored()).length;
+  await scrollTo(10);
+  await page.evaluate((id) => {
+    const q = document.querySelector(`[data-turn-key="${id}"] [data-user-message-bubble]`);
+    getSelection().selectAllChildren(q);
+  }, question(10));
+  await shortcut();
+  check('a selection in a question creates nothing', (await stored()).length === count && !markUnder(await rail(), 10));
+  await page.evaluate(() => getSelection().removeAllRanges());
+
+  // (e) Dark theme, the selection tooltip.
+  await open('dark');
+  await scrollTo(2);
+  await select(2, 2, selStart, 2, selStart + SEL.length);
+  const selDark = await bookmark(2, 2);
+  await page.screenshot({ path: `${shots}/button-selection-dark.png`, clip: { x: selDark.b.x - 60, y: selDark.b.y - 50, width: 820, height: 160 } });
+  check('dark theme: the selection tooltip shows', selDark.kept?.tip === 'Bookmark selection');
+  await settings({ lang: 'zh' });
+  await page.waitForTimeout(400);
+  const zhTip = await button();
+  check('in Chinese the selection tooltip reads 为选中内容加书签', zhTip?.tip === '为选中内容加书签' && zhTip.label === '为选中内容加书签', { tip: zhTip?.tip });
+  await settings({});
+  await page.evaluate(() => getSelection().removeAllRanges());
+
+  // (f) Clear the command's key in Chrome's shortcut settings: the tooltip shows no hint.
+  const settingsPage = await context.newPage();
+  await settingsPage.goto('chrome://extensions/shortcuts');
+  // The action's input has no key (its Clear is disabled); the bookmark command's is the other one.
+  await settingsPage.locator('cr-shortcut-input #clear:not([disabled])').click();
+  await settingsPage.waitForTimeout(300);
+  await settingsPage.close();
+  const cleared = await worker.evaluate(() => chrome.commands.getAll());
+  await open('light');
+  const noKey = await bookmark(TURN, 2);
+  check('with the key cleared, the tooltip shows no shortcut hint',
+    cleared.find((c) => c.name === 'bookmark')?.shortcut === '' && noKey.kept?.tip === 'Bookmark paragraph' && noKey.kept.kbd === '' && !noKey.kept.kbdShown,
+    { cleared, kbd: noKey.kept?.kbd });
+
   // 7. Turning the rail off live hides a shown button and the segments at once.
   await open('light');
   const live = await bookmark(TURN, PARA);
@@ -416,10 +602,10 @@ try {
     check(`${name}: no segment and no button`, off.marks === 0 && !btn?.shown, { off, btn });
     await settings({});
   }
-  // And back on, the segment returns.
+  // And back on, the segments return: questions 3, 5, 7 and 9.
   await open('light');
-  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
-  check('rail back on: the segment returns', true);
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 4, null, { timeout: 5000 });
+  check('rail back on: the segments return', true);
 } finally {
   console.log('errors', JSON.stringify(errors), 'foreign', JSON.stringify(foreign));
   await fs.writeFile(`${shots}/summary.json`, JSON.stringify({ results, errors, foreign }, null, 2));
