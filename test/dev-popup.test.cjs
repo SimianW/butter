@@ -211,8 +211,41 @@ test('New round resets the count, survives a popup reopen, and the next button s
   // Just saved: the file name, read as "Saved <file>", and no icon buttons.
   const card = devCard(reopened.html());
   assert.match(text(card), /^Saved bug-01_21-14-03\.json Alt\+Shift\+B$/);
-  assert.doesNotMatch(card, /data-dev="new-round"|data-dev="open"/);
+  assert.match(card, /<span class="ibs" hidden>/);
   assert.match(card, /data-dev="save"/);
+});
+
+// Top-level children of the card's row, as "tag.class", ignoring what is inside each.
+const stripChildren = (card) => {
+  const inner = card.match(/<div class="strip[^"]*">(.*)<\/div><\/div>$/s)[1];
+  const out = [];
+  let depth = 0;
+  for (const [tag, close, name, cls] of inner.matchAll(
+    /<(\/)?([a-z0-9]+)(?:[^>]*?class="([^"]*)")?[^>]*>/g,
+  )) {
+    if (close) depth--;
+    else {
+      if (depth === 0) out.push(`${name}.${cls || ''}`);
+      if (!tag.endsWith('/>')) depth++;
+    }
+  }
+  return out;
+};
+
+test('saving keeps the row shape, so patch() keeps the focused save button', async () => {
+  const p = profile({
+    local: { butter: { layoutConsent: 'granted' }, butterDev: { round: 2, bugs: 3 } },
+  });
+  startWorker(p);
+  const popup = openPopup(p);
+  await settle();
+  const before = stripChildren(devCard(popup.html()));
+  popup.click('save');
+  await settle();
+  const after = stripChildren(devCard(popup.html()));
+  assert.match(text(devCard(popup.html())), /^Saved bug-04_/);
+  assert.deepEqual(after, before);
+  assert.equal(after.at(-1), 'button.btn snap');
 });
 
 test('in Chinese, and with no shortcut bound, the save button shows only its icon', async () => {

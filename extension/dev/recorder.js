@@ -264,6 +264,7 @@
     // core.createActivation rejections ('wheel' and 'key' among them)
     'not-held',
     'key',
+    'selection',
     // release reasons (preview-main.js finish())
     'pointerup',
     'mouseup',

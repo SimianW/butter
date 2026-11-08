@@ -60,9 +60,9 @@
       : chat
         ? t.round(state.round, state.bugs)
         : t.idle;
-    const buttons = saved
-      ? ''
-      : `<span class="ibs"><button class="ib" data-dev="open" title="${t.open}" aria-label="${t.open}">${icon('folder')}</button><button class="ib" data-dev="new-round" title="${t.next}" aria-label="${t.next}">${icon('plus')}</button></span>`;
+    // Just saved hides the icon buttons but keeps their wrapper, so the save button keeps its
+    // place under patch() and is not replaced (a replaced button would drop keyboard focus).
+    const buttons = `<span class="ibs"${saved ? ' hidden' : ''}><button class="ib" data-dev="open" title="${t.open}" aria-label="${t.open}">${icon('folder')}</button><button class="ib" data-dev="new-round" title="${t.next}" aria-label="${t.next}">${icon('plus')}</button></span>`;
     const card = `<div class="card dev"><div class="strip ${chat || saved ? '' : 'idle'}"><span class="lead">${lead}</span><span class="msg" role="status">${message}</span><span class="sp"></span>${buttons}<button class="btn snap" data-dev="save" ${chat ? '' : 'disabled'} title="${t.save}" aria-label="${t.save}">${icon('camera')}${shortcut ? `<kbd>${shortcut}</kbd>` : ''}</button></div></div>`;
     return { tag: '<span class="devtag">DEV</span>', card };
   }

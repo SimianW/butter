@@ -161,6 +161,18 @@ test('the privacy filter drops text, ID-shaped strings and URLs and counts them 
   assert.equal(snap.redacted, 5);
 });
 
+test('every createActivation rejection reason survives the filter', () => {
+  const rec = createRecorder();
+  const reasons = ['not-held', 'wheel', 'key', 'selection'];
+  reasons.forEach((reason, i) => rec.record('activation-reject', { reason }, 900 + i));
+  const snap = rec.snapshot(meta(1_000));
+  assert.deepEqual(
+    snap.events.map((e) => e.reason),
+    reasons,
+  );
+  assert.equal(snap.redacted, 0);
+});
+
 test('the privacy filter keeps only allowed value types and drops unknown keys', () => {
   const rec = createRecorder();
   rec.record('seek', { top: 1, layout: false, offset: null, items: 'fourteen', secretKey: 1 }, 0);

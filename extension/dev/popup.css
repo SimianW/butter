@@ -89,6 +89,9 @@
   display: flex;
   flex: none;
 }
+.ibs[hidden] {
+  display: none;
+}
 .ib {
   width: 26px;
   height: 24px;

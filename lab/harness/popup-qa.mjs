@@ -442,7 +442,7 @@ async function devPopup() {
           textLeft: box(msg).left, rowTextLeft: box(document.querySelector('.row .t')).left,
           tag: document.querySelector('.hd .word + .devtag')?.textContent, version: document.querySelector('.ver').textContent,
           snapDisabled: document.querySelector('[data-dev="save"]').disabled,
-          iconButtons: document.querySelectorAll('.strip .ib').length,
+          iconButtons: [...document.querySelectorAll('.strip .ib')].filter(e => e.checkVisibility()).length,
         };
       });
       rows[state] = row;
@@ -529,11 +529,14 @@ async function devPopup() {
     const [item] = await worker.evaluate(id => chrome.downloads.search({ id }), saved.download);
     assert.ok(item, 'the saved download exists');
     assert.equal(await page.locator('.strip .vh').textContent(), 'Saved ');
-    assert.equal(await page.locator('.strip .ib').count(), 0);
+    assert.equal(await page.locator('.strip .ib:visible').count(), 0);
     assert.equal(await page.locator('[data-dev="save"]').isEnabled(), true);
     assert.equal(await page.locator('#popup').evaluate(e => e.offsetHeight), before, 'just saved changed the height');
+    const focused = () => page.evaluate(() => document.activeElement?.dataset.dev);
+    assert.equal(await focused(), 'save', 'a keyboard save moved focus off the save button');
     // After about 4 s the card counts again, and Open round folder shows the saved file.
     await page.waitForFunction(() => /Round 3 · 1 bug(?!s)/.test(document.querySelector('.strip').textContent), null, { timeout: 5000 });
+    assert.equal(await focused(), 'save', 'the 4 s reset moved focus off the save button');
     await page.locator('[data-dev="open"]').click();
     await page.waitForFunction(() => shown.length === 2);
     assert.deepEqual(await page.evaluate(() => shown[1]), ['show', saved.download]);
