@@ -37,6 +37,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   then fails with a summary if any differ.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
+- Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
   Work-mode detection, menu matching), `test/branch-run.test.js` (state machine with a fake
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
