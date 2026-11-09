@@ -21,7 +21,8 @@
 - Added a short notice the first time you bookmark, explaining what is saved, with Undo.
 - Saved bookmarks only on this computer, separately for each ChatGPT account, keeping at most the
   first three lines of what you marked. Nothing is uploaded, and clearing saved layouts doesn't
-  touch them. The [privacy policy](PRIVACY.md) is updated to match.
+  touch them. They stay until you remove them or uninstall Butter. The [privacy policy](PRIVACY.md)
+  is updated to match.
 
 ## [0.1.0-alpha.16] - 2026-11-08
 
