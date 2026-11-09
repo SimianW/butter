@@ -1255,6 +1255,8 @@ try {
       ['rail off', { opts: { rail: false } }],
       ['Butter paused', { enabled: false }],
     ]) {
+      // Leave the open page first: turning settings back on below would let it read, racing the count.
+      await page.goto('about:blank');
       await settings(butter);
       const reads = (await requests())['butter-bookmark-list'] || 0;
       await open('light').catch(() => {});

@@ -119,9 +119,8 @@
       deferred = true;
       return;
     }
-    // Nothing is read before Butter's settings are known (shared/settings.js sets data-butter-lang
-    // once they are) or while the rail is off, which includes Butter paused.
-    const off = !document.documentElement?.hasAttribute('data-butter-lang') || railOff();
+    // Nothing is read while the rail is off, which includes Butter paused.
+    const off = railOff();
     if (!conv || !owner || off) {
       if (!owner && !off) document.dispatchEvent(new CustomEvent('butter-account-request'));
       globalThis.ButterRail?.setMarks(conv, new Map());
