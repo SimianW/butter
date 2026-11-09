@@ -72,8 +72,8 @@ Use these categories, in this order, and only the ones the build has:
 A problem the build ships with goes last, under `### Known issues`.
 
 Each bullet is one change the user can notice, opening with a past-tense verb ("Added",
-"Fixed", "Reduced"). Name what the user sees, keep it to one or two sentences, and give the
-measured number for a performance change. Leave out changes only developers see (tests, dev
+"Fixed", "Reduced"); a known issue instead describes the problem. Name what the user sees, keep
+the bullet short, and give the measured number for a performance change when there is one. Leave out changes only developers see (tests, dev
 build, CI).
 
 ## Workflow

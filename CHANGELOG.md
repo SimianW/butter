@@ -24,8 +24,8 @@
   to ChatGPT's own, and type a question. Butter opens the chat in a new tab, makes a ChatGPT
   branch from the latest reply, and sends the quoted text with your question there, so the
   original chat is left as it was.
-- Ask in branch waits for a reply that is still being written, quotes selected formulas as LaTeX,
-  and can be cancelled at any point before the question is sent. Butter never sends in a
+- Made Ask in branch wait for a reply that is still being written, quote selected formulas as
+  LaTeX, and allow cancelling at any point before the question is sent. Butter never sends in a
   conversation it can't confirm is the new branch.
 - Added an "Ask in branch" switch to the popup. The button is not shown in Temporary Chat, Work
   mode or unsaved branches, and works with ChatGPT in English and Chinese.
@@ -37,6 +37,11 @@
 
 ## [0.1.0-alpha.14] - 2026-11-07
 
+### Changed
+
+- Changed the preview of an answer you haven't opened yet to say it can show only the start, in
+  the rail's language.
+
 ### Fixed
 
 - Fixed holding the scrollbar over an answer you have already read: it shows that answer again,
@@ -47,11 +52,6 @@
 - Fixed tables and widgets losing their rows in the preview; wide tables now stay inside the
   answer column.
 - Fixed the history rail covering the scrollbar thumb on macOS.
-
-### Changed
-
-- Changed the preview of an answer you haven't opened yet to say it can show only the start, in
-  the rail's language.
 
 ## [0.1.0-alpha.13] - 2026-11-04
 
@@ -167,10 +167,12 @@
 - Fixed a short last question at the very bottom of a chat never getting its tick lit.
 - Fixed the ring around the question a jump lands on having its right (and sometimes top) edge
   cut off.
-- Fixed opening a chat sometimes leaving no tick lit until you scrolled.
+- Fixed opening a chat sometimes leaving no tick lit until you scrolled: the ticks of the questions
+  on screen now light as soon as the chat appears.
 - Fixed opening a chat briefly lighting every tick, or the ticks lit in the chat you came from.
-  The latest question's tick is lit from the start, and stays on it while earlier questions load
-  in at the top.
+  The latest question's tick is lit from the start, and once the chat stops moving the rail shows
+  what is actually on screen. When earlier questions load in at the top meanwhile, the lit tick
+  stays on the latest question instead of sliding over from the one above it.
 
 ### Performance
 
@@ -242,7 +244,8 @@
 ### Performance
 
 - Reduced how long typing is blocked while earlier messages load: they load 2 turns per page
-  instead of 10 (`olderPageTurns` in `config.js`). In the test chat, typing during a jump to an
+  instead of 10 (`olderPageTurns` in `config.js`), because ChatGPT lays each page out in one long
+  task that blocks typing. In the test chat, typing during a jump to an
   early question was blocked for at most 1.8 s instead of 3.7 s, and the jump took 4.0 s instead
   of 6.0 s. Scrolling back through a whole long chat takes more requests.
 
@@ -269,8 +272,9 @@
   Questions are read from the conversation data ChatGPT fetches; the rail sends no requests.
 - Added far jumps as one continuous fast scroll: the chat scrolls off toward the target,
   placeholder lines stream past while ChatGPT renders it (and loads earlier messages or its math
-  module), and the chat scrolls in and stops on the question. Everything runs on the compositor,
-  so ChatGPT's pauses don't stall it.
+  module), and the chat scrolls in and stops on the question. Everything runs on the compositor
+  (opacity, the browser's smooth scrolling, the placeholder's transform), so ChatGPT's pauses
+  don't stall it.
 
 ### Fixed
 
