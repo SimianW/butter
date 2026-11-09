@@ -137,6 +137,23 @@ async function waitLanding() {
   );
   await page.waitForTimeout(2000);
 }
+async function waitSeekSettled() {
+  await page.waitForFunction(
+    () => {
+      const dump = window.__seekDump?.();
+      const root = document.querySelector('chatgpt-butter-nav')?.shadowRoot;
+      return (
+        dump &&
+        !window.__seekDump.held &&
+        !dump.pending &&
+        root &&
+        !root.querySelector('.seek-card')
+      );
+    },
+    null,
+    { timeout: 70000 },
+  );
+}
 async function open() {
   await page.goto('about:blank');
   await page.goto(L.fixture(lab, process.env.LAB_FIXTURE || 'math12'), {
@@ -284,6 +301,74 @@ async function bookmarkSelection() {
   await page.evaluate(() => getSelection().removeAllRanges());
   return selected;
 }
+async function beginJumpProbe() {
+  await cdp.send('Profiler.enable');
+  await cdp.send('Profiler.startPreciseCoverage', { callCount: true, detailed: true });
+  await page.evaluate(() => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
+    window.__jumpProbe = { clicks: [], keys: [], seekStates: [] };
+    if (window.__jumpProbeInstalled) return;
+    window.__jumpProbeInstalled = true;
+    document.addEventListener('butter-seek-state', (e) => {
+      const m = JSON.parse(e.detail);
+      __jumpProbe.seekStates.push({
+        state: m.state,
+        targetEqualsBookmarkedQuestion: m.id === window.__bookmarkLive.turn,
+        pointerHeld: window.__seekDump.held,
+      });
+    });
+    root.addEventListener(
+      'click',
+      (e) => {
+        const el = e.composedPath()[0];
+        __jumpProbe.clicks.push({
+          control: el.closest('.go') ? 'go' : el.closest('.mark') ? 'mark' : 'other',
+          trusted: e.isTrusted,
+          detail: e.detail,
+        });
+      },
+      { capture: true },
+    );
+    root.addEventListener(
+      'keydown',
+      (e) => {
+        if (['Enter', 'ArrowLeft'].includes(e.key))
+          __jumpProbe.keys.push({
+            key: e.key,
+            control: e.target.matches('.mark') ? 'mark' : 'other',
+            trusted: e.isTrusted,
+          });
+      },
+      { capture: true },
+    );
+  });
+}
+async function endJumpProbe(label) {
+  const coverage = (await cdp.send('Profiler.takePreciseCoverage')).result;
+  await cdp.send('Profiler.stopPreciseCoverage');
+  const calls = {};
+  for (const script of coverage) {
+    const kind = script.url.endsWith('/bookmarks/content.js')
+      ? 'bookmark'
+      : script.url.endsWith('/rail/rail.js')
+        ? 'rail'
+        : null;
+    if (!kind) continue;
+    for (const f of script.functions)
+      if (['locate', 'jump', 'jumpTo', 'landOff', 'targetTop', 'glide'].includes(f.functionName))
+        calls[`${kind}.${f.functionName}`] =
+          (calls[`${kind}.${f.functionName}`] || 0) + (f.ranges[0]?.count || 0);
+  }
+  const result = {
+    ...(await page.evaluate(() => window.__jumpProbe)),
+    calls,
+    paragraph: await targetBox(0),
+    selection: await targetBox(1),
+  };
+  summary.jumpEvidence ||= {};
+  summary.jumpEvidence[label] = result;
+  console.log(`INFO jump ${label} ${JSON.stringify(result)}`);
+}
 async function jump(which = 0, held = false) {
   const mark = page.locator('chatgpt-butter-nav .mark:not(.gone)').first();
   if (held) {
@@ -295,11 +380,8 @@ async function jump(which = 0, held = false) {
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(400);
     const rows = page.locator('chatgpt-butter-nav .bmc .go, chatgpt-butter-nav .bmc .one');
-    if (await rows.count()) await rows.nth(which).click();
-    else {
-      await mark.focus();
-      await page.keyboard.press('Enter');
-    }
+    await rows.nth(which).waitFor({ state: 'visible', timeout: 10000 });
+    await rows.nth(which).click();
   }
 }
 async function startDrag() {
@@ -349,7 +431,7 @@ async function drag(arm, repetition) {
           if (n.nodeType === 1) {
             state.mounts +=
               (n.matches('[data-turn-key]') ? 1 : 0) + n.querySelectorAll('[data-turn-key]').length;
-            state.additions++;
+            state.additions += 1 + n.querySelectorAll('*').length;
           }
     });
     state.mo.observe(s, { childList: true, subtree: true });
@@ -413,7 +495,8 @@ async function drag(arm, repetition) {
     messages: liveProbe.messages,
   }));
   await page.mouse.up();
-  await page.waitForTimeout(2500);
+  await waitSeekSettled();
+  await waitLanding();
   summary.drags.push({ arm, repetition, ...observation });
   await check(
     `held drag ${arm} ${repetition}`,
@@ -466,7 +549,7 @@ try {
     'extension copy differs',
   );
   lab = L.acquire('auto', {
-    owner: 'butter-57-bookmarks-live',
+    owner: 'butter-57-bookmarks-live-2',
     needsFixture: process.env.LAB_FIXTURE || 'math12',
     wait: 60,
     perf: true,
@@ -554,9 +637,31 @@ try {
   for (const other of context.pages()) if (other !== page) await other.close();
   cdp = await context.newCDPSession(page);
   let earlierPages = 0;
+  const apiHashes = new Set(),
+    apiPending = new Set();
+  let apiPages = 0;
+  // Consume only successful conversation API responses already requested by ChatGPT.
+  // Raw response data never leaves this callback; only SHA-256 digests survive in memory.
+
   page.on('response', (r) => {
     const u = new URL(r.url());
     if (/\/messages$/.test(u.pathname) && u.searchParams.has('before') && r.ok()) earlierPages++;
+    if (
+      r.request().method() !== 'GET' ||
+      !r.ok() ||
+      !/\/backend-api\/conversations?\/[0-9a-f-]{36}(?:\/messages)?$/.test(u.pathname)
+    )
+      return;
+    const pending = (async () => {
+      const data = await r.json();
+      const messages = data.messages || Object.values(data.mapping || {}).map((n) => n.message);
+      for (const m of messages)
+        if (m?.author?.role === 'assistant' && m.id)
+          apiHashes.add(createHash('sha256').update(m.id).digest('hex'));
+      apiPages++;
+    })().catch(() => {});
+    apiPending.add(pending);
+    pending.finally(() => apiPending.delete(pending));
   });
   phase = 'load-fixture';
   await open();
@@ -595,6 +700,41 @@ try {
   for (let i = 1; i <= +(process.env.REPS || 3); i++) await drag('empty', i);
   // A native seek can virtualize the original answer away. Reacquire a real mounted target.
   summary.target = await installTargets();
+  await Promise.all([...apiPending]);
+  const identity = await page.evaluate(
+    async (hashes) => {
+      const known = new Set(hashes);
+      const roots = [
+        ...document.querySelectorAll('[data-markdown-text-style="assistant-message"]'),
+      ];
+      let checked = 0,
+        matched = 0;
+      const hash = async (id) =>
+        [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+          .map((n) => n.toString(16).padStart(2, '0'))
+          .join('');
+      for (const root of roots) {
+        const id = root
+          .closest('[data-chatgpt-selection-message-id]')
+          ?.getAttribute('data-chatgpt-selection-message-id');
+        if (!id) continue;
+        checked++;
+        if (known.has(await hash(id))) matched++;
+      }
+      const t = window.__bookmarkLive;
+      const root = document.querySelector(`[data-turn-key="${t.turn}"]`).querySelector(t.answer);
+      const id = root
+        .closest('[data-chatgpt-selection-message-id]')
+        ?.getAttribute('data-chatgpt-selection-message-id');
+      return { checked, matched, targetMatched: !!id && known.has(await hash(id)) };
+    },
+    [...apiHashes],
+  );
+  await check(
+    'live selection message ids match conversation API by SHA-256',
+    identity.checked > 0 && identity.checked === identity.matched && identity.targetMatched,
+    { ...identity, apiPages, assistantApiMessages: apiHashes.size },
+  );
   phase = 'bookmark-paragraph';
   await bookmarkParagraph();
   await check('paragraph button saves one bookmark', (await storedCount()) === 1, {
@@ -629,9 +769,32 @@ try {
     });
   } else {
     for (let i = 1; i <= +(process.env.REPS || 3); i++) await drag('bookmarked', i);
+    const empty = summary.drags.filter((d) => d.arm === 'empty');
+    const marked = summary.drags.filter((d) => d.arm === 'bookmarked');
+    await check(
+      'matched drag comparison with bookmarks versus empty',
+      empty.length === marked.length &&
+        empty.length > 0 &&
+        [...empty, ...marked].every(
+          (d) =>
+            d.mounts === 0 &&
+            d.additions === 0 &&
+            d.storage.reads === 0 &&
+            d.storage.messages === 0 &&
+            Object.values(d.bookmarkWork).every((n) => n === 0),
+        ),
+      {
+        emptyRuns: empty.length,
+        bookmarkedRuns: marked.length,
+        emptyP95FrameMs: empty.map((d) => d.p95FrameMs),
+        bookmarkedP95FrameMs: marked.map((d) => d.p95FrameMs),
+      },
+    );
     phase = 'jump-after-drag';
+    await beginJumpProbe();
     await jump(1);
     await waitLanding();
+    await endJumpProbe('after-drag');
     const after = await targetBox(1);
     await check(
       'selection card jump after drag lands on text',
@@ -641,12 +804,15 @@ try {
     phase = 'jump-during-drag';
     await startDrag();
     const heldBefore = await page.evaluate(() => __seekDump.held);
+    await beginJumpProbe();
     await jump(0, true);
     await page.waitForTimeout(1500);
     const during = await targetBox(0),
       heldAfterActivation = await page.evaluate(() => __seekDump.held);
     await page.mouse.up();
+    await waitSeekSettled();
     await waitLanding();
+    await endJumpProbe('during-drag');
     const released = await targetBox(0);
     await check(
       'paragraph jump requested during native drag lands on text',
@@ -664,6 +830,7 @@ try {
     await restoreTargets();
     const cold = {
       ...(await railState()),
+      stored: await storedCount(),
       targetMounted: !!(await targetBox(0)),
       earlierPagesBefore: earlierPages,
     };
@@ -674,8 +841,10 @@ try {
       cold,
     );
     phase = 'jump-unloaded';
+    await beginJumpProbe();
     await jump(0);
     await waitLanding();
+    await endJumpProbe('unloaded');
     const coldLanding = await targetBox(0);
     await check(
       'unloaded bookmark jump loads earlier pages and lands on text',
@@ -687,6 +856,84 @@ try {
         textTop: coldLanding?.top ?? null,
         ...(await railState()),
       },
+    );
+    // A failed unloaded jump cannot establish resolution. Load history through the existing
+    // dots independently, then check the mounted original answer and card without altering it.
+    if (!coldLanding) {
+      await loadEarlier();
+      await beginJumpProbe();
+      await jump(0);
+      await waitLanding();
+      await endJumpProbe('after-manual-history');
+    }
+    await restoreTargets();
+    const records = await worker.evaluate(async () => {
+      const db = await new Promise((ok, no) => {
+        const r = indexedDB.open('butter-layouts-v1');
+        r.onsuccess = () => ok(r.result);
+        r.onerror = no;
+      });
+      try {
+        return await new Promise((ok, no) => {
+          const r = db.transaction('bookmarks').objectStore('bookmarks').getAll();
+          r.onsuccess = () =>
+            ok(r.result.map(({ msg, para, excerpt }) => ({ msg, para, excerpt })));
+          r.onerror = no;
+        });
+      } finally {
+        db.close();
+      }
+    });
+    const resolution = await page.evaluate(async (records) => {
+      const t = window.__bookmarkLive;
+      const answer = document.querySelector(`[data-turn-key="${t.turn}"]`)?.querySelector(t.answer);
+      const id = answer
+        ?.closest('[data-chatgpt-selection-message-id]')
+        ?.getAttribute('data-chatgpt-selection-message-id');
+      const hash =
+        id &&
+        [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+          .map((n) => n.toString(16).padStart(2, '0'))
+          .join('');
+      const flat = (text) => text.replace(/\s+/g, ' ').trim();
+      let matched = 0;
+      for (const b of records) {
+        const block = answer?.children[b.para];
+        if (
+          hash === b.msg &&
+          block &&
+          flat(block.textContent).includes([...flat(b.excerpt)].slice(0, 40).join(''))
+        )
+          matched++;
+      }
+      return {
+        targetMounted: !!answer,
+        records: records.length,
+        matchingMessagesAndExcerpts: matched,
+      };
+    }, records);
+    await page.locator('chatgpt-butter-nav .mark:not(.gone)').first().focus();
+    await page.keyboard.press('ArrowLeft');
+    await page.waitForTimeout(2800);
+    const live = await page.evaluate(() => {
+      const r = document.querySelector('chatgpt-butter-nav').shadowRoot;
+      return {
+        marks: r.querySelectorAll('.mark:not(.gone)').length,
+        staleMarks: r.querySelectorAll('.mark.stale:not(.gone)').length,
+        cardRows: r.querySelectorAll('.bmc .go, .bmc .one').length,
+        staleRows: r.querySelectorAll('.bmc .it.stale, .bmc.stale, .bmc .why, .bmc .warn').length,
+      };
+    });
+    await check(
+      'reload resolves both bookmarks live without answer changed',
+      resolution.targetMounted &&
+        resolution.matchingMessagesAndExcerpts === 2 &&
+        (await storedCount()) === 2 &&
+        live.marks === 1 &&
+        live.staleMarks === 0 &&
+        live.cardRows === 2 &&
+        live.staleRows === 0,
+      { ...live, ...resolution },
     );
     phase = 'delete';
     const remaining = await deleteMarks();
