@@ -1256,6 +1256,7 @@ try {
       ['Butter paused', { enabled: false }],
     ]) {
       await settings(butter);
+      const reads = (await requests())['butter-bookmark-list'] || 0;
       await open('light').catch(() => {});
       await page.waitForTimeout(600);
       const off = await page.evaluate(() => {
@@ -1270,6 +1271,8 @@ try {
       await page.waitForTimeout(400);
       const btn = await button();
       check(`${name}: no segment and no button`, off.marks === 0 && !btn?.shown, { off, btn });
+      const after = (await requests())['butter-bookmark-list'] || 0;
+      check(`${name}: the page reads no bookmarks`, after === reads, { reads, after });
       await settings({});
     }
     // And back on, the segments return: questions 3, 5, 7 and 9.

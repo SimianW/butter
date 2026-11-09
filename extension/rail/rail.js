@@ -1226,9 +1226,8 @@
     const n = qs.length;
     // Bookmarks follow the conversation in view whether or not the rail shows: a one-question chat's
     // filled button and its remove work, and leaving a chat (for the home page, say) clears what
-    // bookmarks/content.js last sent, so coming Back sends its marks again. With the rail off (or
-    // Butter paused) there is no conversation to sync, so nothing is read.
-    globalThis.ButterBookmarkPage?.sync(railOff() ? null : convId, cur.items, !cur.hasPrev);
+    // bookmarks/content.js last sent, so coming Back sends its marks again.
+    globalThis.ButterBookmarkPage?.sync(convId, cur.items, !cur.hasPrev);
     const on = !railOff() && !!box && box.width >= 560 && n >= 1 && n + (cur.hasPrev ? 1 : 0) >= 2;
     if (!on) {
       host?.removeAttribute('data-on');

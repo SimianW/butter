@@ -119,8 +119,11 @@
       deferred = true;
       return;
     }
-    if (!conv || !owner) {
-      if (!owner) document.dispatchEvent(new CustomEvent('butter-account-request'));
+    // Nothing is read before Butter's settings are known (shared/settings.js sets data-butter-lang
+    // once they are) or while the rail is off, which includes Butter paused.
+    const off = !document.documentElement?.hasAttribute('data-butter-lang') || railOff();
+    if (!conv || !owner || off) {
+      if (!owner && !off) document.dispatchEvent(new CustomEvent('butter-account-request'));
       globalThis.ButterRail?.setMarks(conv, new Map());
       return;
     }
@@ -650,6 +653,7 @@
     TXT = strings(zh());
     label();
     if (railOff()) hide();
+    refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
   });
 
   // ---- The bookmark shortcut (a Chrome command; bookmarks/worker.js relays it to this tab). It
