@@ -93,3 +93,40 @@ test('Chinese meta lines and names', () => {
   assert.equal(B.card(six.slice(0, 2), { back: 2 }, true).meta, '最近第 2 个问题 · 2 个书签');
   assert.equal(B.card(six.slice(0, 1), { back: 2 }, true).meta, '书签 · 最近第 2 个问题');
 });
+
+// Earlier history (#51 addendum): bookmarks whose question isn't loaded yet, on the dots.
+test('one earlier bookmark: "Bookmark · earlier question", its excerpt and a footer on what a click does', () => {
+  const c = B.card(six.slice(0, 1), { earlier: true });
+  assert.equal(c.single, true);
+  assert.equal(c.meta, 'Bookmark · earlier question');
+  assert.equal(c.warn, "This question isn't loaded yet. Clicking loads earlier messages first.");
+  assert.equal(c.stale, false);
+  assert.equal(c.wait, 'Loading earlier questions…');
+  assert.equal(
+    c.label,
+    'Bookmark · earlier question: If estimated rows are far from actual rows, run ANALYZE orders',
+  );
+});
+
+test('several earlier bookmarks: "Earlier questions · k bookmarks", no footer', () => {
+  const c = B.card(six.slice(0, 4), { earlier: true });
+  assert.equal(c.single, false);
+  assert.equal(c.meta, 'Earlier questions · 4 bookmarks');
+  assert.equal(c.warn, null);
+  assert.equal(c.visible, 4);
+  assert.ok(c.label.startsWith('Earlier questions · 4 bookmarks: If estimated rows'));
+});
+
+test('earlier bookmarks in Chinese', () => {
+  const one = B.card(six.slice(0, 1), { earlier: true }, true);
+  assert.equal(one.meta, '书签 · 更早的问题');
+  assert.equal(one.warn, '这个问题还没加载。点击会先加载更早的消息。');
+  assert.equal(one.wait, '正在加载更早的问题…');
+  assert.equal(
+    one.label,
+    '书签 · 更早的问题：If estimated rows are far from actual rows, run ANALYZE orders',
+  );
+  const two = B.card(six.slice(0, 2), { earlier: true }, true);
+  assert.equal(two.meta, '更早的问题 · 2 个书签');
+  assert.ok(two.label.startsWith('更早的问题 · 2 个书签：'));
+});

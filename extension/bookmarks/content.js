@@ -37,13 +37,13 @@
   const strings = (zh) =>
     zh
       ? {
-          add: '为这段加书签',
+          add: '加书签',
           sel: '为选中内容加书签',
           remove: '删除书签',
           removeOf: (t) => `删除书签：${t}`,
         }
       : {
-          add: 'Bookmark paragraph',
+          add: 'Bookmark',
           sel: 'Bookmark selection',
           remove: 'Remove bookmark',
           removeOf: (t) => `Remove bookmark: ${t}`,
@@ -113,6 +113,7 @@
     deferred = false,
     sent = ''; // what the rail was last sent: question, bookmarks and their stale flags
   const fresh = new Set(); // keys of bookmarks just made in this tab: their segment grows in
+  let onDots = new Set(); // keys of the bookmarks last sent on the earlier-history dots
   const seen = new Map(); // key -> stale, as last resolved in this tab; never stored (#55)
   // `quiet`: only a re-check of staleness, so the rail hears nothing when nothing changed.
   async function refresh(quiet = false) {
@@ -165,19 +166,25 @@
       },
       seen,
     );
+    // A question's id, or B.EARLIER for the bookmarks in earlier history the rail hasn't loaded.
+    const idOf = (g) => (g.question === B.EARLIER ? B.EARLIER : questions[g.question].id);
     const sig = JSON.stringify(
-      groups.map((g) => [questions[g.question].id, g.bookmarks.map((b) => [b.key, b.stale])]),
+      groups.map((g) => [idOf(g), g.bookmarks.map((b) => [b.key, b.stale])]),
     );
     if (quiet && sig === sent && !fresh.size) return;
     sent = sig;
-    const marks = new Map();
+    const marks = new Map(),
+      dots = new Set(groups.find((g) => g.question === B.EARLIER)?.bookmarks.map((b) => b.key));
     for (const g of groups) {
       const first = g.bookmarks[0];
       // `bookmarks` in answer order, each with its `stale` flag; `stale` when all of them are;
-      // `land(turn, b)` for the rail's jump, `remove(b)` for its ×.
-      marks.set(questions[g.question].id, {
+      // `land(turn, b)` for the rail's jump, `remove(b)` for its ×. A bookmark that leaves the
+      // dots for its question's tick (its answer loaded) grows in there, as a new one does.
+      marks.set(idOf(g), {
         count: g.bookmarks.length,
-        fresh: g.bookmarks.some((b) => fresh.has(b.key)),
+        fresh: g.bookmarks.some(
+          (b) => fresh.has(b.key) || (g.question !== B.EARLIER && onDots.has(b.key)),
+        ),
         bookmarks: g.bookmarks,
         stale: g.stale,
         land: (turn, b = first) => locate(turn, b),
@@ -185,7 +192,8 @@
       });
     }
     fresh.clear();
-    globalThis.ButterRail?.setMarks(conv, marks);
+    onDots = dots;
+    globalThis.ButterRail?.setMarks(conv, marks, items);
     label();
   }
   // Staleness follows the page between renders: a regenerated answer or a switched version shows
@@ -531,7 +539,7 @@
     });
   };
   // Three states: "Bookmark selection" while the reader's selection touches the paragraph; filled
-  // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark paragraph". The
+  // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark". The
   // first two show the key Chrome reports for the bookmark command (none when it has no key).
   const label = () => {
     if (!host) return;

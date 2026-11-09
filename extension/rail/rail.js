@@ -487,10 +487,14 @@
     .more { height: ${MORE_H}px; gap: 3px; padding-right: 2px; }
     .more i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .35; transition: opacity .2s; }
     .more:hover i, .more:focus-visible i { opacity: 1; }
+    .more.busy i { animation: dots .7s ease-in-out infinite alternate; }
+    .more.busy i:nth-child(2) { animation-delay: .15s; }
+    .more.busy i:nth-child(3) { animation-delay: .3s; }
     .more[hidden] { display: none; }
     .tick { height: var(--pitch); }
     .tick.busy .bar { animation: busy .7s ease-in-out infinite alternate; }
     @keyframes busy { to { opacity: .25; } }
+    @keyframes dots { from { opacity: 1; } to { opacity: .2; } }
     .bar { width: 12px; height: 2px; border-radius: 2px; background: currentColor; opacity: ${REST.o};
       transform-origin: right center; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: -1px; border-radius: 4px; }
@@ -540,6 +544,10 @@
     .bmc.stale .one, .it.stale .go { color: var(--muted); }
     .bmc.stale .meta .flag path, .it.stale .flag path { opacity: .45; }
     .why { font-size: 11px; color: var(--muted); flex: none; }
+    .it.wait .go { color: var(--muted); }
+    .wspin { box-sizing: content-box; width: 10px; height: 10px; margin: 0 10px 0 7px; border-radius: 50%; flex: none;
+      border: 1.5px solid var(--muted); border-right-color: transparent; animation: spin .8s linear infinite; }
+    .meta .wspin { margin: 0 0 0 auto; }
     .warn { font-size: 11px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line);
       max-width: 236px; }
     .seek-card { max-width: 260px; }
@@ -556,7 +564,7 @@
     .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
       background: var(--streak); will-change: transform;
       -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
-    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .tick.busy .bar, .mark.new { animation: none; }
+    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .mark.new { animation: none; }
       .mark.gone { transition: none; } }`;
 
   let host = null,
@@ -628,12 +636,12 @@
       lastX = e.clientX;
       // On the way from a segment to its card the pointer crosses other ticks: while it heads left
       // within the card's height, the card stays.
-      if (m < 0 && shownBm && e.clientX < x) {
+      if (m === null && shownBm && e.clientX < x) {
         const r = card.getBoundingClientRect();
         if (e.clientY >= r.top && e.clientY <= r.bottom) return kick();
       }
       hoverMark(m);
-      hover(m >= 0 ? m : indexAt(e.clientY), m >= 0);
+      hover(m !== null ? m : indexAt(e.clientY), m !== null);
       kick();
     });
     rail.addEventListener('pointerleave', () => {
@@ -645,14 +653,14 @@
         return;
       }
       rail.classList.remove('hot');
-      hoverMark(-1);
+      hoverMark(null);
       pointerY = null;
       hover(-2);
       kick();
     });
     rail.addEventListener('focusin', (e) => {
       const s = segmentOf(e.target);
-      if (s >= 0) hover(s, true);
+      if (s !== null) hover(s, true);
       else hover(e.target === more ? -1 : ticks.indexOf(e.target));
     });
     rail.addEventListener('focusout', (e) => {
@@ -661,10 +669,10 @@
     rail.addEventListener('click', (e) => {
       if (railOff()) return;
       endOpening();
-      const s = e.detail === 0 ? segmentOf(e.target) : -1;
-      const m = s >= 0 ? s : e.detail === 0 ? -1 : markAt(e.clientY);
+      const s = e.detail === 0 ? segmentOf(e.target) : null;
+      const m = s !== null ? s : e.detail === 0 ? null : markAt(e.clientY);
       const i =
-        m >= 0
+        m !== null
           ? m
           : e.target === more
             ? -1
@@ -677,22 +685,24 @@
         hover(-2);
         held = true;
       }
-      if (i === -1) loadEarlier();
-      else if (m >= 0) jump(i, false, marks.get(qs[i].id)?.land);
+      // The dots' segment: the oldest bookmark in earlier history.
+      if (m === EARLIER) earlierJump(marks.get(EARLIER)?.bookmarks[0], e.detail === 0);
+      else if (i === -1) loadEarlier();
+      else if (m !== null) jump(i, false, marks.get(qs[i].id)?.land);
       else if (i >= 0) jump(i);
     });
-    // Arrows walk the ticks and, under a question with bookmarks, its segment; ArrowLeft on a
-    // segment enters its card.
+    // Arrows walk the earlier-history dots and the ticks and, under them, a segment; ArrowLeft on
+    // a segment enters its card.
     rail.addEventListener('keydown', (e) => {
-      const stops = ticks.flatMap((t, i) => {
-          const s = markEls.get(qs[i]?.id);
-          return s ? [t, s] : [t];
-        }),
+      const stops = [
+          ...(more.hidden ? [] : [more, markEls.get(EARLIER)]),
+          ...ticks.flatMap((t, i) => [t, markEls.get(qs[i]?.id)]),
+        ].filter(Boolean),
         at = stops.indexOf(e.target),
         s = segmentOf(e.target),
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (at < 0) return;
-      if (e.key === 'ArrowLeft' && s >= 0) {
+      if (e.key === 'ArrowLeft' && s !== null) {
         e.preventDefault();
         held = false;
         hover(s, true);
@@ -726,7 +736,9 @@
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (e.key === 'Escape' || e.key === 'ArrowRight') {
         e.preventDefault();
-        markEls.get(qs[shown]?.id)?.focus();
+        markEls.get(idAt(shown))?.focus();
+        // While earlier messages load for it, Escape puts the dots' card away; the loading goes on.
+        if (e.key === 'Escape' && shown === EARLIER && wait) hover(-2);
       } else if (at >= 0 && d) {
         e.preventDefault();
         rows[Math.max(0, Math.min(rows.length - 1, at + d))].focus();
@@ -748,24 +760,34 @@
 
   // ---- Bookmark segments: one under each question that holds bookmarks (bookmarks/content.js
   // sends them). They stay out of the hover wave; within 4 px the segment wins the pointer.
-  let marks = new Map(), // question id -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
-    hotMark = -1;
+  // Bookmarks in earlier history that isn't loaded yet share one segment under the "earlier" dots:
+  // its key in `marks` and its index are both EARLIER (-1, the dots' index). Segment indexes are
+  // null for none.
+  const EARLIER = -1; // ButterBookmarks.EARLIER
+  let marks = new Map(), // question id or EARLIER -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
+    marksItems = null, // the conversation's items `marks` were worked out from
+    hotMark = null;
   const markEls = new Map();
-  const markY = (i) => tickY(i) + ButterBookmarks.segmentOffset(geo.pitch);
+  const idAt = (i) => (i === EARLIER ? EARLIER : qs[i]?.id);
+  // A segment's index, or null while it has no place: the dots show only while earlier history isn't loaded.
+  const indexOf = (id) => (id === EARLIER ? (cur.hasPrev ? EARLIER : null) : idxOf.get(id));
+  // The dots' segment sits 5 px below their centre, as a question's sits below its tick.
+  const markY = (i) =>
+    i === EARLIER ? geo.top - MORE_H / 2 + 5 : tickY(i) + ButterBookmarks.segmentOffset(geo.pitch);
   const segmentOf = (el) => {
-    for (const [id, s] of markEls) if (s === el) return idxOf.get(id) ?? -1;
-    return -1;
+    for (const [id, s] of markEls) if (s === el) return indexOf(id) ?? null;
+    return null;
   };
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const markAt = (y) => {
-    if (!geo || !marks.size) return -1;
-    let best = -1;
+    if (!geo || !marks.size) return null;
+    let best = null;
     for (const id of marks.keys()) {
-      const i = idxOf.get(id);
+      const i = indexOf(id);
       if (
         i != null &&
         Math.abs(markY(i) - y) <= 4 &&
-        (best < 0 || Math.abs(markY(i) - y) < Math.abs(markY(best) - y))
+        (best === null || Math.abs(markY(i) - y) < Math.abs(markY(best) - y))
       )
         best = i;
     }
@@ -773,16 +795,17 @@
   };
   const hoverMark = (i) => {
     if (i === hotMark) return;
-    markEls.get(qs[hotMark]?.id)?.classList.remove('hover');
+    markEls.get(idAt(hotMark))?.classList.remove('hover');
     hotMark = i;
-    markEls.get(qs[i]?.id)?.classList.add('hover');
+    markEls.get(idAt(i))?.classList.add('hover');
   };
   const drawMarks = () => {
     for (const [id, el] of markEls)
-      if (!marks.has(id) || !idxOf.has(id) || !geo) {
+      if (!marks.has(id) || indexOf(id) == null || !geo) {
         markEls.delete(id);
-        // A question's last bookmark deleted: its segment fades out (at once under reduced motion).
-        if (geo && idxOf.has(id) && !reduced()) {
+        // A question's last bookmark deleted, or the last one on the dots loaded: its segment fades
+        // out (at once under reduced motion).
+        if (geo && indexOf(id) != null && !reduced()) {
           el.classList.add('gone');
           el.removeAttribute('aria-label');
           setTimeout(() => el.remove(), 160);
@@ -790,7 +813,7 @@
       }
     if (!geo) return;
     for (const [id, m] of marks) {
-      const i = idxOf.get(id);
+      const i = indexOf(id);
       if (i == null) continue;
       let el = markEls.get(id);
       if (!el) {
@@ -801,37 +824,48 @@
         markBox.append(el);
         markEls.set(id, el);
       }
-      el.setAttribute('aria-label', ButterBookmarks.label(m.bookmarks, TXT.zh));
+      el.setAttribute(
+        'aria-label',
+        i === EARLIER
+          ? ButterBookmarks.card(m.bookmarks, { earlier: true }, TXT.zh).label
+          : ButterBookmarks.label(m.bookmarks, TXT.zh),
+      );
       // Pale only when every bookmark under the question is stale (#55).
       el.classList.toggle('stale', ButterBookmarks.pale(m.bookmarks));
       el.style.top = `${(markY(i) - geo.y - 1).toFixed(2)}px`;
       el.classList.toggle('hover', i === hotMark);
     }
   };
+  // The card open on a segment follows its bookmarks (a deletion, or one leaving the dots as its
+  // answer loads), keeping keyboard focus on the same row.
+  const refill = () => {
+    if (!host || !shownBm || shown === -2) return;
+    const a = host.shadowRoot.activeElement,
+      inCard = card.contains(a),
+      at = [...bmc.querySelectorAll('.go, .one')].indexOf(
+        a?.closest('.it')?.querySelector('.go') ?? a,
+      );
+    if (!marks.has(idAt(shown)) || indexOf(idAt(shown)) == null) {
+      const i = shown;
+      hover(-2);
+      if (inCard) (i === EARLIER ? more : ticks[i])?.focus();
+      return;
+    }
+    fillCard(shown);
+    if (inCard) {
+      const rows = bmc.querySelectorAll('.go, .one');
+      rows[Math.min(Math.max(at, 0), rows.length - 1)]?.focus();
+    }
+  };
   globalThis.ButterRail = {
-    setMarks(conv, next) {
+    // `items`: the conversation's items the marks were worked out from (`cur.items` as synced).
+    setMarks(conv, next, items = null) {
       if (conv !== convId) return;
       marks = next;
+      marksItems = items;
       if (!host) return;
       drawMarks();
-      if (!shownBm || shown < 0) return;
-      // The card open on this question follows a deletion, keeping keyboard focus on the same row.
-      const a = host.shadowRoot.activeElement,
-        inCard = card.contains(a),
-        at = [...bmc.querySelectorAll('.go, .one')].indexOf(
-          a?.closest('.it')?.querySelector('.go') ?? a,
-        );
-      if (!marks.has(qs[shown]?.id)) {
-        const i = shown;
-        hover(-2);
-        if (inCard) ticks[i]?.focus();
-        return;
-      }
-      fillCard(shown);
-      if (inCard) {
-        const rows = bmc.querySelectorAll('.go, .one');
-        rows[Math.min(Math.max(at, 0), rows.length - 1)]?.focus();
-      }
+      refill();
     },
   };
 
@@ -848,17 +882,31 @@
     return e;
   };
   const fillCard = (i) => {
-    const id = qs[i].id,
-      m = marks.get(id);
+    const id = idAt(i),
+      m = marks.get(id),
+      earlier = i === EARLIER;
     const c = ButterBookmarks.card(
       m.bookmarks,
-      cur.hasPrev ? { back: qs.length - i } : { n: i + 1, total: qs.length },
+      earlier
+        ? { earlier: true }
+        : cur.hasPrev
+          ? { back: qs.length - i }
+          : { n: i + 1, total: qs.length },
       TXT.zh,
     );
+    // While earlier messages load for one of the dots' bookmarks, the meta line says so and its
+    // row shows a spinner where its × was.
+    const loading = earlier && !!wait,
+      title = loading ? c.wait : c.meta,
+      spinner = () => {
+        const e = make('span', 'wspin');
+        e.setAttribute('aria-hidden', 'true');
+        return e;
+      };
     card.classList.toggle('list', !c.single);
     bmc.classList.toggle('stale', c.stale);
     card.setAttribute('role', 'group');
-    card.setAttribute('aria-label', c.meta);
+    card.setAttribute('aria-label', title);
     const x = (b) => {
       const e = make('button', 'x');
       e.innerHTML = X;
@@ -874,14 +922,18 @@
     const head = make('div', 'meta');
     if (c.single) {
       head.innerHTML = FLAG;
-      head.append(make('span', null, c.meta), x(c.rows[0]));
+      head.append(
+        make('span', null, title),
+        loading && wait.key === c.rows[0].key ? spinner() : x(c.rows[0]),
+      );
       const one = go(c.rows[0], 'one');
       one.append(make('span', null, c.rows[0].excerpt));
       // A stale bookmark: its paragraph is gone, and a click lands at the question's start.
       if (c.warn) bmc.replaceChildren(head, one, make('div', 'warn', c.warn));
       else bmc.replaceChildren(head, one);
     } else {
-      head.append(make('span', null, c.meta));
+      if (earlier) head.innerHTML = FLAG;
+      head.append(make('span', null, title));
       const rows = make('div', 'rows');
       rows.style.setProperty('--rows', c.visible);
       for (const b of c.rows) {
@@ -893,14 +945,19 @@
           it.classList.add('stale');
           g.append(' ', make('span', 'why', c.tag)); // the space only separates them in its name
         }
-        it.append(g, x(b));
+        if (loading && wait.key === b.key) {
+          it.classList.add('wait');
+          it.append(g, spinner());
+        } else it.append(g, x(b));
         rows.append(it);
       }
       bmc.replaceChildren(head, rows);
     }
   };
-  // A row's jump goes through the rail's own jump, landing on that bookmark's text.
+  // A row's jump goes through the rail's own jump, landing on that bookmark's text. A row on the
+  // dots' card loads earlier messages first, with the card left open to show it.
   const jumpTo = (id, b, keyboard) => {
+    if (id === EARLIER) return earlierJump(b, keyboard);
     const i = idxOf.get(id),
       m = marks.get(id);
     if (i == null || !m || railOff()) return;
@@ -911,11 +968,50 @@
       held = true;
       if (pointerY === null) {
         rail.classList.remove('hot');
-        hoverMark(-1);
+        hoverMark(null);
       }
     }
     jump(i, false, (turn) => m.land(turn, b));
   };
+  // Loads earlier pages until `b`'s answer is known and mounted, then lands on its text.
+  // `wait` is that bookmark while its pages load: the dots blink and its row shows a spinner.
+  let wait = null,
+    waitKeyboard = false;
+  const earlierJump = (b, keyboard) => {
+    if (!b || railOff() || !sc || !qs.length) return;
+    endOpening();
+    waitKeyboard = keyboard;
+    jump(0, true, null, b.key);
+  };
+  const setWait = (next) => {
+    wait = next;
+    more?.classList.toggle('busy', !!wait);
+    if (shown === EARLIER) refill();
+  };
+  // The question the bookmark `key` is under now, other than the dots; null while it has none.
+  const placed = (key) => {
+    for (const [id, m] of marks)
+      if (id !== EARLIER && idxOf.has(id) && m.bookmarks.some((b) => b.key === key)) return id;
+    return null;
+  };
+  // Waits for bookmarks/content.js to send the marks of the items as they are now.
+  const synced = async (live) => {
+    for (const end = performance.now() + 1500; live() && performance.now() < end; ) {
+      if (marksItems === cur.items) return;
+      await frame();
+    }
+  };
+  // Escape puts the dots' card away, also while the pointer holds it; any loading goes on.
+  addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key !== 'Escape' || !host || !shownBm || shown !== EARLIER) return;
+      if (card.contains(host.shadowRoot.activeElement)) return; // the card's own keys handle it
+      hover(-2);
+      held = true;
+    },
+    { capture: true },
+  );
   let overCard = false,
     leaveTimer = 0,
     lastX = 0;
@@ -924,7 +1020,7 @@
     leaveTimer = setTimeout(() => {
       if (overCard || pointerY !== null || card.contains(host.shadowRoot.activeElement)) return;
       rail.classList.remove('hot');
-      hoverMark(-1);
+      hoverMark(null);
       hover(-2);
     }, 200);
   };
@@ -1000,7 +1096,7 @@
       showSeek();
       return;
     }
-    bm = bm && i >= 0 && marks.has(qs[i]?.id);
+    bm = bm && i >= EARLIER && marks.has(idAt(i)) && indexOf(idAt(i)) != null;
     if ((i === shown && bm === shownBm) || !host || (held && i !== -2)) return;
     const was = shown;
     shown = i;
@@ -1015,7 +1111,10 @@
     card.classList.toggle('bm', bm);
     if (bm) {
       fillCard(i);
-      host.style.setProperty('--cy', `${markY(i)}px`);
+      // Centred on its segment; the dots' card, at the rail's top, comes down to stay in the chat.
+      let cy = markY(i);
+      if (i === EARLIER && box) cy = Math.max(cy, box.top + 8 + card.offsetHeight / 2);
+      host.style.setProperty('--cy', `${cy}px`);
       card.classList.add('show');
       return;
     }
@@ -1212,6 +1311,7 @@
     unpin();
     if (trip) arrive(null, 0);
     if (busyTok) setBusy(null);
+    if (wait) setWait(null);
   }
   // From a click until the user scrolls, the clicked question stays the current one.
   let pinned = false;
@@ -1306,7 +1406,9 @@
       ),
     );
 
-  const jump = async (i, earlier = false, land = null) => {
+  // `want`: an earlier trip for a bookmark (its key) on the dots. Pages load only until bookmarks/
+  // content.js places it under a question, then the trip lands on its text as a bookmark jump does.
+  const jump = async (i, earlier = false, land = null, want = null) => {
     landing = land && !earlier ? { id: qs[i].id, land } : null;
     // Repeated input for the current destination keeps its in-progress readiness work.
     // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
@@ -1319,6 +1421,7 @@
     const tok = ++jumpTok,
       end = flight.end,
       live = () => tok === jumpTok && performance.now() < end;
+    setWait(want ? { key: want, tok } : null);
     anchor?.ro.disconnect();
     anchor = null;
     let id = qs[i].id;
@@ -1365,8 +1468,9 @@
             el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b,
           ) || 1
         );
-    setBusy(id, tok);
-    let landed = false;
+    setBusy(want ? null : id, tok); // a bookmark's trip blinks the dots instead
+    let landed = false,
+      target = want && placed(want);
     try {
       if (live())
         await (relay
@@ -1377,7 +1481,7 @@
         const loadEnd = end - 10000; // reserve time to align/reveal after the loading bound
         for (
           let pages = 0;
-          cur.hasPrev && pages < MAX_EARLIER && live() && performance.now() < loadEnd;
+          !target && cur.hasPrev && pages < MAX_EARLIER && live() && performance.now() < loadEnd;
           pages++
         ) {
           // Leave and re-enter the paging band: a prepend can keep the sentinel intersecting.
@@ -1396,11 +1500,37 @@
             sc.scrollTop = 0;
             await frame();
           }
+          if (want) {
+            await synced(live);
+            target = placed(want);
+          }
         }
         await frame();
         if (!live()) return;
-        i = 0;
-        id = qs[0]?.id;
+        if (target) {
+          // The bookmark's answer is loaded: land on its text (at its question's start if stale).
+          id = target;
+          i = idxOf.get(id);
+          landing = {
+            id,
+            land: (turn) => {
+              const m = marks.get(id),
+                b = m?.bookmarks.find((x) => x.key === want);
+              return b ? m.land(turn, b) : null;
+            },
+          };
+          // Focus follows a keyboard trip to the bookmark's segment; the dots' card goes away.
+          setWait(null);
+          if (waitKeyboard) markEls.get(id)?.focus();
+          if (waitKeyboard || shown === EARLIER) {
+            hover(-2);
+            held = !waitKeyboard;
+          }
+        } else {
+          setWait(null);
+          i = 0;
+          id = qs[0]?.id;
+        }
         el = mountedEl(id);
         setActive(id);
         setBusy(id, tok);
@@ -1489,6 +1619,7 @@
       }
       if (trip?.tok === tok) arrive(null, 0);
       if (busyTok === tok) setBusy(null);
+      if (wait?.tok === tok) setWait(null);
       if (tok === jumpTok) {
         journey = null;
         landedAt();

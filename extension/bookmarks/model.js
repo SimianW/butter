@@ -37,11 +37,16 @@
     const { account, conv, msg, turn, para, start, end, excerpt, time } = b;
     return { account, conv, msg, turn, para, start, end, excerpt, time };
   }
-  // `items` is the conversation, oldest first: `{ msg: hashed message id, q: is a question }`.
-  // Returns `[{ question, bookmarks }]` by question index (0 = the first question), each list in
-  // answer order: message, paragraph, then range. A bookmark whose message isn't in `items` stays
-  // under the question it was made on (`turn`, clamped to the last question), after the others.
-  function group(bookmarks, items) {
+  // `items` is the conversation as loaded, oldest first: `{ msg: hashed message id, q: is a
+  // question }`. Returns `[{ question, bookmarks }]` by question index (0 = the first listed
+  // question), each list in answer order: message, paragraph, then range.
+  // While earlier history isn't loaded (`complete` false), a bookmark whose message isn't listed
+  // and isn't `shown(msg)` (rendered now) belongs to that earlier history: it goes in the group
+  // `EARLIER` (-1), the rail's earlier-history dots, oldest first. Otherwise a bookmark whose
+  // message isn't listed stays under the question it was made on (`turn`, clamped to the last
+  // question), after the others.
+  const EARLIER = -1;
+  function group(bookmarks, items, { complete = true, shown = () => false } = {}) {
     const where = new Map();
     let question = -1;
     items.forEach((x, i) => {
@@ -52,12 +57,15 @@
     if (last < 0) return [];
     const placed = bookmarks.map((b) => {
       const w = where.get(b.msg);
-      return { b, question: w ? w.question : Math.min(b.turn, last), rank: w ? w.rank : Infinity };
+      if (w) return { b, question: w.question, rank: w.rank };
+      const earlier = !complete && !shown(b.msg);
+      return { b, question: earlier ? EARLIER : Math.min(b.turn, last), rank: Infinity };
     });
     placed.sort(
       (x, y) =>
         x.question - y.question ||
         x.rank - y.rank ||
+        x.b.turn - y.b.turn ||
         x.b.para - y.b.para ||
         x.b.start - y.b.start ||
         x.b.end - y.b.end ||
@@ -78,7 +86,8 @@
   // still contains the excerpt's first line. It is stale when the paragraph or its text no longer
   // matches, when its question is shown with another answer (regenerated), or when its message has
   // left a complete conversation. Otherwise (not rendered now) it keeps what `last` remembers for
-  // it, live by default. Returns `group`'s groups with each bookmark copied with its `stale` flag,
+  // it, live by default. A bookmark in the earlier, unloaded history (the `EARLIER` group) is live:
+  // nothing can be known about it yet. Returns `group`'s groups with each bookmark copied with its `stale` flag,
   // plus `stale` on a group whose bookmarks are all stale; `last` is updated. Nothing is stored, so
   // a bookmark that resolves again (the original version switched back) is live again.
   const flat = (s) => s.replace(/\s+/g, ' ').trim();
@@ -93,7 +102,12 @@
   }
   function resolve(bookmarks, items, view, last = new Map()) {
     const listed = new Set(items.map((x) => x.msg));
-    return group(bookmarks, items).map((g) => {
+    const shown = (msg) => !!view.paragraphs(msg);
+    return group(bookmarks, items, { complete: view.complete, shown }).map((g) => {
+      if (g.question === EARLIER) {
+        const rows = g.bookmarks.map((b) => ({ ...b, stale: false }));
+        return { question: EARLIER, bookmarks: rows, stale: false };
+      }
       const rows = g.bookmarks.map((b) => {
         const shown = view.paragraphs(b.msg);
         let stale = null;
@@ -152,23 +166,31 @@
   // Centre of a question's segment below its tick's centre, in px.
   const segmentOffset = (pitch) => (pitch < 12 ? 0.4 * pitch : 5);
   // What the rail's hover card shows for one question's bookmarks (`rows`, already in answer
-  // order). `at` places the question: `{ n, total }`, or `{ back }` (1 = the latest question) while
-  // earlier questions aren't loaded and the total is unknown. One bookmark gets the single card;
-  // several get a list that shows `visible` rows and scrolls for the rest. `label` is the
-  // segment's accessible name.
+  // order). `at` places the question: `{ n, total }`, `{ back }` (1 = the latest question) while
+  // earlier questions aren't loaded and the total is unknown, or `{ earlier: true }` for the
+  // bookmarks in that unloaded history, on the rail's earlier-history dots. One bookmark gets the
+  // single card; several get a list that shows `visible` rows and scrolls for the rest. `label` is
+  // the segment's accessible name; `wait` the meta line while earlier messages load for a click.
   const VISIBLE = 5;
   function card(rows, at, zh = false) {
     const k = rows.length,
-      single = k === 1;
+      single = k === 1,
+      earlier = !!at.earlier;
     const where = zh
-      ? at.back != null
-        ? `最近第 ${at.back} 个问题`
-        : `第 ${at.n} / ${at.total} 个问题`
-      : at.back != null
-        ? at.back === 1
-          ? 'latest question'
-          : `${at.back} questions back`
-        : `question ${at.n} of ${at.total}`;
+      ? earlier
+        ? '更早的问题'
+        : at.back != null
+          ? `最近第 ${at.back} 个问题`
+          : `第 ${at.n} / ${at.total} 个问题`
+      : earlier
+        ? single
+          ? 'earlier question'
+          : 'earlier questions'
+        : at.back != null
+          ? at.back === 1
+            ? 'latest question'
+            : `${at.back} questions back`
+          : `question ${at.n} of ${at.total}`;
     const meta = zh
       ? single
         ? `书签 · ${where}`
@@ -178,39 +200,45 @@
         : `${where[0].toUpperCase()}${where.slice(1)} · ${k} bookmarks`;
     const tag = zh ? '回答已变化' : 'answer changed';
     // One stale bookmark: the meta line says so and a footer explains where a click lands.
-    const stale = single && !!rows[0].stale;
-    const warn = !stale
-      ? null
-      : zh
-        ? `找不到这一段了。点击会跳到${at.back != null ? '这个问题' : `第 ${at.n} 个问题`}的开头。`
-        : `This paragraph can't be found any more. Clicking opens ${at.back != null ? 'its question' : `question ${at.n}`} instead.`;
+    const stale = single && !earlier && !!rows[0].stale;
+    const warn =
+      earlier && single
+        ? zh
+          ? '这个问题还没加载。点击会先加载更早的消息。'
+          : "This question isn't loaded yet. Clicking loads earlier messages first."
+        : !stale
+          ? null
+          : zh
+            ? `找不到这一段了。点击会跳到${at.back != null ? '这个问题' : `第 ${at.n} 个问题`}的开头。`
+            : `This paragraph can't be found any more. Clicking opens ${at.back != null ? 'its question' : `question ${at.n}`} instead.`;
     return {
       single,
       meta: stale ? (zh ? `书签 · ${tag}` : `Bookmark · ${tag}`) : meta,
       rows,
       visible: Math.min(k, VISIBLE),
-      label: label(rows, zh),
+      label: earlier ? `${meta}${zh ? '：' : ': '}${texts(rows, zh)}` : label(rows, zh),
       stale,
       warn,
       tag,
+      wait: zh ? '正在加载更早的问题…' : 'Loading earlier questions…',
     };
   }
+  // The bookmarks' text for an accessible name, a stale one marked so.
+  const texts = (rows, zh) =>
+    rows
+      .map((b) =>
+        !b.stale ? b.excerpt : zh ? `${b.excerpt}（回答已变化）` : `${b.excerpt} (answer changed)`,
+      )
+      .join(zh ? '；' : '; ');
   // The segment's accessible name: how many bookmarks, and their text.
   function label(rows, zh = false) {
     const k = rows.length,
-      texts = rows
-        .map((b) =>
-          !b.stale
-            ? b.excerpt
-            : zh
-              ? `${b.excerpt}（回答已变化）`
-              : `${b.excerpt} (answer changed)`,
-        )
-        .join(zh ? '；' : '; ');
-    if (zh) return k === 1 ? `书签：${texts}` : `${k} 个书签：${texts}`;
-    return k === 1 ? `Bookmark: ${texts}` : `${k} bookmarks: ${texts}`;
+      t = texts(rows, zh);
+    if (zh) return k === 1 ? `书签：${t}` : `${k} 个书签：${t}`;
+    return k === 1 ? `Bookmark: ${t}` : `${k} bookmarks: ${t}`;
   }
   const api = {
+    EARLIER,
     excerpt,
     key,
     clean,

@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order, a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
 | `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
@@ -78,7 +78,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
-- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, segment offset),
+- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, segment offset),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
   CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names), `test/bookmark-stale.test.js` (live and stale resolution: a
@@ -108,6 +108,20 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   the key is cleared in `chrome://extensions/shortcuts`. Under an X display it runs headed and
   presses the real key through XTest (`xtest-keys.py`); without one it runs headless and asks the
   worker to relay the command instead, which skips Chrome's key handling.
+  Earlier history (#51 addendum), run last: the fixture opens the chat with only its latest 5 questions
+  and serves earlier ones two per `/messages?before=` page when the chat is scrolled near its top,
+  as ChatGPT does. It checks the one segment on the earlier-history dots (5 px below their centre,
+  styled as any segment) and no segment under a loaded question it doesn't belong to, no reads or
+  page loads while scrolling, the single and list cards, the loading state (meta line, the clicked
+  row's spinner, blinking dots), clicks from the card's text, a row and the segment (the oldest)
+  loading pages only until the answer is known and landing on its text, the segment moving to its
+  tick with the grow-in, the dots' segment fading out (at once under reduced motion), Escape while
+  loading, the keyboard path, and a message gone from the whole conversation turning stale once all
+  is loaded. It shoots `earlier-{rest,single,list,loading,landed}-<theme>-<lang>-<desktop|narrow>`
+  (narrow: 600 px, the narrowest the rail draws at) and `earlier-rest-light-en-mobile390`; with
+  `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
+  -R SimianW/butter`) also the mockup's panels as `mockup-earlier-*`. `ONLY=earlier` runs this part
+  alone.
   It then drives the first bookmark notice in light and dark, English and Chinese:
   Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
   and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
@@ -230,7 +244,8 @@ command beside `save-bug`.
 On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
 it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever it renders
 (`complete`: no earlier page is left to load). The content script answers with
-`ButterRail.setMarks(conv, marks)`: a `Map` from question id to
+`ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
+(or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
 `{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
 question's bookmarks in answer order, each with its `stale` flag, `stale` is set when all of them are
 stale (the segment shows at 40 % opacity), `land(turnElement, bookmark = bookmarks[0])` returns that
@@ -247,6 +262,19 @@ mounted keeps the state last seen in the tab. The content script resolves on eve
 when the pointer or focus reaches the rail; never while a scrollbar drag is seeking. The card shows a
 stale row grey with "answer changed", and a single stale bookmark with "Bookmark · answer changed",
 grey text and a footer saying a click opens its question instead.
+
+Earlier history (#51 addendum). After a reload ChatGPT lists only a long chat's latest questions.
+While earlier history isn't loaded, `ButterBookmarks.group` puts a bookmark whose message is neither
+listed nor rendered in the `EARLIER` group: the rail draws it as one segment 5 px below the "earlier"
+dots, never stale, with the card "Bookmark · earlier question" (one, with a footer) or "Earlier
+questions · k bookmarks" (oldest first). A click on the segment (the oldest), the card's text or a
+row runs the rail's earlier trip with that bookmark's key: pages load only until `setMarks` places
+the key under a question, then the trip lands on its text as a bookmark jump does (at the
+question's start when it turned stale: its message isn't in the now complete conversation). Meanwhile
+the dots blink, the card's meta line reads "Loading earlier questions…" and that row's × is a spinner;
+Escape or leaving puts the card away without stopping the trip. A bookmark leaving the dots grows in
+under its tick; the dots' segment fades out when none are left (at once under reduced motion, or
+when the dots go).
 
 The rail draws the hover card for a segment from `ButterBookmarks.card(bookmarks, at, zh)`
 (`{ single, meta, rows, visible, label, stale, warn, tag }`); the card takes the pointer while it shows bookmarks.
