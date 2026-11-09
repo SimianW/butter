@@ -26,18 +26,55 @@ On a version change, update together:
 
 - both manifest fields;
 - "Current version" in `README.md` and "当前版本" in `README.zh-CN.md`;
-- a `## <version_name> (YYYY-MM-DD)` entry at the top of `CHANGELOG.md`, describing what changed
-  for the user since the previous build;
+- a `## [<version_name>] - YYYY-MM-DD` entry at the top of `CHANGELOG.md`, written by the rules in
+  [Changelog](#changelog);
 - the package: `python3 scripts/package.py` names the zip after `version_name`.
 
 `python3 scripts/check-version.py` verifies the manifest, README, and changelog version sites.
 For test commands, see [docs/development.md](docs/development.md).
 
-GitHub tags and releases are `v<version_name>`; alpha builds are marked as prereleases.
+GitHub tags and releases are `v<version_name>`; alpha builds are marked as prereleases. A release's
+notes are its changelog entry without the `##` heading.
 
 Builds before 0.1.0-alpha.5 were renamed on 2026-11-01. Commit messages from before then still use
 the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and 0.0.2-alpha.N is
 0.1.0-alpha.N.
+
+## Changelog
+
+`CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): one entry per
+build, newest first, its changes grouped under `###` category headings.
+
+```markdown
+## [0.1.0-alpha.16] - 2026-11-08
+
+### Changed
+
+- Redesigned the popup: ...
+
+### Fixed
+
+- Fixed Ask in branch failing after you open a chat from ChatGPT's sidebar.
+```
+
+Use these categories, in this order, and only the ones the build has:
+
+| Category | For | Example |
+|---|---|---|
+| Added | new features | Added dark mode support. |
+| Changed | changes to existing features | Improved the settings UI. |
+| Fixed | bug fixes | Fixed a crash when opening settings. |
+| Removed | removed features | Removed legacy API support. |
+| Deprecated | features to be removed later | Deprecated the old authentication API. |
+| Security | security fixes | Fixed an XSS vulnerability. |
+| Performance | speed and resource use | Reduced startup time by 30%. |
+
+A problem the build ships with goes last, under `### Known issues`.
+
+Each bullet is one change the user can notice, opening with a past-tense verb ("Added",
+"Fixed", "Reduced"); a known issue instead describes the problem. Name what the user sees, keep
+the bullet short, and give the measured number for a performance change when there is one. Leave out changes only developers see (tests, dev
+build, CI).
 
 ## Workflow
 
