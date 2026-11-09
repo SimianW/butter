@@ -65,7 +65,9 @@ function fakePage(o = {}) {
       }
     }),
     dismissMenus: record('dismissMenus', () => (s.menu = 0)),
-    composerText: record('composerText', () => (o.noComposer ? null : s.composer)),
+    composerText: record('composerText', () =>
+      o.noComposer ? null : o.readback ? o.readback(s.composer) : s.composer,
+    ),
     fill: record('fill', (text) => {
       // The rule under test everywhere: nothing is ever typed into the original conversation.
       assert.notEqual(s.id, ORIGINAL, 'typed into the original conversation');
@@ -107,6 +109,16 @@ test('happy path: branches, verifies the new identity, then sends the quote and 
   assert.deepEqual(fake.s.sent, [{ id: BRANCH, text: MESSAGE }]);
   const presses = fake.calls.filter((c) => c === 'press').length;
   assert.equal(presses, 3);
+});
+
+test('a multi-line quote is sent though the composer reads back a blank line between its paragraphs', async () => {
+  // Live, 2026-11-08: ChatGPT's composer holds one paragraph per line, and its innerText puts a
+  // blank line between them. Butter used to see that as an edited composer and left it unsent.
+  const multi = { ...job, quote: 'first paragraph\nsecond paragraph' };
+  const fake = fakePage({ readback: (text) => text.replace(/\n/g, '\n\n') });
+  const r = await start({ job: multi, page: fake.page, clock: fake.clock }).done;
+  assert.equal(r.state, 'ready');
+  assert.equal(fake.s.sent.length, 1);
 });
 
 test('false-failure regression: a menu step times out but the tab already landed on a branch → ready', async () => {
