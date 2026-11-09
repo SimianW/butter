@@ -93,6 +93,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
   paragraph, the segment under its question, landing on the paragraph from the segment, reload,
   the filled button on a bookmarked paragraph, one read per conversation and none while scrolling,
+  the segment back after going to the home page and Back through history,
   dark theme, and the rail off or Butter paused. Then the hover card: the single and list cards,
   moving onto the card, a jump from a row, × and the filled button deleting (the segment fading out,
   or going at once under reduced motion), keyboard-only jump and delete, and a reload; it shoots
@@ -123,6 +124,9 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
   -R SimianW/butter`) also the mockup's panels as `mockup-earlier-*`. `ONLY=earlier` runs this part
   alone.
+  Before it, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
+  button and the button removes it, scrolling reads nothing, and with a second question the segment
+  shows under question 1 (`ONLY=one` runs this part alone).
   It then drives the first bookmark notice in light and dark, English and Chinese:
   Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
   and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`

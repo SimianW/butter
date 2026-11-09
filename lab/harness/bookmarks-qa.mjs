@@ -5,7 +5,9 @@
 // Checks: hover a paragraph, the button waits 120 ms, click it, the segment appears under the right
 // question, clicking the segment lands on the paragraph, a reload shows the segment again, a
 // bookmarked paragraph shows the filled button, the conversation's bookmarks are read once and not
-// during scrolling, and with the rail off or Butter paused neither the button nor a segment shows.
+// during scrolling, going to the home page and Back through history shows the segment again, and
+// with the rail off or Butter paused neither the button nor a segment shows.
+// A one-question chat (ONLY=one runs it alone): no rail, but the filled button and its remove work.
 // The rail's hover card (#53): the single and list cards, moving onto the card, jumping from a row,
 // deleting with × and the filled button, the segment fading out, keyboard-only jump and delete, and
 // light and dark screenshots of both cards.
@@ -114,7 +116,8 @@ const messages = (from = 0, to = TURNS) =>
 // `first`: the chat opens with questions first..TURNS-1 only, as ChatGPT opens a long chat; its
 // earlier messages come two questions per page from /messages?before=<first> when the chat is
 // scrolled near its top (#51 addendum). Each page is answered after `pageDelay` ms; `pages` counts them.
-const page$ = { theme: 'light', regen: new Set(), edited: new Set(), first: 0, pageDelay: 0, pages: 0 };
+// `turns`: the chat holds only its first `turns` questions (1: a one-question chat, no rail).
+const page$ = { theme: 'light', regen: new Set(), edited: new Set(), first: 0, turns: TURNS, pageDelay: 0, pages: 0 };
 const PAGE_TURNS = 2;
 // The answer's wrapper in each markup. `data-fx-answer` is the harness's own handle on it.
 const answerAttrs = (id) =>
@@ -162,7 +165,7 @@ article { display:block; width:720px; margin:0 auto 24px }
 /* Three lines of this one hold fewer than 240 characters: the line rule decides its excerpt. */
 [data-markdown-text-style] p.narrow { max-width:300px }
 </style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from(
-  { length: TURNS - page$.first },
+  { length: page$.turns - page$.first },
   (_, k) => turnHtml(k + page$.first),
 ).join('')}</div></div><script>
 fetch('/backend-api/me');
@@ -198,7 +201,7 @@ await context.route('**/*', (route) => {
   if (url.pathname === `/backend-api/conversation/${CONV}`)
     return route.fulfill({
       contentType: 'application/json',
-      body: JSON.stringify({ messages: messages(page$.first), page_info: { has_previous_page: page$.first > 0 } }),
+      body: JSON.stringify({ messages: messages(page$.first, page$.turns), page_info: { has_previous_page: page$.first > 0 } }),
     });
   if (url.pathname === `/backend-api/conversation/${CONV}/messages`) {
     const before = +url.searchParams.get('before'),
@@ -304,7 +307,7 @@ async function open(theme = 'light') {
   await page.waitForSelector('chatgpt-butter-nav[data-on]', { state: 'attached', timeout: 10000 });
   await page.waitForFunction(
     (n) => document.querySelector('chatgpt-butter-nav')?.shadowRoot.querySelectorAll('.tick').length === n,
-    TURNS - page$.first,
+    page$.turns - page$.first,
   );
   await page.waitForTimeout(400);
 }
@@ -460,6 +463,54 @@ async function bookmark(turn, k, low = false) {
     kept,
     click: () => placed && page.mouse.click(placed.x + 14, placed.y + 14),
   };
+}
+
+// 11b. A one-question chat: the rail stays hidden, as before, but a bookmark made there still
+// shows the filled button and can be removed with it; with a second question its segment shows.
+async function oneQuestionSection() {
+  await settings({ bookmarkNotice: 'acknowledged' });
+  await seedStore([], { clear: true });
+  page$.turns = 1;
+  page$.theme = 'light';
+  if (!page) page = await context.newPage();
+  await page.goto(`https://chatgpt.com/c/${CONV}`);
+  await page.waitForSelector(`[data-fx-answer="${answer(0)}"]`);
+  await page.waitForTimeout(1500);
+  const railOn = () => page.evaluate(() => !!document.querySelector('chatgpt-butter-nav')?.hasAttribute('data-on'));
+  const PARA = 3;
+  const first = await bookmark(0, PARA);
+  await first.click();
+  await page.waitForTimeout(600);
+  const made = await stored();
+  check('one question: the button saves a bookmark and the rail stays hidden',
+    first.kept?.shown && !first.kept.on && made.length === 1 && made[0].turn === 0 && made[0].para === PARA && !(await railOn()),
+    { button: first.kept, stored: made.length });
+  const read = (await requests())['butter-bookmark-list'] || 0;
+  for (let k = 0; k < 10; k++) {
+    await page.mouse.move(700, 400);
+    await page.mouse.wheel(0, k % 2 ? -400 : 400);
+    await page.waitForTimeout(30);
+  }
+  await page.waitForTimeout(300);
+  const again = await bookmark(0, PARA);
+  check('one question: the bookmarked paragraph shows the filled "Remove bookmark" button',
+    again.kept?.on && again.kept.tip === 'Remove bookmark', { button: again.kept });
+  check('one question: scrolling reads no bookmarks', ((await requests())['butter-bookmark-list'] || 0) === read,
+    { read, now: (await requests())['butter-bookmark-list'] });
+  await again.click();
+  await page.waitForTimeout(600);
+  check('one question: the filled button removes it', (await stored()).length === 0 && !(await railOn()), { stored: (await stored()).length });
+  // Saved again, then a second question: the rail shows, with the segment under question 1.
+  await (await bookmark(0, PARA)).click();
+  await page.waitForTimeout(600);
+  page$.turns = 2;
+  await open();
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 }).catch(() => {});
+  const two = await rail();
+  check('with a second question the rail shows the segment under question 1', (await stored()).length === 1 && two.marks.length === 1 && markUnder(two, 0),
+    { stored: (await stored()).length, marks: two.marks.length });
+  page$.turns = TURNS;
+  await seedStore([], { clear: true });
 }
 
 // 12. Earlier history (#51 addendum). After a reload a long chat lists only its latest questions; a
@@ -848,6 +899,7 @@ try {
   });
   // ONLY=earlier runs the earlier-history section alone.
   if (process.env.ONLY === 'earlier') await earlierSection();
+  else if (process.env.ONLY === 'one') await oneQuestionSection();
   else {
     await settings({});
     await open();
@@ -986,6 +1038,18 @@ try {
     const afterScroll = await requests();
     check('bookmarks are read once per conversation and not while scrolling',
       afterLoad - read === 1 && (afterScroll['butter-bookmark-list'] || 0) === afterLoad, { read, afterLoad, afterScroll });
+
+    // 5b. Away to ChatGPT's home and Back through history (no reload): the rail leaves the chat and
+    // comes back to it, and its segment with it; hovering the rail is not needed.
+    await page.mouse.move(700, 400);
+    await page.evaluate(() => history.pushState({}, '', '/'));
+    await page.waitForFunction(() => !document.querySelector('chatgpt-butter-nav').hasAttribute('data-on'), null, { timeout: 5000 });
+    await page.evaluate(() => history.back());
+    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').hasAttribute('data-on'), null, { timeout: 5000 });
+    await page.waitForTimeout(1000);
+    const backAgain = await rail();
+    check('away to the home page and Back: the segment is under question 7 again', backAgain.marks.length === 1 && markUnder(backAgain, TURN),
+      { marks: backAgain.marks.length });
 
     // 6. Dark theme: the segment and the button in dark butter.
     await open('dark');
@@ -1775,6 +1839,7 @@ try {
     page$.regen = new Set();
     page$.edited = new Set();
 
+    await oneQuestionSection();
     await earlierSection();
 
     // Against the mockup's section 4, when given.
