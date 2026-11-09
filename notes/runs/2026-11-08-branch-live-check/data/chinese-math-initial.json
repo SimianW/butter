@@ -1,0 +1,91 @@
+{
+  "case": "A",
+  "fixture": "math12",
+  "intervention": "Real conversation response buffered and withheld until geometry captures complete",
+  "states": [
+    {
+      "state": "loading",
+      "at": 5623.800000190735
+    },
+    {
+      "state": "branching",
+      "at": 12674.599999904633
+    },
+    {
+      "state": "verifying",
+      "at": 13603.099999904633
+    },
+    {
+      "state": "sending",
+      "verified": true,
+      "at": 38933.300000190735
+    },
+    {
+      "state": "ready",
+      "at": 91532.40000009537
+    }
+  ],
+  "measurements": [],
+  "selection": {
+    "paragraphs": 2,
+    "math": 2,
+    "chinese": true
+  },
+  "branchCreated": true,
+  "calls": [
+    {
+      "method": "composerText",
+      "length": 0,
+      "matches": false,
+      "legacyMatches": false
+    },
+    {
+      "method": "fill",
+      "result": true,
+      "length": 123
+    },
+    {
+      "method": "composerText",
+      "length": 132,
+      "matches": true,
+      "legacyMatches": false
+    },
+    {
+      "method": "send",
+      "result": true,
+      "inBranch": true
+    }
+  ],
+  "expected": {
+    "length": 123,
+    "lines": 9,
+    "quoteLines": 7,
+    "chinese": true,
+    "math": true
+  },
+  "conversationRequests": 1,
+  "endState": "ready",
+  "baseline": {
+    "width": 1599,
+    "height": 912,
+    "theme": "light",
+    "stored": "light"
+  },
+  "themeStorageUnchanged": true,
+  "requestMessage": {
+    "present": true,
+    "length": 123,
+    "exact": true,
+    "sameNonblankLines": true
+  },
+  "transportStatus": 200,
+  "responseBuffered": true,
+  "server": {
+    "status": 404,
+    "userMessagePresent": false,
+    "length": 0,
+    "exact": false,
+    "sameNonblankLines": false
+  },
+  "artifactNote": "Initial capture selector chose hidden elements; all screenshots excluded. Transport and composer observations retained."
+}
