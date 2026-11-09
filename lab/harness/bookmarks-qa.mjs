@@ -17,7 +17,9 @@
 // the stale single card with its footer, the jump landing at the question's start, a bookmark
 // turning live again when the original version is switched back, and light and dark screenshots
 // of the stale cards (`card-stale-*`, `card-list-stale-*`; with BUTTER_BOOKMARKS_MOCKUP also the
-// mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them).
+// mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them). An answer that streamed in
+// this tab (sent here, so no page GET lists it): its bookmark stays live once the virtualizer
+// unmounts the turn, and its segment still lands on the paragraph.
 // First-use notice (#56): the first save shows it, Undo deletes the bookmark and its segment and the
 // next save shows it again (light and dark, English and Chinese, with layout consent pending,
 // declined, granted and switched off), Got it keeps it away on a third save and after a reload.
@@ -1843,6 +1845,82 @@ try {
     await settings({ bookmarkNotice: 'acknowledged' });
     page$.regen = new Set();
     page$.edited = new Set();
+
+    // 11c. An answer that streamed in this tab (#51). The user sends question 13 here: the rail
+    // hears the send (a `butter-nav` 'send', as history/conversation-main.js reports it) and the turn
+    // mounts with an answer no page GET lists. A bookmark on its paragraph 2 stays live after
+    // ChatGPT's virtualizer unmounts the turn and the bookmarks refresh, and its segment still
+    // lands on that paragraph once the turn mounts again.
+    const SENT = TURNS,
+      SENT_PARA = 2;
+    await seedStore([], { clear: true });
+    await open('light');
+    await page.evaluate(
+      ([conv, parent, id, q, turn]) => {
+        document.dispatchEvent(new CustomEvent('butter-nav', { detail: JSON.stringify({ type: 'send', conv, parent, item: { id, q } }) }));
+        document.querySelector('.content').insertAdjacentHTML('beforeend', turn);
+      },
+      [CONV, answer(TURNS - 1), question(SENT), QUESTION(SENT), turnHtml(SENT)],
+    );
+    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick').length === n, TURNS + 1, { timeout: 5000 });
+    await page.waitForTimeout(400);
+    const sentMark = await bookmark(SENT, SENT_PARA);
+    await sentMark.click();
+    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
+    await page.waitForTimeout(800);
+    const sentRows = await stored();
+    check('streamed here: the sent question\'s answer, not in any page GET, takes a bookmark under question 13',
+      sentRows.length === 1 && sentRows[0].msg === sha(answer(SENT)) && sentRows[0].ask === sha(question(SENT)) &&
+        sentRows[0].turn === SENT && sentRows[0].para === SENT_PARA && markUnder(await rail(), SENT), { stored: sentRows.map(({ turn, para }) => ({ turn, para })) });
+    // Scrolled away, the virtualizer swaps the turn for a placeholder of its height, as ChatGPT
+    // keeps only the turns around the view. When the placeholder nears the view the turn mounts
+    // again 700 ms later: rendering a far turn takes ChatGPT a second or more (rail/rail.js `jump`),
+    // so the page's re-check 600 ms after the click runs while the turn is still out.
+    await toTop();
+    const unmounted = await page.evaluate((id) => {
+      const sc = document.querySelector('.thread-scroll-container'),
+        turn = document.querySelector(`[data-turn-key="${id}"]`),
+        hole = document.createElement('div');
+      hole.style.height = `${turn.offsetHeight}px`;
+      hole.style.marginBottom = '24px';
+      turn.replaceWith(hole);
+      const io = new IntersectionObserver(
+        (es) => {
+          if (!es.some((e) => e.isIntersecting)) return;
+          io.disconnect();
+          setTimeout(() => hole.replaceWith(turn), 700);
+        },
+        { root: sc, rootMargin: '200px 0px' },
+      );
+      io.observe(hole);
+      return !document.querySelector(`[data-turn-key="${id}"]`);
+    }, question(SENT));
+    // The pointer reaching the rail re-checks the bookmarks (bookmarks/content.js `toRail`); then the
+    // card is read afresh.
+    await hoverSegment(SENT);
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(400);
+    const sentSeg = await hoverSegment(SENT);
+    const sentCard = await staleState(),
+      sentStale = await page.evaluate((y) => {
+        const m = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].find(
+          (el) => Math.abs(el.getBoundingClientRect().top + 1 - y) <= 1.5);
+        return m ? { stale: m.classList.contains('stale'), opacity: +getComputedStyle(m).opacity, label: m.getAttribute('aria-label') } : null;
+      }, sentSeg.y),
+      stillOut = await page.evaluate((id) => !document.querySelector(`[data-turn-key="${id}"]`), question(SENT));
+    check('streamed here, unmounted: the segment stays full colour, not "answer changed"',
+      unmounted && stillOut && sentStale && !sentStale.stale && sentStale.opacity === 1 && !sentStale.label.endsWith('(answer changed)'), { unmounted, stillOut, seg: sentStale });
+    check('streamed here, unmounted: its card is live, with no "answer changed" or footer',
+      sentCard.shown && !sentCard.stale && sentCard.meta === 'Bookmark · question 13 of 13' && sentCard.warn === null, { meta: sentCard.meta, warn: sentCard.warn });
+    // The click mounts the turn again on the way and lands on the bookmarked paragraph.
+    await page.mouse.click(sentSeg.right - 4, sentSeg.y);
+    await page.waitForTimeout(3500);
+    const remounted = await page.evaluate((id) => !!document.querySelector(`[data-turn-key="${id}"]`), question(SENT)),
+      sentAt = remounted ? (await block(SENT, SENT_PARA)).fromTop : null,
+      sentQuestion = remounted ? await questionTop(SENT) : null;
+    check('streamed here, unmounted: clicking the segment lands on the bookmarked paragraph, not the question',
+      remounted && Math.abs(sentAt - 64) <= 3, { remounted, fromTop: sentAt, question: sentQuestion });
+    await seedStore([], { clear: true });
 
     await oneQuestionSection();
     await earlierSection();
