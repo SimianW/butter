@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-09T01:17:38.459Z",
+  "lab": 1,
+  "mode": "reload",
+  "events": [
+    {
+      "label": "project-open-tab-after-extension-reload",
+      "original": "/g/g-p-<project>/c/<chat-1>",
+      "elapsedMs": 6609,
+      "reason": "Couldn’t hand your question to the new tab. Try again.",
+      "content": [
+        {
+          "type": "butter-branch-put",
+          "threw": "Extension context invalidated."
+        },
+        {
+          "openUrl": "/g/g-p-<project>/c/<chat-1>#butter-branch=<job>"
+        }
+      ],
+      "worker": [],
+      "navigationRequests": [
+        {
+          "url": "/g/g-p-<project>/c/<chat-1>"
+        }
+      ],
+      "newTabs": [],
+      "originalUnchanged": true
+    }
+  ]
+}

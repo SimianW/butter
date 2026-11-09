@@ -223,7 +223,9 @@
     text(job.quote) &&
     text(job.question) &&
     (job.title === undefined || typeof job.title === 'string');
-  const senderIdentity = (sender) => identity(sender?.url || sender?.tab?.url);
+  // The tab's URL first: sender.url keeps the URL the document loaded with, so after ChatGPT
+  // routes to another conversation (a sidebar click) it still names the previous one.
+  const senderIdentity = (sender) => identity(sender?.tab?.url || sender?.url);
   const jobId = (hash) => {
     const id = /^#butter-branch=([0-9a-f-]{36})$/.exec(hash || '')?.[1];
     return id && JOB_ID.test(id) ? id : null;

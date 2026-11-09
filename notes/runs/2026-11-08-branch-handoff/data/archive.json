@@ -1,0 +1,143 @@
+{
+  "createdAtUtc": "2026-11-09T01:20:50.958214+00:00",
+  "source": "Live lab CDP observations at worktree HEAD 933c2e15ae761f93f440a7ff43d327ace4aec8d8",
+  "transformations": [
+    "Conversation identities aliased within each mode; complete Project path segments replaced.",
+    "No selected passage, title, authentication data, or full worker job saved.",
+    "Source stdout preserves intentional assertion/setup failures; JSON contains successfully collected observations.",
+    "Early duplicate observer records retained and explained; not counted as additional sends."
+  ],
+  "excluded": [
+    "Original user conversation and exact dev package unavailable.",
+    "Raw URLs only held in process memory and an excluded temporary discovery file, deleted after scan.",
+    "No screenshots, HAR, full page content, or auth captures."
+  ],
+  "artifacts": [
+    {
+      "path": "baseline.json",
+      "mtimeUtc": "2026-11-09T01:08:42.671709+00:00",
+      "bytes": 3015,
+      "sha256": "e2e2e852f75b3cf981d67d83da0778d6bb2b3888dde816caf4a76ab4cd57b82e"
+    },
+    {
+      "path": "commands.md",
+      "mtimeUtc": "2026-11-09T01:20:50.918351+00:00",
+      "bytes": 10589,
+      "sha256": "c511640ebc3d74f292c3c69a05702c6edf555bfc21e4109e8bebfcdf86ae52eb"
+    },
+    {
+      "path": "control-output.txt",
+      "mtimeUtc": "2026-11-09T01:18:44.473392+00:00",
+      "bytes": 275,
+      "sha256": "f34eca13c9c88c06d053a854493969a3a5db6ada397686eb151f4ff5fdb46467"
+    },
+    {
+      "path": "control.json",
+      "mtimeUtc": "2026-11-09T01:18:44.475391+00:00",
+      "bytes": 497,
+      "sha256": "d022ef139b1c60e1887b556781d60997dc323627975ccc249548c7d0ae9a4213"
+    },
+    {
+      "path": "idle-attached-output.txt",
+      "mtimeUtc": "2026-11-09T01:13:44.797093+00:00",
+      "bytes": 564,
+      "sha256": "7f111e899d56df1c1b41dc6a6ac837d084a660db319629740d8dee5851c53fa1"
+    },
+    {
+      "path": "idle-attached.json",
+      "mtimeUtc": "2026-11-09T01:13:44.811093+00:00",
+      "bytes": 946,
+      "sha256": "64cdc8eb2da3fb364055848c958cbd1a4f4589989e0598a893c66ff3fbe7baa0"
+    },
+    {
+      "path": "idle-output.txt",
+      "mtimeUtc": "2026-11-09T01:15:27.818889+00:00",
+      "bytes": 588,
+      "sha256": "830e1b03598c22219ad649d1dc1a3178d3bb7f5ca12897f120020ca82cda9d44"
+    },
+    {
+      "path": "idle.json",
+      "mtimeUtc": "2026-11-09T01:15:27.833889+00:00",
+      "bytes": 946,
+      "sha256": "25b295dc9ad3c91946901ebf6499847e1fea19d3adae26897b9e2f5df18a5bd3"
+    },
+    {
+      "path": "navigation-output.txt",
+      "mtimeUtc": "2026-11-09T01:12:40.162590+00:00",
+      "bytes": 1743,
+      "sha256": "0f96b9ee5219d46ae45d196ecbc07927ff5781f27ceffebda4e8fbf7a527b924"
+    },
+    {
+      "path": "navigation.json",
+      "mtimeUtc": "2026-11-09T01:12:40.171590+00:00",
+      "bytes": 2984,
+      "sha256": "80364fd18e5c29cce3287aaf24b36ad46812eb55534c0d53abe0cf2c26e8cea2"
+    },
+    {
+      "path": "privacy.json",
+      "mtimeUtc": "2026-11-09T01:20:50.956084+00:00",
+      "bytes": 147,
+      "sha256": "18920aecd594074ec13a10b46a7bc4341a8e1f51049fc07915401a481995cd00"
+    },
+    {
+      "path": "probe.mjs",
+      "mtimeUtc": "2026-11-09T01:16:15.842258+00:00",
+      "bytes": 17283,
+      "sha256": "493b626bbe8d1274c9088613f886e5781ae85fbb9d6a16dadb799f819e174bcb"
+    },
+    {
+      "path": "reload-output.txt",
+      "mtimeUtc": "2026-11-09T01:17:44.308934+00:00",
+      "bytes": 1097,
+      "sha256": "021d62d02d13478338b9a0ee2bd268cd2fa88ca11481614d4d48b6196687ba82"
+    },
+    {
+      "path": "reload.json",
+      "mtimeUtc": "2026-11-09T01:17:38.460396+00:00",
+      "bytes": 720,
+      "sha256": "b08f2deb5d7246baf58f02b63f5ba57c622d979c2524eac5a93056a76afef6bd"
+    },
+    {
+      "path": "report.md",
+      "mtimeUtc": "2026-11-09T01:20:24.093148+00:00",
+      "bytes": 10594,
+      "sha256": "bddc06fe448f3a84345b06612655308ff81da3f6f5ef566e14c475379c055b8c"
+    },
+    {
+      "path": "slow-output.txt",
+      "mtimeUtc": "2026-11-09T01:16:46.223490+00:00",
+      "bytes": 884,
+      "sha256": "bbbd69e6ab626da6ed42b72dc5e6c743e000d7e00ec9e67d953cf03346ece649"
+    },
+    {
+      "path": "slow-setup-error.txt",
+      "mtimeUtc": "2026-11-09T01:15:51.590072+00:00",
+      "bytes": 1522,
+      "sha256": "58b63a42fd9f016a8f653a420a0191cd555ef8f5223f9b17f9769efb044e19ca"
+    },
+    {
+      "path": "slow.json",
+      "mtimeUtc": "2026-11-09T01:16:46.238491+00:00",
+      "bytes": 1635,
+      "sha256": "ac6a92482ed8698c8ae8ae004421a7120d207c826a841e099ee2c6653c6c09ca"
+    },
+    {
+      "path": "source-equivalence.diff",
+      "mtimeUtc": "2026-11-09T01:13:22.485919+00:00",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "spa-output.txt",
+      "mtimeUtc": "2026-11-09T01:12:03.746305+00:00",
+      "bytes": 2087,
+      "sha256": "c27d931adf50e757b77edea91ef1fe8abfc5bb6782e7a70fb8c622593c98c6d5"
+    },
+    {
+      "path": "spa.json",
+      "mtimeUtc": "2026-11-09T01:12:03.644304+00:00",
+      "bytes": 2642,
+      "sha256": "49b5c2cbc9660739cb71063adb8fedb0de5a76b5325947c6b719ac8f7e759009"
+    }
+  ]
+}

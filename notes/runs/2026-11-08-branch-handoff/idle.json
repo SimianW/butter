@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-09T01:15:27.834Z",
+  "lab": 1,
+  "mode": "idle",
+  "events": [
+    {
+      "step": "idle-end",
+      "workerTargets": 0,
+      "waitMs": 36000
+    },
+    {
+      "label": "project-after-36s-worker-idle",
+      "original": "/g/g-p-<project>/c/<chat-1>",
+      "elapsedMs": 6723,
+      "reason": null,
+      "content": [
+        {
+          "openUrl": "/g/g-p-<project>/c/<chat-1>#butter-branch=<job>"
+        },
+        {
+          "type": "butter-branch-put",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "received": "butter-branch-claimed"
+        }
+      ],
+      "worker": [],
+      "navigationRequests": [
+        {
+          "url": "/g/g-p-<project>/c/<chat-1>"
+        }
+      ],
+      "newTabs": [
+        {
+          "url": "/g/g-p-<project>/c/<chat-1>",
+          "initial": "blank"
+        }
+      ],
+      "originalUnchanged": true
+    }
+  ]
+}

@@ -37,7 +37,7 @@ class PackageTests(unittest.TestCase):
         (self.extension / "manifest.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
         (self.root / "README.md").write_text(f"Current version: **{name}**\n", encoding="utf-8")
         (self.root / "README.zh-CN.md").write_text(f"当前版本：**{name}**\n", encoding="utf-8")
-        (self.root / "CHANGELOG.md").write_text(f"## {name} (2026-11-04)\n", encoding="utf-8")
+        (self.root / "CHANGELOG.md").write_text(f"## [{name}] - 2026-11-04\n", encoding="utf-8")
 
     def run_script(self, script, *args):
         return subprocess.run(
