@@ -1,6 +1,6 @@
 # Commands and actual output — #57 fourth live run
 
-Outputs below are literal task output, except private fixture/account details are omitted.
+Outputs below are literal task output, with trailing whitespace removed and private fixture/account details omitted.
 Read-only documentation/source inspection is listed without repeating the files. No extension
 file was edited. All commands ran in the assigned fresh worktree unless stated otherwise.
 
@@ -237,3 +237,69 @@ All matched files use Prettier code style!
 ```
 
 Both commands exited 0. The extension directory is byte-for-byte the integration source.
+
+## Commit, integration merge, checks and push
+
+```sh
+git add lab/harness/bookmarks-live.mjs notes/runs/2026-11-08-bookmarks-live && git commit -m "Rerun bookmark live matrix after review fixes"
+```
+
+```text
+[t3/57-bookmark-lab-4 fc4bbb1] Rerun bookmark live matrix after review fixes
+ 5 files changed, 1746 insertions(+), 363 deletions(-)
+ create mode 100644 notes/runs/2026-11-08-bookmarks-live/attempt-1-summary.json
+```
+
+```sh
+git fetch origin && git merge origin/t3/51-bookmarks
+```
+
+```text
+From https://github.com/SimianW/butter
+ * [new branch]      t3/fix-new-branch-confirmation -> origin/t3/fix-new-branch-confirmation
+Already up to date.
+```
+
+```sh
+npm run format:check && npm run lint
+```
+
+```text
+
+> format:check
+> prettier --check "extension/**/*.{js,css,html,json}" "test/**"
+
+Checking formatting...
+All matched files use Prettier code style!
+
+> lint
+> eslint .
+
+```
+
+All exited 0. A follow-up `git diff --quiet origin/t3/51-bookmarks -- extension` exited 0,
+`git status --short --branch` showed only `## t3/57-bookmark-lab-4`, and `git rev-parse HEAD`
+returned `fc4bbb1d6515f9b0974d3ed246a9cfc3d2b93d29`.
+
+```sh
+git push -u origin t3/57-bookmark-lab-4 > /tmp/butter-57-lab4-push.log 2>&1
+cat /tmp/butter-57-lab4-push.log
+```
+
+```text
+remote:
+remote: Create a pull request for 't3/57-bookmark-lab-4' on GitHub by visiting:
+remote:      https://github.com/SimianW/butter/pull/new/t3/57-bookmark-lab-4
+remote:
+To https://github.com/SimianW/butter.git
+ * [new branch]      t3/57-bookmark-lab-4 -> t3/57-bookmark-lab-4
+branch 't3/57-bookmark-lab-4' set up to track 'origin/t3/57-bookmark-lab-4'.
+```
+
+Exit 0. GitHub's suggested PR URL above was not opened and no PR was created.
+A final documentation-only commit records these actual outputs and is pushed to the same branch;
+the handoff reports that final head and push result. No merge into the integration branch occurred.
+
+`git diff --check` initially rejected trailing spaces emitted by the GitHub remote in the copied
+push output (exit 2); those spaces were removed. An intervening push returned
+`Everything up-to-date` (exit 0). The final documentation commit follows the corrected diff check.
