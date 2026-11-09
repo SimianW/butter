@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0-alpha.17] - 2026-11-08
+## [0.1.0-alpha.18] - 2026-11-09
 
 ### Added
 
@@ -23,6 +23,19 @@
   first three lines of what you marked. Nothing is uploaded, and clearing saved layouts doesn't
   touch them. They stay until you remove them or uninstall Butter. The [privacy policy](PRIVACY.md)
   is updated to match.
+
+## [0.1.0-alpha.17] - 2026-11-09
+
+### Changed
+
+- Moved Ask in branch's status line onto the row of ChatGPT's "ChatGPT can make mistakes" note
+  while it shows, instead of a row of its own above it. The note comes back when the line goes.
+
+### Fixed
+
+- Fixed Ask in branch not sending a quote of more than one paragraph. It filled in the question,
+  then stopped with "Not sent".
+- Fixed dictation on macOS (such as Typeless) typing nothing into Ask in branch's question box.
 
 ## [0.1.0-alpha.16] - 2026-11-08
 
