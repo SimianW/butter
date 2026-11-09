@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.0-alpha.16 (2026-11-08)
+
+- Ask in branch works after you open a chat from ChatGPT's sidebar. Before, it said "Couldn't hand
+  your question to the new tab" until you reloaded the page.
+- The popup is redesigned: the features sit on one card, and when one is paused or not working
+  its row says so in place. The GitHub link, privacy policy and language switch moved to the
+  bottom, and the popup no longer grows taller than 600 px.
+- Until you choose whether to allow saving layouts, the popup's layouts card links to the privacy
+  policy.
+- The card that asks permission to save layouts on the ChatGPT page has a lighter look.
+
 ## 0.1.0-alpha.15 (2026-11-07)
 
 - New: Ask in branch. Select text in a ChatGPT answer and click Butter's "Ask in branch" button
