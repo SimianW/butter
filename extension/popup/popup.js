@@ -63,10 +63,11 @@ const T = {
   },
 };
 // y = 1.25 is the centre line of the card's 2.5 px bottom border; the outline leaves and rejoins it horizontally.
+// The rect hides the border above the outline from end to end; it stops above y = 2.5 so the card's 4 px shadow stays whole.
 const D =
   'M0 1.25 C8 1.25 11 3 12 8 C13 13 14.5 15 17 15 C19.5 15 21 13 21.5 10 C22 7.5 23.5 6 26 6 C28.5 6 30 8 30 12 C30 18 31.5 21.5 35 21.5 C38.5 21.5 40 18.5 40 14 C40 7 44 1.25 52 1.25';
 const drip = `<svg class="drip" viewBox="0 0 56 24" aria-hidden="true">
-  <rect x="7" y="-0.5" width="38" height="3.2" style="fill:var(--butter)"/>
+  <rect x="0" y="-0.5" width="52" height="2.5" style="fill:var(--butter)"/>
   <path d="${D} Z" style="fill:var(--butter)"/>
   <path d="${D}" style="fill:none;stroke:var(--edge)" stroke-width="2.5" stroke-linecap="round"/>
   <circle class="drip-hi" cx="33" cy="16" r="1.6" fill="#fff"/></svg>`;
