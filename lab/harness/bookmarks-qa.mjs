@@ -27,7 +27,13 @@
 // display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
 // below. Without a display the run asks the worker to relay the command instead and says so.
 // Run: npm ci --prefix lab/harness && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
-// SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa).
+// The run covers both answer markups, each in its own browser: MARKUP=old has the earlier wrapper,
+// [data-message-author-role="assistant"][data-message-id]; MARKUP=live renders answers as live chats
+// do (notes/runs/2026-11-08-bookmarks-live), with no role or message id on any message and the
+// answer's ancestor carrying data-chatgpt-selection-message-id and -conversation-id. MARKUP=old or
+// MARKUP=live runs only that one.
+// SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa); each markup writes
+// to its own subdirectory.
 // BUTTER_BOOKMARKS_MOCKUP=<1-Mockup.html> (gh issue artifact download 51 1 -R SimianW/butter) also
 // compares the notice in each theme and language with the mockup's section 4: same size, under 0.1%
 // of pixels differing by more than 24 in a channel.
@@ -40,8 +46,24 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+const MARKUPS = ['old', 'live'];
+if (!process.env.MARKUP) {
+  const failed = [];
+  for (const markup of MARKUPS) {
+    console.log(`== markup: ${markup}`);
+    try {
+      execFileSync(process.execPath, [fileURLToPath(import.meta.url)], { stdio: 'inherit', env: { ...process.env, MARKUP: markup } });
+    } catch {
+      failed.push(markup);
+    }
+  }
+  console.log(failed.length ? `FAIL markup: ${failed.join(', ')}` : `markups passed: ${MARKUPS.join(', ')}`);
+  process.exit(failed.length ? 1 : 0);
+}
+assert.ok(MARKUPS.includes(process.env.MARKUP), `MARKUP is one of ${MARKUPS.join(', ')}`);
+const LIVE = process.env.MARKUP === 'live';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const shots = process.env.SHOTS || '/tmp/butter-bookmarks-qa';
+const shots = path.join(process.env.SHOTS || '/tmp/butter-bookmarks-qa', process.env.MARKUP);
 await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-bookmarks-qa-'));
 
@@ -81,6 +103,15 @@ const messages = () =>
     { id: answerId(i), author: { role: 'assistant' }, content: { content_type: 'text', parts: ['answer'] } },
   ]).flat();
 const page$ = { theme: 'light', regen: new Set(), edited: new Set() };
+// The answer's wrapper in each markup. `data-fx-answer` is the harness's own handle on it.
+const answerAttrs = (id) =>
+  LIVE
+    ? `data-chatgpt-selection-conversation-id="${CONV}" data-chatgpt-selection-message-id="${id}" data-fx-answer="${id}"`
+    : `data-message-author-role="assistant" data-message-id="${id}" data-fx-answer="${id}"`;
+const userOf = (i) =>
+  LIVE
+    ? `<div data-user-message-bubble>${QUESTION(i)}</div>`
+    : `<div data-message-author-role="user" data-message-id="${question(i)}"><div data-user-message-bubble>${QUESTION(i)}</div></div>`;
 const html = () => `<!doctype html><html lang="en" class="${page$.theme}"><head><meta charset="utf-8"><title>Fixture chat</title><style>
 body { margin:0; overflow:hidden; font:16px/26px system-ui, sans-serif; background:#fff; color:#0d0d0d }
 .dark body { background:#212121; color:#ececec }
@@ -97,8 +128,8 @@ article { display:block; width:720px; margin:0 auto 24px }
 </style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from(
   { length: TURNS },
   (_, i) =>
-    `<div><article data-turn-key="${question(i)}" data-testid="conversation-turn-${i + 1}"><div class="user"><div data-message-author-role="user" data-message-id="${question(i)}"><div data-user-message-bubble>${QUESTION(i)}</div></div></div>` +
-    `<div data-message-author-role="assistant" data-message-id="${answerId(i)}"><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}</div></div></article></div>`,
+    `<div><article data-turn-key="${question(i)}" data-testid="conversation-turn-${i + 1}"><div class="user">${userOf(i)}</div>` +
+    `<div ${answerAttrs(answerId(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}</div></div></article></div>`,
 ).join('')}</div></div><script>
 fetch('/backend-api/me');
 fetch('/backend-api/conversation/${CONV}');
@@ -255,7 +286,7 @@ const button = () =>
 const block = (turn, k) =>
   page.evaluate(
     ([id, k]) => {
-      const el = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[k];
+      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k];
       const r = el.getBoundingClientRect(),
         sc = document.querySelector('.thread-scroll-container').getBoundingClientRect();
       return { x: r.left, y: r.top, w: r.width, h: r.height, fromTop: r.top - sc.top };
@@ -271,7 +302,7 @@ const scrollTo = (turn) =>
 const select = (turn, k, start, k2, end) =>
   page.evaluate(
     ([id, k, start, k2, end]) => {
-      const blocks = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children;
+      const blocks = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children;
       const r = document.createRange();
       r.setStart(blocks[k].firstChild, start);
       r.setEnd(blocks[k2].firstChild, end);
@@ -301,7 +332,7 @@ async function shortcut() {
 const textTop = (turn, k, offset) =>
   page.evaluate(
     ([id, k, offset]) => {
-      const node = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[k].firstChild;
+      const node = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k].firstChild;
       const r = document.createRange();
       r.setStart(node, offset);
       r.setEnd(node, offset + 1);
@@ -340,7 +371,8 @@ async function bookmark(turn, k) {
   await page.mouse.move(b.x + 200, b.y + b.h / 2);
   const moved = await block(turn, k),
     placed = await button();
-  await page.mouse.move(placed.x + 14, placed.y + 14, { steps: 8 }); // across the margin to the button
+  // Across the margin to the button (when there is one: without it the checks below fail).
+  if (placed) await page.mouse.move(placed.x + 14, placed.y + 14, { steps: 8 });
   const kept = await button();
   return {
     first: b,
@@ -349,7 +381,7 @@ async function bookmark(turn, k) {
     shown,
     placed,
     kept,
-    click: () => page.mouse.click(placed.x + 14, placed.y + 14),
+    click: () => placed && page.mouse.click(placed.x + 14, placed.y + 14),
   };
 }
 
@@ -444,7 +476,7 @@ try {
   // Which rendered line the excerpt's last character and the next word start on, measured here.
   const cut = await page.evaluate(
     ([id, k, n]) => {
-      const p = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[k];
+      const p = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k];
       const text = p.firstChild,
         r = document.createRange(),
         top = (i) => {
@@ -575,7 +607,7 @@ try {
   for (let k = 0; k < 8; k++) {
     const off = await page.evaluate((id) => {
       const sc = document.querySelector('.thread-scroll-container');
-      const p = document.querySelector(`[data-message-id="${id}"] [data-markdown-text-style]`).children[2];
+      const p = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[2];
       const d = p.getBoundingClientRect().top - sc.getBoundingClientRect().top - 40;
       sc.scrollTop += d;
       return d;
@@ -1105,7 +1137,7 @@ try {
   // a real click, as the user's click on ChatGPT's own button would be.
   const act = async (fn, turn) => {
     await page.evaluate(
-      ([fn, turn, id, regenId, regenHtml, editHtml]) => {
+      ([fn, turn, id, regenId, regenAttrs, regenHtml, editHtml]) => {
         let b = document.getElementById('fx');
         if (!b) {
           b = document.createElement('button');
@@ -1116,20 +1148,18 @@ try {
         }
         b.onclick = () => {
           globalThis.fxKept ??= {};
-          const m = document.querySelector(`[data-message-id="${id}"]`);
+          const m = document.querySelector(`[data-fx-answer="${id}"]`);
           if (fn === 'regen') {
             // A new answer replaces the bookmarked one in its turn; the old one is kept for the arrows.
             const n = document.createElement('div');
-            n.setAttribute('data-message-author-role', 'assistant');
-            n.setAttribute('data-message-id', regenId);
-            n.innerHTML = `<div data-markdown-text-style="assistant-message" class="markdown prose">${regenHtml}</div>`;
+            n.innerHTML = `<div ${regenAttrs}><div data-markdown-text-style="assistant-message" class="markdown prose">${regenHtml}</div></div>`;
             globalThis.fxKept[turn] = m;
-            m.replaceWith(n);
-          } else if (fn === 'back') document.querySelector(`[data-message-id="${regenId}"]`).replaceWith(globalThis.fxKept[turn]);
+            m.replaceWith(n.firstChild);
+          } else if (fn === 'back') document.querySelector(`[data-fx-answer="${regenId}"]`).replaceWith(globalThis.fxKept[turn]);
           else if (fn === 'edit') m.querySelector('[data-markdown-text-style]').children[2].outerHTML = editHtml;
         };
       },
-      [fn, turn, answer(turn), regen(turn), [0, 1, 2, 3].map((k) => `<p>${REGENERATED(turn, k)}</p>`).join(''), `<p>${EDITED(turn)}</p>`],
+      [fn, turn, answer(turn), regen(turn), answerAttrs(regen(turn)), [0, 1, 2, 3].map((k) => `<p>${REGENERATED(turn, k)}</p>`).join(''), `<p>${EDITED(turn)}</p>`],
     );
     await page.mouse.click(20, 888);
     await page.waitForTimeout(900); // the page re-checks staleness 600 ms after a click

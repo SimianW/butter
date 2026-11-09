@@ -114,6 +114,10 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   (`gh issue artifact download 51 1 -R SimianW/butter`) compares the four notices with section 4 (same
   size, under 0.1% of pixels differing). Screenshots and `summary.json` go to
   `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
+  The run covers both answer markups, each in its own browser and screenshot subdirectory: the
+  earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
+  answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
+  `MARKUP=live` runs only one).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.

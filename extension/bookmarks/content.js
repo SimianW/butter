@@ -5,10 +5,32 @@
 (() => {
   const B = ButterBookmarks;
   // An answer's rendered content, as stream/offscreen.js finds it; its children are the paragraphs.
-  const ANSWER =
-    ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
+  const STYLE = '[data-markdown-text-style="assistant-message"]';
+  const ANSWER = `:is(${STYLE}:not(:has([class*="DilResponseRoot"])), ${STYLE} [class*="DilResponseRoot"])`;
   const BLOCK = `${ANSWER} > *`;
-  const MESSAGE = '[data-message-author-role="assistant"][data-message-id]';
+  // The element that carries an answer's message id. Older chats wrap the answer in
+  // [data-message-author-role="assistant"][data-message-id]; live chats (checked on 2026-11-08,
+  // notes/runs/2026-11-08-bookmarks-live) have neither, and the answer's ancestor carries
+  // data-chatgpt-selection-message-id instead (as seek/layout-cache-main.js reads it).
+  const MESSAGE =
+    '[data-message-author-role="assistant"][data-message-id], [data-chatgpt-selection-message-id]';
+  const idOf = (message) =>
+    message?.getAttribute('data-message-id') ||
+    message?.getAttribute('data-chatgpt-selection-message-id') ||
+    null;
+  // An answer as bookmarks see it: `answer`, the element whose children are its paragraphs, and
+  // `id`, its message id. Null without an id (an answer that has none yet).
+  const answerAt = (answer) => {
+    const id = idOf(answer.closest(MESSAGE));
+    return id ? { answer, id } : null;
+  };
+  // A paragraph's answer; null for a paragraph outside one.
+  const answerOf = (block) => {
+    const answer = block?.parentElement;
+    return answer?.matches(ANSWER) ? answerAt(answer) : null;
+  };
+  // The answers rendered in `root` (a turn or the document).
+  const answersIn = (root) => [...root.querySelectorAll(ANSWER)].map(answerAt).filter(Boolean);
   const SHOW_AFTER = 120; // ms of hover before the button fades in
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
   const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
@@ -107,8 +129,8 @@
       return;
     }
     // The answers rendered now, by hashed id: a version the list doesn't hold can be on screen.
-    const rendered = [...document.querySelectorAll(MESSAGE)],
-      ids = rendered.map((m) => m.getAttribute('data-message-id'));
+    const rendered = answersIn(document),
+      ids = rendered.map((a) => a.id);
     const [bookmarks, hashes, shown] = await Promise.all([
       listOf(owner, conv),
       Promise.all(items.map((x) => digest(x.id))),
@@ -123,21 +145,23 @@
     });
     shownList = bookmarks;
     const questions = items.filter((x) => x.q != null);
-    const onPage = new Map(shown.map((h, i) => [h, rendered[i]]));
+    const onPage = new Map(shown.map((h, i) => [h, rendered[i].answer]));
     const groups = B.resolve(
       bookmarks,
       items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
       {
         complete,
         paragraphs: (msg) => {
-          const m = onPage.get(msg);
-          return m?.isConnected ? paragraphs(m) : undefined;
+          const answer = onPage.get(msg);
+          return answer?.isConnected ? paragraphs(answer) : undefined;
         },
         // Its turn is mounted with an answer in it: an answer that isn't the bookmarked one replaced it.
-        mounted: (q) =>
-          !![...document.querySelectorAll('[data-turn-key]')]
-            .find((t) => t.getAttribute('data-turn-key') === questions[q].id)
-            ?.querySelector(MESSAGE),
+        mounted: (q) => {
+          const turn = [...document.querySelectorAll('[data-turn-key]')].find(
+            (t) => t.getAttribute('data-turn-key') === questions[q].id,
+          );
+          return !!turn && answersIn(turn).length > 0;
+        },
       },
       seen,
     );
@@ -221,10 +245,7 @@
       .map((x) => x.n.data)
       .join('');
   // A rendered answer's paragraphs, as text.
-  const paragraphs = (message) => {
-    const answer = message.querySelector(ANSWER);
-    return answer ? [...answer.children].map(textOf) : undefined;
-  };
+  const paragraphs = (answer) => [...answer.children].map(textOf);
   // Where the first rendered lines of a run of text end, measured character by character. `parts`
   // are `{ block, from, to }` ranges in paragraph offsets, in order; the run's text joins them with
   // one separator each, as ButterBookmarks.anchor does, and `ends` are offsets into that text.
@@ -282,9 +303,7 @@
     let blocks = inside
       ? [inside]
       : [...el.querySelectorAll(BLOCK)].filter((b) => r.intersectsNode(b));
-    blocks = blocks.filter(
-      (b) => b.closest(MESSAGE) && b.parentElement === blocks[0].parentElement,
-    );
+    blocks = blocks.filter((b) => answerOf(b) && b.parentElement === blocks[0].parentElement);
     if (!blocks.length) return null;
     const siblings = [...blocks[0].parentElement.children],
       first = blocks[0],
@@ -346,7 +365,7 @@
       bottom = box?.bottom ?? innerHeight;
     const blocks = turns
       .filter((t, i) => boxes[i].height && boxes[i].bottom > line && boxes[i].top < bottom)
-      .flatMap((t) => [...t.querySelectorAll(BLOCK)].filter((b) => b.closest(MESSAGE)));
+      .flatMap((t) => answersIn(t).flatMap((a) => [...a.answer.children]));
     const tops = blocks.map((b) => b.getBoundingClientRect().top);
     return blocks[B.topParagraph(tops, line)] ?? null;
   };
@@ -354,9 +373,9 @@
   // the question's start) when it is stale now: its answer, paragraph or text no longer there.
   const locate = (turn, b) => {
     const raw = rawOf.get(b.msg),
-      msg = raw && [...turn.querySelectorAll(MESSAGE)].find((m) => m.dataset.messageId === raw),
-      block = msg?.querySelector(ANSWER)?.children[b.para];
-    if (!block || !B.matches(b, paragraphs(msg))) return null;
+      answer = raw && answersIn(turn).find((a) => a.id === raw)?.answer,
+      block = answer?.children[b.para];
+    if (!block || !B.matches(b, paragraphs(answer))) return null;
     let top = block.getBoundingClientRect().top;
     if (b.start > 0) {
       const at = textNodes(block).findLast((x) => x.start <= b.start);
@@ -372,11 +391,11 @@
 
   // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt }`) within it.
   async function create(block, range = null) {
-    const message = block.closest(MESSAGE),
+    const id = answerOf(block)?.id,
       turn = block.closest('[data-turn-key]'),
       conv = convOfPath(),
       owner = account;
-    if (!message || !turn || !conv || !owner || !block.parentElement) return;
+    if (!id || !turn || !conv || !owner) return;
     const para = [...block.parentElement.children].indexOf(block),
       text = textOf(block),
       excerpt = range
@@ -384,10 +403,7 @@
         : B.excerpt(text, measure([{ block, from: 0, to: text.length }]));
     if (!excerpt) return;
     const questions = view.conv === conv ? view.items.filter((x) => x.q != null) : [];
-    const [convHash, msg] = await Promise.all([
-      digest(conv),
-      digest(message.getAttribute('data-message-id')),
-    ]);
+    const [convHash, msg] = await Promise.all([digest(conv), digest(id)]);
     const bookmark = {
       account: owner,
       conv: convHash,
@@ -409,7 +425,7 @@
       list.push(r.bookmark);
       fresh.add(r.bookmark.key);
     }
-    hashOf.set(message.getAttribute('data-message-id'), msg);
+    hashOf.set(id, msg);
     if (owner === account && conv === view.conv) refresh();
     // Every save, by the button or the shortcut, comes through here: the first one tells the user
     // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its segment.
@@ -439,7 +455,7 @@
   }
   // The bookmarks anchored to a paragraph of the conversation in view.
   const marksOf = (block) => {
-    const msg = hashOf.get(block?.closest(MESSAGE)?.getAttribute('data-message-id'));
+    const msg = hashOf.get(answerOf(block)?.id);
     const para = block?.parentElement ? [...block.parentElement.children].indexOf(block) : -1;
     return msg && view.conv === convOfPath()
       ? shownList.filter((b) => b.msg === msg && b.para === para)
@@ -591,7 +607,8 @@
       if (host && e.target === host) return; // over the button
       const t = e.target instanceof Element ? e.target : null;
       // Cheap tests first: most moves are nowhere near an answer.
-      const block = t && t.closest(MESSAGE) && !t.closest('button') ? t.closest(BLOCK) : null;
+      const near = t && t.closest(STYLE) && !t.closest('button') ? t.closest(BLOCK) : null,
+        block = answerOf(near) ? near : null;
       if (block && block === target) {
         place(block);
         return;
@@ -607,7 +624,7 @@
       )
         return;
       hide();
-      if (block?.closest(MESSAGE) && convOfPath()) {
+      if (block && convOfPath()) {
         waiting = block;
         timer = setTimeout(() => show(block), SHOW_AFTER);
       }
