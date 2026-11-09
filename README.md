@@ -17,7 +17,7 @@ Long ChatGPT chats, smooth as butter.
 Supports Chrome, Edge, Brave and Arc (Chromium 111+). Safari and Firefox are not supported.
 [Install and settings →](docs/install.md)
 
-Current version: **0.1.0-alpha.17** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.18** ([changelog](CHANGELOG.md)).
 
 ## Demo
 
@@ -78,7 +78,7 @@ Sending while reading earlier messages takes a shortcut toward the end, so ChatG
 
 ## Privacy
 
-Butter runs only on chatgpt.com, makes no network requests of its own, and has no server, analytics, tracking or ads. It never saves chat text. Settings stay in your browser; optional saved layouts contain only layout data and one-way hashes, expire after 30 days, and are capped at 50 MB. Butter never reads passwords, sign-in tokens or cookies.
+Butter runs only on chatgpt.com, makes no network requests of its own, and has no server, analytics, tracking or ads. The only chat text it saves is the first three lines of each bookmark you make, kept in your browser until you delete it. Settings stay in your browser; optional saved layouts contain only layout data and one-way hashes, expire after 30 days, and are capped at 50 MB. Butter never reads passwords, sign-in tokens or cookies.
 [Full privacy policy →](PRIVACY.md)
 
 ## FAQ

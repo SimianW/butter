@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.0-alpha.18] - 2026-11-09
+
+### Added
+
+- Added bookmarks. Hover a paragraph in a ChatGPT answer and click the "Bookmark" button at its
+  left to bookmark it; with text selected, the button reads "Bookmark selection" and bookmarks just
+  that text.
+- Added the Alt+Shift+M shortcut, which bookmarks the selection or, with nothing selected, the
+  paragraph at the top of the screen. You can change the key in `chrome://extensions/shortcuts`.
+- Added a butter-coloured segment under a bookmarked question's tick in the question rail, one
+  per question. Hover it to see the bookmark, or a list when the question has several, click one to
+  jump to its paragraph, and remove one with the × on its card or the filled button on its
+  paragraph.
+- Kept bookmarks when an answer is edited or regenerated, marked "answer changed"; clicking one
+  then opens the start of the question, and a question whose bookmarks have all changed gets a
+  paler segment. Switching back to the original answer makes them work again.
+- Showed bookmarks in earlier history that isn't loaded yet on the rail's earlier-history dots.
+  Clicking one loads the earlier messages, then jumps to the bookmark.
+- Added a short notice the first time you bookmark, explaining what is saved, with Undo.
+- Saved bookmarks only on this computer, separately for each ChatGPT account, keeping at most the
+  first three lines of what you marked. Nothing is uploaded, and clearing saved layouts doesn't
+  touch them. They stay until you remove them or uninstall Butter. The [privacy policy](PRIVACY.md)
+  is updated to match.
+
 ## [0.1.0-alpha.17] - 2026-11-09
 
 ### Changed

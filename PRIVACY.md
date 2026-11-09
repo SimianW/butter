@@ -4,8 +4,9 @@ Butter for ChatGPT ("Butter") is a Chrome extension that makes long ChatGPT conv
 stream, scroll and navigate. This page explains what Butter reads, what it saves on your computer,
 and what it sends.
 
-**In short:** Butter runs only on `chatgpt.com` and works entirely inside your browser. It never
-saves the text of your chats to disk, has no server, and sends nothing to anyone. When you use
+**In short:** Butter runs only on `chatgpt.com` and works entirely inside your browser. It has no
+server and sends nothing to anyone. The only chat text it saves to disk is the first three lines of
+each **bookmark** you make, kept on this computer until you delete it. When you use
 **Ask in branch**, it hands your selected text and question to the new tab through memory for at
 most a minute, and ChatGPT sends your question in the new branch as if you had pressed send.
 
@@ -13,8 +14,8 @@ most a minute, and ChatGPT sends your question in the new branch as if you had p
 
 Butter reads the following while a ChatGPT tab is open. It keeps this only in that tab's memory, until
 you close or reload the tab; some of it can stay there while you move between chats in the same tab.
-The chat text and the raw ids are never written to disk; only the layout numbers, typography and
-one-way hashes described under "What Butter saves" are. Nothing is sent.
+The raw ids are never written to disk, and neither is chat text, except the up to three lines of
+each bookmark you make; what is written is listed under "What Butter saves". Nothing is sent.
 
 - **The conversation on screen.** Question and answer text, and message and conversation ids, from
   the page and from the responses ChatGPT already loads. Butter uses them to draw the question rail,
@@ -25,6 +26,9 @@ one-way hashes described under "What Butter saves" are. Nothing is sent.
 - **How the chat is laid out on screen:** heights and positions of messages, fonts and widths.
 - **Text you select in a ChatGPT reply, and the question you type into Ask in branch.** Butter
   uses them only to ask that question in a new branch of the chat (see "Ask in branch" below).
+- **The paragraph or text you bookmark.** When you bookmark, Butter reads where the bookmark is
+  (the answer, the paragraph and the selected range) and its first three lines (see "Bookmarks"
+  below).
 - **Key presses, clicks and scrollbar holds on ChatGPT.** Butter reacts to Enter and the send button
   to adjust scrolling before a question is sent, and to scrollbar holds to delay loading earlier
   messages. To tell whether the scrollbar preview works, it keeps a short rolling list of recent
@@ -55,7 +59,7 @@ saves:
   scale, font, theme and ChatGPT's page version), so it is reused only when none of these changed;
 - when it was saved and when it was last used.
 
-No chat text and no raw id is saved. A hash cannot be turned back into the text or id it came from,
+A saved layout contains no chat text and no raw id. A hash cannot be turned back into the text or id it came from,
 but it is not encryption: it stays the same for the same input, so it works as a label for that
 account, conversation or message.
 
@@ -78,7 +82,24 @@ conversation id. The new tab takes this once and it is deleted at that moment. I
 doesn't take it, it expires after one minute and is deleted the next time the extension runs; it is
 also gone when you quit Chrome. Nothing else about the branch is stored.
 
-**5. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
+**5. Bookmarks,** only when you make one, in the same extension database (IndexedDB) but kept
+apart from saved layouts. For each bookmark, Butter saves:
+
+- up to the first three lines, and at most 240 characters, of the text you chose: the paragraph you
+  bookmarked or the text you selected. This is the only chat text Butter ever saves to disk;
+- one-way SHA-256 hashes of your account id, the conversation id, and the message ids of the
+  question and the answer, so each account sees only its own bookmarks and the raw ids are never
+  saved;
+- where it points: the question's number in the chat, the paragraph's number in the answer, the
+  character range you selected and the length of its first line;
+- when you made it.
+
+Bookmarks stay until you delete them (the × on a bookmark in the rail's card) or remove Butter.
+They do not expire, are not counted in the 50 MB layout limit, and are not deleted by **Clear** or
+by turning off "Remember long-chat layouts", which only concern layouts. They are never uploaded.
+Butter also remembers in its settings that you dismissed the first-bookmark notice.
+
+**6. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
 database once, without reading it.
 
 ## Ask in branch
@@ -97,9 +118,10 @@ Turning Butter off in its popup also turns Ask in branch off; then the button do
 
 - **Clear** next to the storage use in Butter's popup deletes all saved layouts, for all accounts.
 - **Turning off "Remember long-chat layouts"** deletes all saved layouts and stops saving new ones.
-- **Removing Butter** from Chrome deletes everything it saved.
+- **The × on a bookmark** in the question rail's card deletes that bookmark.
+- **Removing Butter** from Chrome deletes everything it saved, including bookmarks.
 
-Clearing chatgpt.com's site data in Chrome does not delete saved layouts, because they are stored in
+Clearing chatgpt.com's site data in Chrome does not delete saved layouts or bookmarks, because they are stored in
 the extension, not on the site.
 
 ## What Butter sends
@@ -125,4 +147,4 @@ the extension before the new practice starts.
 
 Questions: open an issue at <https://github.com/SimianW/butter/issues>.
 
-Last updated: 2026-11-07.
+Last updated: 2026-11-08.

@@ -44,6 +44,7 @@ def dev_manifest(manifest):
     manifest["background"]["service_worker"] = f"{DEV_DIR}/worker.js"
     manifest["permissions"] = [*manifest.get("permissions", []), "downloads"]
     manifest["commands"] = {
+        **manifest.get("commands", {}),
         "save-bug": {
             "suggested_key": {"default": "Alt+Shift+B", "mac": "Alt+Shift+B"},
             "description": "Save bug snapshot",

@@ -116,7 +116,7 @@ try {
     await worker.evaluate(async () => {
       // Synthetic numeric-free padding is test data, never a real conversation record.
       const db = await new Promise((resolve, reject) => {
-        const r = indexedDB.open('butter-layouts-v1', 1);
+        const r = indexedDB.open('butter-layouts-v1'); // the worker's current version
         r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error);
       });
       const tx = db.transaction('geometry', 'readwrite'), rows = tx.objectStore('geometry');

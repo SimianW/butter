@@ -1,6 +1,6 @@
 // Dev build only. Isolated world: after dev/worker.js has written a bug file, it tells this tab,
 // and a toast reads "Bug 4 saved / last 30 s · round 2" bottom-right for about 2 s. Styled like
-// the layout consent card (consent/layout-consent.js): its tokens, its dark check and Butter's
+// the layout consent card (consent/card.js): its tokens, its dark check and Butter's
 // language. It takes no pointer events and nothing in it can take focus, so a held scrollbar
 // drag carries on. A save while it shows replaces its text and restarts the 2 s.
 (() => {
