@@ -100,7 +100,7 @@
 
   // ---- Marks for the rail: one per question that holds bookmarks.
   let view = { conv: null, items: [] },
-    rawOf = new Map(), // hashed message id -> raw id, for the conversation in view
+    rawOf = new Map(), // hashed message id -> raw id, for every message seen in this tab
     hashOf = new Map(), // and back
     shownList = [], // the bookmarks of the conversation in view
     serial = 0,
@@ -135,8 +135,12 @@
       Promise.all(ids.map(digest)),
     ]);
     if (token !== serial) return;
-    rawOf = new Map(hashes.map((h, i) => [h, items[i].id]));
-    hashOf = new Map(hashes.map((h, i) => [items[i].id, h]));
+    // Kept, not rebuilt: an answer that streamed in this tab is never listed, so once ChatGPT
+    // unmounts it its raw id is known only from when it was on the page. Message ids are unique.
+    hashes.forEach((h, i) => {
+      rawOf.set(h, items[i].id);
+      hashOf.set(items[i].id, h);
+    });
     shown.forEach((h, i) => {
       rawOf.set(h, ids[i]);
       hashOf.set(ids[i], h);

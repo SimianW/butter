@@ -87,10 +87,11 @@ apart from saved layouts. For each bookmark, Butter saves:
 
 - up to the first three lines, and at most 240 characters, of the text you chose: the paragraph you
   bookmarked or the text you selected. This is the only chat text Butter ever saves to disk;
-- one-way SHA-256 hashes of your account id, the conversation id and the answer's message id, so
-  each account sees only its own bookmarks and the raw ids are never saved;
-- where it points: the question's number in the chat, the paragraph's number in the answer and the
-  character range you selected;
+- one-way SHA-256 hashes of your account id, the conversation id, and the message ids of the
+  question and the answer, so each account sees only its own bookmarks and the raw ids are never
+  saved;
+- where it points: the question's number in the chat, the paragraph's number in the answer, the
+  character range you selected and the length of its first line;
 - when you made it.
 
 Bookmarks stay until you delete them (the × on a bookmark in the rail's card) or remove Butter.

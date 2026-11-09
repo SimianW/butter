@@ -244,3 +244,18 @@ test('a record stored without its first line keeps the 40-character check', () =
     true,
   );
 });
+
+test('an answer that streamed in this tab and then left the page stays live (not listed until a reload)', () => {
+  // The rail lists the question sent in this tab but never its streamed answer.
+  const sent = [items[0], items[1], items[2]];
+  const b = mark({ ask: Q2 });
+  for (const complete of [true, false]) {
+    const away = view({}, [0], complete);
+    assert.equal(B.resolve([b], sent, away)[0].bookmarks[0].stale, false);
+  }
+  // Still stale when its question is listed, or shown, with another answer.
+  const other = [...sent, { msg: A2NEW, q: false }];
+  assert.equal(B.resolve([b], other, view({}, [0]))[0].bookmarks[0].stale, true);
+  const shownOther = view({ [A2NEW]: ['Intro', 'A different answer.'] }, [0, 1], false);
+  assert.equal(B.resolve([b], sent, shownOther)[0].bookmarks[0].stale, true);
+});

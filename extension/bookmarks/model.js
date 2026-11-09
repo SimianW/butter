@@ -101,8 +101,9 @@
   // A bookmark is live when its message is rendered, its paragraph exists and the paragraph's text
   // still contains the excerpt's first line (its first `line` characters; records without `line`
   // check the first `HEAD`). It is stale when the paragraph or its text no longer
-  // matches, when its question is shown with another answer (regenerated), or when its message has
-  // left a complete conversation or its question (`ask`) is listed without it. Otherwise (not rendered now) it keeps what `last` remembers for
+  // matches, when its question is shown with another answer (regenerated), when its question (`ask`)
+  // is listed with another answer, or when its message and question have left a complete
+  // conversation. Otherwise (not rendered now) it keeps what `last` remembers for
   // it, live by default. A bookmark in the earlier, unloaded history (the `EARLIER` group) is live:
   // nothing can be known about it yet. Returns `group`'s groups with each bookmark copied with its `stale` flag,
   // plus `stale` on a group whose bookmarks are all stale; `last` is updated. Nothing is stored, so
@@ -120,6 +121,11 @@
   function resolve(bookmarks, items, view, last = new Map()) {
     const listed = new Set(items.map((x) => x.msg));
     const shown = (msg) => !!view.paragraphs(msg);
+    // Questions listed with an answer. An answer that streamed in this tab isn't listed until a
+    // reload, so a listed question without one says nothing about the bookmark.
+    const answered = new Set();
+    let question = -1;
+    for (const x of items) x.q ? question++ : question >= 0 && answered.add(question);
     return group(bookmarks, items, { complete: view.complete, shown }).map((g) => {
       if (g.question === EARLIER) {
         const rows = g.bookmarks.map((b) => ({ ...b, stale: false }));
@@ -129,8 +135,11 @@
         const shown = view.paragraphs(b.msg);
         let stale = null;
         if (shown) stale = !matches(b, shown);
-        else if (!listed.has(b.msg)) stale = view.complete || listed.has(b.ask) ? true : null;
-        else if (view.mounted(g.question)) stale = true;
+        else if (!listed.has(b.msg)) {
+          if (listed.has(b.ask))
+            stale = answered.has(g.question) || view.mounted(g.question) ? true : null;
+          else if (view.complete) stale = true;
+        } else if (view.mounted(g.question)) stale = true;
         if (stale === null) stale = last.get(b.key) ?? false;
         last.set(b.key, stale);
         return { ...b, stale };
