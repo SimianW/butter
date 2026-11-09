@@ -1,6 +1,7 @@
 {
-  "testedHead": "64b4d0019322aa528cc139dae4e8c7156cc99de3",
+  "testedHead": "708f3c3c2e3ab76f0b2545ea991908e399dbb476",
   "platform": "Linux",
+  "startedUtc": "2026-11-09T01:51:47.605Z",
   "checks": [
     {
       "name": "real long fixture loaded",
@@ -16,9 +17,9 @@
       "additions": 0,
       "held": true,
       "updates": 31,
-      "frames": 86,
-      "p95FrameMs": 16.7,
-      "maxFrameMs": 16.8,
+      "frames": 102,
+      "p95FrameMs": 33.3,
+      "maxFrameMs": 33.4,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
@@ -45,7 +46,7 @@
       "additions": 0,
       "held": true,
       "updates": 32,
-      "frames": 87,
+      "frames": 85,
       "p95FrameMs": 16.7,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
@@ -74,9 +75,9 @@
       "additions": 0,
       "held": true,
       "updates": 31,
-      "frames": 87,
+      "frames": 88,
       "p95FrameMs": 16.7,
-      "maxFrameMs": 33.3,
+      "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
@@ -106,6 +107,13 @@
       "assistantApiMessages": 41
     },
     {
+      "name": "hover button tooltip reads Bookmark",
+      "pass": true,
+      "labelIsBookmark": true,
+      "tooltipIsBookmark": true,
+      "tooltipVisible": true
+    },
+    {
       "name": "paragraph button saves one bookmark",
       "pass": true,
       "stored": 1,
@@ -125,12 +133,12 @@
       "mounts": 0,
       "additions": 0,
       "held": true,
-      "updates": 32,
-      "frames": 86,
+      "updates": 31,
+      "frames": 87,
       "p95FrameMs": 16.7,
-      "maxFrameMs": 16.7,
+      "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
-      "bookmarkFunctionCalls": 64,
+      "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
         "refresh": 0,
         "paragraphs": 0,
@@ -154,12 +162,12 @@
       "mounts": 0,
       "additions": 0,
       "held": true,
-      "updates": 32,
-      "frames": 86,
+      "updates": 31,
+      "frames": 92,
       "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
-      "bookmarkFunctionCalls": 64,
+      "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
         "refresh": 0,
         "paragraphs": 0,
@@ -185,7 +193,7 @@
       "held": true,
       "updates": 32,
       "frames": 86,
-      "p95FrameMs": 16.7,
+      "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 64,
@@ -212,14 +220,14 @@
       "emptyRuns": 3,
       "bookmarkedRuns": 3,
       "emptyP95FrameMs": [
-        16.7,
+        33.3,
         16.7,
         16.7
       ],
       "bookmarkedP95FrameMs": [
         16.7,
         16.8,
-        16.7
+        16.8
       ]
     },
     {
@@ -242,7 +250,7 @@
       "textTopAfterRelease": 64
     },
     {
-      "name": "reload leaves bookmarked earlier answer unloaded",
+      "name": "reload before row click leaves earlier answer unloaded",
       "pass": true,
       "ticks": 5,
       "marks": 1,
@@ -254,17 +262,106 @@
       "earlierPagesBefore": 11
     },
     {
-      "name": "unloaded bookmark jump loads earlier pages and lands on text",
-      "pass": false,
-      "earlierPages": 0,
-      "targetMounted": false,
-      "inView": false,
-      "textTop": null,
+      "name": "earlier bookmarks sit under dots and not a loaded tick (row)",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": true,
+      "offsetBelowDotsPx": 5,
+      "widthPx": 8,
+      "heightPx": 2,
+      "butterColor": true
+    },
+    {
+      "name": "hover earlier segment shows 2-bookmark card (row)",
+      "pass": true,
+      "shown": true,
+      "correctMeta": true,
+      "correctAccessibleName": true,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": false
+    },
+    {
+      "name": "row click loads earlier pages and lands on requested text",
+      "pass": true,
+      "earlierPages": 5,
+      "targetMounted": true,
+      "inView": true,
+      "textTop": 61.703125,
+      "sawLoadingMeta": true,
+      "sawSpinner": true,
+      "sawBusyDots": true
+    },
+    {
+      "name": "segment moves from dots to loaded question after row click",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": true,
+      "offsetBelowDotsPx": null,
+      "widthPx": null,
+      "heightPx": null,
+      "butterColor": false
+    },
+    {
+      "name": "reload before segment click leaves earlier answer unloaded",
+      "pass": true,
       "ticks": 5,
       "marks": 1,
       "more": true,
       "stale": 0,
-      "busy": 0
+      "busy": 0,
+      "stored": 2,
+      "targetMounted": false,
+      "earlierPagesBefore": 16
+    },
+    {
+      "name": "earlier bookmarks sit under dots and not a loaded tick (segment)",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": true,
+      "offsetBelowDotsPx": 5,
+      "widthPx": 8,
+      "heightPx": 2,
+      "butterColor": true
+    },
+    {
+      "name": "hover earlier segment shows 2-bookmark card (segment)",
+      "pass": true,
+      "shown": true,
+      "correctMeta": true,
+      "correctAccessibleName": true,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": false
+    },
+    {
+      "name": "segment click loads earlier pages and lands on requested text",
+      "pass": true,
+      "earlierPages": 5,
+      "targetMounted": true,
+      "inView": true,
+      "textTop": 64,
+      "sawLoadingMeta": false,
+      "sawSpinner": false,
+      "sawBusyDots": true
+    },
+    {
+      "name": "segment moves from dots to loaded question after segment click",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": true,
+      "offsetBelowDotsPx": null,
+      "widthPx": null,
+      "heightPx": null,
+      "butterColor": false
     },
     {
       "name": "reload resolves both bookmarks live without answer changed",
@@ -276,6 +373,33 @@
       "targetMounted": true,
       "records": 2,
       "matchingMessagesAndExcerpts": 2
+    },
+    {
+      "name": "card delete removes selection bookmark",
+      "pass": true,
+      "remaining": 1
+    },
+    {
+      "name": "earlier bookmarks sit under dots and not a loaded tick (single)",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": true,
+      "offsetBelowDotsPx": 5,
+      "widthPx": 8,
+      "heightPx": 2,
+      "butterColor": true
+    },
+    {
+      "name": "hover earlier segment shows 1-bookmark card (single)",
+      "pass": true,
+      "shown": true,
+      "correctMeta": true,
+      "correctAccessibleName": true,
+      "rows": 1,
+      "staleRows": 0,
+      "singleExplanation": true
     },
     {
       "name": "card delete removes both test bookmarks",
@@ -292,9 +416,9 @@
       "additions": 0,
       "held": true,
       "updates": 31,
-      "frames": 86,
-      "p95FrameMs": 16.7,
-      "maxFrameMs": 16.8,
+      "frames": 102,
+      "p95FrameMs": 33.3,
+      "maxFrameMs": 33.4,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
@@ -321,7 +445,7 @@
       "additions": 0,
       "held": true,
       "updates": 32,
-      "frames": 87,
+      "frames": 85,
       "p95FrameMs": 16.7,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
@@ -350,9 +474,9 @@
       "additions": 0,
       "held": true,
       "updates": 31,
-      "frames": 87,
+      "frames": 88,
       "p95FrameMs": 16.7,
-      "maxFrameMs": 33.3,
+      "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
@@ -378,12 +502,12 @@
       "mounts": 0,
       "additions": 0,
       "held": true,
-      "updates": 32,
-      "frames": 86,
+      "updates": 31,
+      "frames": 87,
       "p95FrameMs": 16.7,
-      "maxFrameMs": 16.7,
+      "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
-      "bookmarkFunctionCalls": 64,
+      "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
         "refresh": 0,
         "paragraphs": 0,
@@ -407,12 +531,12 @@
       "mounts": 0,
       "additions": 0,
       "held": true,
-      "updates": 32,
-      "frames": 86,
+      "updates": 31,
+      "frames": 92,
       "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
-      "bookmarkFunctionCalls": 64,
+      "bookmarkFunctionCalls": 62,
       "bookmarkWork": {
         "refresh": 0,
         "paragraphs": 0,
@@ -438,7 +562,7 @@
       "held": true,
       "updates": 32,
       "frames": 86,
-      "p95FrameMs": 16.7,
+      "p95FrameMs": 16.8,
       "maxFrameMs": 16.8,
       "bookmarkCoverageScripts": 1,
       "bookmarkFunctionCalls": 64,
@@ -469,19 +593,14 @@
     "oneHomeTab": true,
     "defaultExtensions": true,
     "labLockReleased": true,
-    "perfLockReleased": true,
-    "postRunLockVerification": {
-      "labFree": true,
-      "perfFree": true,
-      "taskOwnsNoLock": true
-    }
+    "perfLockReleased": true
   },
-  "extensionTreeSha256": "0e8224b35c5be4bb8a3c97ac5dd1bea0a788fe1899b59ebfd326daa6b00d3faf",
+  "extensionTreeSha256": "468377989b8974b8a57271247ea4e2d96a4a76cde42d81b90bbaf2ada49ccda0",
   "chromium": "156.0.8078.47",
   "sendGuard": {
     "enabled": true,
     "sendAttempts": 0,
-    "blockedMutations": 77
+    "blockedMutations": 131
   },
   "shortcut": "Alt+Shift+M",
   "initial": {
@@ -662,10 +781,10 @@
       "seekStates": [],
       "calls": {
         "rail.jumpTo": 1,
-        "rail.landOff": 28,
+        "rail.landOff": 26,
         "rail.targetTop": 6,
         "rail.jump": 6,
-        "bookmark.locate": 28
+        "bookmark.locate": 26
       },
       "paragraph": {
         "top": -6878,
@@ -700,11 +819,6 @@
         }
       ],
       "seekStates": [
-        {
-          "state": "dragging",
-          "targetEqualsBookmarkedQuestion": false,
-          "pointerHeld": true
-        },
         {
           "state": "dragging",
           "targetEqualsBookmarkedQuestion": false,
@@ -899,7 +1013,7 @@
         "inView": false
       }
     },
-    "unloaded": {
+    "unloaded-row": {
       "clicks": [
         {
           "control": "go",
@@ -907,47 +1021,49 @@
           "detail": 1
         }
       ],
-      "keys": [
-        {
-          "key": "ArrowLeft",
-          "control": "mark",
-          "trusted": true
-        }
-      ],
+      "keys": [],
       "seekStates": [],
       "calls": {
         "rail.jumpTo": 1,
-        "rail.landOff": 27,
+        "rail.earlierJump": 1,
+        "rail.landOff": 24,
         "rail.targetTop": 4,
         "rail.jump": 1,
-        "rail.glide": 1,
-        "bookmark.locate": 27
+        "bookmark.locate": 24
       },
-      "paragraph": null,
-      "selection": null
+      "paragraph": {
+        "top": -6878,
+        "bottom": -6826,
+        "x": 736,
+        "y": -6814,
+        "height": 52,
+        "inView": false
+      },
+      "selection": {
+        "top": 61.703125,
+        "bottom": 113.921875,
+        "x": 736,
+        "y": 125.703125,
+        "height": 52.21875,
+        "inView": true
+      }
     },
-    "after-manual-history": {
+    "unloaded-segment": {
       "clicks": [
         {
-          "control": "go",
+          "control": "other",
           "trusted": true,
           "detail": 1
         }
       ],
-      "keys": [
-        {
-          "key": "ArrowLeft",
-          "control": "mark",
-          "trusted": true
-        }
-      ],
+      "keys": [],
       "seekStates": [],
       "calls": {
-        "rail.jumpTo": 1,
-        "rail.landOff": 23,
+        "rail.earlierJump": 1,
+        "rail.landOff": 26,
         "rail.targetTop": 4,
-        "rail.jump": 8,
-        "bookmark.locate": 23
+        "rail.jump": 1,
+        "bookmark.locate": 26
       },
       "paragraph": {
         "top": 64,
@@ -966,5 +1082,6 @@
         "inView": false
       }
     }
-  }
+  },
+  "finishedUtc": "2026-11-09T01:55:37.007Z"
 }

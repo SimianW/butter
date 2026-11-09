@@ -22,6 +22,7 @@ const out =
 const summary = {
   testedHead: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim(),
   platform: 'Linux',
+  startedUtc: new Date().toISOString(),
   checks: [],
   drags: [],
   cleanup: {},
@@ -269,7 +270,24 @@ async function bookmarkParagraph() {
       [b.x, b.y],
     ),
   };
-  if (shown) await page.locator('chatgpt-butter-bookmark button.show').click();
+  if (shown) {
+    await page.locator('chatgpt-butter-bookmark button.show').hover();
+    await page.waitForTimeout(200);
+    const tooltip = await page.evaluate(() => {
+      const r = document.querySelector('chatgpt-butter-bookmark').shadowRoot;
+      return {
+        labelIsBookmark: r.querySelector('button').getAttribute('aria-label') === 'Bookmark',
+        tooltipIsBookmark: r.querySelector('.tip span').textContent === 'Bookmark',
+        tooltipVisible: getComputedStyle(r.querySelector('.tip')).opacity === '1',
+      };
+    });
+    await check(
+      'hover button tooltip reads Bookmark',
+      Object.values(tooltip).every(Boolean),
+      tooltip,
+    );
+    await page.locator('chatgpt-butter-bookmark button.show').click();
+  }
   await page.waitForTimeout(800);
   // Button text is public Butter UI, never report surrounding page content.
   const gotIt = page.getByRole('button', { name: 'Got it', exact: true });
@@ -355,7 +373,11 @@ async function endJumpProbe(label) {
         : null;
     if (!kind) continue;
     for (const f of script.functions)
-      if (['locate', 'jump', 'jumpTo', 'landOff', 'targetTop', 'glide'].includes(f.functionName))
+      if (
+        ['locate', 'jump', 'jumpTo', 'earlierJump', 'landOff', 'targetTop', 'glide'].includes(
+          f.functionName,
+        )
+      )
         calls[`${kind}.${f.functionName}`] =
           (calls[`${kind}.${f.functionName}`] || 0) + (f.ranges[0]?.count || 0);
   }
@@ -525,6 +547,105 @@ async function deleteMarks() {
   }
   return storedCount();
 }
+// Only geometry and comparisons with public Butter labels leave the page. Accessible segment
+// names and bookmark rows include excerpts, so their raw text must never enter the evidence.
+async function earlierSegmentState() {
+  return page.evaluate(() => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+      more = root.querySelector('.more'),
+      dots = more.getBoundingClientRect(),
+      marks = [...root.querySelectorAll('.mark:not(.gone)')],
+      earlier = marks.filter((m) => /earlier question/i.test(m.getAttribute('aria-label'))),
+      b = earlier[0]?.getBoundingClientRect(),
+      color = earlier[0] && getComputedStyle(earlier[0]).backgroundColor,
+      dark = root.host.hasAttribute('data-dark');
+    return {
+      marks: marks.length,
+      earlierMarks: earlier.length,
+      loadedMarks: marks.length - earlier.length,
+      moreVisible: !more.hidden,
+      offsetBelowDotsPx: b ? +(b.top + b.height / 2 - dots.top - dots.height / 2).toFixed(2) : null,
+      widthPx: b?.width ?? null,
+      heightPx: b?.height ?? null,
+      butterColor: !!color && color === (dark ? 'rgb(227, 199, 102)' : 'rgb(251, 224, 122)'),
+    };
+  });
+}
+async function checkEarlierSegment(label) {
+  await page.mouse.move(10, 300);
+  await page.waitForTimeout(400);
+  const s = await earlierSegmentState();
+  await check(
+    `earlier bookmarks sit under dots and not a loaded tick (${label})`,
+    s.marks === 1 &&
+      s.earlierMarks === 1 &&
+      s.loadedMarks === 0 &&
+      s.moreVisible &&
+      Math.abs(s.offsetBelowDotsPx - 5) <= 0.1 &&
+      s.widthPx === 8 &&
+      s.heightPx === 2 &&
+      s.butterColor,
+    s,
+  );
+}
+async function hoverEarlierCard(count, label) {
+  const mark = page.locator('chatgpt-butter-nav .mark:not(.gone)').first();
+  const box = await mark.boundingBox();
+  requireThat(box, 'earlier segment missing');
+  // The rail's pointer geometry handles the 2 px segment; move to its actual centre.
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(700);
+  const card = await page.evaluate((count) => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+      card = root.querySelector('.card'),
+      meta = root.querySelector('.bmc .meta span');
+    const expected =
+      count === 1 ? 'Bookmark · earlier question' : `Earlier questions · ${count} bookmarks`;
+    return {
+      shown: card.classList.contains('show'),
+      correctMeta: meta?.textContent === expected,
+      correctAccessibleName: card.getAttribute('aria-label') === expected,
+      rows: root.querySelectorAll('.bmc .go, .bmc .one').length,
+      staleRows: root.querySelectorAll('.bmc .it.stale, .bmc.stale, .bmc .why').length,
+      singleExplanation:
+        root.querySelector('.bmc .warn')?.textContent ===
+        "This question isn't loaded yet. Clicking loads earlier messages first.",
+    };
+  }, count);
+  await check(
+    `hover earlier segment shows ${count}-bookmark card (${label})`,
+    card.shown &&
+      card.correctMeta &&
+      card.correctAccessibleName &&
+      card.rows === count &&
+      card.staleRows === 0 &&
+      (count !== 1 || card.singleExplanation),
+    card,
+  );
+}
+async function watchEarlierLoading() {
+  await page.evaluate(() => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
+    const s = (window.__earlierLoading = {
+      sawLoadingMeta: false,
+      sawSpinner: false,
+      sawBusyDots: false,
+    });
+    const observe = () => {
+      s.sawLoadingMeta ||=
+        root.querySelector('.bmc .meta span')?.textContent === 'Loading earlier questions…';
+      s.sawSpinner ||= !!root.querySelector('.bmc .wspin');
+      s.sawBusyDots ||= root.querySelector('.more').classList.contains('busy');
+    };
+    s.observer = new MutationObserver(observe);
+    s.observer.observe(root, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      characterData: true,
+    });
+  });
+}
 try {
   scratch = await fs.mkdtemp(
     path.join(os.homedir(), 'snap/chromium/common/butter-bookmarks-live-'),
@@ -549,7 +670,7 @@ try {
     'extension copy differs',
   );
   lab = L.acquire('auto', {
-    owner: 'butter-57-bookmarks-live-2',
+    owner: 'butter-57-bookmarks-live-3',
     needsFixture: process.env.LAB_FIXTURE || 'math12',
     wait: 60,
     perf: true,
@@ -777,6 +898,8 @@ try {
         empty.length > 0 &&
         [...empty, ...marked].every(
           (d) =>
+            d.held &&
+            d.bookmarkCoverageScripts === 1 &&
             d.mounts === 0 &&
             d.additions === 0 &&
             d.storage.reads === 0 &&
@@ -825,46 +948,69 @@ try {
         textTopAfterRelease: released?.top ?? null,
       },
     );
-    phase = 'reload-unloaded';
-    await open();
-    await restoreTargets();
-    const cold = {
-      ...(await railState()),
-      stored: await storedCount(),
-      targetMounted: !!(await targetBox(0)),
-      earlierPagesBefore: earlierPages,
-    };
-    console.log('INFO cold', JSON.stringify(cold));
-    await check(
-      'reload leaves bookmarked earlier answer unloaded',
-      !cold.targetMounted && cold.more,
-      cold,
-    );
-    phase = 'jump-unloaded';
-    await beginJumpProbe();
-    await jump(0);
-    await waitLanding();
-    await endJumpProbe('unloaded');
-    const coldLanding = await targetBox(0);
-    await check(
-      'unloaded bookmark jump loads earlier pages and lands on text',
-      !cold.targetMounted && earlierPages > cold.earlierPagesBefore && coldLanding?.inView,
-      {
-        earlierPages: earlierPages - cold.earlierPagesBefore,
-        targetMounted: !!coldLanding,
-        inView: !!coldLanding?.inView,
-        textTop: coldLanding?.top ?? null,
+    // Each click path starts from a fresh content-script/rail instance with only the tail loaded.
+    for (const route of ['row', 'segment']) {
+      phase = `reload-unloaded-${route}`;
+      await open();
+      await restoreTargets();
+      const cold = {
         ...(await railState()),
-      },
-    );
-    // A failed unloaded jump cannot establish resolution. Load history through the existing
-    // dots independently, then check the mounted original answer and card without altering it.
-    if (!coldLanding) {
-      await loadEarlier();
+        stored: await storedCount(),
+        targetMounted: !!(await targetBox(0)),
+        earlierPagesBefore: earlierPages,
+      };
+      await check(
+        `reload before ${route} click leaves earlier answer unloaded`,
+        !cold.targetMounted && cold.more && cold.stored === 2,
+        cold,
+      );
+      await checkEarlierSegment(route);
+      await hoverEarlierCard(2, route);
+      phase = `jump-unloaded-${route}`;
       await beginJumpProbe();
-      await jump(0);
+      await watchEarlierLoading();
+      if (route === 'row') {
+        // Choose the newer selection, not the oldest bookmark selected by a segment click.
+        await page.locator('chatgpt-butter-nav .bmc .go').nth(1).click();
+      } else {
+        // Segments inherit pointer-events:none from .marks. The rail deliberately routes the
+        // underlying tick/dots click by pointer geometry; a locator click waits for a hit target
+        // the segment never owns. Send the real pointer click at its visible centre instead.
+        const b = await page.locator('chatgpt-butter-nav .mark:not(.gone)').boundingBox();
+        requireThat(b, 'earlier segment missing before click');
+        await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+      }
       await waitLanding();
-      await endJumpProbe('after-manual-history');
+      await endJumpProbe(`unloaded-${route}`);
+      const landed = await targetBox(route === 'row' ? 1 : 0);
+      const loading = await page.evaluate(() => {
+        __earlierLoading.observer.disconnect();
+        const { sawLoadingMeta, sawSpinner, sawBusyDots } = __earlierLoading;
+        return { sawLoadingMeta, sawSpinner, sawBusyDots };
+      });
+      const moved = await earlierSegmentState();
+      await check(
+        `${route} click loads earlier pages and lands on requested text`,
+        !cold.targetMounted && earlierPages > cold.earlierPagesBefore && landed?.inView,
+        {
+          earlierPages: earlierPages - cold.earlierPagesBefore,
+          targetMounted: !!landed,
+          inView: !!landed?.inView,
+          textTop: landed?.top ?? null,
+          ...loading,
+        },
+      );
+      await check(
+        `segment moves from dots to loaded question after ${route} click`,
+        moved.marks === 1 && moved.earlierMarks === 0 && moved.loadedMarks === 1,
+        moved,
+      );
+      // Keep the remainder of the matrix meaningful if the product's automatic load fails.
+      if (!landed) {
+        await loadEarlier();
+        await jump(0);
+        await waitLanding();
+      }
     }
     await restoreTargets();
     const records = await worker.evaluate(async () => {
@@ -936,6 +1082,16 @@ try {
       { ...live, ...resolution },
     );
     phase = 'delete';
+    // Delete one through its loaded card, then check the single-bookmark earlier card on reload.
+    await page.locator('chatgpt-butter-nav .bmc .x').last().click();
+    await page.waitForTimeout(700);
+    await check('card delete removes selection bookmark', (await storedCount()) === 1, {
+      remaining: await storedCount(),
+    });
+    await open();
+    await restoreTargets();
+    await checkEarlierSegment('single');
+    await hoverEarlierCard(1, 'single');
     const remaining = await deleteMarks();
     await check('card delete removes both test bookmarks', remaining === 0, {
       remaining,
@@ -998,6 +1154,7 @@ try {
         console.log('PASS lab and perf locks released');
       }
       if (scratch) await fs.rm(scratch, { recursive: true, force: true });
+      summary.finishedUtc = new Date().toISOString();
       await save();
     }
   }

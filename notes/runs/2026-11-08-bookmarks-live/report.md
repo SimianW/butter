@@ -1,112 +1,139 @@
-# #57 bookmarks live lab rerun — 2026-11-08
+# #57 bookmarks live lab, third run — 2026-11-08
 
-**FAIL: the unloaded-earlier-bookmark jump does not load history or reach its text.**
-The live-markup fix enables creation, and the settled during/after-drag jumps and drag-overhead
-checks pass. User story 28 and #57's full live-lab criterion remain unmet. No extension code changed.
+**PASS: 29/29 live checks passed.** Both earlier-history click paths now load the
+bookmarked answer and land with the requested text in view. No product bug was found in this
+matrix. `extension/` was not changed.
 
-The first run failed because bookmark creation required assistant role/message-ID markup absent from live chats.
+Earlier run 1 failed because live answers lacked the assistant-role/message-ID markup bookmark creation required.
+Earlier run 2 failed because an unloaded earlier bookmark was grouped under a loaded-tail question, so clicking it fetched no history.
 
 ## Build and method
 
-Branch `t3/57-bookmark-lab-2`; tested source HEAD `64b4d0019322aa528cc139dae4e8c7156cc99de3`,
-containing integration `933c2e15ae761f93f440a7ff43d327ace4aec8d8` and fix `1d5db95`.
-Manifest `0.1.0-alpha.16`; headed Linux Chromium `156.0.8078.47`.
-This worktree's `extension/` was copied byte-for-byte into a unique Snap-readable unpacked install:
-SHA-256 `0e8224b35c5be4bb8a3c97ac5dd1bea0a788fe1899b59ebfd326daa6b00d3faf`. Reports/harness changes do not change this extension tree.
-The named `math12` fixture ran with both the lab and machine-wide perf locks, send guard on,
-layout consent declined, and no composer input or new prompts.
+Branch `t3/57-bookmark-lab-3`; tested source HEAD `708f3c3c2e3ab76f0b2545ea991908e399dbb476`,
+containing integration `64c3dd48a9d9add2661c528d0f61825c63e9f09b` and the previous harness/report merge.
+Manifest `0.1.0-alpha.16`; Linux Chromium `156.0.8078.47`.
+This worktree's extension was copied byte-for-byte into a fresh, Snap-readable unpacked install;
+source and copied extension SHA-256 both `468377989b8974b8a57271247ea4e2d96a4a76cde42d81b90bbaf2ada49ccda0`.
+The harness/report changes do not change that extension tree.
+Run UTC: `2026-11-09T01:51:47.605Z` to `2026-11-09T01:55:37.007Z`; directory date follows the requested report path.
 
-## Results
+The named `math12` long-chat fixture ran under both the lab and machine-wide perf locks.
+Send guard on; layout consent declined; no composer input, new prompts or server-side writes.
+The approved #51 addendum and artifact #2 supplied the earlier-history placement/card rules.
+This is the assigned live behavior/geometry matrix, not a claim of exhaustive screenshot comparison
+across both themes/platforms.
 
-Final matrix: **16 passed, 1 failed**. `npm run format:check && npm run lint` passed after
-`git fetch origin && git merge origin/t3/51-bookmarks` reported `Already up to date.`
-The extension tree still matches that integration branch exactly.
+## Results, one row per live check
 
-| Check | Result | Evidence |
-|---|---|---|
-| Existing long chat / older history | PASS | 5 initial questions, 16 after 11 successful earlier-page reads. |
-| Paragraph button | PASS | 1 visible button; 1 saved bookmark and 1 segment. |
-| Selection with real Alt+Shift+M | PASS | 30 selected characters; 1 Chrome command; 2 stored bookmarks sharing 1 segment. |
-| Live DOM message ID equals API message ID | PASS | SHA-256 equality for 10/10 rendered assistant messages, including the target; 41 API assistant IDs hashed from 13 observed API responses. No message IDs or hashes recorded. |
-| Selection card jump after native drag settles | PASS | Trusted row click; selected paragraph top 61.7 px below scroller top, in view. |
-| Paragraph jump requested while native thumb held | PASS, deferred | Trusted Enter on segment with held true before/after activation; text not visible while held; after release and seek completion its top is 64 px, in view. |
-| Reload persistence and unloaded precondition | PASS | 2 records, 1 segment; only 5 questions loaded, earlier-history control available, target unmounted. |
-| Jump to unloaded earlier bookmark | **FAIL** | Trusted row click; 0 earlier-page reads; target remains unmounted and text out of view. |
-| Reloaded bookmark resolves live | PASS after manually loading history | Original message hashes and excerpt heads match for 2/2 records; 2 live card rows, 0 stale segments/rows/warnings. Manual history load plus bookmark click lands at 64 px. This does not rescue the failed automatic-history check. |
-| Delete from rail card | PASS | Both deleted through real × controls; 0 records and 0 segments. |
-| Bookmark drag overhead | PASS in six measured holds | 3 empty and 3 bookmarked drags; 0 extra mounts, added elements, storage reads or bookmark runtime requests. |
-| Restore and release | PASS | Default extensions, one home tab, empty composer, original shortcut preferences restored, lab and perf locks released. |
+| # | Check | Result | Numeric/public evidence |
+|---|---|---|---|
+| 1 | real long fixture loaded | PASS | 5 initial / 16 total questions; 11 earlier pages. |
+| 2 | held drag empty 1 | PASS | 31 seek updates; 102 frames; mounts/additions/reads/requests all 0; frame p95 33.3 ms. |
+| 3 | held drag empty 2 | PASS | 32 seek updates; 85 frames; mounts/additions/reads/requests all 0; frame p95 16.7 ms. |
+| 4 | held drag empty 3 | PASS | 31 seek updates; 88 frames; mounts/additions/reads/requests all 0; frame p95 16.7 ms. |
+| 5 | live selection message ids match conversation API by SHA-256 | PASS | 10/10 rendered assistant IDs match API; target matches; 41 API assistant IDs across 13 observed API responses. |
+| 6 | hover button tooltip reads Bookmark | PASS | Accessible label and visible tooltip both equal Bookmark. |
+| 7 | paragraph button saves one bookmark | PASS | 1 record; 1 segment. |
+| 8 | selection saved through real Alt+Shift+M | PASS | 30 selected characters; 1 real Chrome command; 2 records / 1 segment. |
+| 9 | held drag bookmarked 1 | PASS | 31 seek updates; 87 frames; mounts/additions/reads/requests all 0; frame p95 16.7 ms. |
+| 10 | held drag bookmarked 2 | PASS | 31 seek updates; 92 frames; mounts/additions/reads/requests all 0; frame p95 16.8 ms. |
+| 11 | held drag bookmarked 3 | PASS | 32 seek updates; 86 frames; mounts/additions/reads/requests all 0; frame p95 16.8 ms. |
+| 12 | matched drag comparison with bookmarks versus empty | PASS | 3 empty / 3 bookmarked runs; every hold has zero mounts, added elements, reads and bookmark requests. |
+| 13 | selection card jump after drag lands on text | PASS | Selection text in view at 61.7 px below scroller top; trusted row click. |
+| 14 | paragraph jump requested during native drag lands on text | PASS | Thumb held before/after activation; deferred until release; text in view at 64.0 px. |
+| 15 | reload before row click leaves earlier answer unloaded | PASS | 2 records / 1 segment / 5 loaded questions; earlier dots available; target unmounted. |
+| 16 | earlier bookmarks sit under dots and not a loaded tick (row) | PASS | 1 dots segment / 0 loaded-tick segments; width 8 px / height 2 px; 5 px below dots; butter color matches. |
+| 17 | hover earlier segment shows 2-bookmark card (row) | PASS | Visible card, correct public title and accessible name; 2 rows / 0 stale; multi-bookmark card. |
+| 18 | row click loads earlier pages and lands on requested text | PASS | 5 earlier pages; requested text mounted and in view at 61.7 px; loading meta/spinner/dots observed: True/True/True. |
+| 19 | segment moves from dots to loaded question after row click | PASS | 0 dots segments; 1 loaded-question segment. |
+| 20 | reload before segment click leaves earlier answer unloaded | PASS | 2 records / 1 segment / 5 loaded questions; earlier dots available; target unmounted. |
+| 21 | earlier bookmarks sit under dots and not a loaded tick (segment) | PASS | 1 dots segment / 0 loaded-tick segments; width 8 px / height 2 px; 5 px below dots; butter color matches. |
+| 22 | hover earlier segment shows 2-bookmark card (segment) | PASS | Visible card, correct public title and accessible name; 2 rows / 0 stale; multi-bookmark card. |
+| 23 | segment click loads earlier pages and lands on requested text | PASS | 5 earlier pages; requested text mounted and in view at 64.0 px; loading meta/spinner/dots observed: False/False/True. |
+| 24 | segment moves from dots to loaded question after segment click | PASS | 0 dots segments; 1 loaded-question segment. |
+| 25 | reload resolves both bookmarks live without answer changed | PASS | 2/2 original hashes/excerpts match; 2 live rows; 0 stale segments / 0 stale rows or warnings. |
+| 26 | card delete removes selection bookmark | PASS | 1 record remains. |
+| 27 | earlier bookmarks sit under dots and not a loaded tick (single) | PASS | 1 dots segment / 0 loaded-tick segments; width 8 px / height 2 px; 5 px below dots; butter color matches. |
+| 28 | hover earlier segment shows 1-bookmark card (single) | PASS | Visible card, correct public title and accessible name; 1 row / 0 stale; single-bookmark loading explanation matches. |
+| 29 | card delete removes both test bookmarks | PASS | 0 records remain; 0 segments. |
+
+## Reproduction and earlier-history evidence
+
+1. Load earlier history through the rail's dots, then bookmark one paragraph with its button and
+   a different paragraph in the same answer using a 30-character selection and real Alt+Shift+M.
+2. Reopen the fixture, recreating the rail/content scripts. Only five questions are initially
+   loaded; the bookmarked answer is unmounted. Both records persist on one butter segment under
+   the earlier-history dots, with no segment under a loaded question tick.
+3. Hover its visible centre: the card says “Earlier questions · 2 bookmarks”, with two live rows.
+   Click the second row. Earlier pages load until the target is known and mounted; the selection
+   lands in view. The card's loading title, selected-row spinner and busy dots are observed.
+4. Reopen again to restore the same unloaded precondition. Hover, then physically click the
+   segment's centre. It selects the oldest paragraph bookmark, loads earlier pages, and lands
+   that paragraph in view. Precise coverage records `rail.earlierJump` once on each path;
+   the real input is trusted. After each load the segment leaves the dots for the real question.
+5. Read the original answer and records in memory: both message hashes and excerpt heads match;
+   reopen its card to confirm two live rows and no “answer changed” state.
+6. Delete the selection from that card. Reopen with the remaining bookmark unloaded, hover its
+   dots segment, and verify “Bookmark · earlier question” and the explanation that clicking loads
+   earlier messages. Delete the remaining bookmark through the card; zero records/segments remain.
+
+A direct segment click puts the hover card away; busy dots remain visible during loading.
+The loading card/spinner are therefore observed for the row path, not the segment path.
+
+The row and segment destinations are deliberately different paragraphs, so merely landing at
+some part of the answer cannot pass both checks. No manual history-loading fallback was needed
+in the final run. `jumpEvidence` in the summary retains trusted-input and public function-call
+counts, not message IDs, excerpts or hashes of private IDs.
 
 ## Held-drag measurements
 
 | Arm | Run | Seek updates | Frames | Turn mounts | Added elements | Storage reads | Bookmark requests | Frame p95 ms | Frame max ms |
 |---|---|---|---|---|---|---|---|---|---|
-| empty | 1 | 31 | 86 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
-| empty | 2 | 32 | 87 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
-| empty | 3 | 31 | 87 | 0 | 0 | 0 | 0 | 16.7 | 33.3 |
-| bookmarked | 1 | 32 | 86 | 0 | 0 | 0 | 0 | 16.7 | 16.7 |
-| bookmarked | 2 | 32 | 86 | 0 | 0 | 0 | 0 | 16.8 | 16.8 |
-| bookmarked | 3 | 32 | 86 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
+| empty | 1 | 31 | 102 | 0 | 0 | 0 | 0 | 33.3 | 33.4 |
+| empty | 2 | 32 | 85 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
+| empty | 3 | 31 | 88 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
+| bookmarked | 1 | 31 | 87 | 0 | 0 | 0 | 0 | 16.7 | 16.8 |
+| bookmarked | 2 | 31 | 92 | 0 | 0 | 0 | 0 | 16.8 | 16.8 |
+| bookmarked | 3 | 32 | 86 | 0 | 0 | 0 | 0 | 16.8 | 16.8 |
 
-A thread-subtree MutationObserver counts newly added element roots and descendants, including turn
-mounts. Worker probes count IndexedDB object-store/index read methods and local-settings reads;
-a runtime listener counts bookmark requests. Precise coverage sees the actual bookmark content
-script in every hold. `refresh`, `paragraphs`, `measure`, `selection`, `topBlock`, `locate`, `create`,
-`remove`, `show` and `place` execute 0 times in all six intervals. Cheap event guards still execute
-62–64 aggregate function calls per interval; this is not zero bookmark JavaScript.
-The measurement starts after initial press/seek and ends before release. Release/settling latency
-is outside these frame figures. Three repetitions per arm establish this fixture's measured
-hold behavior, not a broad cross-platform performance claim.
+A thread-subtree MutationObserver counts newly added element roots/descendants and turn mounts.
+Worker probes count IndexedDB object-store/index read methods and local-settings reads; a
+runtime listener counts bookmark requests. Precise coverage sees the real bookmark content
+script in every hold: `refresh`, `paragraphs`, `measure`, `selection`, `topBlock`, `locate`,
+`create`, `remove`, `show` and `place` execute zero times in all six intervals. Cheap event
+checks still execute; the summary reports their aggregate function calls.
+The measured interval starts after initial press/seek and ends before release; release/settling
+latency is excluded. Three repetitions per arm describe this Linux fixture and do not establish
+cross-platform performance or a precise timing difference between arms.
 
-## Bug: a reloaded earlier bookmark jumps inside the loaded tail
+## Harness correction, privacy and cleanup
 
-Reproduce with the tested build, named long fixture, send guard on:
+An exploratory attempt stopped because locator `.click()` requires the segment itself to own
+the hit target. Segments intentionally inherit `pointer-events: none`; the rail routes clicks
+on the underlying dots/tick using geometry. The corrected harness uses a real pointer click
+at the visible segment centre, verifies actual pagination and the distinct text destination,
+and reruns the entire matrix. This was a harness mistake, not a product bug. Both attempts
+restored the lab, original shortcut preferences and released both locks.
 
-1. Load all earlier history through the rail's dots. Bookmark two paragraphs in an answer that
-   will be outside the initial tail after reopening: the harness uses the paragraph button and
-   a 30-character selection saved with real Alt+Shift+M.
-2. Reopen the existing chat (the harness navigates away and back, so content scripts and the rail
-   are recreated). Confirm both bookmarks persist but only 5 of the 16 questions are loaded,
-   the earlier-history dots are present, and the bookmarked answer is unmounted.
-3. Focus its segment, press ArrowLeft, and click its first bookmark row.
-4. Expected: fetch earlier messages, mount the original answer, and land with the marked text in view.
-   Actual: 0 earlier-page responses, still 5 questions, target unmounted and text not visible.
-5. As a control, manually use the earlier-history dots and click the bookmark again. The original
-   answer mounts, the paragraph lands at 64 px, both saved message hashes/excerpts match, and
-   neither bookmark says “answer changed”.
+The final send guard observed **0 send attempts** and blocked 131 unrelated
+non-read ChatGPT requests. Final cleanup: 0 records before fallback /
+0 after; shortcut preferences restored, default extensions, one home tab,
+empty composer, lab lock released and perf lock released. The unique extension copy was removed.
 
-The final failure reached the real UI: 1 trusted row click, `rail.jumpTo` 1 call, `rail.jump`
-1 call, `rail.glide` 1 call and `bookmark.locate` 27 calls. This was not an unreceived input.
-It reproduced in all three reruns; the final run's independent history-loading control passes.
-
-Code inspection explains the route: `bookmarks/model.js` `group()` places an unknown message
-under its stored question position clamped to the currently loaded last question. The rail then
-jumps to that loaded question; there is no pending destination that reads older pages until the
-bookmark's message is known. No implementation change or injected bookmark/markup workaround
-was applied. This is the remaining user story 28 blocker.
-
-## Harness corrections and safety
-
-The old script's fixed 2.5-second post-release pause was too short for seek completion. During
-that interval the seek card suppresses bookmark-card opening, and the old silent fallback could
-activate the first bookmark instead of the requested selection. The final harness waits for
-native seek completion and disappearance of the seek card, requires the intended row, records
-trusted control input/function-call evidence, and checks actual mounted-message/excerpt matches
-after reload. Earlier exploratory jump failures from insufficient waiting are not product bugs.
-
-The send guard blocked 77 unrelated non-read ChatGPT requests and observed
-**0 send attempts**. All three reruns restored their task install/shortcuts and
-released both locks. The task-owned bookmark store was empty before fallback cleanup in the final
-run. No screenshots, chat text, prompts/answers, IDs, account data, fixture URLs, credentials,
-private endpoints or raw coverage are included. Hash comparisons retain only counts/booleans.
-The report directory follows the requested local date; the run crossed into 2026-11-09 UTC.
+Only public labels, counts, booleans, structure metadata and geometry are retained. No screenshots,
+chat text, prompts/answers, message/account/conversation IDs, private-ID hashes, fixture URLs,
+credentials, private endpoints or raw coverage are committed. The downloaded public visual spec
+stays outside the report and is removed from the worktree after inspection.
 
 ## Artifacts and rerun
 
-- [Numeric evidence](summary.json), including all final checks, six drag measurements and jump probes.
-- [Commands and actual output](commands.md), including exploratory runs and final verification.
+- [Numeric evidence](summary.json): all checks, six drag observations, trusted jump evidence and cleanup.
+- [Commands and actual output](commands.md): setup, exploratory harness correction, final run, merge,
+  checks and push.
 - [Harness](../../../lab/harness/bookmarks-live.mjs):
   `OUT="$PWD/notes/runs/2026-11-08-bookmarks-live" EXT="$PWD/extension" node lab/harness/bookmarks-live.mjs`.
-  It exits 1 for the unloaded-history failure, then restores the lab and releases locks in `finally`.
 
-This is a failed qualification run, with one product bug reported and no extension changes.
+Post-run `git fetch origin && git merge origin/t3/51-bookmarks` reported `Already up to date.`
+`npm run format:check && npm run lint` passed. The extension tree still matches that integration
+branch exactly. Actual output is recorded in the command log. This task
+only pushes its test branch; it does not open a PR or merge into the integration branch.
