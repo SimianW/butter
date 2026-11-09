@@ -45,27 +45,42 @@
     }
     return composer()?.getBoundingClientRect() || null;
   };
-  // The top edge the line goes above: the composer's, or that of ChatGPT's own text sitting within
-  // `band` px above it, such as its "ChatGPT can make mistakes" disclaimer, whose box ends on the
-  // composer's top edge (live, 2026-11-07). Found by hit-testing the band, so it needs no selector;
-  // the conversation's text scrolling behind doesn't count.
+  // The row the line takes over: ChatGPT's own text within `band` px above the composer box
+  // `rect`, such as its "ChatGPT can make mistakes" disclaimer, whose box ends on the composer's
+  // top edge (live, 2026-11-07). Found by hit-testing the band, so it needs no selector; the
+  // conversation's text scrolling behind doesn't count. Of several, the one nearest the composer.
+  // Returns its box, its type, and the page background behind it (the first ancestor with an
+  // opaque background-color; null when none, so the line keeps its own), or null when none.
   const ownText = (el) => [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
-  const clearTop = (rect, band) => {
-    let top = rect.top;
-    for (let round = 0; round < 3; round++) {
-      let next = top;
-      for (let y = top - 1; y > top - band; y -= 5)
-        for (let i = 0; i < 5; i++)
-          for (const el of document.elementsFromPoint(
-            rect.left + 4 + ((rect.width - 8) * i) / 4,
-            y,
-          ))
-            if (ownText(el) && !el.closest(TURN))
-              next = Math.min(next, el.getBoundingClientRect().top);
-      if (next >= top) break;
-      top = next;
+  const opaque = (color) => {
+    const inner = /\(([^)]*)\)/.exec(color)?.[1];
+    if (!inner) return false; // "transparent"
+    let alpha = inner.includes('/') ? inner.split('/')[1] : null;
+    if (alpha === null && /^rgba?\(/.test(color)) alpha = inner.split(',')[3] ?? null;
+    if (alpha === null) return true;
+    alpha = alpha.trim();
+    return (alpha.endsWith('%') ? parseFloat(alpha) / 100 : parseFloat(alpha)) >= 1;
+  };
+  const disclaimerRow = (rect, band) => {
+    let found = null;
+    for (let y = rect.top - 1; y > rect.top - band; y -= 5)
+      for (let i = 0; i < 5; i++)
+        for (const el of document.elementsFromPoint(rect.left + 4 + ((rect.width - 8) * i) / 4, y))
+          if (
+            ownText(el) &&
+            !el.closest(TURN) &&
+            (!found || el.getBoundingClientRect().bottom > found.getBoundingClientRect().bottom)
+          )
+            found = el;
+    if (!found) return null;
+    let background = null;
+    for (let el = found; el && !background; el = el.parentElement) {
+      const color = getComputedStyle(el).backgroundColor;
+      if (opaque(color)) background = color;
     }
-    return top;
+    const { left, top, width, height } = found.getBoundingClientRect();
+    const s = getComputedStyle(found);
+    return { left, top, width, height, background, fontSize: s.fontSize, lineHeight: s.lineHeight };
   };
   // Keys of this conversation's replies in page order (ButterBranch.replyStarted): the turn's
   // data-turn-key (live: one turn holds a question and its reply), else the reply element.
@@ -294,7 +309,7 @@
     replyOf,
     composer,
     composerBox,
-    clearTop,
+    disclaimerRow,
     replyKeys,
     nativeAsk,
     nativeBusy: ({ button }) => busy(button),
