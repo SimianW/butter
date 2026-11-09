@@ -1,0 +1,38 @@
+{
+  "provenance": "Transcribed from the actual live-probe.mjs stdout and isolated-world inspection; all non-whitespace characters were replaced by x in the probe before returning data. The initial UI wait timed out; the isolated-world trace established the terminal state. A second toolbar attempt reproduced the same trace.",
+  "mode": "chinese-math",
+  "fixture": "math12",
+  "selection": {
+    "endpointParagraphs": 2,
+    "endpointMathNodes": 2,
+    "chinese": true
+  },
+  "state": "unsure",
+  "cause": "composer",
+  "states": [
+    "loading",
+    "branching",
+    "verifying",
+    "sending",
+    "unsure"
+  ],
+  "verifiedBeforeFill": true,
+  "verifiedBeforeSend": true,
+  "sendButton": {
+    "label": "Send",
+    "type": "submit",
+    "disabled": false
+  },
+  "fillReturned": true,
+  "typed": "x xxxxxxx xxxx\nx \nx xxxxxxxxx\nx xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx\nx xxx\nx \nx xxxxxx xxx xxxxxxxxxxxxxxxxxxx\n\nxxxx",
+  "typedLength": 123,
+  "read": "x xxxxxxx xxxx\n\nx \n\nx xxxxxxxxx\n\nx xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx\n\nx xxx\n\nx \n\nx xxxxxx xxx xxxxxxxxxxxxxxxxxxx\n\n\n\n\nxxxx",
+  "readLength": 132,
+  "normalizedRead": "x xxxxxxx xxxx\n\nx \n\nx xxxxxxxxx\n\nx xxxxxxxxxxxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx\n\nx xxx\n\nx \n\nx xxxxxx xxx xxxxxxxxxxxxxxxxxxx\n\nxxxx",
+  "normalizedReadLength": 129,
+  "matchesExpected": false,
+  "sendCalls": 0,
+  "uiClass": "line unsure",
+  "editorWhiteSpace": "break-spaces",
+  "laterEditorSnapshot": "empty paragraph: do not interpret this post-run snapshot as preservation of the filled draft"
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "one English paragraph",
+    "state": "ready",
+    "typed": "> A short public example.\n\nExplain.",
+    "read": "> A short public example.\n\n\n\n\nExplain.",
+    "normalized": "> A short public example.\n\nExplain.",
+    "sendClicks": 1,
+    "editorHtml": "<p>&gt; A short public example.</p><p><br></p><p>Explain.</p>"
+  },
+  {
+    "name": "two Chinese paragraphs with inline math",
+    "state": "ready",
+    "typed": "> 起点 $a$ 的访问顺序。\n> \n> 终点 $b$ 的完成顺序。\n\n解释。",
+    "read": "> 起点 $a$ 的访问顺序。\n\n> \n\n> 终点 $b$ 的完成顺序。\n\n\n\n\n解释。",
+    "normalized": "> 起点 $a$ 的访问顺序。\n\n> \n\n> 终点 $b$ 的完成顺序。\n\n解释。",
+    "sendClicks": 1,
+    "editorHtml": "<p>&gt; 起点 $a$ 的访问顺序。</p><p>&gt; </p><p>&gt; 终点 $b$ 的完成顺序。</p><p><br></p><p>解释。</p>"
+  },
+  {
+    "name": "two English paragraphs",
+    "state": "ready",
+    "typed": "> First public paragraph.\n> \n> Second public paragraph.\n\nExplain.",
+    "read": "> First public paragraph.\n\n> \n\n> Second public paragraph.\n\n\n\n\nExplain.",
+    "normalized": "> First public paragraph.\n\n> \n\n> Second public paragraph.\n\nExplain.",
+    "sendClicks": 1,
+    "editorHtml": "<p>&gt; First public paragraph.</p><p>&gt; </p><p>&gt; Second public paragraph.</p><p><br></p><p>Explain.</p>"
+  }
+]

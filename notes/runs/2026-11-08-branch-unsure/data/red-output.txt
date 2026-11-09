@@ -1,0 +1,21 @@
+{"name":"one English paragraph","state":"ready","typed":"> A short public example.\n\nExplain.","read":"> A short public example.\n\n\n\n\nExplain.","normalized":"> A short public example.\n\nExplain.","sendClicks":1,"editorHtml":"<p>&gt; A short public example.</p><p><br></p><p>Explain.</p>"}
+{"name":"two Chinese paragraphs with inline math","state":"unsure","cause":"composer","typed":"> 起点 $a$ 的访问顺序。\n> \n> 终点 $b$ 的完成顺序。\n\n解释。","read":"> 起点 $a$ 的访问顺序。\n\n> \n\n> 终点 $b$ 的完成顺序。\n\n\n\n\n解释。","normalized":"> 起点 $a$ 的访问顺序。\n\n> \n\n> 终点 $b$ 的完成顺序。\n\n解释。","sendClicks":0,"editorHtml":"<p>&gt; 起点 $a$ 的访问顺序。</p><p>&gt; </p><p>&gt; 终点 $b$ 的完成顺序。</p><p><br></p><p>解释。</p>"}
+{"name":"two English paragraphs","state":"unsure","cause":"composer","typed":"> First public paragraph.\n> \n> Second public paragraph.\n\nExplain.","read":"> First public paragraph.\n\n> \n\n> Second public paragraph.\n\n\n\n\nExplain.","normalized":"> First public paragraph.\n\n> \n\n> Second public paragraph.\n\nExplain.","sendClicks":0,"editorHtml":"<p>&gt; First public paragraph.</p><p>&gt; </p><p>&gt; Second public paragraph.</p><p><br></p><p>Explain.</p>"}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: two Chinese paragraphs with inline math: full formatted message should be sent in the verified branch (cause=composer)
+
+'unsure' !== 'ready'
+
+    at file://<repo>/lab/harness/branch-unsure-composer.mjs:96:12 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'unsure',
+  expected: 'ready',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.2

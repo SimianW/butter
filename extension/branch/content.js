@@ -351,11 +351,15 @@
     };
   })();
 
-  // The line above the composer, clear of ChatGPT's disclaimer. The ready line fades out once
+  // The line in the row of ChatGPT's disclaimer, covering it while shown; the disclaimer shows
+  // again once the line goes. With no disclaimer, 8 px above the composer. The ready line fades out once
   // ChatGPT's reply to the sent question starts to show. Any line goes at once when the user sends
   // their own next message, presses ×, or leaves this conversation. ChatGPT saving the branch
   // after its first message (unsaved local-chatgpt id → saved id) is not leaving it.
   const line = (() => {
+    // How far above the composer ChatGPT's disclaimer is looked for: the band the line used to
+    // take (its 22 px row and 8 px gap), so it finds the same text as before.
+    const BAND = 30;
     let timer = 0,
       route = null,
       replies = null; // reply keys just before Butter's send click, for the ready line
@@ -370,7 +374,7 @@
         return ui?.note.fade();
       }
       const box = P.composerBox();
-      if (box) ui?.note.place({ ...box.toJSON(), top: P.clearTop(box, ui.note.height() + 8) });
+      if (box) ui?.note.place(P.disclaimerRow(box, BAND) || { ...box.toJSON(), below: true });
     };
     const stop = () => {
       clearInterval(timer);
