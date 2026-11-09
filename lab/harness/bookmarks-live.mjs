@@ -15,6 +15,8 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
+// Match bookmarks/content.js blocksOf: list items count individually, in document order.
+const BLOCKS = ':scope > :not(ul, ol), :scope > :is(ul, ol) > li';
 const source = path.resolve(process.env.EXT || path.join(repo, 'extension'));
 const out =
   process.env.OUT ||
@@ -186,7 +188,7 @@ async function loadEarlier() {
 }
 async function installTargets() {
   // Keep raw anchors in page/worker memory only; the script carries just paragraph ordinals.
-  const picked = await page.evaluate(() => {
+  const picked = await page.evaluate((blocks) => {
     const answer =
       ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
     const turns = [...document.querySelectorAll('[data-turn-key]')];
@@ -199,7 +201,7 @@ async function installTargets() {
     if (!t) return null;
     const a = t.querySelector(answer);
     if (!a) return null;
-    const paras = [...a.children]
+    const paras = [...a.querySelectorAll(blocks)]
       .map((b, i) => ({ b, i }))
       .filter(({ b }) => b.tagName === 'P' && b.textContent.trim().length > 60);
     if (paras.length < 2) return null;
@@ -207,9 +209,10 @@ async function installTargets() {
       turn: t.dataset.turnKey,
       paras: paras.slice(0, 2).map(({ i }) => i),
       answer,
+      blocks,
     };
     return { turnOrdinalMounted: turns.indexOf(t), paragraphs: window.__bookmarkLive.paras };
-  });
+  }, BLOCKS);
   requireThat(picked, 'no suitable real answer paragraphs');
   // Capture IDs privately in the worker across reload; never serialize them in the summary.
   const target = await page.evaluate(() => window.__bookmarkLive);
@@ -231,7 +234,7 @@ async function targetBox(which, scroll = false) {
     ([which, scroll]) => {
       const t = window.__bookmarkLive,
         m = document.querySelector(`[data-turn-key="${t.turn}"]`),
-        b = m?.querySelector(t.answer)?.children[t.paras[which]];
+        b = m?.querySelector(t.answer)?.querySelectorAll(t.blocks)[t.paras[which]];
       if (!b) return null;
       const s = [...document.querySelectorAll('.thread-scroll-container')].find(
         (s) => s.clientHeight > 0,
@@ -253,7 +256,7 @@ async function targetBox(which, scroll = false) {
     [which, scroll],
   );
 }
-async function bookmarkParagraph() {
+async function bookmarkParagraph(tooltipCheck = 'hover button tooltip reads Bookmark') {
   await targetBox(0, true);
   await page.waitForTimeout(1800);
   const b = await targetBox(0);
@@ -276,16 +279,17 @@ async function bookmarkParagraph() {
     const tooltip = await page.evaluate(() => {
       const r = document.querySelector('chatgpt-butter-bookmark').shadowRoot;
       return {
-        labelIsBookmark: r.querySelector('button').getAttribute('aria-label') === 'Bookmark',
+        labelStartsBookmark: r
+          .querySelector('button')
+          .getAttribute('aria-label')
+          .startsWith('Bookmark: '),
+        labelHasText:
+          r.querySelector('button').getAttribute('aria-label').length > 'Bookmark: '.length,
         tooltipIsBookmark: r.querySelector('.tip span').textContent === 'Bookmark',
         tooltipVisible: getComputedStyle(r.querySelector('.tip')).opacity === '1',
       };
     });
-    await check(
-      'hover button tooltip reads Bookmark',
-      Object.values(tooltip).every(Boolean),
-      tooltip,
-    );
+    await check(tooltipCheck, Object.values(tooltip).every(Boolean), tooltip);
     await page.locator('chatgpt-butter-bookmark button.show').click();
   }
   await page.waitForTimeout(800);
@@ -298,9 +302,10 @@ async function bookmarkSelection() {
   await page.waitForTimeout(1800);
   const selected = await page.evaluate(() => {
     const t = window.__bookmarkLive,
-      b = document.querySelector(`[data-turn-key="${t.turn}"]`).querySelector(t.answer).children[
-        t.paras[1]
-      ];
+      b = document
+        .querySelector(`[data-turn-key="${t.turn}"]`)
+        .querySelector(t.answer)
+        .querySelectorAll(t.blocks)[t.paras[1]];
     const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT);
     let n;
     while ((n = w.nextNode())) if (n.data.trim().length >= 40) break;
@@ -318,6 +323,201 @@ async function bookmarkSelection() {
   await page.waitForTimeout(1000);
   await page.evaluate(() => getSelection().removeAllRanges());
   return selected;
+}
+async function listItemBox(scroll = false) {
+  const box = await targetBox(0, scroll);
+  if (!box) return null;
+  return page.evaluate((box) => {
+    const t = window.__bookmarkLive;
+    const answer = document.querySelector(`[data-turn-key="${t.turn}"]`)?.querySelector(t.answer);
+    const item = answer.querySelectorAll(t.blocks)[t.paras[0]];
+    const list = item.parentElement;
+    const offsetFromListStart = item.getBoundingClientRect().top - list.getBoundingClientRect().top;
+    return {
+      ...box,
+      isListItem: item.matches('li') && list.matches('ul, ol') && list.parentElement === answer,
+      itemOrdinal: [...list.children].indexOf(item),
+      offsetFromListStart,
+      listTop: box.top - offsetFromListStart,
+      // A jump to the list's start cannot satisfy this placement for the chosen later item.
+      landsOnItem: box.inView && Math.abs(box.top - 64) <= 8 && offsetFromListStart > 24,
+    };
+  }, box);
+}
+async function listItemMatrix() {
+  phase = 'pick-list-item';
+  await loadEarlier();
+  const picked = await page.evaluate((blocks) => {
+    const answer =
+      ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
+    let lists = 0,
+      items = 0,
+      maxMeasuredOffset = 0,
+      target = null;
+    for (const turn of document.querySelectorAll('[data-turn-key]')) {
+      for (const a of turn.querySelectorAll(answer)) {
+        const paragraphs = [...a.querySelectorAll(blocks)];
+        for (const list of a.querySelectorAll(':scope > ul, :scope > ol')) {
+          lists++;
+          for (const [ordinal, item] of [...list.children].entries()) {
+            if (!item.matches('li')) continue;
+            items++;
+            const offset = item.getBoundingClientRect().top - list.getBoundingClientRect().top;
+            if (
+              ordinal > 0 &&
+              item.textContent.trim().length > 0 &&
+              offset > Math.max(24, maxMeasuredOffset)
+            ) {
+              maxMeasuredOffset = offset;
+              target = {
+                turn: turn.dataset.turnKey,
+                paras: [paragraphs.indexOf(item)],
+                answer,
+                blocks,
+              };
+            }
+          }
+        }
+      }
+    }
+    if (target) window.__bookmarkLive = target;
+    return {
+      lists,
+      items,
+      maxMeasuredOffset,
+      targetFound: !!target,
+      paragraph: target?.paras[0] ?? null,
+    };
+  }, BLOCKS);
+  summary.listFixture = picked;
+  if (picked.lists === 0) {
+    summary.skipped = ['list item matrix: no top-level list in mounted fixture answers'];
+    console.log('SKIP list item matrix: no top-level list in mounted fixture answers');
+    return;
+  }
+  await check(
+    'real fixture has a later top-level list item for distinct landing',
+    picked.targetFound,
+    picked,
+  );
+  requireThat(picked.targetFound, 'no distinct later list item available');
+  await worker.evaluate(
+    (target) => {
+      globalThis.liveTarget = target;
+    },
+    await page.evaluate(() => window.__bookmarkLive),
+  );
+  phase = 'bookmark-list-item';
+  await bookmarkParagraph('list item tooltip and accessible name match');
+  const stored = await storedCount();
+  const item = await listItemBox();
+  const anchor = await worker.evaluate(async () => {
+    const db = await new Promise((ok, no) => {
+      const r = indexedDB.open('butter-layouts-v1');
+      r.onsuccess = () => ok(r.result);
+      r.onerror = no;
+    });
+    try {
+      const records = await new Promise((ok, no) => {
+        const r = db.transaction('bookmarks').objectStore('bookmarks').getAll();
+        r.onsuccess = () => ok(r.result);
+        r.onerror = no;
+      });
+      const hash = async (id) =>
+        [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+          .map((n) => n.toString(16).padStart(2, '0'))
+          .join('');
+      globalThis.liveListRecords = records;
+      return {
+        matchingParagraph: records.length === 1 && records[0].para === liveTarget.paras[0],
+        matchingQuestion: records.length === 1 && records[0].ask === (await hash(liveTarget.turn)),
+        validFirstLine:
+          records.length === 1 &&
+          Number.isInteger(records[0].line) &&
+          records[0].line > 0 &&
+          records[0].line <= [...records[0].excerpt].length,
+      };
+    } finally {
+      db.close();
+    }
+  });
+  await check(
+    'list item button saves its individual paragraph with ask and line',
+    stored === 1 && item?.isListItem && Object.values(anchor).every(Boolean),
+    { stored, ...anchor, ...item },
+  );
+  phase = 'jump-list-item';
+  await page.evaluate(() => {
+    const s = [...document.querySelectorAll('.thread-scroll-container')].find(
+      (s) => s.clientHeight > 0,
+    );
+    s.scrollTop += 1200;
+  });
+  await jump(0);
+  await waitLanding();
+  const landed = await listItemBox();
+  await check(
+    'list item jump lands on the item instead of the list start',
+    landed?.landsOnItem,
+    landed || { mounted: false },
+  );
+  phase = 'reload-list-item';
+  await open();
+  await restoreTargets();
+  const cold = { ...(await railState()), targetMounted: !!(await targetBox(0)) };
+  await jump(0);
+  await waitLanding();
+  const reloaded = await listItemBox();
+  // Original anchors remain private in worker/page memory; return only equality checks.
+  const records = await worker.evaluate(() => liveListRecords);
+  const resolved = await page.evaluate(async (records) => {
+    const t = window.__bookmarkLive;
+    const a = document.querySelector(`[data-turn-key="${t.turn}"]`)?.querySelector(t.answer);
+    const b = a?.querySelectorAll(t.blocks)[t.paras[0]];
+    const id = a
+      ?.closest('[data-chatgpt-selection-message-id]')
+      ?.getAttribute('data-chatgpt-selection-message-id');
+    const hash =
+      id &&
+      [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+        .map((n) => n.toString(16).padStart(2, '0'))
+        .join('');
+    const flat = (text) => text.replace(/\s+/g, ' ').trim();
+    const r = document.querySelector('chatgpt-butter-nav').shadowRoot;
+    return {
+      matchingMessageAndExcerpt:
+        records.length === 1 &&
+        hash === records[0].msg &&
+        !!b &&
+        flat(b.textContent).includes([...flat(records[0].excerpt)].slice(0, 40).join('')),
+      staleMarks: r.querySelectorAll('.mark.stale:not(.gone)').length,
+    };
+  }, records);
+  await jump(0);
+  await waitLanding();
+  await page.locator('chatgpt-butter-nav .mark:not(.gone)').first().focus();
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(2800);
+  const staleRows = await page
+    .locator(
+      'chatgpt-butter-nav .bmc .it.stale, chatgpt-butter-nav .bmc.stale, chatgpt-butter-nav .bmc .why, chatgpt-butter-nav .bmc .warn',
+    )
+    .count();
+  await check(
+    'list item resolves live and lands on the same item after reload',
+    reloaded?.landsOnItem &&
+      resolved.matchingMessageAndExcerpt &&
+      resolved.staleMarks === 0 &&
+      staleRows === 0 &&
+      (await storedCount()) === 1,
+    { cold, ...reloaded, ...resolved, staleRows },
+  );
+  const remaining = await deleteMarks();
+  await check(
+    'card delete removes list item test bookmark',
+    remaining === 0 && (await railState()).marks === 0,
+    { remaining, marks: (await railState()).marks },
+  );
 }
 async function beginJumpProbe() {
   await cdp.send('Profiler.enable');
@@ -670,7 +870,7 @@ try {
     'extension copy differs',
   );
   lab = L.acquire('auto', {
-    owner: 'butter-57-bookmarks-live-3',
+    owner: 'butter-57-bookmarks-live-4',
     needsFixture: process.env.LAB_FIXTURE || 'math12',
     wait: 60,
     perf: true,
@@ -1023,7 +1223,15 @@ try {
         return await new Promise((ok, no) => {
           const r = db.transaction('bookmarks').objectStore('bookmarks').getAll();
           r.onsuccess = () =>
-            ok(r.result.map(({ msg, para, excerpt }) => ({ msg, para, excerpt })));
+            ok(
+              r.result.map(({ msg, para, excerpt, ask, line }) => ({
+                msg,
+                para,
+                excerpt,
+                ask,
+                line,
+              })),
+            );
           r.onerror = no;
         });
       } finally {
@@ -1041,10 +1249,15 @@ try {
         [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
           .map((n) => n.toString(16).padStart(2, '0'))
           .join('');
+      const askHash = [
+        ...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t.turn))),
+      ]
+        .map((n) => n.toString(16).padStart(2, '0'))
+        .join('');
       const flat = (text) => text.replace(/\s+/g, ' ').trim();
       let matched = 0;
       for (const b of records) {
-        const block = answer?.children[b.para];
+        const block = answer?.querySelectorAll(t.blocks)[b.para];
         if (
           hash === b.msg &&
           block &&
@@ -1056,6 +1269,10 @@ try {
         targetMounted: !!answer,
         records: records.length,
         matchingMessagesAndExcerpts: matched,
+        matchingQuestions: records.filter((b) => b.ask === askHash).length,
+        validFirstLines: records.filter(
+          (b) => Number.isInteger(b.line) && b.line > 0 && b.line <= [...b.excerpt].length,
+        ).length,
       };
     }, records);
     await page.locator('chatgpt-butter-nav .mark:not(.gone)').first().focus();
@@ -1074,6 +1291,8 @@ try {
       'reload resolves both bookmarks live without answer changed',
       resolution.targetMounted &&
         resolution.matchingMessagesAndExcerpts === 2 &&
+        resolution.matchingQuestions === 2 &&
+        resolution.validFirstLines === 2 &&
         (await storedCount()) === 2 &&
         live.marks === 1 &&
         live.staleMarks === 0 &&
@@ -1097,6 +1316,7 @@ try {
       remaining,
       marks: (await railState()).marks,
     });
+    await listItemMatrix();
   }
 } catch (e) {
   // Exception strings can contain live locators/text/URLs. Save only the phase and error class.
