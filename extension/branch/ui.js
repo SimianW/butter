@@ -194,9 +194,12 @@ svg { display: block; }
     });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme);
     theme();
-    // ChatGPT can replace <html>; attach to the current one.
+    // Live in <body>: macOS dictation apps (Typeless) reach the focused field through the
+    // Accessibility API and type nothing into a field mounted outside it. ChatGPT can replace
+    // <html> or <body>; attach to the current one, and to <html> only before <body> exists.
     const attach = () => {
-      if (host.parentNode !== document.documentElement) document.documentElement.append(host);
+      const parent = document.body || document.documentElement;
+      if (host.parentNode !== parent) parent.append(host);
     };
     const t = () => STRINGS[lang()];
     const el = (tag, cls, markup = '') => {
