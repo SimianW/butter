@@ -51,7 +51,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
   `node lab/harness/branch-qa.mjs` loads the real extension in its own headless Chromium over the
   synthetic page in `branch-fixture.mjs` (no ChatGPT requests; `lang=zh`, `stream=<ms>`, `work`,
-  `side`, `nobranch` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
+  `side`, `nobranch`, `nodisclaimer` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
   screenshots to `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides).
   `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
   snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and

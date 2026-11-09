@@ -261,3 +261,11 @@ test('quote: a formula without its LaTeX source makes the selection unquotable',
   const p = tree(para(t('See '), formula(null, 'x'), t('.')));
   assert.equal(branch.quoteOf(range(p, 0, p, 3), dom), null);
 });
+
+test('sameDraft ignores blank lines the composer adds between paragraphs, and nothing else', () => {
+  const typed = '> first\n> \n> second\n\nWhy?';
+  assert.ok(branch.sameDraft('> first\n\n> \n\n> second\n\n\n\n\nWhy?\n', typed));
+  assert.ok(branch.sameDraft(typed, typed));
+  assert.ok(!branch.sameDraft('> first\n> second\n\nWhy?', typed));
+  assert.ok(!branch.sameDraft('> first\n> \n> second\n\nWhy not?', typed));
+});

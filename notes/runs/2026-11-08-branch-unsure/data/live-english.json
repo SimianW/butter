@@ -1,0 +1,56 @@
+{
+  "mode": "english",
+  "fixture": "demo-en12",
+  "state": "ready",
+  "expected": "x xxxxxxxxxx xxxxxxxx xxxxxx xxxxxxxxxxx xxx xxxxxxxxxxxxx xxxxxxxx\n\nxxxxxxx xxxxxxxx",
+  "expectedLength": 85,
+  "calls": [
+    {
+      "method": "composerText",
+      "value": "",
+      "length": 0,
+      "normalized": "",
+      "matchesExpected": false
+    },
+    {
+      "method": "fill",
+      "value": "x xxxxxxxxxx xxxxxxxx xxxxxx xxxxxxxxxxx xxx xxxxxxxxxxxxx xxxxxxxx\n\nxxxxxxx xxxxxxxx",
+      "result": true
+    },
+    {
+      "method": "sendButton",
+      "label": "Send",
+      "disabled": false
+    },
+    {
+      "method": "composerText",
+      "value": "x xxxxxxxxxx xxxxxxxx xxxxxx xxxxxxxxxxx xxx xxxxxxxxxxxxx xxxxxxxx\n\n\n\n\nxxxxxxx xxxxxxxx",
+      "length": 88,
+      "normalized": "x xxxxxxxxxx xxxxxxxx xxxxxx xxxxxxxxxxx xxx xxxxxxxxxxxxx xxxxxxxx\n\nxxxxxxx xxxxxxxx",
+      "matchesExpected": true
+    },
+    {
+      "method": "send",
+      "inBranch": true,
+      "rendered": true
+    }
+  ],
+  "states": [
+    {
+      "state": "loading"
+    },
+    {
+      "state": "branching"
+    },
+    {
+      "state": "verifying"
+    },
+    {
+      "state": "sending",
+      "verified": true
+    },
+    {
+      "state": "ready"
+    }
+  ]
+}
