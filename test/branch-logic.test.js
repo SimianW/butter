@@ -100,6 +100,16 @@ test('expired, foreign or malformed jobs are refused and deleted', async () => {
   assert.deepEqual(store.rows, {});
 });
 
+test('a tab that reached the conversation through ChatGPT routing hands over and claims', async () => {
+  // Chrome's sender.url keeps the URL the document loaded with; after a sidebar click it names
+  // the previous conversation, while sender.tab.url follows the route.
+  const stale = `https://chatgpt.com/c/${LOCAL}`;
+  const store = memory(),
+    handoff = branch.handoff(store);
+  assert.deepEqual(await handoff.put(ID, job, { ...origin, url: stale }, 1000), { ok: true });
+  assert.deepEqual(await handoff.claim(ID, { ...dest, url: stale }, 2000), { job, origin: 7 });
+});
+
 test('pruning deletes only expired branch jobs', async () => {
   const store = memory({ other: 1 }),
     handoff = branch.handoff(store);

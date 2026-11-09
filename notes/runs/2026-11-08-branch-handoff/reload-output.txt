@@ -1,0 +1,18 @@
+{"label":"project-open-tab-after-extension-reload","original":"/g/g-p-<project>/c/<chat-1>","elapsedMs":6609,"reason":"Couldn’t hand your question to the new tab. Try again.","content":[{"type":"butter-branch-put","threw":"Extension context invalidated."},{"openUrl":"/g/g-p-<project>/c/<chat-1>#butter-branch=<job>"}],"worker":[],"navigationRequests":[{"url":"/g/g-p-<project>/c/<chat-1>"}],"newTabs":[],"originalUnchanged":true}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Butter isolated world exists
+    at contentProbe (file:///home/simon/.t3/worktrees/butter/t3-9d5b9df2/notes/runs/2026-11-08-branch-handoff/probe.mjs:79:10)
+    at async instrumentWorker (file:///home/simon/.t3/worktrees/butter/t3-9d5b9df2/notes/runs/2026-11-08-branch-handoff/probe.mjs:33:14)
+    at async file:///home/simon/.t3/worktrees/butter/t3-9d5b9df2/notes/runs/2026-11-08-branch-handoff/probe.mjs:234:71 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.17.0

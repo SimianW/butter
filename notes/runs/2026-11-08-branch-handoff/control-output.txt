@@ -1,0 +1,2 @@
+{"label":"project","kind":"no-extension-control","url":"/g/g-p-<project>/c/<chat-1>","markdownReplies":5,"composer":1,"branchHost":0,"workers":0}
+{"label":"normal","kind":"no-extension-control","url":"/c/<chat-2>","markdownReplies":3,"composer":1,"branchHost":0,"workers":0}

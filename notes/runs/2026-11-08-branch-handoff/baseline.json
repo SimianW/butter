@@ -1,0 +1,133 @@
+{
+  "at": "2026-11-09T01:08:42.672Z",
+  "lab": 1,
+  "mode": "baseline",
+  "events": [
+    {
+      "label": "project-fresh-document",
+      "original": "/g/g-p-<project>/c/<chat-1>",
+      "elapsedMs": 6708,
+      "reason": null,
+      "content": [
+        {
+          "type": "butter-branch-put",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "received": "butter-branch-claimed"
+        }
+      ],
+      "worker": [
+        {
+          "name": "put",
+          "at": 1794186496580,
+          "senderUrl": "/g/g-p-<project>/c/<chat-1>",
+          "tabUrl": "/g/g-p-<project>/c/<chat-1>",
+          "tab": 364325677,
+          "senderIdentity": "chat-1",
+          "tabIdentity": "chat-1",
+          "jobOriginal": "chat-1",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "name": "claim",
+          "at": 1794186496859,
+          "tabUrl": "/g/g-p-<project>/c/<chat-1>",
+          "tab": 364325735,
+          "senderIdentity": null,
+          "tabIdentity": "chat-1",
+          "result": {
+            "hasJob": true,
+            "origin": 364325677
+          }
+        }
+      ],
+      "navigationRequests": [
+        {
+          "url": "/g/g-p-<project>/c/<chat-1>"
+        }
+      ],
+      "newTabs": [
+        {
+          "url": "/g/g-p-<project>/c/<chat-1>",
+          "initial": "blank"
+        }
+      ],
+      "originalUnchanged": true
+    },
+    {
+      "label": "normal-fresh-document",
+      "original": "/c/<chat-3>",
+      "elapsedMs": 6750,
+      "reason": null,
+      "content": [
+        {
+          "type": "butter-branch-put",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "type": "butter-branch-put",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "received": "butter-branch-claimed"
+        },
+        {
+          "received": "butter-branch-claimed"
+        }
+      ],
+      "worker": [
+        {
+          "name": "put",
+          "at": 1794186515712,
+          "senderUrl": "/c/<chat-3>",
+          "tabUrl": "/c/<chat-3>",
+          "tab": 364325677,
+          "senderIdentity": "chat-3",
+          "tabIdentity": "chat-3",
+          "jobOriginal": "chat-3",
+          "result": {
+            "ok": true,
+            "hasJob": false
+          }
+        },
+        {
+          "name": "claim",
+          "at": 1794186515994,
+          "tabUrl": "/c/<chat-3>",
+          "tab": 364325737,
+          "senderIdentity": null,
+          "tabIdentity": "chat-3",
+          "result": {
+            "hasJob": true,
+            "origin": 364325677
+          }
+        }
+      ],
+      "navigationRequests": [
+        {
+          "url": "/c/<chat-3>"
+        }
+      ],
+      "newTabs": [
+        {
+          "url": "/c/<chat-3>",
+          "initial": "blank"
+        }
+      ],
+      "originalUnchanged": true
+    }
+  ]
+}
