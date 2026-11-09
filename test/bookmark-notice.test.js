@@ -110,6 +110,7 @@ function noticeTab(shared, store) {
   };
   vm.createContext(ctx);
   vm.runInContext(read('consent/card.js'), ctx);
+  vm.runInContext(read('bookmarks/client.js'), ctx);
   vm.runInContext(read('bookmarks/notice.js'), ctx);
   const undone = [];
   return {

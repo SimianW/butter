@@ -186,3 +186,61 @@ test('several bookmarks: stale rows carry the "answer changed" tag, the meta lin
     `2 bookmarks: ${rows[0].excerpt}; If estimated rows are far from actual rows (answer changed)`,
   );
 });
+
+// The question a bookmark was made under (`ask`, its hashed message id) places it when its answer
+// is gone, even while earlier history isn't loaded (#55: "stays under the question it was created
+// under").
+test('regenerated answer while earlier history is unloaded: stale under the question it was made under', () => {
+  // After a reload the list holds the latest questions only, and Q2's current answer is A2NEW.
+  const now = [items[2], { msg: A2NEW, q: false }];
+  const b = mark({ ask: Q2, turn: 7 });
+  const rendered = view({ [A2NEW]: ['Intro', 'A different answer.'] }, [0], false);
+  assert.deepEqual(flags(B.resolve([b], now, rendered)), [
+    { question: 0, stale: true, rows: [true] },
+  ]);
+  // Its answer not rendered either (the turn is off screen): still under Q2, still stale.
+  assert.deepEqual(flags(B.resolve([b], now, view({}, [], false))), [
+    { question: 0, stale: true, rows: [true] },
+  ]);
+});
+
+test('a bookmark whose question is not loaded yet sits on the earlier dots, live', () => {
+  const now = [items[2], items[3]];
+  const b = mark({ msg: A1, ask: Q1, turn: 0 });
+  assert.deepEqual(flags(B.resolve([b], now, view({}, [], false))), [
+    { question: B.EARLIER, stale: false, rows: [false] },
+  ]);
+});
+
+test('a bookmark stored without its question keeps the turn-based placement', () => {
+  const now = [items[2], { msg: A2NEW, q: false }];
+  const [g] = B.resolve([mark({ turn: 1 })], now, view({}, [], false));
+  assert.equal(g.question, B.EARLIER);
+});
+
+// The excerpt's first rendered line (#55), its length stored as `line` at creation.
+test("staleness checks the excerpt's first rendered line, however long it is", () => {
+  // Rendered as "Postgres skips an index" | "when it expects a large share…": a 23-character line.
+  const short = mark({ line: 23 });
+  const reworded = `${PARA.slice(0, 23)} once it estimates that most rows match.`;
+  const page = (text) => view({ [A2]: ['Intro', text] });
+  assert.equal(B.resolve([short], items, page(reworded))[0].bookmarks[0].stale, false);
+  // A 70-character first line: a change at character 60 is a change to that line.
+  const long = mark({ line: 70 });
+  const changed = `${PARA.slice(0, 60)}XXXXXXXXXXXXXXXX${PARA.slice(76)}`;
+  assert.equal(B.resolve([long], items, page(changed))[0].bookmarks[0].stale, true);
+  assert.equal(B.resolve([long], items, page(PARA))[0].bookmarks[0].stale, false);
+});
+
+test('a record stored without its first line keeps the 40-character check', () => {
+  const b = mark(),
+    page = (text) => view({ [A2]: ['Intro', text] });
+  assert.equal(
+    B.resolve([b], items, page(`${PARA.slice(0, 40)} and then other words.`))[0].bookmarks[0].stale,
+    false,
+  );
+  assert.equal(
+    B.resolve([b], items, page(`${PARA.slice(0, 30)} and then other words.`))[0].bookmarks[0].stale,
+    true,
+  );
+});

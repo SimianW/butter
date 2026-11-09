@@ -11,8 +11,9 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`) and the segment's accessible name (`label`). |
-| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the store client, and the marks handed to the rail (`ButterRail.setMarks`). |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`), the segment's accessible name (`label`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
+| `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, and the marks handed to the rail (`ButterRail.setMarks`). An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
 | `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
 | `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
@@ -215,7 +216,8 @@ save again while the setting is on. Set the option false for a persistent opt-ou
 
 Version-1 runtime messages from content scripts to the service worker (`bookmarks/worker.js`),
 on the layout store's queue. Ids are SHA-256 hex, as layouts hash them; a bookmark is
-`{ account, conv, msg, turn, para, start, end, excerpt, time }` (see
+`{ account, conv, msg, ask, turn, para, start, end, excerpt, line, time }` (`ask` and `line` are
+missing from bookmarks saved before they were added; see
 [layout-storage-data.md](layout-storage-data.md#object-store-bookmarks-database-version-2)), and
 stored ones also carry their `key`.
 
@@ -224,7 +226,7 @@ stored ones also carry their `key`.
 | `butter-bookmark-list` | `account`, `conv` | `{ bookmarks }` for that conversation |
 | `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
 | `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
-| `butter-bookmark-key` | None | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
+| `butter-bookmark-key` | None (version 1 like the others) | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
 
 Unknown or raw account/conversation ids get `{ error: 'bookmark-identity' }`, a malformed bookmark or
 another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
@@ -254,9 +256,12 @@ stale bookmark does), and `remove(bookmark)` deletes it from the store and sends
 
 Staleness (`ButterBookmarks.resolve`) is computed on the page and never stored. A bookmark is live
 when its answer is rendered, its paragraph exists and that paragraph still contains the excerpt's
-first 40 characters (about its first line). It is stale when the paragraph or its text changed (an
-edited answer), when its question's turn is mounted with another answer (regenerated, or another
-version shown), or when its message is no longer in a fully loaded conversation; a turn that isn't
+first rendered line (its first `line` characters; its first 40 for a bookmark saved without `line`).
+It is stale when the paragraph or its text changed (an edited answer), when its question's turn is
+mounted with another answer (regenerated, or another version shown), or when its message is no
+longer in a fully loaded conversation or in its loaded question (`ask`), where it stays under that
+question; only a bookmark whose question isn't loaded (or, without `ask`, whose message isn't
+listed or rendered) waits on the earlier-history dots while earlier history is unloaded. A turn that isn't
 mounted keeps the state last seen in the tab. The content script resolves on every rail render, about
 0.6 s and 2.5 s after a click on the page (regenerate, edit and the version arrows are clicks), and
 when the pointer or focus reaches the rail; never while a scrollbar drag is seeking. The card shows a

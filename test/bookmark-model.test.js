@@ -64,6 +64,23 @@ test('clean keeps only the stored fields and refuses anything else', () => {
   assert.ok(B.clean(mark({ excerpt: '书'.repeat(240) })));
 });
 
+test("clean keeps the question's hashed id and the first line's length when present", () => {
+  const full = mark({ ask: h('9'), line: 12 });
+  assert.deepEqual(B.clean({ ...full, html: '<p>' }), full);
+  for (const bad of [
+    { ask: 'raw-question-id' },
+    { ask: null },
+    { line: 0 },
+    { line: 241 },
+    { line: 2.5 },
+    { line: '12' },
+  ])
+    assert.equal(B.clean(mark(bad)), null, JSON.stringify(bad));
+  // Records from before these fields keep working without them.
+  assert.deepEqual(Object.keys(B.clean(mark())).includes('ask'), false);
+  assert.deepEqual(Object.keys(B.clean(mark())).includes('line'), false);
+});
+
 test('group puts each bookmark under its question, in answer order', () => {
   // Conversation order, oldest first: questions and the answers that follow them.
   const items = [
@@ -194,4 +211,17 @@ test('an earlier bookmark is never stale while its history is unloaded', () => {
   assert.equal(g.question, -1);
   assert.equal(g.bookmarks[0].stale, false);
   assert.equal(g.stale, false);
+});
+
+test("firstLine is the length of the excerpt's first rendered line, in characters", () => {
+  const text = 'line one, line two, line three and line four';
+  // The excerpt is "line one, line two, line three": its first line, "line one,", ends at offset 10.
+  assert.equal(B.firstLine(text, [10, 20, 31, text.length]), 9);
+  // One line (or nothing measured): the whole excerpt.
+  assert.equal(B.firstLine('  first item  ', []), 'first item'.length);
+  // Never longer than the excerpt, which stops at 240 characters.
+  const long = 'a'.repeat(300);
+  assert.equal(B.firstLine(long, [long.length]), 240);
+  // Code points: an emoji counts once, and whitespace runs collapse as in the excerpt.
+  assert.equal(B.firstLine('🧈 is  butter\nnext line', [13]), '🧈 is butter'.length - 1);
 });

@@ -12,10 +12,19 @@
     const flat = text.slice(0, cut).replace(/\s+/g, ' ').trim();
     return [...flat].slice(0, CHARS).join('').trim();
   }
+  // How many characters of that excerpt its first rendered line holds (`ends` as for `excerpt`),
+  // stored as `line`: staleness checks that the paragraph still holds this first line.
+  function firstLine(text, ends = []) {
+    const first = Math.min(...ends, text.length);
+    const line = [...text.slice(0, first).replace(/\s+/g, ' ').trim()].length;
+    return Math.min(line, [...excerpt(text, ends)].length);
+  }
   // A bookmark is identified by where it points: the same paragraph and range is one bookmark.
   const key = (b) => JSON.stringify([b.account, b.conv, b.msg, b.para, b.start, b.end]);
   // The stored record, rebuilt from an allowlist: hashed ids, positions, the excerpt and its time.
-  // Anything else (page text beyond the excerpt, raw ids, urls) never reaches the store.
+  // Anything else (page text beyond the excerpt, raw ids, urls) never reaches the store. `ask`, the
+  // hashed id of the question the bookmark was made under, and `line`, the length of the excerpt's
+  // first rendered line, are optional: older records lack them.
   const hash = (s) => typeof s === 'string' && /^[a-f0-9]{64}$/.test(s);
   const int = (x, max) => Number.isInteger(x) && x >= 0 && x <= max;
   function clean(b) {
@@ -31,26 +40,32 @@
       !b.excerpt ||
       [...b.excerpt].length > CHARS ||
       !Number.isFinite(b.time) ||
-      b.time < 0
+      b.time < 0 ||
+      (b.ask !== undefined && !hash(b.ask)) ||
+      (b.line !== undefined && !(int(b.line, CHARS) && b.line > 0))
     )
       return null;
     const { account, conv, msg, turn, para, start, end, excerpt, time } = b;
-    return { account, conv, msg, turn, para, start, end, excerpt, time };
+    const out = { account, conv, msg, turn, para, start, end, excerpt, time };
+    if (b.ask !== undefined) out.ask = b.ask;
+    if (b.line !== undefined) out.line = b.line;
+    return out;
   }
   // `items` is the conversation as loaded, oldest first: `{ msg: hashed message id, q: is a
   // question }`. Returns `[{ question, bookmarks }]` by question index (0 = the first listed
   // question), each list in answer order: message, paragraph, then range.
-  // While earlier history isn't loaded (`complete` false), a bookmark whose message isn't listed
-  // and isn't `shown(msg)` (rendered now) belongs to that earlier history: it goes in the group
-  // `EARLIER` (-1), the rail's earlier-history dots, oldest first. Otherwise a bookmark whose
-  // message isn't listed stays under the question it was made on (`turn`, clamped to the last
-  // question), after the others.
+  // A bookmark whose message isn't listed stays under the question it was made under, after the
+  // others: its `ask` when that question is listed. Otherwise, while earlier history isn't loaded
+  // (`complete` false), one whose message isn't `shown(msg)` (rendered now) belongs to that earlier
+  // history: it goes in the group `EARLIER` (-1), the rail's earlier-history dots, oldest first.
+  // Else it goes under its question's position at creation (`turn`, clamped to the last question).
   const EARLIER = -1;
   function group(bookmarks, items, { complete = true, shown = () => false } = {}) {
-    const where = new Map();
+    const where = new Map(),
+      asked = new Map(); // a question's hashed id -> its index
     let question = -1;
     items.forEach((x, i) => {
-      if (x.q) question++;
+      if (x.q) asked.set(x.msg, ++question);
       else if (question >= 0) where.set(x.msg, { question, rank: i });
     });
     const last = question;
@@ -58,6 +73,7 @@
     const placed = bookmarks.map((b) => {
       const w = where.get(b.msg);
       if (w) return { b, question: w.question, rank: w.rank };
+      if (asked.has(b.ask)) return { b, question: asked.get(b.ask), rank: Infinity };
       const earlier = !complete && !shown(b.msg);
       return { b, question: earlier ? EARLIER : Math.min(b.turn, last), rank: Infinity };
     });
@@ -83,19 +99,20 @@
   // (undefined when that message isn't rendered), `mounted(question)` whether that question's turn
   // is in the DOM, and `complete` whether `items` reaches back to the conversation's start.
   // A bookmark is live when its message is rendered, its paragraph exists and the paragraph's text
-  // still contains the excerpt's first line. It is stale when the paragraph or its text no longer
+  // still contains the excerpt's first line (its first `line` characters; records without `line`
+  // check the first `HEAD`). It is stale when the paragraph or its text no longer
   // matches, when its question is shown with another answer (regenerated), or when its message has
-  // left a complete conversation. Otherwise (not rendered now) it keeps what `last` remembers for
+  // left a complete conversation or its question (`ask`) is listed without it. Otherwise (not rendered now) it keeps what `last` remembers for
   // it, live by default. A bookmark in the earlier, unloaded history (the `EARLIER` group) is live:
   // nothing can be known about it yet. Returns `group`'s groups with each bookmark copied with its `stale` flag,
   // plus `stale` on a group whose bookmarks are all stale; `last` is updated. Nothing is stored, so
   // a bookmark that resolves again (the original version switched back) is live again.
   const flat = (s) => s.replace(/\s+/g, ' ').trim();
-  const HEAD = 40; // about one rendered line: the excerpt's first line, which survives a rewrap
+  const HEAD = 40; // about one rendered line, for records stored without `line`
   function matches(b, paragraphs) {
     const own = flat(paragraphs[b.para] ?? '');
     if (!own) return false;
-    const head = [...flat(b.excerpt)].slice(0, HEAD).join('');
+    const head = [...flat(b.excerpt)].slice(0, b.line ?? HEAD).join('');
     // A selection that ran on into the next paragraphs: its first line starts in this one.
     const at = paragraphs.slice(b.para).map(flat).filter(Boolean).join(' ').indexOf(head);
     return at >= 0 && at < own.length;
@@ -112,7 +129,7 @@
         const shown = view.paragraphs(b.msg);
         let stale = null;
         if (shown) stale = !matches(b, shown);
-        else if (!listed.has(b.msg)) stale = view.complete ? true : null;
+        else if (!listed.has(b.msg)) stale = view.complete || listed.has(b.ask) ? true : null;
         else if (view.mounted(g.question)) stale = true;
         if (stale === null) stale = last.get(b.key) ?? false;
         last.set(b.key, stale);
@@ -237,9 +254,25 @@
     if (zh) return k === 1 ? `书签：${t}` : `${k} 个书签：${t}`;
     return k === 1 ? `Bookmark: ${t}` : `${k} bookmarks: ${t}`;
   }
+  // The hover button's accessible name while it adds: the action and the start of the text it
+  // would bookmark (the paragraph's, or the selection's), up to 80 characters.
+  const LEAD = 80;
+  function addLabel(text, selection = false, zh = false) {
+    const all = [...flat(text)],
+      lead = all.slice(0, LEAD).join('').trim() + (all.length > LEAD ? '…' : '');
+    const action = zh
+      ? selection
+        ? '为选中内容加书签'
+        : '加书签'
+      : selection
+        ? 'Bookmark selection'
+        : 'Bookmark';
+    return lead ? `${action}${zh ? '：' : ': '}${lead}` : action;
+  }
   const api = {
     EARLIER,
     excerpt,
+    firstLine,
     key,
     clean,
     hash,
@@ -253,6 +286,7 @@
     segmentOffset,
     card,
     label,
+    addLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ButterBookmarks = api;

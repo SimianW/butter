@@ -4,10 +4,16 @@
 // and written on create and delete; nothing here runs while a scrollbar drag is seeking.
 (() => {
   const B = ButterBookmarks;
-  // An answer's rendered content, as stream/offscreen.js finds it; its children are the paragraphs.
+  // An answer's rendered content, as stream/offscreen.js finds it. Its paragraphs are its top-level
+  // blocks (paragraph, heading, code block, table, blockquote), except that each item of a
+  // top-level list is a paragraph of its own (#51).
   const STYLE = '[data-markdown-text-style="assistant-message"]';
   const ANSWER = `:is(${STYLE}:not(:has([class*="DilResponseRoot"])), ${STYLE} [class*="DilResponseRoot"])`;
-  const BLOCK = `${ANSWER} > *`;
+  const KIDS = [':not(ul, ol)', ':is(ul, ol) > li'], // a paragraph, below its answer
+    BLOCK = KIDS.map((k) => `${ANSWER} > ${k}`).join(', '),
+    OWN = KIDS.map((k) => `:scope > ${k}`).join(', ');
+  // An answer's paragraphs, in document order: their index is a bookmark's `para`.
+  const blocksOf = (answer) => [...answer.querySelectorAll(OWN)];
   // The element that carries an answer's message id. Older chats wrap the answer in
   // [data-message-author-role="assistant"][data-message-id]; live chats (checked on 2026-11-08,
   // notes/runs/2026-11-08-bookmarks-live) have neither, and the answer's ancestor carries
@@ -18,17 +24,14 @@
     message?.getAttribute('data-message-id') ||
     message?.getAttribute('data-chatgpt-selection-message-id') ||
     null;
-  // An answer as bookmarks see it: `answer`, the element whose children are its paragraphs, and
-  // `id`, its message id. Null without an id (an answer that has none yet).
+  // An answer as bookmarks see it: `answer`, the element that holds its paragraphs, and `id`, its
+  // message id. Null without an id (an answer that has none yet).
   const answerAt = (answer) => {
     const id = idOf(answer.closest(MESSAGE));
     return id ? { answer, id } : null;
   };
   // A paragraph's answer; null for a paragraph outside one.
-  const answerOf = (block) => {
-    const answer = block?.parentElement;
-    return answer?.matches(ANSWER) ? answerAt(answer) : null;
-  };
+  const answerOf = (block) => (block?.matches(BLOCK) ? answerAt(block.closest(ANSWER)) : null);
   // The answers rendered in `root` (a turn or the document).
   const answersIn = (root) => [...root.querySelectorAll(ANSWER)].map(answerAt).filter(Boolean);
   const SHOW_AFTER = 120; // ms of hover before the button fades in
@@ -76,16 +79,8 @@
     return digests.get(s);
   };
 
-  // ---- Store client. A stopped worker closes the port; the same request wakes it again.
-  const send = async (type, fields) => {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const r = await chrome.runtime.sendMessage({ version: 1, type, ...fields });
-        if (r && r.error !== 'bookmark-storage') return r;
-      } catch {}
-    }
-    return { error: 'bookmark-storage' };
-  };
+  // ---- Store client (bookmarks/client.js).
+  const { send } = ButterBookmarkStore;
   const lists = new Map(); // `${account} ${conv}` -> Promise of that conversation's bookmarks
   const listOf = (owner, conv) => {
     const key = `${owner} ${conv}`;
@@ -253,7 +248,7 @@
       .map((x) => x.n.data)
       .join('');
   // A rendered answer's paragraphs, as text.
-  const paragraphs = (answer) => [...answer.children].map(textOf);
+  const paragraphs = (answer) => blocksOf(answer).map(textOf);
   // Where the first rendered lines of a run of text end, measured character by character. `parts`
   // are `{ block, from, to }` ranges in paragraph offsets, in order; the run's text joins them with
   // one separator each, as ButterBookmarks.anchor does, and `ends` are offsets into that text.
@@ -311,9 +306,10 @@
     let blocks = inside
       ? [inside]
       : [...el.querySelectorAll(BLOCK)].filter((b) => r.intersectsNode(b));
-    blocks = blocks.filter((b) => answerOf(b) && b.parentElement === blocks[0].parentElement);
+    const home = answerOf(blocks[0])?.answer;
+    blocks = blocks.filter((b) => home && answerOf(b)?.answer === home);
     if (!blocks.length) return null;
-    const siblings = [...blocks[0].parentElement.children],
+    const siblings = blocksOf(home),
       first = blocks[0],
       last = blocks.at(-1),
       paras = [];
@@ -343,12 +339,14 @@
         from: p === a.para ? a.start : 0,
         to: p === a.last.para ? a.last.offset : paras[p].length,
       });
+    const ends = measure(parts);
     return {
       block: siblings[a.para],
       blocks,
       start: a.start,
       end: a.end,
-      excerpt: B.excerpt(a.text, measure(parts)),
+      excerpt: B.excerpt(a.text, ends),
+      line: B.firstLine(a.text, ends),
     };
   };
   // With nothing selected: the first answer paragraph whose top is at or below ChatGPT's header.
@@ -373,7 +371,7 @@
       bottom = box?.bottom ?? innerHeight;
     const blocks = turns
       .filter((t, i) => boxes[i].height && boxes[i].bottom > line && boxes[i].top < bottom)
-      .flatMap((t) => answersIn(t).flatMap((a) => [...a.answer.children]));
+      .flatMap((t) => answersIn(t).flatMap((a) => blocksOf(a.answer)));
     const tops = blocks.map((b) => b.getBoundingClientRect().top);
     return blocks[B.topParagraph(tops, line)] ?? null;
   };
@@ -382,7 +380,7 @@
   const locate = (turn, b) => {
     const raw = rawOf.get(b.msg),
       answer = raw && answersIn(turn).find((a) => a.id === raw)?.answer,
-      block = answer?.children[b.para];
+      block = answer && blocksOf(answer)[b.para];
     if (!block || !B.matches(b, paragraphs(answer))) return null;
     let top = block.getBoundingClientRect().top;
     if (b.start > 0) {
@@ -397,33 +395,37 @@
     return top - turn.getBoundingClientRect().top;
   };
 
-  // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt }`) within it.
+  // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt, line }`) within it.
   async function create(block, range = null) {
-    const id = answerOf(block)?.id,
+    const answer = answerOf(block),
+      id = answer?.id,
       turn = block.closest('[data-turn-key]'),
+      ask = turn?.getAttribute('data-turn-key'), // the question's message id
       conv = convOfPath(),
       owner = account;
-    if (!id || !turn || !conv || !owner) return;
-    const para = [...block.parentElement.children].indexOf(block),
+    if (!id || !ask || !conv || !owner) return;
+    const para = blocksOf(answer.answer).indexOf(block),
       text = textOf(block),
-      excerpt = range
-        ? range.excerpt
-        : B.excerpt(text, measure([{ block, from: 0, to: text.length }]));
+      ends = range ? null : measure([{ block, from: 0, to: text.length }]),
+      excerpt = range ? range.excerpt : B.excerpt(text, ends),
+      line = range ? range.line : B.firstLine(text, ends);
     if (!excerpt) return;
     const questions = view.conv === conv ? view.items.filter((x) => x.q != null) : [];
-    const [convHash, msg] = await Promise.all([digest(conv), digest(id)]);
+    const [convHash, msg, askHash] = await Promise.all([digest(conv), digest(id), digest(ask)]);
     const bookmark = {
       account: owner,
       conv: convHash,
       msg,
+      ask: askHash,
       turn: Math.max(
         0,
-        questions.findIndex((x) => x.id === turn.getAttribute('data-turn-key')),
+        questions.findIndex((x) => x.id === ask),
       ),
       para,
       start: range ? range.start : 0,
       end: range ? range.end : text.length,
       excerpt,
+      line,
       time: Date.now(),
     };
     const r = await send('butter-bookmark-create', { bookmark });
@@ -463,8 +465,9 @@
   }
   // The bookmarks anchored to a paragraph of the conversation in view.
   const marksOf = (block) => {
-    const msg = hashOf.get(answerOf(block)?.id);
-    const para = block?.parentElement ? [...block.parentElement.children].indexOf(block) : -1;
+    const answer = answerOf(block),
+      msg = hashOf.get(answer?.id);
+    const para = answer ? blocksOf(answer.answer).indexOf(block) : -1;
     return msg && view.conv === convOfPath()
       ? shownList.filter((b) => b.msg === msg && b.para === para)
       : [];
@@ -541,18 +544,20 @@
   // Three states: "Bookmark selection" while the reader's selection touches the paragraph; filled
   // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark". The
   // first two show the key Chrome reports for the bookmark command (none when it has no key).
+  // The accessible name adds the start of the text the click would bookmark or remove.
   const label = () => {
     if (!host) return;
-    const sel = !!target && !!selection()?.blocks.includes(target),
+    const s = target ? selection() : null,
+      sel = !!s?.blocks.includes(target),
       marked = sel ? [] : marksOf(target);
     button.classList.toggle('on', marked.length > 0);
     button.setAttribute(
       'aria-label',
       sel
-        ? TXT.sel
+        ? B.addLabel(s.excerpt, true, zh())
         : marked.length
           ? TXT.removeOf(marked.map((b) => b.excerpt).join(' '))
-          : TXT.add,
+          : B.addLabel(target ? textOf(target) : '', false, zh()),
     );
     tip.textContent = sel ? TXT.sel : marked.length ? TXT.remove : TXT.add;
     kbd.textContent = marked.length ? '' : keys;
@@ -581,10 +586,12 @@
   const place = (block) => {
     const b = block.getBoundingClientRect();
     if (!b.height) return false;
+    // In the answer's own margin, so a list item's button lines up with the paragraphs' buttons.
+    const left = Math.min(b.left, block.closest(ANSWER)?.getBoundingClientRect().left ?? b.left);
     const r = document.createRange();
     r.selectNodeContents(block);
     const line = [...r.getClientRects()].find((q) => q.height) ?? b;
-    const x = Math.max(4, Math.round(b.left - 38)),
+    const x = Math.max(4, Math.round(left - 38)),
       y = Math.round(line.top + line.height / 2 - 14);
     host.style.setProperty('--x', `${x}px`);
     host.style.setProperty('--y', `${y}px`);

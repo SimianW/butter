@@ -180,3 +180,11 @@ test('the page reads the key Chrome reports for the command, and none once it is
   // Another extension cannot ask.
   assert.equal(await send(f, { type: 'butter-bookmark-key' }, { id: 'other' }), undefined);
 });
+
+test('a key request in another protocol version is refused, as the store requests are', async () => {
+  const f = workerFixture();
+  for (const version of [2, 0, undefined])
+    assert.deepEqual(await send(f, { type: 'butter-bookmark-key', version }), {
+      error: 'bookmark-protocol',
+    });
+});

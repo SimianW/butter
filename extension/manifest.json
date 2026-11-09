@@ -22,6 +22,7 @@
         "consent/layout-consent.js",
         "seek/seek-meta.js",
         "bookmarks/model.js",
+        "bookmarks/client.js",
         "rail/rail.js",
         "bookmarks/content.js",
         "bookmarks/notice.js",

@@ -96,10 +96,12 @@ or returned.
 | `account` | 64 lowercase hexadecimal characters | SHA-256 of the ChatGPT user id, as for layouts. Unknown accounts are rejected. |
 | `conv` | 64 lowercase hexadecimal characters | SHA-256 of the conversation id. |
 | `msg` | 64 lowercase hexadecimal characters | SHA-256 of the assistant message id the bookmark is in. |
+| `ask` | 64 lowercase hexadecimal characters | SHA-256 of the message id of the question the bookmark was made under. Missing from bookmarks saved before it was added. |
 | `turn` | `6` | Index of the bookmark's question in the chat when it was made (0 = first question). |
-| `para` | `3` | Index of the paragraph among the answer's top-level rendered blocks. |
+| `para` | `3` | Index of the paragraph among the answer's top-level rendered blocks, each item of a top-level list counted on its own. |
 | `start`, `end` | `0`, `412` | Character range within the paragraph's rendered text; the whole paragraph is `0` to its length. |
 | `excerpt` | `"Fixture answer 7 paragraph 3: the planner compares…"` | **Chat text the user chose**: the marked text cut to its first three rendered lines and at most 240 characters, whitespace collapsed. |
+| `line` | `33` | How many characters of `excerpt` its first rendered line holds; staleness checks that line. Missing from bookmarks saved before it was added. |
 | `time` | `1793740000000` | Creation time in milliseconds since Unix epoch. |
 | `key` | JSON string of `[account,conv,msg,para,start,end]` | Identity: the same paragraph and range is one bookmark. |
 

@@ -29,6 +29,9 @@
 // with the button and with the shortcut (also across paragraphs), the top paragraph with the
 // shortcut and nothing selected, nothing for a selection outside the answers, each landing on its
 // text, and no key hint once the command's key is cleared in chrome://extensions/shortcuts.
+// List items (#51): each item of the fixture answer's list is a paragraph of its own for the
+// button, a selection, the shortcut's top paragraph, landing and staleness. The button's name holds
+// the start of the paragraph or selection (#53); the store keeps `ask` and `line` (#55).
 // The shortcut must be real keyboard input (chrome.commands ignores DevTools key events): with an X
 // display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
 // below. Without a display the run asks the worker to relay the command instead and says so.
@@ -243,6 +246,21 @@ const stored = () =>
       }),
   );
 
+// Put `rows` straight into the worker's store, as an earlier session would have left them; `clear`
+// empties the store first.
+const seedStore = (rows, { clear = false } = {}) =>
+  worker.evaluate(
+    async ([rows, clear]) => {
+      const db = await database(),
+        tx = db.transaction('bookmarks', 'readwrite'),
+        st = tx.objectStore('bookmarks');
+      if (clear) st.clear();
+      for (const r of rows) st.put({ ...r, key: ButterBookmarks.key(r) });
+      await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
+    },
+    [rows, clear],
+  );
+const sha = (s) => createHash('sha256').update(s).digest('hex');
 const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
 // Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
 async function compare(page, a, b) {
@@ -329,15 +347,18 @@ const button = () =>
       stroke: getComputedStyle(b.querySelector('svg path')).stroke,
     };
   });
+// An answer's paragraphs, as bookmarks count them: its top-level blocks, each item of a top-level
+// list on its own (blocks: p, h3, p, p, p, p, then the list's two items).
+const PARAS = ':scope > :not(ul, ol), :scope > :is(ul, ol) > li';
 const block = (turn, k) =>
   page.evaluate(
-    ([id, k]) => {
-      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k];
+    ([id, k, PARAS]) => {
+      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k];
       const r = el.getBoundingClientRect(),
         sc = document.querySelector('.thread-scroll-container').getBoundingClientRect();
       return { x: r.left, y: r.top, w: r.width, h: r.height, fromTop: r.top - sc.top };
     },
-    [answer(turn), k],
+    [answer(turn), k, PARAS],
   );
 const scrollTo = (turn) =>
   page.evaluate((id) => {
@@ -347,15 +368,15 @@ const scrollTo = (turn) =>
 // Select text in answer paragraphs: from `start` in paragraph k to `end` in paragraph k2.
 const select = (turn, k, start, k2, end) =>
   page.evaluate(
-    ([id, k, start, k2, end]) => {
-      const blocks = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children;
+    ([id, k, start, k2, end, PARAS]) => {
+      const blocks = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS);
       const r = document.createRange();
       r.setStart(blocks[k].firstChild, start);
       r.setEnd(blocks[k2].firstChild, end);
       getSelection().removeAllRanges();
       getSelection().addRange(r);
     },
-    [answer(turn), k, start, k2, end],
+    [answer(turn), k, start, k2, end, PARAS],
   );
 // Press the bookmark command's key as real input, with the X pointer parked on the header; without
 // a display, the worker relays the command to the tab as Chrome would.
@@ -377,14 +398,14 @@ async function shortcut() {
 // Where a stored bookmark's text starts, in px below the scroller's top.
 const textTop = (turn, k, offset) =>
   page.evaluate(
-    ([id, k, offset]) => {
-      const node = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k].firstChild;
+    ([id, k, offset, PARAS]) => {
+      const node = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k].firstChild;
       const r = document.createRange();
       r.setStart(node, offset);
       r.setEnd(node, offset + 1);
       return r.getClientRects()[0].top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top;
     },
-    [answer(turn), k, offset],
+    [answer(turn), k, offset, PARAS],
   );
 // Click question `turn`'s segment from the top of the chat and wait for the jump.
 async function jumpBySegment(turn) {
@@ -400,9 +421,19 @@ async function jumpBySegment(turn) {
 }
 const markUnder = (r, turn) => r.marks.some((m) => Math.abs(m.y - r.ticks[turn].y - 5) <= 0.6);
 
-// Hover a paragraph (away from its first line), then click the button.
-async function bookmark(turn, k) {
-  await scrollTo(turn);
+// Hover a paragraph (away from its first line), then click the button. `low`: the paragraph sits
+// too far down its answer to show after scrolling to its question; scroll it to 200 px instead.
+async function bookmark(turn, k, low = false) {
+  if (low)
+    await page.evaluate(
+      ([id, k, PARAS]) => {
+        const sc = document.querySelector('.thread-scroll-container');
+        const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k];
+        sc.scrollTop += el.getBoundingClientRect().top - 200;
+      },
+      [answer(turn), k, PARAS],
+    );
+  else await scrollTo(turn);
   await page.mouse.move(10, 10);
   await page.waitForTimeout(100);
   const b = await block(turn, k);
@@ -435,23 +466,14 @@ async function bookmark(turn, k) {
 // bookmark whose question is earlier sits on the rail's earlier-history dots until its answer is
 // loaded. The fixture opens with questions 8 to 12; each earlier page brings two more.
 async function earlierSection() {
-  const sha = (s) => createHash('sha256').update(s).digest('hex');
   const ACCOUNT = sha('user-fixture'),
     CONV_HASH = sha(CONV);
-  // A whole-paragraph bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, ul).
+  // A whole-paragraph bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, li, li).
   const eseed = (turn, para, time, msgId = answer(turn)) => {
     const text = PARAGRAPH(turn, para === 0 ? 0 : para - 1);
     return { account: ACCOUNT, conv: CONV_HASH, msg: sha(msgId), turn, para, start: 0, end: text.length, excerpt: text.slice(0, 120).trim(), time };
   };
-  const reseed = (rows) =>
-    worker.evaluate(async (rows) => {
-      const db = await database(),
-        tx = db.transaction('bookmarks', 'readwrite'),
-        st = tx.objectStore('bookmarks');
-      st.clear();
-      for (const r of rows) st.put({ ...r, key: ButterBookmarks.key(r) });
-      await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
-    }, rows);
+  const reseed = (rows) => seedStore(rows, { clear: true });
   const FIRST = 7,
     LATEST = eseed(10, 0, 100);
   const state = () =>
@@ -704,6 +726,15 @@ async function earlierSection() {
   check('earlier: once all is loaded and the message isn\'t there, it is stale under its question and the click opened that question',
     !s.more && page$.pages === 4 && under(s, 2)?.cls.includes('stale') && q != null && Math.abs(q - 64) <= 3, { q, pages: page$.pages, more: s.more });
 
+  // (g2) Question 10's answer was regenerated (the new one is the conversation's current version)
+  // while earlier history is unloaded. A bookmark stored with its question (`ask`) is stale under
+  // that loaded question (#55); one stored without it keeps going on the dots, as before.
+  page$.regen.add(9);
+  s = await openEarlier('light', [{ ...eseed(9, 0, 1), ask: sha(question(9)) }, eseed(9, 2, 2)], 2).catch(() => state());
+  check('earlier: a regenerated answer\'s bookmark is stale under its loaded question; one stored without its question is on the dots',
+    !!under(s, 9)?.cls.includes('stale') && !!s.dotsMark && s.marks.length === 2, { marks: s.marks.map((m) => m.cls), dots: !!s.dotsMark });
+  page$.regen.delete(9);
+
   // (h) Screenshots of each mockup state, light and dark, English and Chinese, desktop and narrow.
   // The rail shows when the chat is at least 560 px wide: 600 px is the narrowest it draws at.
   const strings = {
@@ -843,7 +874,9 @@ try {
       hover.shown.w === 28 && hover.shown.h === 28 && hover.shown.radius === '8px' &&
       Math.abs(hover.shown.x - (hover.first.x - 38)) <= 1 && Math.abs(hover.shown.y + 14 - (hover.first.y + 13)) <= 3,
       { button: hover.shown, block: hover.first });
-    check('tooltip and name say "Bookmark"', hover.shown?.tip === 'Bookmark' && hover.shown.label === 'Bookmark');
+    // The name holds the start of the paragraph (#53): its first 80 characters.
+    check('tooltip says "Bookmark"; the name adds the start of the paragraph',
+      hover.shown?.tip === 'Bookmark' && hover.shown.label === `Bookmark: ${TEXT.slice(0, 80).trim()}…`, { label: hover.shown?.label });
     // Chrome assigned the suggested key (it does not when the key is one of its own), and the
     // tooltip shows it as the mockup writes keys.
     const commands = await worker.evaluate(() => chrome.commands.getAll());
@@ -874,9 +907,10 @@ try {
     const saved = await stored();
     const excerpt = saved[0]?.excerpt ?? '';
     // Which rendered line the excerpt's last character and the next word start on, measured here.
+    // And the text of its first rendered line.
     const cut = await page.evaluate(
-      ([id, k, n]) => {
-        const p = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).children[k];
+      ([id, k, n, PARAS]) => {
+        const p = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k];
         const text = p.firstChild,
           r = document.createRange(),
           top = (i) => {
@@ -885,16 +919,23 @@ try {
             return r.getClientRects()[0].top;
           };
         const line = (i) => Math.round((top(i) - top(0)) / 26) + 1;
-        return { last: line(n - 1), next: line(n + 1) };
+        let i = 0;
+        while (i < text.data.length && line(i) === 1) i++;
+        return { last: line(n - 1), next: line(n + 1), first: text.data.slice(0, i).trim() };
       },
-      [answer(TURN), PARA, excerpt.length],
+      [answer(TURN), PARA, excerpt.length, PARAS],
     );
     check('the store holds one bookmark with hashed ids and the first three lines as its excerpt',
       saved.length === 1 && [saved[0].account, saved[0].conv, saved[0].msg].every((h) => /^[a-f0-9]{64}$/.test(h)) &&
         saved[0].para === PARA && saved[0].turn === TURN && TEXT.startsWith(excerpt) &&
         cut.last === 3 && cut.next === 4,
       { excerpt, length: excerpt.length, cut, para: saved[0]?.para, turn: saved[0]?.turn });
-    check('no raw ids reach the store', !JSON.stringify(saved).includes(CONV) && !JSON.stringify(saved).includes(answer(TURN)));
+    check('no raw ids reach the store', !JSON.stringify(saved).includes(CONV) && !JSON.stringify(saved).includes(answer(TURN)) &&
+      !JSON.stringify(saved).includes(question(TURN)));
+    check('the store keeps the hashed id of the question it was made under (#55)', saved[0]?.ask === sha(question(TURN)), { ask: saved[0]?.ask });
+    check("the store keeps the length of the excerpt's first rendered line (#55)",
+      cut.first.length > 0 && cut.first.length < 80 && saved[0]?.line === cut.first.length && excerpt.startsWith(cut.first),
+      { line: saved[0]?.line, first: cut.first });
 
     // 2. Hovering the bookmarked paragraph again shows the filled button (a click would remove it).
     const again = await bookmark(TURN, PARA);
@@ -971,8 +1012,8 @@ try {
     await select(2, 2, selStart, 2, selStart + SEL.length);
     const selHover = await bookmark(2, 2);
     check('with a selection, the tooltip and name say "Bookmark selection", with the key',
-      selHover.kept?.tip === 'Bookmark selection' && selHover.kept.label === 'Bookmark selection' && selHover.kept.kbd === 'Alt Shift M',
-      { tip: selHover.kept?.tip, kbd: selHover.kept?.kbd });
+      selHover.kept?.tip === 'Bookmark selection' && selHover.kept.label === `Bookmark selection: ${SEL}` && selHover.kept.kbd === 'Alt Shift M',
+      { tip: selHover.kept?.tip, label: selHover.kept?.label, kbd: selHover.kept?.kbd });
     await page.screenshot({ path: `${shots}/button-selection-light.png`, clip: { x: selHover.b.x - 60, y: selHover.b.y - 50, width: 820, height: 160 } });
     await selHover.click();
     await page.waitForTimeout(600);
@@ -1042,6 +1083,63 @@ try {
     check('a selection in a question creates nothing', (await stored()).length === count && !markUnder(await rail(), 10));
     await page.evaluate(() => getSelection().removeAllRanges());
 
+    // (d2) List items (#51): each item of a top-level list is a paragraph of its own. Question 4's
+    // answer ends in a two-item list: blocks 6 and 7.
+    const LI = 7,
+      LI_TEXT = 'Fixture list item two';
+    await page.mouse.move(10, 10);
+    const liHover = await bookmark(3, LI, true);
+    const firstPara = await block(3, 0);
+    check('a list item shows the button on its own first line, in the paragraphs\' column, named with its text',
+      liHover.kept?.shown && Math.abs(liHover.placed.x - (firstPara.x - 38)) <= 1 &&
+        Math.abs(liHover.placed.y + 14 - (liHover.b.y + 13)) <= 3 && liHover.kept.label === `Bookmark: ${LI_TEXT}`,
+      { button: liHover.placed, item: liHover.b, label: liHover.kept?.label });
+    await liHover.click();
+    await page.waitForTimeout(600);
+    const liMark = (await stored()).find((b) => b.turn === 3);
+    check('clicking it bookmarks that item alone', liMark && liMark.para === LI && liMark.start === 0 && liMark.end === LI_TEXT.length && liMark.excerpt === LI_TEXT,
+      { liMark });
+    const liOther = await bookmark(3, LI - 1, true);
+    check('the other item of the list is not shown as bookmarked', liOther.kept?.shown && !liOther.kept.on && liOther.kept.label === 'Bookmark: Fixture list item one',
+      { button: liOther.kept });
+    check('clicking its segment lands on that item, not on the start of the list',
+      (await jumpBySegment(3)) && Math.abs((await block(3, LI)).fromTop - 64) <= 3,
+      { fromTop: (await block(3, LI)).fromTop, list: (await block(3, LI - 1)).fromTop });
+    // A selection inside the first item, saved with the button.
+    await select(3, LI - 1, 8, LI - 1, 12);
+    const liSel = await bookmark(3, LI - 1, true);
+    await liSel.click();
+    await page.waitForTimeout(600);
+    await page.evaluate(() => getSelection().removeAllRanges());
+    const liSelMark = (await stored()).find((b) => b.turn === 3 && b.para === LI - 1);
+    check('a selection in a list item is anchored to that item', liSelMark && liSelMark.start === 8 && liSelMark.end === 12 && liSelMark.excerpt === 'list',
+      { liSelMark });
+    // The shortcut with nothing selected: the first item sits under the header, so the second is the top paragraph.
+    for (let k = 0; k < 8; k++) {
+      const off = await page.evaluate(([id, PARAS]) => {
+        const sc = document.querySelector('.thread-scroll-container');
+        const p = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[6];
+        const d = p.getBoundingClientRect().top - sc.getBoundingClientRect().top - 40;
+        sc.scrollTop += d;
+        return d;
+      }, [answer(5), PARAS]);
+      await page.waitForTimeout(150);
+      if (Math.abs(off) < 1) break;
+    }
+    await page.waitForTimeout(300);
+    await shortcut();
+    const liTop = (await stored()).find((b) => b.turn === 5);
+    check('with nothing selected the shortcut takes the list item at the top', liTop && liTop.para === LI && liTop.excerpt === LI_TEXT, { liTop });
+    // After a reload both list items' bookmarks resolve: live, not "answer changed".
+    await open('light');
+    await page.waitForTimeout(400);
+    // Questions 4 and 6: the only segments whose names hold the second item's text.
+    const liSegs = await page.evaluate((text) => {
+      const marks = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')];
+      return marks.filter((m) => (m.getAttribute('aria-label') || '').includes(text)).map((m) => m.className);
+    }, LI_TEXT);
+    check('after a reload the list items\' bookmarks are live', liSegs.length === 2 && liSegs.every((c) => !c.includes('stale')), { liSegs });
+
     // (e) Dark theme, the selection tooltip.
     await open('dark');
     await scrollTo(2);
@@ -1052,7 +1150,7 @@ try {
     await settings({ lang: 'zh' });
     await page.waitForTimeout(400);
     const zhTip = await button();
-    check('in Chinese the selection tooltip reads 为选中内容加书签', zhTip?.tip === '为选中内容加书签' && zhTip.label === '为选中内容加书签', { tip: zhTip?.tip });
+    check('in Chinese the selection tooltip reads 为选中内容加书签', zhTip?.tip === '为选中内容加书签' && zhTip.label === `为选中内容加书签：${SEL}`, { tip: zhTip?.tip, label: zhTip?.label });
     await settings({});
     await page.evaluate(() => getSelection().removeAllRanges());
 
@@ -1117,22 +1215,16 @@ try {
 
     // 9. The rail's hover card (#53). Seed bookmarks straight into the store, as an earlier session
     // would have left them, then reload so the page reads them once.
-    const sha = (s) => createHash('sha256').update(s).digest('hex');
     const [{ account: ACCOUNT, conv: CONV_HASH }] = await stored();
     const seed = (turn, para, start = 0, end = null, time = Date.now()) => {
       const text = PARAGRAPH(turn, para === 0 ? 0 : para - 1);
       const excerpt = text.slice(start, end ?? 120).trim();
       return { account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: end ?? text.length, excerpt, time };
     };
-    // Question 3: one bookmark. Question 7: six (blocks are p, h3, p, p, p, p, ul), two of them in
-    // paragraph 2, stored out of answer order.
+    // Question 3: one bookmark. Question 7: six (blocks are p, h3, p, p, p, p, li, li), two of them
+    // in paragraph 2, stored out of answer order.
     const SEEDS = [seed(2, 0), seed(TURN, 5, 0, null, 1), seed(TURN, 0, 0, null, 2), seed(TURN, 2, 20, 80, 3), seed(TURN, 2, 0, null, 4), seed(TURN, 4, 0, null, 5)];
-    await worker.evaluate(async (rows) => {
-      const db = await database(),
-        tx = db.transaction('bookmarks', 'readwrite');
-      for (const r of rows) tx.objectStore('bookmarks').put({ ...r, key: ButterBookmarks.key(r) });
-      await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
-    }, SEEDS);
+    await seedStore(SEEDS);
     const excerptOf = (turn, para, start = 0) =>
       [...SEEDS, ...saved].find((b) => b.turn === turn && b.para === para && b.start === start).excerpt;
     const ORDER = [[0], [2], [2, 20], [3], [4], [5]].map(([para, start]) => excerptOf(TURN, para, start));
@@ -1388,16 +1480,7 @@ try {
           timeout: 5000,
         })
         .then(() => page.waitForTimeout(400)); // the 200 ms enter motion
-    await worker.evaluate(() =>
-      database().then(
-        (db) =>
-          new Promise((done) => {
-            const tx = db.transaction('bookmarks', 'readwrite');
-            tx.objectStore('bookmarks').clear();
-            tx.oncomplete = done;
-          }),
-      ),
-    );
+    await seedStore([], { clear: true });
     const COPY = {
       en: {
         title: 'Bookmark saved',
@@ -1496,20 +1579,9 @@ try {
     // 11. Stale bookmarks (#55). Start over with seeded bookmarks: question 10 holds one, question 7
     // three (blocks 0, 2 and 4). English, the notice already acknowledged.
     await settings({ bookmarkNotice: 'acknowledged' });
-    await worker.evaluate(async () => {
-      const db = await database(),
-        tx = db.transaction('bookmarks', 'readwrite');
-      tx.objectStore('bookmarks').clear();
-      await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
-    });
     const LONE = 9;
     const STALE_SEEDS = [seed(LONE, 0), seed(TURN, 0, 0, null, 1), seed(TURN, 2, 0, null, 2), seed(TURN, 4, 0, null, 3)];
-    await worker.evaluate(async (rows) => {
-      const db = await database(),
-        tx = db.transaction('bookmarks', 'readwrite');
-      for (const r of rows) tx.objectStore('bookmarks').put({ ...r, key: ButterBookmarks.key(r) });
-      await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
-    }, STALE_SEEDS);
+    await seedStore(STALE_SEEDS, { clear: true });
     const staleState = () =>
       page.evaluate(() => {
         const root = document.querySelector('chatgpt-butter-nav').shadowRoot,

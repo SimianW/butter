@@ -32,28 +32,15 @@
     busy = true;
     (choice === 'undo' ? undo() : acknowledge()).catch(() => {}).finally(() => (busy = false));
   });
-  // The store's delete message, retried like bookmarks/content.js's other requests.
+  // The store's delete message, through the store client (bookmarks/client.js).
   async function undo() {
     const it = latest;
     latest = null;
     card.hide(true);
     if (!it) return;
     const { account, conv, key } = it.bookmark;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const r = await chrome.runtime.sendMessage({
-          version: 1,
-          type: 'butter-bookmark-delete',
-          account,
-          conv,
-          key,
-        });
-        if (r && r.error !== 'bookmark-storage') {
-          if (r.deleted) it.undone?.();
-          return;
-        }
-      } catch {}
-    }
+    const r = await ButterBookmarkStore.send('butter-bookmark-delete', { account, conv, key });
+    if (r.deleted) it.undone?.();
   }
   async function acknowledge() {
     latest = null;

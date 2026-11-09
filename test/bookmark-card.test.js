@@ -130,3 +130,22 @@ test('earlier bookmarks in Chinese', () => {
   assert.equal(two.meta, '更早的问题 · 2 个书签');
   assert.ok(two.label.startsWith('更早的问题 · 2 个书签：'));
 });
+
+// The hover button's accessible name (#53) holds the start of what it would bookmark; its visible
+// tooltip stays "Bookmark" / "Bookmark selection" (bookmarks/content.js).
+test("the add button's name holds the start of the paragraph or the selection", () => {
+  const para =
+    'Postgres skips an index when it expects a large share of rows to match, because reading the table in order is cheaper.';
+  assert.equal(
+    B.addLabel(para),
+    'Bookmark: Postgres skips an index when it expects a large share of rows to match, because…',
+  );
+  assert.equal(B.addLabel('  A short\n  paragraph. '), 'Bookmark: A short paragraph.');
+  assert.equal(B.addLabel('the selected words', true), 'Bookmark selection: the selected words');
+  assert.equal(B.addLabel('一段中文', false, true), '加书签：一段中文');
+  assert.equal(B.addLabel('选中的字', true, true), '为选中内容加书签：选中的字');
+  // Nothing readable: the action alone.
+  assert.equal(B.addLabel(' '), 'Bookmark');
+  // Characters are code points: an emoji at the cut is kept whole.
+  assert.equal(B.addLabel('x'.repeat(79) + '🧈yz'), `Bookmark: ${'x'.repeat(79)}🧈…`);
+});

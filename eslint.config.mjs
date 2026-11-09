@@ -66,6 +66,10 @@ export default [
     languageOptions: { globals: { ButterBookmarks: 'readonly' } }, // defined in bookmarks/model.js
   },
   {
+    files: ['extension/bookmarks/content.js', 'extension/bookmarks/notice.js'],
+    languageOptions: { globals: { ButterBookmarkStore: 'readonly' } }, // defined in bookmarks/client.js
+  },
+  {
     // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
     files: ['extension/bookmarks/worker.js'],
     languageOptions: {

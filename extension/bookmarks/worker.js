@@ -64,17 +64,17 @@
     (await chrome.commands.getAll()).find((c) => c.name === 'bookmark')?.shortcut ?? '';
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender.id !== chrome.runtime.id) return;
-    if (message?.type === 'butter-bookmark-key') {
+    if (!TYPES.includes(message?.type) && message?.type !== 'butter-bookmark-key') return;
+    if (message.version !== 1) {
+      respond({ error: 'bookmark-protocol' });
+      return;
+    }
+    if (message.type === 'butter-bookmark-key') {
       shortcut().then(
         (key) => respond({ shortcut: key }),
         () => respond({ shortcut: '' }),
       );
       return true;
-    }
-    if (!TYPES.includes(message?.type)) return;
-    if (message.version !== 1) {
-      respond({ error: 'bookmark-protocol' });
-      return;
     }
     serial(() => handle(message)).then(respond, () => respond({ error: 'bookmark-storage' }));
     return true;
