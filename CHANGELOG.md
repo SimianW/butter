@@ -20,6 +20,11 @@
 - Showed bookmarks in earlier history that isn't loaded yet as a dot beside the rail's
   earlier-history dots; hover those dots to see the bookmarks.
 
+### Fixed
+
+- Fixed the question rail's ticks sometimes no longer swelling under the pointer after you left a
+  chat for the home page and came back, until the page was reloaded.
+
 ### Removed
 
 - Removed jumping to a question's first bookmark by clicking its mark on the rail. Clicking a tick
