@@ -202,7 +202,13 @@ const context = await chromium.launchPersistentContext(profile, {
 });
 const errors = [],
   foreign = [];
-context.on('page', (p) => p.on('pageerror', (e) => errors.push(e.message)));
+// Each page error is printed with its stack and page, so a failing run says where it came from.
+context.on('page', (p) =>
+  p.on('pageerror', (e) => {
+    errors.push(e.message);
+    console.log(`page error on ${new URL(p.url()).pathname}: ${e.stack}`);
+  }),
+);
 await context.route('**/*', (route) => {
   const url = new URL(route.request().url());
   if (['file:', 'data:', 'chrome-extension:'].includes(url.protocol)) return route.continue();
