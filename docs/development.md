@@ -9,15 +9,16 @@
 | `extension/branch/logic.js` | Ask in branch, pure: message format, conversation identity, selection rule, one-time handoff jobs. |
 | `extension/branch/run.js` | Ask in branch run in the new tab: state machine over an injected page adapter. |
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
-| `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
+| `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (question box, overlay, line) and the glue for both tabs; the original tab's Ask in branch cell in the selection pill. |
+| `extension/selection/pill.js` | The selection pill (`ButterPill`, #77): follows ChatGPT's "Ask ChatGPT" every frame (4 px right of it, flipped left without room, hidden with it and in Work mode, its resting look copied) and draws the registered cells in one pill, Ask in branch then Bookmark, with each cell's label 8 px below after 300 ms of hover. `register({ id, feature, icon, label, keys, shortcut, wants, activate, reset })`, `update()`, `hold(range, { place, lost })` (Ask in branch's question box anchors where ChatGPT's button last was), `release()`, `hide()`. Loads before both features' scripts. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
 | `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
-| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the marks handed to the rail (`ButterRail.setMarks`), and the landing wash in its own layer. An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the Bookmark cell of the selection pill, the shortcut, the marks handed to the rail (`ButterRail.setMarks`), the landing wash in its own layer, and the notification on every save and remove. An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
-| `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
-| `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
+| `extension/bookmarks/notice.js` | The bookmark notification (#77), top right: "Bookmark saved", "Bookmark removed" or "Already bookmarked", the first words and Undo (Undo of a save deletes it, of a remove stores it again); 4 s, held by the pointer or focus; the first save ever expands it with the privacy text and Got it, which sets `bookmarkNotice: 'acknowledged'` in settings. |
+| `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notification share: look, font, themes and motion; bottom-right cards stack, the `top` card (the notification) sits top right outside that stack. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
@@ -58,8 +59,12 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
   `node lab/harness/branch-qa.mjs` loads the real extension in its own headless Chromium over the
   synthetic page in `branch-fixture.mjs` (no ChatGPT requests; `lang=zh`, `stream=<ms>`, `work`,
-  `side`, `nobranch`, `nodisclaimer` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
-  screenshots to `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides).
+  `side`, `nobranch`, `nodisclaimer` and `temporary-chat=true` select ChatGPT variants). Since #77
+  it drives Ask in branch's icon cell in the selection pill: 4 px right of the native button, its
+  look copied, named and labelled "Ask in branch", opening the question box under it by pointer and
+  by keyboard. It writes the mockup-state screenshots to
+  `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides; set it to keep that
+  run's committed screenshots).
   `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
   snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
@@ -87,13 +92,20 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   code block's or a table's one box 3 px beyond it with its corners and its border left clear, faded
   in over 160 ms, at once under reduced motion),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
-  CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
+  CJK text, the viewport-top rule, the key hint and its `aria-keyshortcuts` form), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names; a tick's card for several bookmarks, one, a stale one and more
   than five, its group name and the tick's name, in English and Chinese), `test/bookmark-stale.test.js` (live and stale resolution: a
   regenerated answer, an edited one, a vanished message, a version switched back; the dot solid,
   hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
-  relay and the key query) and `test/bookmark-notice.test.js` (the first bookmark notice: copy, Undo,
-  Got it, independence from the layout switch and consent) run under `node --test`, and
+  relay and the key query), `test/bookmark-notice.test.js` (the notification: the saved, removed and
+  already-bookmarked cards in English and Chinese, the expanded first-bookmark card until Got it,
+  Undo of a save and of a remove through the real worker store, replacement and a stale Undo, the
+  4 s lifetime held by the pointer or focus under fake timers, hiding when Butter or the rail goes
+  off, its top-right place, independence from the layout switch and consent) and
+  `test/selection-pill.test.js` (the selection pill: the cells shown for each switch combination,
+  Work mode and no "Ask ChatGPT", their order and place, names and `aria-keyshortcuts`, activation on
+  a primary pointerdown or a keyboard click, the label's 300 ms and switching, a held selection's
+  anchor, and its host inside `<body>`) run under `node --test`, and
   `test/rail.test.mjs` checks that each dot keeps its 4 px gap through every frame of the hover wave
   and stays inside the rail, shrinks and turns faint for close ticks, fades out when its last
   bookmark goes, and that the arrow stops are the ticks only; and, for earlier history (#72), the
@@ -104,16 +116,20 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs` loads the real
   extension in its own Chromium over a
   synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
-  conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
-  paragraph, its dot beside the question's tick (#71: 4 px, `#d39e10`, its grow-in and halo, no
+  conversation's messages, with a stand-in for ChatGPT's "Ask ChatGPT" and "More actions"; no
+  ChatGPT requests): the selection pill beside "Ask ChatGPT" (its place and copied look, the cells'
+  order, size, names and `aria-keyshortcuts`, the label's 300 ms, place and switching, no hover
+  button left), saving a paragraph with the Bookmark cell (the selection and the pill cleared, the
+  "Bookmark saved" card top right, gone after 4 s, then "Already bookmarked" from the shortcut), its
+  dot beside the question's tick (#71: 4 px, `#d39e10`, its grow-in and halo, no
   pointer events, not focusable, hidden from the accessibility tree),
   the pointer over the dot showing the tick's card and a click there opening the question, landing
-  on the paragraph from the card's row, reload,
-  the filled button on a bookmarked paragraph, one read per conversation and none while scrolling,
+  on the paragraph from the card's row, reload, one read per conversation and none while scrolling,
   the dot back after going to the home page and Back through history,
   dark theme, and the rail off or Butter paused (nothing shown and no bookmark read). Then the tick's
-  card with one and with six bookmarks: moving onto the card, a jump from a row, × and the filled
-  button deleting (the dot fading out over 160 ms, or going at once under reduced motion),
+  card with one and with six bookmarks: moving onto the card, a jump from a row, × deleting with the
+  "Bookmark removed" card, whose Undo brings back the same key and time (the dot fading out over
+  160 ms, or going at once under reduced motion),
   keyboard-only jump and delete with the arrows stopping on ticks only, and a reload; it shoots
   `card-single-*` and `card-list-*` in light and dark.
   Stale bookmarks: it regenerates a bookmarked answer and edits a bookmarked paragraph in the page,
@@ -123,10 +139,11 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   hollow dot's position), a switched-back version
   turning live again, and the Chinese strings, and shoots `card-stale-*` and `card-list-stale-*`
   (with the mockup set, also its `mockup-card-stale-*` and `mockup-card-list-*` to look at side by side).
-  It also bookmarks a selection with the button and with the shortcut (across paragraphs too), the
-  top paragraph with the shortcut and nothing selected, and nothing for a selection in a question,
-  each landing on its text, and checks that the tooltip shows the key Chrome reports and no hint once
-  the key is cleared in `chrome://extensions/shortcuts`. Under an X display it runs headed and
+  It also bookmarks a selection with the Bookmark cell and with the shortcut (across paragraphs
+  too), the top paragraph with the shortcut and nothing selected, and nothing for a selection in a
+  question, each landing on its text, and checks that the cell's label shows the key Chrome reports
+  and no hint (and no `aria-keyshortcuts`) once the key is cleared in
+  `chrome://extensions/shortcuts`; with the rail off live the pill keeps only Ask in branch. Under an X display it runs headed and
   presses the real key through XTest (`xtest-keys.py`); without one it runs headless and asks the
   worker to relay the command instead, which skips Chrome's key handling.
   Earlier history (#51 addendum), run near the end: the fixture opens the chat with only its latest 5 questions
@@ -216,15 +233,23 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `s-dense-light` each tick's box (Chrome snaps a tick on half a pixel a device pixel lower at three
   times the size) and the all-stale dot, which the mockup draws as a ring where #69 decides it solid
   at 45 % under 4 px.
-  Then, before the earlier history, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
-  button and the button removes it, scrolling reads nothing, and with a second question the dot
-  shows beside question 1 (`ONLY=one` runs this part alone).
-  It then drives the first bookmark notice in light and dark, English and Chinese:
-  Undo removes the dot and the next save shows it again, it stacks above a pending consent card,
-  and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
-  (`gh issue artifact download 51 1 -R SimianW/butter`) compares the four notices with section 4 (same
-  size, under 0.1% of pixels differing). Screenshots and `summary.json` go to
-  `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
+  Then, before the earlier history, a one-question chat: the rail stays hidden, yet the Bookmark
+  cell saves there and saving again says "Already bookmarked", scrolling reads nothing, and with a
+  second question the dot shows beside question 1 (`ONLY=one` runs this part alone).
+  It then drives the first bookmark ever in light and dark, English and Chinese: the expanded card
+  top right (12 px below the header, 8 px left of the rail, 300 px), staying past 4 s, the pending
+  consent card staying bottom right apart from it; Undo removes the dot and the next save expands it
+  again, and after Got it a third save and a reload show the small card, which the pointer holds.
+  Before the tick's card section, the pill and the notification (#77; `ONLY=pill` runs this part
+  alone): triple-click then Bookmark, the keyboard (focus shows the label, Enter saves), Undo of a
+  save and of a remove, a new card replacing the current one, the motion (a 16 px slide and a fade
+  over 200 ms; the fade only under reduced motion), the rail switched off putting the card away,
+  Ask in branch off (the Bookmark cell alone, 30 × 30), dark theme and Chinese, at 1400 px and at
+  700 px (the card spanning the top with 16 px margins). It shoots the approved #77 mockup's states
+  into `states/`: `a-pill-bookmark-*` (A′), `c-saved-*` (C′), `d-removed-*` (D′), `f-first-*` (F′),
+  `e-dark-branch-*` (E′), and `already-*`, `pill-branch-off-*` and `zh-*`, each `-desktop` and
+  `-narrow`. Screenshots and `summary.json` go to `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides);
+  `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>` adds that mockup's stale cards next to the built ones.
   The run covers both answer markups, each in its own browser and screenshot subdirectory: the
   earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
   answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
@@ -233,7 +258,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   and a fresh unpacked install, as its header says; `LAB_FIXTURE=demo-en12`, the fixture whose
   answers hold long paragraphs and tables): on real ChatGPT markup in light and dark theme (the dark
   pass switches ChatGPT's `<html data-theme>` on the page), it bookmarks a paragraph, a selection and
-  a table with the hover button, jumps to each from its tick's card, and checks that the wash's boxes
+  a table with the selection pill's Bookmark cell (the paragraph and the table selected whole),
+  jumps to each from its tick's card, and checks that the wash's boxes
   sit on the bookmarked lines (the table's box 3 px around it), that the text keeps its colour under
   it, that there is no bubble flash, and that when the chat scrolls during the hold the boxes follow
   their text while the header and composer show no butter and the wash reaches their edges. Only
@@ -419,14 +445,20 @@ the card closes and focus, if it was in the card, goes back to the tick.
 Keyboard: the arrow keys walk the earlier-history dots and the ticks, one stop per question;
 ArrowLeft on a tick or the three dots enters its card, arrows move between rows, Enter jumps, Tab
 reaches a row's ×, Delete removes the row, and ArrowRight or Escape returns to the tick or the three
-dots. A dot whose last bookmark is deleted fades out over 160 ms (at once under reduced motion). The hover button shows filled on a paragraph that holds
-bookmarks; clicking it removes all of them.
+dots. A dot whose last bookmark is deleted fades out over 160 ms (at once under reduced motion). × on
+a row is the only way to remove a bookmark.
 
-The first saved bookmark shows a notice (`bookmarks/notice.js`), whatever the layout switch and
-`layoutConsent` say. Undo sends `butter-bookmark-delete` for that bookmark and leaves the notice
-unacknowledged; Got it writes `bookmarkNotice: 'acknowledged'` into the `butter` settings, once per
-browser profile. `bookmarks/content.js`'s `create` is the only save path, so the button and the
-shortcut both reach it.
+Every save and every remove shows the notification (`bookmarks/notice.js`, #77), whatever the layout
+switch and `layoutConsent` say: `bookmarks/content.js`'s `create` is the only save path (the
+Bookmark cell and the shortcut) and its `remove` the rail's ×. "Bookmark saved" (create answered
+`created: true`) and "Bookmark removed" carry Undo: a save's Undo sends `butter-bookmark-delete` and
+drops the bookmark from the page's list; a remove's Undo sends the stored bookmark back to
+`butter-bookmark-create`, whose key comes from its anchor fields, so the same bookmark returns with
+its original time and dot. "Already bookmarked" (`created: false`) has none. While `bookmarkNotice`
+isn't `'acknowledged'` a save shows the expanded card with the privacy text and Got it, which
+writes `bookmarkNotice: 'acknowledged'` into the `butter` settings, once per browser profile; Undo
+or a remove replacing it leaves it unacknowledged. The card shows only in the tab that acted, and
+Butter paused or the rail off puts it away.
 
 ## Ask in branch handoff API
 
