@@ -32,6 +32,9 @@ class FakeElement {
     this.isConnected = true;
     this.textContent = '';
   }
+  focus() {
+    FakeElement.focused = this;
+  }
   addEventListener(type, callback, options) {
     const listeners = this.listeners.get(type) ?? [];
     listeners.push({ callback, once: options?.once, capture: !!options?.capture });
@@ -65,6 +68,10 @@ class FakeElement {
   append(child) {
     child.parentElement = this;
     this.children.push(child);
+  }
+  replaceChildren(...children) {
+    this.children = [];
+    children.forEach((child) => this.append(child));
   }
   get firstChild() {
     return this.children[0];
@@ -271,8 +278,53 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   sendButton.setAttribute('data-testid', 'send-button');
   form.append(composer);
   form.append(sendButton);
+  // Bookmarks under questions, as bookmarks/content.js sends them: { id: [stale, …] }.
+  const setMarks = (byId) =>
+    ctx.ButterRail.setMarks(
+      conversation,
+      new Map(
+        Object.entries(byId).map(([id, flags]) => {
+          const bookmarks = flags.map((stale, k) => ({
+            key: `${id}-${k}`,
+            excerpt: `Bookmark ${k}`,
+            stale,
+          }));
+          return [
+            id,
+            {
+              count: bookmarks.length,
+              fresh: false,
+              bookmarks,
+              stale: flags.every(Boolean),
+              land: () => 0,
+              remove() {},
+            },
+          ];
+        }),
+      ),
+    );
+  // The rail's bookmark dots: per question index, where its right edge sits left of the ticks'
+  // right end, its centre below the rail's top, its diameter, and its look.
+  const dots = () =>
+    select('.marks')
+      .children.filter((el) => el.className.startsWith('bdot'))
+      .map((el) => {
+        const [x, y] = el.style.translate.split(' ').map(parseFloat),
+          d = parseFloat(el.style.width);
+        return {
+          q: Number(el.getAttribute('data-q')),
+          right: -x,
+          center: y + d / 2,
+          d,
+          hidden: el.getAttribute('aria-hidden'),
+          stale: el.classList.contains('stale'),
+          faint: el.classList.contains('faint'),
+        };
+      });
   return {
     document,
+    setMarks,
+    dots,
     seek: (message) =>
       document.emit('butter-seek-state', {
         detail: JSON.stringify({ conv: conversation, ...message }),
@@ -614,4 +666,112 @@ test('seek lights every turn intersecting the preview band', () => {
     nav.geometry().map((x) => x[1]),
     [0.28, 1, 1, 0.28, 0.28],
   );
+});
+
+test('a bookmark dot keeps 4 px from its tick through the hover wave and stays inside the rail', () => {
+  const nav = setup({ count: 8 });
+  nav.setMarks({ q1: [false], q3: [false, false], q6: [true] });
+  nav.flush();
+  const pitch = parseFloat(nav.host.style['--pitch']);
+  // The dot's right edge is 4 px left of the tick (12 px x its scale); the tick's right end is 6 px
+  // in from the rail's right edge, which is 52 px wide.
+  const assertBeside = () => {
+    const bars = nav.geometry(),
+      ds = nav.dots();
+    assert.deepEqual(
+      ds.map((d) => d.q),
+      [1, 3, 6],
+    );
+    for (const d of ds) {
+      // Both are drawn rounded: the bar's scale to 3 decimals, the dot to 0.01 px.
+      assert.ok(
+        Math.abs(d.right - (12 * bars[d.q][0] + 4)) <= 0.02,
+        `q${d.q}: ${d.right} vs scale ${bars[d.q][0]}`,
+      );
+      assert.ok(
+        Math.abs(d.center - (10 + (d.q + 0.5) * pitch)) <= 0.01,
+        `q${d.q} on its tick's row`,
+      );
+      assert.ok(6 + d.right + d.d <= 52, `q${d.q} inside the rail`);
+      assert.equal(d.d, 4);
+      assert.equal(d.hidden, 'true');
+    }
+  };
+  // At rest: 16 px from the ticks' end (12 + 4).
+  assertBeside();
+  assert.equal(nav.dots()[0].right, 16);
+  nav.pointer(3);
+  let widest = 0;
+  for (let i = 0; i < 100 && nav.pendingFrames(); i++) {
+    nav.frame();
+    assertBeside();
+    widest = Math.max(widest, ...nav.dots().map((d) => d.right));
+  }
+  assert.ok(
+    Math.abs(widest - (12 * 2.6 + 4)) <= 0.01,
+    `the dot under the pointer follows a 31 px tick: ${widest}`,
+  );
+  nav.select('.rail').emit('pointerleave');
+  for (let i = 0; i < 100 && nav.pendingFrames(); i++) {
+    nav.frame();
+    assertBeside();
+  }
+  assert.equal(nav.pendingFrames(), 0, 'no frame runs at rest');
+  // Only q6's bookmarks are all stale: its dot is hollow.
+  assert.deepEqual(
+    nav.dots().map((d) => d.stale),
+    [false, false, true],
+  );
+});
+
+test('close ticks shrink the dot; an all-stale dot too small for a ring is faint', () => {
+  // 120 questions in 900 px: a pitch under 6 px.
+  const nav = setup({ count: 120 });
+  nav.setMarks({ q2: [false], q5: [true] });
+  nav.flush();
+  const pitch = parseFloat(nav.host.style['--pitch']);
+  assert.ok(pitch < 6, `pitch ${pitch}`);
+  const [live, stale] = nav.dots();
+  assert.ok(Math.abs(live.d - Math.max(2, pitch - 2)) < 1e-9, `d ${live.d}`);
+  assert.ok(!live.stale && !live.faint);
+  assert.ok(stale.faint && !stale.stale, 'solid at 45 % instead of a ring');
+});
+
+test("the rail's arrow stops are the ticks: a question's bookmarks add no stop", () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [false], q2: [false, true] });
+  nav.flush();
+  const ticks = nav.ticks(),
+    down = (target) =>
+      nav.select('.rail').emit('keydown', { key: 'ArrowDown', target, preventDefault() {} });
+  down(ticks[0]);
+  assert.equal(FakeElement.focused, ticks[1]);
+  down(ticks[1]);
+  assert.equal(FakeElement.focused, ticks[2], 'from a tick that holds bookmarks to the next tick');
+  down(ticks[2]);
+  assert.equal(FakeElement.focused, ticks[3]);
+});
+
+test("a question's last bookmark deleted: its dot fades out over 160 ms; with the rail off, none", () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [false] });
+  nav.flush();
+  assert.equal(nav.dots().length, 1);
+  nav.setMarks({});
+  const [gone] = nav.select('.marks').children;
+  assert.ok(gone.classList.contains('gone'), 'fading');
+  nav.advanceClock(160);
+  nav.runTimers();
+  assert.equal(nav.dots().length, 0);
+  // The rail off (Butter paused turns it off too): the page script sends no bookmarks, and the
+  // rail's host is hidden.
+  nav.setMarks({ q2: [false] });
+  nav.document.documentElement.setAttribute('data-butter-off', 'rail');
+  nav.document.emit('butter-settings');
+  nav.setMarks({});
+  nav.advanceClock(160);
+  nav.runTimers();
+  nav.flush();
+  assert.equal(nav.dots().length, 0);
+  assert.equal(nav.host.style.display, 'none');
 });

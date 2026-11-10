@@ -147,7 +147,7 @@
       return { question: g.question, bookmarks: rows, stale: pale(rows) };
     });
   }
-  // A question's segment turns pale only when every one of its bookmarks is stale.
+  // A question's dot turns hollow only when every one of its bookmarks is stale.
   const pale = (rows) => rows.length > 0 && rows.every((b) => b.stale);
   // A selection in an answer, as a bookmark's anchor. `paras` are the answer's paragraphs as
   // rendered text; `from` and `to` are `{ para, offset }` in UTF-16 units, in document order.
@@ -189,14 +189,26 @@
   // The tooltip's key hint from chrome.commands' `shortcut`: "Alt+Shift+M" reads "Alt Shift M", as
   // the mockup writes keys; a command without a key shows no hint.
   const keyHint = (shortcut) => (typeof shortcut === 'string' ? shortcut.split('+').join(' ') : '');
-  // Centre of a question's segment below its tick's centre, in px.
-  const segmentOffset = (pitch) => (pitch < 12 ? 0.4 * pitch : 5);
+  // The rail's bookmark dot (#71), one beside each tick whose question holds bookmarks. Its
+  // diameter: 4 px while ticks are 6 px apart or more, else the pitch minus 2 px, never under 2,
+  // so dots on neighbouring rows don't touch.
+  const dotSize = (pitch) => (pitch >= 6 ? 4 : Math.max(2, pitch - 2));
+  // Px from the tick's right end to the dot's right edge: the tick is 12 px times its scale (12 at
+  // rest, 21 for the question being read, up to 31 under the pointer), and the dot sits 4 px
+  // left of it.
+  const TICK = 12,
+    GAP = 4;
+  const dotRight = (scale) => TICK * scale + GAP;
+  // 'solid', or when every bookmark under the question is stale 'hollow' (a 1 px inner ring), or
+  // 'faint' (solid at 45 %) when the dot is too small for a ring.
+  const dotLook = (rows, size) => (!pale(rows) ? 'solid' : size >= 4 ? 'hollow' : 'faint');
   // What the rail's hover card shows for one question's bookmarks (`rows`, already in answer
   // order). `at` places the question: `{ n, total }`, `{ back }` (1 = the latest question) while
   // earlier questions aren't loaded and the total is unknown, or `{ earlier: true }` for the
   // bookmarks in that unloaded history, on the rail's earlier-history dots. One bookmark gets the
   // single card; several get a list that shows `visible` rows and scrolls for the rest. `label` is
-  // the segment's accessible name; `wait` the meta line while earlier messages load for a click.
+  // the accessible name of the mark that holds them; `wait` the meta line while earlier messages
+  // load for a click.
   const VISIBLE = 5;
   function card(rows, at, zh = false) {
     const k = rows.length,
@@ -252,7 +264,7 @@
   // The card a tick shows when its question `q` holds bookmarks (#70): the question card's text,
   // cut at 400 characters as that card cuts it, then the bookmarks (`rows`, in answer order) with
   // `card`'s rules for one, several and a stale one. The visible meta line stays the question
-  // card's own; `group` names the card, with the meta line a segment's card shows.
+  // card's own; `group` names the card, with the meta line `card` gives.
   function questionCard(q, rows, at, zh = false) {
     const c = card(rows, at, zh);
     return {
@@ -273,7 +285,7 @@
         !b.stale ? b.excerpt : zh ? `${b.excerpt}（回答已变化）` : `${b.excerpt} (answer changed)`,
       )
       .join(zh ? '；' : '; ');
-  // The segment's accessible name: how many bookmarks, and their text.
+  // How many bookmarks, and their text: appended to a tick's name.
   function label(rows, zh = false) {
     const k = rows.length,
       t = texts(rows, zh);
@@ -281,7 +293,7 @@
     return k === 1 ? `Bookmark: ${t}` : `${k} bookmarks: ${t}`;
   }
   // A tick's accessible name: its question's first 120 characters and, when the question holds
-  // bookmarks (#70), the segment's label after it.
+  // bookmarks (#70), `label` after it.
   const tickLabel = (q, rows = [], zh = false) =>
     rows.length ? `${q.slice(0, 120)} · ${label(rows, zh)}` : q.slice(0, 120);
   // The hover button's accessible name while it adds: the action and the start of the text it
@@ -313,7 +325,9 @@
     anchor,
     topParagraph,
     keyHint,
-    segmentOffset,
+    dotSize,
+    dotRight,
+    dotLook,
     card,
     questionCard,
     label,

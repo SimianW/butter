@@ -8,7 +8,22 @@ this page and the stylesheet disagree, the stylesheet wins. Fix the page.
 
 - **Butter's palette:** the popup and the "remember layouts" consent card on the ChatGPT page.
 - **ChatGPT's colours:** the question rail and Ask in branch. They sit inside ChatGPT's page, so
-  they take its theme variables, not these tokens.
+  they take its theme variables, not these tokens. The rail's bookmark marks are the exception;
+  see [The rail's bookmark dot](#the-rails-bookmark-dot).
+
+## The rail's bookmark dot
+
+The rail's own colour, set in `extension/rail/rail.js` (`--dot`), not a popup token. The dot beside a
+tick that holds bookmarks and the dot that starts each row of the tick's card use it.
+
+| Colour  | Light     | Dark      | Used for                                                                  |
+| ------- | --------- | --------- | ------------------------------------------------------------------------- |
+| `--dot` | `#d39e10` | `#e3c766` | the rail's bookmark dot (solid, or a 1 px ring when stale), card row dots |
+
+Light theme takes a deeper butter than `--butter`: `#d39e10` is 2.42:1 on ChatGPT's white page,
+where `#fbe07a` is 1.31:1 and a resting tick 1.92:1. Dark theme keeps the rail's butter, `#e3c766`,
+9.68:1 on `#212121`. The dot is a non-text mark; its information is also in its tick's accessible
+name. The earlier-history segment still uses the rail's `--butter` (`#fbe07a` / `#e3c766`).
 
 ## Tokens
 

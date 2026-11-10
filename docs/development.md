@@ -11,7 +11,7 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
-| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the segment's accessible name (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
 | `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, and the marks handed to the rail (`ButterRail.setMarks`). An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
@@ -79,30 +79,39 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
-- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, segment offset),
+- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, the
+  rail dot's diameter from the pitch and its 4 px gap at 12, 21 and 31 px ticks),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
   CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names; a tick's card for several bookmarks, one, a stale one and more
   than five, its group name and the tick's name, in English and Chinese), `test/bookmark-stale.test.js` (live and stale resolution: a
-  regenerated answer, an edited one, a vanished message, a version switched back; the all-stale
-  segment; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
+  regenerated answer, an edited one, a vanished message, a version switched back; the dot solid,
+  hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
   relay and the key query) and `test/bookmark-notice.test.js` (the first bookmark notice: copy, Undo,
-  Got it, independence from the layout switch and consent) run under `node --test`.
+  Got it, independence from the layout switch and consent) run under `node --test`, and
+  `test/rail.test.mjs` checks that each dot keeps its 4 px gap through every frame of the hover wave
+  and stays inside the rail, shrinks and turns faint for close ticks, fades out when its last
+  bookmark goes, and that the arrow stops are the ticks only.
   `xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs` loads the real
   extension in its own Chromium over a
   synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
   conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
-  paragraph, the segment under its question, landing on the paragraph from the segment, reload,
+  paragraph, its dot beside the question's tick (#71: 4 px, `#d39e10`, its grow-in and halo, no
+  pointer events, not focusable, hidden from the accessibility tree) and no segment under any tick,
+  the pointer over the dot showing the tick's card and a click there opening the question, landing
+  on the paragraph from the card's row, reload,
   the filled button on a bookmarked paragraph, one read per conversation and none while scrolling,
-  the segment back after going to the home page and Back through history,
-  dark theme, and the rail off or Butter paused (nothing shown and no bookmark read). Then the hover card: the single and list cards,
-  moving onto the card, a jump from a row, × and the filled button deleting (the segment fading out,
-  or going at once under reduced motion), keyboard-only jump and delete, and a reload; it shoots
-  `card-single-*` and `card-list-*` in light and dark for comparison with the #51 mockup's section 3.
+  the dot back after going to the home page and Back through history,
+  dark theme, and the rail off or Butter paused (nothing shown and no bookmark read). Then the tick's
+  card with one and with six bookmarks: moving onto the card, a jump from a row, × and the filled
+  button deleting (the dot fading out over 160 ms, or going at once under reduced motion),
+  keyboard-only jump and delete with the arrows stopping on ticks only, and a reload; it shoots
+  `card-single-*` and `card-list-*` in light and dark.
   Stale bookmarks: it regenerates a bookmarked answer and edits a bookmarked paragraph in the page,
   then serves the regenerated answer as the conversation's version and reloads; it checks the grey
-  "answer changed" row, the pale segment only when every bookmark under the question is stale, the
-  stale single card and its footer, jumps landing at the question's start, a switched-back version
+  "answer changed" row, the hollow dot only when every bookmark under the question is stale, the
+  stale single card and its footer, jumps landing at the question's start (also from a click on the
+  hollow dot's position), a switched-back version
   turning live again, and the Chinese strings, and shoots `card-stale-*` and `card-list-stale-*`
   (with the mockup set, also its `mockup-card-stale-*` and `mockup-card-list-*` to look at side by side).
   It also bookmarks a selection with the button and with the shortcut (across paragraphs too), the
@@ -114,12 +123,12 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   Earlier history (#51 addendum), run last: the fixture opens the chat with only its latest 5 questions
   and serves earlier ones two per `/messages?before=` page when the chat is scrolled near its top,
   as ChatGPT does. It checks the one segment on the earlier-history dots (5 px below their centre,
-  styled as any segment) and no segment under a loaded question it doesn't belong to, no reads or
+  8 × 2 px in butter) and no dot beside a loaded question it doesn't belong to, no reads or
   page loads while scrolling, the single and list cards, the loading state (meta line, the clicked
   row's spinner, blinking dots), clicks from the card's text, a row and the segment (the oldest)
-  loading pages only until the answer is known and landing on its text, the segment moving to its
-  tick with the grow-in, the dots' segment fading out (at once under reduced motion), Escape while
-  loading, the keyboard path, and a message gone from the whole conversation turning stale once all
+  loading pages only until the answer is known and landing on its text, the bookmark's dot growing
+  in beside its tick, the dots' segment fading out (at once under reduced motion), Escape while
+  loading, the keyboard path (focus ending on the question's tick), and a message gone from the whole conversation turning stale once all
   is loaded. It shoots `earlier-{rest,single,list,loading,landed}-<theme>-<lang>-<desktop|narrow>`
   (narrow: 600 px, the narrowest the rail draws at) and `earlier-rest-light-en-mobile390`; with
   `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
@@ -140,11 +149,30 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   corners left out (same size, under 0.1% of pixels differing by more than 24 in a channel). The
   mockup's card is lifted by whole pixels instead of its `translateY(-50%)`, which puts a card of odd
   height on half a pixel and moves some lines' text by a pixel.
+  After it, the dot (#71; `ONLY=dot` runs this part alone). Each answer is padded to run past the
+  view, so only the question jumped to is lit, as in the mockup. A 12-question chat at rest with
+  question 7 being read: one dot per question that holds bookmarks (3, 7 with four, 10 with only a
+  stale one, hollow), the 21 px tick keeping its dot 4 px away, dark theme; every frame of the hover
+  wave keeps each dot's 4 px gap inside the rail; no dots with the rail off or Butter paused, back
+  after a reload. Then the close-ups: a 7-question chat at rest in both themes, under the pointer,
+  and a new bookmark with its grow-in and halo (its animations paused as they start and shot at the
+  halo's widest), a new and a deleted dot under reduced motion (no grow-in, halo or fade), and a
+  22-question chat 5 px apart (3 px dots, the all-stale one solid at 45 %). It shoots the rail's box
+  as `f-after-light` and `f-after-dark`, and at three times its size (device scale factor 3 through
+  the DevTools protocol, 154 × 394 px like the mockup's strip box) `s-rest-light`, `s-rest-dark`,
+  `s-wave-light`, `s-new-light` and `s-dense-light`; with `BUTTER_BOOKMARKS_DOT_MOCKUP` each is
+  compared with its panel (under 0.1% of pixels differing by more than 24). Left out of the
+  comparison, with the reason in the harness: in `s-wave-light` each tick's box and the pill's
+  bottom edge (the mockup draws the wave without the rail's hover pill and the ticks' thickening),
+  with a 1 px neighbourhood for the dots, which sit on fractions of a pixel there; in
+  `s-dense-light` each tick's box (Chrome snaps a tick on half a pixel a device pixel lower at three
+  times the size) and the all-stale dot, which the mockup draws as a ring where #69 decides it solid
+  at 45 % under 4 px.
   Before that, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
-  button and the button removes it, scrolling reads nothing, and with a second question the segment
-  shows under question 1 (`ONLY=one` runs this part alone).
+  button and the button removes it, scrolling reads nothing, and with a second question the dot
+  shows beside question 1 (`ONLY=one` runs this part alone).
   It then drives the first bookmark notice in light and dark, English and Chinese:
-  Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
+  Undo removes the dot and the next save shows it again, it stacks above a pending consent card,
   and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
   (`gh issue artifact download 51 1 -R SimianW/butter`) compares the four notices with section 4 (same
   size, under 0.1% of pixels differing). Screenshots and `summary.json` go to
@@ -268,9 +296,9 @@ it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever
 (`complete`: no earlier page is left to load). The content script answers with
 `ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
 (or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
-`{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
-question's bookmarks in answer order, each with its `stale` flag, `stale` is set when all of them are
-stale (the segment shows at 40 % opacity), `land(turnElement, bookmark = bookmarks[0])` returns that
+`{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the dot (or the earlier
+segment) in, `bookmarks` are the question's bookmarks in answer order, each with its `stale` flag,
+`stale` is set when all of them are stale (the dot is hollow), `land(turnElement, bookmark = bookmarks[0])` returns that
 bookmark's offset below the turn's top for the rail's jump (or null to land on the question, as a
 stale bookmark does), and `remove(bookmark)` deletes it from the store and sends the marks again.
 
@@ -297,11 +325,19 @@ row runs the rail's earlier trip with that bookmark's key: pages load only until
 the key under a question, then the trip lands on its text as a bookmark jump does (at the
 question's start when it turned stale: its message isn't in the now complete conversation). Meanwhile
 the dots blink, the card's meta line reads "Loading earlier questions…" and that row's × is a spinner;
-Escape or leaving puts the card away without stopping the trip. A bookmark leaving the dots grows in
-under its tick; the dots' segment fades out when none are left (at once under reduced motion, or
-when the dots go).
+Escape or leaving puts the card away without stopping the trip; a keyboard trip ends with focus on
+the question's tick. A bookmark leaving the dots grows in as a dot beside its tick; the dots' segment
+fades out when none are left (at once under reduced motion, or when the dots go).
 
-The rail draws the hover card for a segment from `ButterBookmarks.card(bookmarks, at, zh)`
+The rail draws a question's dot (#71) in its shadow root as an `aria-hidden` `<i class="bdot">`
+with no pointer events: `ButterBookmarks.dotSize(pitch)` across, `dotLook(bookmarks, size)` for
+solid, hollow (`.stale`, a 1 px inset ring) or faint (`.faint`, 45 %), and placed with `translate`
+by `placeDots()`, which `step()` calls on every frame of the hover wave after setting the ticks'
+scales, at `dotRight(scale)` (12 px times the tick's scale plus 4) left of the ticks' right end and
+centred on the tick's row. `.bdot.new` runs `dot-in` (scale 0 to 1, 180 ms) and one `dot-halo`
+(600 ms); `.bdot.gone` fades over 160 ms; reduced motion turns both off.
+
+The rail draws the hover card for the earlier-history segment from `ButterBookmarks.card(bookmarks, at, zh)`
 (`{ single, meta, rows, visible, label, stale, warn, tag }`); the card takes the pointer while it shows bookmarks.
 A tick whose question holds bookmarks (#70) shows the question's own card with them under the
 question, from `ButterBookmarks.questionCard(question, bookmarks, at, zh)` (`{ text, single, rows,
@@ -309,14 +345,15 @@ visible, stale, warn, tag, group }`): the question card's meta line and text (`t
 characters, clamped to two lines), then a row per bookmark with a 5 px dot (`--dot`), its stale tag in
 a list, or one row of up to three lines with the stale footer (`warn`). The card is 280 px wide, a
 `group` named `group`, takes the pointer and focus, and keeps the segment card's two stay-open rules
-(also over a segment while the pointer heads left). Its top is put on a whole pixel. The tick's name
+(also over the earlier-history segment while the pointer heads left). Its top is put on a whole pixel. The tick's name
 is `ButterBookmarks.tickLabel(question, bookmarks, zh)`. ArrowLeft on the tick enters the card;
 ArrowRight or Escape and a keyboard jump return focus to the tick; when its last bookmark is deleted
 the card closes and focus, if it was in the card, goes back to the tick.
-Keyboard: the arrow keys walk the ticks and, after a question's tick, its segment; ArrowLeft enters
-the card, arrows move between rows, Enter jumps, Tab reaches a row's ×, Delete removes the row, and
-ArrowRight or Escape returns to the segment. A segment whose last bookmark is deleted fades out over
-160 ms (at once under reduced motion). The hover button shows filled on a paragraph that holds
+Keyboard: the arrow keys walk the earlier-history dots, their segment and the ticks, one stop per
+question; ArrowLeft on a tick or the segment enters its card, arrows move between rows, Enter jumps,
+Tab reaches a row's ×, Delete removes the row, and ArrowRight or Escape returns to the tick or the
+segment. A dot or segment whose last bookmark is deleted fades out over 160 ms (at once under
+reduced motion). The hover button shows filled on a paragraph that holds
 bookmarks; clicking it removes all of them.
 
 The first saved bookmark shows a notice (`bookmarks/notice.js`), whatever the layout switch and

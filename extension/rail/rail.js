@@ -499,6 +499,13 @@
       transform-origin: right center; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: -1px; border-radius: 4px; }
     .marks { position: absolute; inset: 0; pointer-events: none; }
+    .bdot { position: absolute; top: 0; right: 6px; border-radius: 50%; background: var(--dot); pointer-events: none; }
+    .bdot.stale { background: transparent; box-shadow: inset 0 0 0 1px var(--dot); }
+    .bdot.faint { opacity: .45; }
+    .bdot.gone { opacity: 0; transition: opacity .16s; }
+    .bdot.new { animation: dot-in .18s cubic-bezier(.2, .8, .2, 1), dot-halo .6s .18s; }
+    @keyframes dot-in { from { scale: 0; } }
+    @keyframes dot-halo { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot) 35%, transparent); } }
     .mark { position: absolute; right: 6px; top: 0; width: 8px; height: 2px; border-radius: 2px; background: var(--butter);
       box-shadow: 0 0 0 1px var(--page); transform-origin: right center; }
     .rail.hot .mark { box-shadow: 0 0 0 1px var(--surface); }
@@ -580,8 +587,8 @@
     .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
       background: var(--streak); will-change: transform;
       -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
-    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .mark.new { animation: none; }
-      .mark.gone { transition: none; } }`;
+    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .mark.new, .bdot.new { animation: none; }
+      .mark.gone, .bdot.gone { transition: none; } }`;
 
   let host = null,
     rail,
@@ -650,9 +657,9 @@
       const m = markAt(e.clientY),
         x = lastX;
       lastX = e.clientX;
-      // On the way from a segment or a tick to its card the pointer crosses other ticks: while it
-      // heads left within the card's height, the card stays. A tick's card also stays over a
-      // segment, which the way down to its rows can cross.
+      // On the way from the dots' segment or a tick to its card the pointer crosses other ticks:
+      // while it heads left within the card's height, the card stays. A tick's card also stays over
+      // the dots' segment, which the way up to its rows can cross.
       if ((m === null || merged) && shownBm && e.clientX < x) {
         const r = card.getBoundingClientRect();
         if (e.clientY >= r.top && e.clientY <= r.bottom) return kick();
@@ -687,7 +694,7 @@
       if (railOff()) return;
       endOpening();
       const s = e.detail === 0 ? segmentOf(e.target) : null;
-      const m = s !== null ? s : e.detail === 0 ? null : markAt(e.clientY);
+      const m = s !== null ? s : e.detail === 0 ? null : markAt(e.clientY); // the dots' segment
       const i =
         m !== null
           ? m
@@ -705,16 +712,14 @@
       // The dots' segment: the oldest bookmark in earlier history.
       if (m === EARLIER) earlierJump(marks.get(EARLIER)?.bookmarks[0], e.detail === 0);
       else if (i === -1) loadEarlier();
-      else if (m !== null) jump(i, false, marks.get(qs[i].id)?.land);
       else if (i >= 0) jump(i);
     });
-    // Arrows walk the earlier-history dots and the ticks and, under them, a segment; ArrowLeft on
-    // a segment enters its card.
+    // Arrows walk the earlier-history dots, their segment and the ticks; ArrowLeft on the segment
+    // enters its card.
     rail.addEventListener('keydown', (e) => {
-      const stops = [
-          ...(more.hidden ? [] : [more, markEls.get(EARLIER)]),
-          ...ticks.flatMap((t, i) => [t, markEls.get(qs[i]?.id)]),
-        ].filter(Boolean),
+      const stops = [...(more.hidden ? [] : [more, markEls.get(EARLIER)]), ...ticks].filter(
+          Boolean,
+        ),
         at = stops.indexOf(e.target),
         s = segmentOf(e.target),
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
@@ -754,8 +759,8 @@
       if (!card.contains(e.relatedTarget) && !rail.contains(e.relatedTarget) && pointerY === null)
         leaveSoon();
     });
-    // In the card: arrows between rows, Delete removes one, ArrowRight or Escape back to the segment,
-    // or to the tick for a tick's card.
+    // In the card: arrows between rows, Delete removes one, ArrowRight or Escape back to the tick,
+    // or to the dots' segment for its card.
     card.addEventListener('keydown', (e) => {
       if (!shownBm) return;
       const rows = [...bmc.querySelectorAll('.go, .one')],
@@ -785,46 +790,54 @@
   };
   const tickY = (i) => geo.top + (i + 0.5) * geo.pitch;
 
-  // ---- Bookmark segments: one under each question that holds bookmarks (bookmarks/content.js
-  // sends them). They stay out of the hover wave; within 4 px the segment wins the pointer.
-  // Bookmarks in earlier history that isn't loaded yet share one segment under the "earlier" dots:
-  // its key in `marks` and its index are both EARLIER (-1, the dots' index). Segment indexes are
-  // null for none.
+  // ---- Bookmarks on the rail (bookmarks/content.js sends them). A question that holds bookmarks
+  // shows one dot beside its tick (#71): no pointer events, no focus, hidden from the accessibility
+  // tree; its tick's name says what it holds, and the tick's card lists them. Bookmarks in earlier
+  // history that isn't loaded yet share one segment under the "earlier" dots: its key in `marks`
+  // and its index are both EARLIER (-1, the dots' index); within 4 px it wins the pointer, and it is
+  // an arrow stop after the dots. Indexes are null for none.
   const EARLIER = -1; // ButterBookmarks.EARLIER
   let marks = new Map(), // question id or EARLIER -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
     marksItems = null, // the conversation's items `marks` were worked out from
     hotMark = null;
-  const markEls = new Map();
+  const markEls = new Map(), // EARLIER -> its segment
+    dotEls = new Map(); // question id -> its dot
   const idAt = (i) => (i === EARLIER ? EARLIER : qs[i]?.id);
-  // A segment's index, or null while it has no place: the dots show only while earlier history isn't loaded.
+  // A mark's index, or null while it has no place: the dots show only while earlier history isn't loaded.
   const indexOf = (id) => (id === EARLIER ? (cur.hasPrev ? EARLIER : null) : idxOf.get(id));
-  // The dots' segment sits 5 px below their centre, as a question's sits below its tick.
-  const markY = (i) =>
-    i === EARLIER ? geo.top - MORE_H / 2 + 5 : tickY(i) + ButterBookmarks.segmentOffset(geo.pitch);
-  const segmentOf = (el) => {
-    for (const [id, s] of markEls) if (s === el) return indexOf(id) ?? null;
-    return null;
-  };
+  // The dots' segment sits 5 px below their centre.
+  const markY = () => geo.top - MORE_H / 2 + 5;
+  const segmentOf = (el) => (el && el === markEls.get(EARLIER) ? (indexOf(EARLIER) ?? null) : null);
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const markAt = (y) => {
-    if (!geo || !marks.size) return null;
-    let best = null;
-    for (const id of marks.keys()) {
-      const i = indexOf(id);
-      if (
-        i != null &&
-        Math.abs(markY(i) - y) <= 4 &&
-        (best === null || Math.abs(markY(i) - y) < Math.abs(markY(best) - y))
-      )
-        best = i;
-    }
-    return best;
-  };
+  const markAt = (y) =>
+    geo && marks.has(EARLIER) && indexOf(EARLIER) != null && Math.abs(markY() - y) <= 4
+      ? EARLIER
+      : null;
   const hoverMark = (i) => {
     if (i === hotMark) return;
     markEls.get(idAt(hotMark))?.classList.remove('hover');
     hotMark = i;
     markEls.get(idAt(i))?.classList.add('hover');
+  };
+  // Each dot's right edge 4 px left of its tick's current length, centred on the tick's row. The
+  // hover wave's frames call this with the ticks' widths, so the dot needs no motion of its own.
+  const placeDots = () => {
+    if (!geo) return;
+    const d = ButterBookmarks.dotSize(geo.pitch);
+    for (const [id, el] of dotEls) {
+      const j = idxOf.get(id);
+      if (j == null || cs[j] == null) continue;
+      el.style.translate = `${(-ButterBookmarks.dotRight(cs[j])).toFixed(2)}px ${(tickY(j) - geo.y - d / 2).toFixed(2)}px`;
+    }
+  };
+  // A question's last bookmark deleted, or the last one on the dots loaded: its mark fades out (at
+  // once under reduced motion).
+  const drop = (el) => {
+    if (geo && !reduced()) {
+      el.classList.add('gone');
+      el.removeAttribute('aria-label');
+      setTimeout(() => el.remove(), 160);
+    } else el.remove();
   };
   const drawMarks = () => {
     // A tick's name holds its question's bookmarks (#70).
@@ -839,21 +852,39 @@
     for (const [id, el] of markEls)
       if (!marks.has(id) || indexOf(id) == null || !geo) {
         markEls.delete(id);
-        // A question's last bookmark deleted, or the last one on the dots loaded: its segment fades
-        // out (at once under reduced motion).
-        if (geo && indexOf(id) != null && !reduced()) {
-          el.classList.add('gone');
-          el.removeAttribute('aria-label');
-          setTimeout(() => el.remove(), 160);
-        } else el.remove();
+        if (indexOf(id) != null) drop(el);
+        else el.remove();
+      }
+    for (const [id, el] of dotEls)
+      if (!marks.has(id) || indexOf(id) == null || !geo) {
+        dotEls.delete(id);
+        if (indexOf(id) != null) drop(el);
+        else el.remove();
       }
     if (!geo) return;
+    const d = ButterBookmarks.dotSize(geo.pitch);
     for (const [id, m] of marks) {
       const i = indexOf(id);
       if (i == null) continue;
+      if (i !== EARLIER) {
+        let el = dotEls.get(id);
+        if (!el) {
+          el = document.createElement('i');
+          el.className = m.fresh ? 'bdot new' : 'bdot';
+          el.setAttribute('aria-hidden', 'true');
+          markBox.append(el);
+          dotEls.set(id, el);
+        }
+        el.setAttribute('data-q', i);
+        el.style.width = el.style.height = `${d}px`;
+        const look = ButterBookmarks.dotLook(m.bookmarks, d);
+        el.classList.toggle('stale', look === 'hollow');
+        el.classList.toggle('faint', look === 'faint');
+        continue;
+      }
       let el = markEls.get(id);
       if (!el) {
-        // Reached by the rail's arrow keys only, as a stop after its question's tick.
+        // Reached by the rail's arrow keys only, as a stop after the dots.
         el = document.createElement('button');
         el.className = m.fresh ? 'mark new' : 'mark';
         el.tabIndex = -1;
@@ -862,18 +893,15 @@
       }
       el.setAttribute(
         'aria-label',
-        i === EARLIER
-          ? ButterBookmarks.card(m.bookmarks, { earlier: true }, TXT.zh).label
-          : ButterBookmarks.label(m.bookmarks, TXT.zh),
+        ButterBookmarks.card(m.bookmarks, { earlier: true }, TXT.zh).label,
       );
-      // Pale only when every bookmark under the question is stale (#55).
-      el.classList.toggle('stale', ButterBookmarks.pale(m.bookmarks));
-      el.style.top = `${(markY(i) - geo.y - 1).toFixed(2)}px`;
+      el.style.top = `${(markY() - geo.y - 1).toFixed(2)}px`;
       el.classList.toggle('hover', i === hotMark);
     }
+    placeDots();
   };
-  // The card open on a segment or a tick follows its bookmarks (a deletion, or one leaving the dots as its
-  // answer loads), keeping keyboard focus on the same row.
+  // The card open on the dots' segment or a tick follows its bookmarks (a deletion, or one leaving
+  // the dots as its answer loads), keeping keyboard focus on the same row.
   const refill = () => {
     if (!host || !shownBm || shown === -2) return;
     const a = host.shadowRoot.activeElement,
@@ -908,7 +936,7 @@
     },
   };
 
-  // ---- The hover card for a segment: one bookmark's text, or a list of them in answer order.
+  // ---- The hover card for the dots' segment: one bookmark's text, or a list of them in answer order.
   const FLAG =
     '<svg class="flag" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0h8v10L4 7.3 0 10z"/></svg>';
   const X =
@@ -1045,7 +1073,7 @@
       m = marks.get(id);
     if (i == null || !m || railOff()) return;
     endOpening();
-    if (keyboard) (merged ? ticks[i] : markEls.get(id))?.focus();
+    if (keyboard) ticks[i]?.focus();
     hover(-2);
     if (!keyboard) {
       held = true;
@@ -1172,7 +1200,7 @@
   });
 
   let shown = -2,
-    shownBm = false, // the card shows bookmarks and takes the pointer: a segment's, the dots' or a tick's
+    shownBm = false, // the card shows bookmarks and takes the pointer: the dots' segment's or a tick's
     merged = false, // the card is tick `shown`'s, with its question's bookmarks under the question (#70)
     held = false;
   const hover = (i, bm = false) => {
@@ -1180,7 +1208,7 @@
       showSeek();
       return;
     }
-    bm = bm && i >= EARLIER && marks.has(idAt(i)) && indexOf(idAt(i)) != null;
+    bm = bm && i === EARLIER && marks.has(EARLIER) && indexOf(EARLIER) != null;
     const qb = !bm && i >= 0 && marks.has(qs[i]?.id);
     if ((i === shown && (bm || qb) === shownBm && qb === merged) || !host || (held && i !== -2))
       return;
@@ -1199,9 +1227,9 @@
     card.classList.toggle('qb', qb);
     if (bm) {
       fillCard(i);
-      // Centred on its segment; the dots' card, at the rail's top, comes down to stay in the chat.
-      let cy = markY(i);
-      if (i === EARLIER && box) cy = Math.max(cy, box.top + 8 + card.offsetHeight / 2);
+      // The dots' card, centred on their segment at the rail's top, comes down to stay in the chat.
+      let cy = markY();
+      if (box) cy = Math.max(cy, box.top + 8 + card.offsetHeight / 2);
       host.style.setProperty('--cy', `${cy}px`);
       card.classList.add('show');
       return;
@@ -1277,6 +1305,7 @@
       bars[j].style.transform = `scale(${cs[j].toFixed(3)}, ${ct[j].toFixed(3)})`;
       bars[j].style.opacity = co[j].toFixed(3);
     }
+    placeDots();
     raf = moving ? requestAnimationFrame(step) : 0;
   };
   // Ids of the questions on screen, worked out once per animation run rather than per bar.
@@ -1613,9 +1642,9 @@
               return b ? m.land(turn, b) : null;
             },
           };
-          // Focus follows a keyboard trip to the bookmark's segment; the dots' card goes away.
+          // Focus follows a keyboard trip to the bookmark's tick; the dots' card goes away.
           setWait(null);
-          if (waitKeyboard) markEls.get(id)?.focus();
+          if (waitKeyboard) ticks[i]?.focus();
           if (waitKeyboard || shown === EARLIER) {
             hover(-2);
             held = !waitKeyboard;

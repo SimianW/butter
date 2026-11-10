@@ -18,8 +18,19 @@ The [history rail](history-rail.md) lives in `rail/rail.js` and `history/convers
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
-Bookmarks (`bookmarks/content.js`, `bookmarks/model.js`) show on the rail as a short segment under
-the tick of each question that holds them. Hovering or focusing such a tick shows the question's
+Bookmarks (`bookmarks/content.js`, `bookmarks/model.js`) show on the rail as one dot beside the tick
+of each question that holds them, however many it holds: a 4 px circle on the tick's row, its right
+edge 4 px left of the tick's end (`#d39e10` in light theme, `#e3c766` in dark). The rail places the
+dots in the frame loop that sets the ticks' widths, so a dot follows its tick as it lengthens for the
+question being read or under the pointer; at rest nothing runs. When ticks are under 6 px apart the
+dot is the pitch minus 2 px across, never under 2 px. A question whose bookmarks are all stale has a
+hollow dot, a 1 px ring (solid at 45 % opacity under 4 px, too small for a ring). A new bookmark's
+dot grows in over 180 ms and pulses one 600 ms halo; a question's last bookmark deleted fades its dot
+out over 160 ms; under reduced motion neither moves. The dot is no target: it takes no pointer
+events, is not focusable and is hidden from screen readers, so the pointer over it is over its tick's
+row, and the tick's name says what the question holds. No dots show while the rail is off or Butter
+is paused. Bookmarks in earlier history that isn't loaded yet keep one short segment under the
+rail's earlier-history dots, with its own card. Hovering or focusing a tick that holds bookmarks shows the question's
 usual card with its bookmarks under the question: the meta line, the question clamped to two lines,
 a divider, then one row per bookmark in answer order, each starting with a 5 px dot (`#d39e10` in
 light theme, `#e3c766` in dark; a hollow ring when the bookmark is stale, whose row is grey and says

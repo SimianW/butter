@@ -2,25 +2,28 @@
 // ChatGPT chat: every chatgpt.com request is answered locally (the page, /backend-api/me and the
 // conversation's messages, which Butter's own fetch hook reads), and the run fails if anything
 // else is requested. No ChatGPT requests.
-// Checks: hover a paragraph, the button waits 120 ms, click it, the segment appears under the right
-// question, clicking the segment lands on the paragraph, a reload shows the segment again, a
-// bookmarked paragraph shows the filled button, the conversation's bookmarks are read once and not
-// during scrolling, going to the home page and Back through history shows the segment again, and
-// with the rail off or Butter paused neither the button nor a segment shows.
+// Checks: hover a paragraph, the button waits 120 ms, click it, a dot appears beside the right
+// question's tick (#71) with its grow-in and halo, no segment under any tick, the pointer over the
+// dot shows the tick's card and a click there opens the question, the card's row lands on the
+// paragraph, a reload shows the dot again, a bookmarked paragraph shows the filled button, the
+// conversation's bookmarks are read once and not during scrolling, going to the home page and Back
+// through history shows the dot again, and with the rail off or Butter paused neither the button
+// nor a dot shows.
 // A one-question chat (ONLY=one runs it alone): no rail, but the filled button and its remove work.
-// The rail's hover card (#53): the single and list cards, moving onto the card, jumping from a row,
-// deleting with × and the filled button, the segment fading out, keyboard-only jump and delete, and
-// light and dark screenshots of both cards.
+// The rail's hover card (#53), now the tick's card (#70): one and several bookmarks, moving onto the
+// card, jumping from a row, deleting with × and the filled button, the dot fading out (at once
+// under reduced motion), keyboard-only jump and delete with arrow stops on the ticks only, and light
+// and dark screenshots of both cards.
 // Stale bookmarks (#55): regenerating a bookmarked answer in the fixture (in the page, then as the
 // conversation's current version after a reload) and editing a bookmarked paragraph: the grey row
-// with "answer changed", the pale segment only when every bookmark under the question is stale,
+// with "answer changed", the hollow dot only when every bookmark under the question is stale,
 // the stale single card with its footer, the jump landing at the question's start, a bookmark
 // turning live again when the original version is switched back, and light and dark screenshots
 // of the stale cards (`card-stale-*`, `card-list-stale-*`; with BUTTER_BOOKMARKS_MOCKUP also the
 // mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them). An answer that streamed in
 // this tab (sent here, so no page GET lists it): its bookmark stays live once the virtualizer
-// unmounts the turn, and its segment still lands on the paragraph.
-// First-use notice (#56): the first save shows it, Undo deletes the bookmark and its segment and the
+// unmounts the turn, and its row still lands on the paragraph.
+// First-use notice (#56): the first save shows it, Undo deletes the bookmark and its dot and the
 // next save shows it again (light and dark, English and Chinese, with layout consent pending,
 // declined, granted and switched off), Got it keeps it away on a third save and after a reload.
 // Earlier history (#51 addendum), run last: the chat opens with its latest 5 questions and loads
@@ -123,7 +126,9 @@ const messages = (from = 0, to = TURNS) =>
 // earlier messages come two questions per page from /messages?before=<first> when the chat is
 // scrolled near its top (#51 addendum). Each page is answered after `pageDelay` ms; `pages` counts them.
 // `turns`: the chat holds only its first `turns` questions (1: a one-question chat, no rail).
-const page$ = { theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0 };
+// `tail`: filler paragraphs after every answer, so that one turn fills the view (#71); `css` is added
+// to the page's style.
+const page$ = { theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0, tail: 0, css: '' };
 const PAGE_TURNS = 2;
 // The answer's wrapper in each markup. `data-fx-answer` is the harness's own handle on it.
 const answerAttrs = (id) =>
@@ -136,7 +141,7 @@ const userOf = (i) =>
     : `<div data-message-author-role="user" data-message-id="${question(i)}"><div data-user-message-bubble>${QUESTION(i)}</div></div>`;
 const turnHtml = (i) =>
   `<div><article data-turn-key="${question(i)}" data-testid="conversation-turn-${i + 1}"><div class="user">${userOf(i)}</div>` +
-  `<div ${answerAttrs(answerId(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}</div></div></article></div>`;
+  `<div ${answerAttrs(answerId(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}${'<p>Fixture filler: more of the answer.</p>'.repeat(page$.tail)}</div></div></article></div>`;
 // ChatGPT's paging, in the page: opened at the bottom; within 230 px of the top it fetches the
 // page before the first loaded question, then mounts its turns above and keeps the view in place.
 const earlierScript = () => `
@@ -170,6 +175,7 @@ article { display:block; width:720px; margin:0 auto 24px }
 [data-markdown-text-style] p, [data-markdown-text-style] ul { margin:0 0 16px }
 /* Three lines of this one hold fewer than 240 characters: the line rule decides its excerpt. */
 [data-markdown-text-style] p.narrow { max-width:300px }
+${page$.css}
 </style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from(
   { length: page$.turns - page$.first },
   (_, k) => turnHtml(k + page$.first),
@@ -273,10 +279,12 @@ const sha = (s) => createHash('sha256').update(s).digest('hex');
 const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
 // Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
 // `radius`: the images are a card's own box with that corner radius; the corners outside it (the
-// page and the shadow behind the card, which differ between the two) are left out.
-async function compare(page, a, b, radius = 0) {
+// page and the shadow behind the card, which differ between the two) are left out. `masks`: boxes
+// { x, y, w, h } in the images' pixels that are left out too. `near`: a pixel also matches when
+// one of `b`'s within 1 px of it does (for marks drawn on fractions of a pixel).
+async function compare(page, a, b, radius = 0, masks = [], near = false) {
   return page.evaluate(
-    async ([a, b, radius]) => {
+    async ([a, b, radius, masks, near]) => {
       const load = (src) =>
         new Promise((r) => {
           const i = new Image();
@@ -302,14 +310,27 @@ async function compare(page, a, b, radius = 0) {
         };
       let n = 0,
         all = 0;
+      const masked = (i, j) => masks.some((m) => i >= m.x && i < m.x + m.w && j >= m.y && j < m.y + m.h);
       for (let k = 0; k < p.length; k += 4) {
         if (radius && out((k / 4) % w, Math.floor(k / 4 / w))) continue;
+        if (masks.length && masked((k / 4) % w, Math.floor(k / 4 / w))) continue;
         all++;
-        if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
+        const off = (o) => Math.max(Math.abs(p[k] - q[o]), Math.abs(p[k + 1] - q[o + 1]), Math.abs(p[k + 2] - q[o + 2])) > 24;
+        if (!off(k)) continue;
+        if (near) {
+          const i = (k / 4) % w,
+            j = Math.floor(k / 4 / w);
+          let close = false;
+          for (let dj = -1; dj <= 1 && !close; dj++)
+            for (let di = -1; di <= 1 && !close; di++)
+              if (i + di >= 0 && i + di < w && j + dj >= 0 && j + dj < h) close = !off(4 * ((j + dj) * w + i + di));
+          if (close) continue;
+        }
+        n++;
       }
       return { ratio: n / all, pixels: n };
     },
-    [await png(a), await png(b), radius],
+    [await png(a), await png(b), radius, masks, near],
   );
 }
 
@@ -330,16 +351,33 @@ async function open(theme = 'light') {
   );
   await page.waitForTimeout(400);
 }
+// The rail: its ticks (each bar's box and its tick's name), the bookmark dots beside them (#71), and
+// `marks`, the segments (only the earlier-history dots keep one).
 const rail = () =>
   page.evaluate(() => {
     const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
     const center = (el) => {
       const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, right: r.right };
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, left: r.left, right: r.right };
     };
     return {
-      ticks: [...root.querySelectorAll('.tick .bar')].map(center),
-      marks: [...root.querySelectorAll('.mark')].map((el) => ({
+      ticks: [...root.querySelectorAll('.tick .bar')].map((b) => ({ ...center(b), label: b.parentElement.getAttribute('aria-label') })),
+      dots: [...root.querySelectorAll('.bdot:not(.gone)')].map((el) => {
+        const s = getComputedStyle(el);
+        return {
+          ...center(el),
+          cls: el.className,
+          color: s.backgroundColor,
+          ring: s.boxShadow,
+          radius: s.borderRadius,
+          opacity: +s.opacity,
+          pe: s.pointerEvents,
+          hidden: el.getAttribute('aria-hidden'),
+          tag: el.tagName,
+          tabIndex: el.tabIndex,
+        };
+      }),
+      marks: [...root.querySelectorAll('.mark:not(.gone)')].map((el) => ({
         ...center(el),
         cls: el.className,
         color: getComputedStyle(el).backgroundColor,
@@ -347,6 +385,88 @@ const rail = () =>
       visible: getComputedStyle(document.querySelector('chatgpt-butter-nav')).display !== 'none',
     };
   });
+// Question `turn`'s dot: on its tick's row, its right edge 4 px left of the tick's left end.
+const dotBeside = (r, turn) => {
+  const t = r.ticks[turn];
+  return t && r.dots.find((d) => Math.abs(d.y - t.y) <= 0.6 && Math.abs(d.right - (t.left - 4)) <= 0.6);
+};
+// Waits for `n` bookmark dots on the rail (fading ones not counted).
+const dotCount = (n, timeout = 5000) =>
+  page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot:not(.gone)').length === n, n, { timeout });
+// The card open on the rail, as the tick's card shows a question's bookmarks (#70): its name, rows,
+// footer, the row box and the focused element.
+const tickCard = () =>
+  page.evaluate(() => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+      c = root.querySelector('.card'),
+      s = getComputedStyle(c),
+      r = c.getBoundingClientRect(),
+      box = root.querySelector('.bmc .rows'),
+      a = root.activeElement;
+    const rect = (el) => {
+      const q = el.getBoundingClientRect();
+      return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height };
+    };
+    return {
+      shown: c.classList.contains('show') && +s.opacity > 0.5,
+      merged: c.classList.contains('qb'),
+      pe: s.pointerEvents,
+      name: c.getAttribute('aria-label'),
+      rows: c.classList.contains('qb')
+        ? [...root.querySelectorAll('.bmc .it')].map((it) => {
+            const tx = it.querySelector('.tx'),
+              x = it.querySelector('.x'),
+              dot = it.querySelector('.dot');
+            return {
+              text: tx.textContent,
+              lines: Math.round(tx.getBoundingClientRect().height / parseFloat(getComputedStyle(tx).lineHeight)),
+              stale: it.classList.contains('stale'),
+              why: it.querySelector('.why')?.textContent ?? null,
+              color: getComputedStyle(tx).color,
+              dot: dot && { bg: getComputedStyle(dot).backgroundColor, ring: getComputedStyle(dot).boxShadow },
+              bg: getComputedStyle(it).backgroundColor,
+              xShown: getComputedStyle(x).display !== 'none' && +getComputedStyle(x).opacity === 1,
+              xLabel: x.getAttribute('aria-label'),
+              ...rect(it),
+              xAt: rect(x),
+            };
+          })
+        : [],
+      warn: root.querySelector('.bmc .warn')?.textContent ?? null,
+      box: box && { client: box.clientHeight, scroll: box.scrollHeight },
+      rect: { x: r.left, y: r.top, w: r.width, h: r.height },
+      active: a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null,
+    };
+  });
+// Hover question `turn`'s tick, on its row.
+const hoverTick = async (turn) => {
+  await page.mouse.move(700, 300);
+  await page.waitForTimeout(200);
+  const t = (await rail()).ticks[turn];
+  await page.mouse.move(t.x, t.y, { steps: 4 });
+  await page.waitForTimeout(350);
+  return t;
+};
+// From the tick across the gap onto row k of its card, the pointer resting on its text.
+const ontoRow = async (k) => {
+  const c = await tickCard();
+  await page.mouse.move(c.rows[k].x - 40, c.rows[k].y, { steps: 12 });
+  await page.waitForTimeout(300);
+  return tickCard();
+};
+// A wheel turn first: a user scroll ends the pin a jump leaves on its question.
+const toTop = async () => {
+  await page.mouse.move(700, 400);
+  await page.mouse.wheel(0, -1);
+  await page.waitForTimeout(50);
+  await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
+  await page.waitForTimeout(300);
+};
+const questionTop = (turn) =>
+  page.evaluate(
+    (id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top,
+    question(turn),
+  );
 const button = () =>
   page.evaluate(() => {
     const b = document.querySelector('chatgpt-butter-bookmark')?.shadowRoot.querySelector('button');
@@ -429,19 +549,19 @@ const textTop = (turn, k, offset) =>
     },
     [answer(turn), k, offset, PARAS],
   );
-// Click question `turn`'s segment from the top of the chat and wait for the jump.
-async function jumpBySegment(turn) {
-  await page.mouse.move(10, 10);
-  await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
-  await page.waitForTimeout(300);
-  const r = await rail();
-  const m = r.marks.find((x) => Math.abs(x.y - r.ticks[turn].y - 5) <= 0.6);
-  if (!m) return false;
-  await page.mouse.click(m.right - 4, m.y + 3);
+// From the top of the chat, click row k of question `turn`'s card (its tick holds a dot) and wait
+// for the jump.
+async function jumpByRow(turn, k = 0) {
+  await toTop();
+  if (!dotBeside(await rail(), turn)) return false;
+  await hoverTick(turn);
+  const c = await tickCard();
+  if (!c.merged || !c.rows[k]) return false;
+  await ontoRow(k);
+  await page.mouse.click(c.rows[k].x - 40, c.rows[k].y);
   await page.waitForTimeout(3500);
   return true;
 }
-const markUnder = (r, turn) => r.marks.some((m) => Math.abs(m.y - r.ticks[turn].y - 5) <= 0.6);
 
 // Hover a paragraph (away from its first line), then click the button. `low`: the paragraph sits
 // too far down its answer to show after scrolling to its question; scroll it to 200 px instead.
@@ -485,7 +605,7 @@ async function bookmark(turn, k, low = false) {
 }
 
 // 11b. A one-question chat: the rail stays hidden, as before, but a bookmark made there still
-// shows the filled button and can be removed with it; with a second question its segment shows.
+// shows the filled button and can be removed with it; with a second question its dot shows.
 async function oneQuestionSection() {
   await settings({ bookmarkNotice: 'acknowledged' });
   await seedStore([], { clear: true });
@@ -519,15 +639,15 @@ async function oneQuestionSection() {
   await again.click();
   await page.waitForTimeout(600);
   check('one question: the filled button removes it', (await stored()).length === 0 && !(await railOn()), { stored: (await stored()).length });
-  // Saved again, then a second question: the rail shows, with the segment under question 1.
+  // Saved again, then a second question: the rail shows, with the dot beside question 1.
   await (await bookmark(0, PARA)).click();
   await page.waitForTimeout(600);
   page$.turns = 2;
   await open();
-  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 }).catch(() => {});
+  await dotCount(1).catch(() => {});
   const two = await rail();
-  check('with a second question the rail shows the segment under question 1', (await stored()).length === 1 && two.marks.length === 1 && markUnder(two, 0),
-    { stored: (await stored()).length, marks: two.marks.length });
+  check('with a second question the rail shows the dot beside question 1', (await stored()).length === 1 && two.dots.length === 1 && !!dotBeside(two, 0),
+    { stored: (await stored()).length, dots: two.dots.length });
   page$.turns = TURNS;
   await seedStore([], { clear: true });
 }
@@ -572,8 +692,7 @@ async function cardSection() {
   // Question 7's rows in answer order: paragraph 2 (twice), 5 (stale), 6.
   const ORDER = [ROWS[3], ROWS[0], ROWS[2], ROWS[1]].map((b) => b.excerpt);
   await seedStore(ROWS, { clear: true });
-  const marked = () =>
-    page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 3, null, { timeout: 5000 });
+  const marked = () => dotCount(3);
   const tickCard = () =>
     page.evaluate(() => {
       const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
@@ -629,12 +748,12 @@ async function cardSection() {
     await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
     await page.waitForTimeout(300);
   };
-  // On the tick's row, above its segment (which takes the pointer within 4 px of its own row).
+  // On the tick's row.
   const hoverTick = async (turn) => {
     await page.mouse.move(700, 300);
     await page.waitForTimeout(200);
     const t = (await rail()).ticks[turn];
-    await page.mouse.move(t.x, t.y - 3, { steps: 4 });
+    await page.mouse.move(t.x, t.y, { steps: 4 });
     await page.waitForTimeout(350);
     return t;
   };
@@ -724,7 +843,7 @@ async function cardSection() {
   await marked();
   await toTop();
   let t = await hoverTick(6);
-  await page.mouse.click(t.x, t.y - 3);
+  await page.mouse.click(t.x, t.y);
   await page.waitForTimeout(3500);
   const questionTop = (turn) =>
     page.evaluate((id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top, question(turn));
@@ -844,6 +963,285 @@ async function cardSection() {
   await seedStore([], { clear: true });
 }
 
+// 14. The dot (#71), as the #69 mockup draws it. A 12-question chat at rest with the question being
+// read lit (`f-after-*`: questions 3, 7 and 10 hold bookmarks, 10's all stale), then the mockup's
+// close-ups at three times their size: a 7-question chat at rest in both themes (`s-rest-*`), under
+// the pointer (`s-wave-light`), with a new bookmark at its halo's widest (`s-new-light`), and a
+// 22-question chat 5 px apart (`s-dense-light`). Each answer runs past the view, so only the
+// question jumped to is lit, as in the mockup. With BUTTER_BOOKMARKS_DOT_MOCKUP each shot is
+// compared with its panel: the rail's own box for `f-after-*`, the strip's box otherwise. Also the
+// dot's gap through every frame of the hover wave, its motion under reduced motion, and no dot with
+// the rail off or Butter paused, back after a reload. ONLY=dot runs this part alone.
+async function dotSection() {
+  await settings({ bookmarkNotice: 'acknowledged' });
+  const ACCOUNT = sha('user-fixture'),
+    CONV_HASH = sha(CONV);
+  const live = (turn, time, para = 0) => {
+    const text = PARAGRAPH(turn, para === 0 ? 0 : para - 1);
+    return { account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start: 0, end: text.length, excerpt: text.slice(0, 120).trim(), time };
+  };
+  const gone = (turn, time) => ({ ...live(turn, time, 2), excerpt: 'A paragraph this answer no longer has.' });
+  page$.tail = 40;
+  const LIGHT_DOT = 'rgb(211, 158, 16)',
+    DARK_DOT = 'rgb(227, 199, 102)';
+  const railBox = () =>
+    page.evaluate(() => {
+      const r = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.rail').getBoundingClientRect();
+      return { x: r.left, y: r.top, w: r.width, h: r.height };
+    });
+  // Jump to question `turn` with its tick, then the pointer leaves: that question alone is lit.
+  const readAt = async (turn) => {
+    const t = await hoverTick(turn);
+    await page.mouse.click(t.x, t.y);
+    await page.waitForTimeout(3500);
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(1200);
+  };
+  const lit = (r) => r.ticks.map((t, i) => [i, Math.round(t.w * 10) / 10]).filter(([, w]) => w !== 12);
+  // Each tick's own box in the strip's device pixels, 1 px around it. `first`: the first tick's row,
+  // in px below the strip's top. The strip ends at the rail's right edge, 6 px right of the ticks.
+  const ticksOut = (r, first) =>
+    r.ticks.map((t) => ({
+      x: Math.floor((t.left - (t.right + 6) + 154 / 3 - 1) * 3),
+      y: Math.floor((t.y - (r.ticks[0].y - first) - 3) * 3),
+      w: Math.ceil((t.w + 2) * 3),
+      h: 18,
+    }));
+  const built = [];
+  // The strip: the rail from 8 px above its first tick's row, at three times its size (device pixels
+  // through the DevTools protocol; the mockup draws it at 3x in CSS px). The mockup's strip box is
+  // 154 x 394 inside its frame's 1 px border, its ticks 18 px from its right: here, 154 x 394 device
+  // pixels ending at the rail's right edge.
+  const strip = async (panel, masks = [], near = false) => {
+    const r = await railBox(),
+      file = `${shots}/${panel}.png`,
+      cdp = await context.newCDPSession(page),
+      vp = page.viewportSize();
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: vp.width, height: vp.height, deviceScaleFactor: 3, mobile: false });
+    await page.waitForTimeout(300);
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { x: r.x + 52 - 154 / 3, y: r.y + 2, width: 154 / 3, height: 394 / 3, scale: 1 } });
+    await cdp.send('Emulation.clearDeviceMetricsOverride');
+    await cdp.detach();
+    await page.waitForTimeout(200);
+    await fs.writeFile(file, Buffer.from(data, 'base64'));
+    built.push({ panel, file, strip: true, masks, near });
+  };
+
+  // (a) The rail at rest: one dot per question that holds bookmarks.
+  const ROWS = [live(2, 1), live(6, 2), live(6, 3, 3), gone(6, 4), live(6, 5, 4), gone(9, 6)];
+  await seedStore(ROWS, { clear: true });
+  const at = {};
+  for (const theme of ['light', 'dark']) {
+    await open(theme);
+    await dotCount(3);
+    await readAt(6);
+    const r = await rail();
+    at[theme] = r;
+    const box = await railBox(),
+      file = `${shots}/f-after-${theme}.png`;
+    await page.screenshot({ path: file, clip: { x: box.x, y: box.y, width: box.w, height: box.h } });
+    built.push({ panel: `f-after-${theme}`, file });
+  }
+  let r = at.light;
+  const d3 = dotBeside(r, 2),
+    d7 = dotBeside(r, 6),
+    d10 = dotBeside(r, 9);
+  check('one dot per question that holds bookmarks, whatever their number: questions 3, 7 (four) and 10', r.dots.length === 3 && d3 && d7 && d10,
+    { dots: r.dots.map((d) => [d.y, d.right]) });
+  check('the question being read: its 21 px tick lit, the dot still 4 px from its end', JSON.stringify(lit(r)) === '[[6,21]]' && !!d7, { lit: lit(r) });
+  check('a question with one live bookmark of four keeps a solid dot; one whose only bookmark is stale has a hollow one',
+    d3.color === LIGHT_DOT && d7.color === LIGHT_DOT && !d7.cls.includes('stale') &&
+      d10.cls.includes('stale') && d10.color === 'rgba(0, 0, 0, 0)' && d10.ring === `${LIGHT_DOT} 0px 0px 0px 1px inset`, { d7: d7.cls, d10: [d10.color, d10.ring] });
+  check('dark theme: the dots in #e3c766, the hollow ring too', at.dark.dots.length === 3 && dotBeside(at.dark, 2)?.color === DARK_DOT &&
+    dotBeside(at.dark, 9)?.ring === `${DARK_DOT} 0px 0px 0px 1px inset`, { dots: at.dark.dots.map((d) => [d.color, d.ring]) });
+  check('no segment under any tick', r.marks.length === 0);
+
+  // (b) Through every frame of the hover wave each dot keeps 4 px from its tick, inside the rail.
+  const frames = page.evaluate(
+    () =>
+      new Promise((ok) => {
+        const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+          rail = root.querySelector('.rail').getBoundingClientRect(),
+          out = [];
+        const step = () => {
+          const bars = [...root.querySelectorAll('.tick .bar')].map((b) => b.getBoundingClientRect());
+          out.push(
+            [...root.querySelectorAll('.bdot:not(.gone)')].map((el) => {
+              const d = el.getBoundingClientRect(),
+                b = bars.find((b) => Math.abs(b.top + b.height / 2 - (d.top + d.height / 2)) <= 0.6);
+              return { gap: b ? b.left - d.right : null, w: b?.width, inside: d.left >= rail.left && d.right <= rail.right };
+            }),
+          );
+          if (out.length < 60) requestAnimationFrame(step);
+          else ok(out);
+        };
+        requestAnimationFrame(step);
+      }),
+  );
+  const t7 = r.ticks[6];
+  await page.mouse.move(t7.x, t7.y - 30, { steps: 3 });
+  await page.mouse.move(t7.x, t7.y, { steps: 10 });
+  const wave = (await frames).flat();
+  check('through the hover wave every dot keeps its 4 px gap and stays inside the 52 px rail',
+    wave.length === 180 && wave.every((x) => x.gap !== null && Math.abs(x.gap - 4) <= 0.05 && x.inside) && Math.max(...wave.map((x) => x.w)) > 30,
+    { frames: wave.length, gaps: [Math.min(...wave.map((x) => x.gap)), Math.max(...wave.map((x) => x.gap))], widest: Math.max(...wave.map((x) => x.w)) });
+
+  // (c) Rail off, then Butter paused: no dots; back on, they return after the reload.
+  for (const [name, butter] of [
+    ['rail off', { bookmarkNotice: 'acknowledged', opts: { rail: false } }],
+    ['Butter paused', { bookmarkNotice: 'acknowledged', enabled: false }],
+  ]) {
+    await page.goto('about:blank');
+    await settings(butter);
+    await open('light').catch(() => {});
+    await page.waitForTimeout(600);
+    const shown = await page.evaluate(() => {
+      const nav = document.querySelector('chatgpt-butter-nav');
+      return nav && getComputedStyle(nav).display !== 'none' && nav.hasAttribute('data-on')
+        ? [...nav.shadowRoot.querySelectorAll('.bdot')].filter((d) => d.getBoundingClientRect().width).length
+        : 0;
+    });
+    check(`${name}: no dots`, shown === 0, { shown });
+  }
+  await settings({ bookmarkNotice: 'acknowledged' });
+  await open('light');
+  await dotCount(3);
+  r = await rail();
+  check('back on, after a reload: the three dots are back beside their ticks, without the grow-in',
+    !!dotBeside(r, 2) && !!dotBeside(r, 6) && !!dotBeside(r, 9) && r.dots.every((d) => !d.cls.includes('new')));
+
+  // (d) The close-ups: a 7-question chat, question 4 being read; 2 and 4 hold live bookmarks, 6 a stale one.
+  page$.turns = 7;
+  await seedStore([live(1, 1), live(3, 2), gone(5, 3)], { clear: true });
+  for (const theme of ['light', 'dark']) {
+    await open(theme);
+    await dotCount(3);
+    await readAt(3);
+    r = await rail();
+    check(`close-up (${theme}): question 4 alone is lit, dots beside 2, 4 and 6`, JSON.stringify(lit(r)) === '[[3,21]]' &&
+      !!dotBeside(r, 1) && !!dotBeside(r, 3) && !!dotBeside(r, 5), { lit: lit(r) });
+    await strip(`s-rest-${theme}`);
+  }
+  // Under the pointer, on question 3's row. The mockup draws the wave without the rail's hover look,
+  // which #71 doesn't change: the ticks thickening up to 1.6 times under the pointer, and the pill
+  // behind the rail, whose bottom edge and shadow fall in the strip. Each tick's own box and the
+  // pill's bottom edge are left out of the comparison; the dots and the rest are compared. The
+  // dots sit on fractions of a pixel here: the rail moves them as it scales the ticks, drawn
+  // between pixels, where the mockup's are placed and snapped to whole ones, so a pixel matches
+  // when one within a device pixel of it in the mockup does.
+  await open('light');
+  await dotCount(3);
+  await readAt(3);
+  r = await rail();
+  await page.mouse.move(r.ticks[2].x, r.ticks[2].y - 20, { steps: 3 });
+  await page.mouse.move(r.ticks[2].x, r.ticks[2].y, { steps: 6 });
+  await page.waitForTimeout(1500);
+  r = await rail();
+  check('under the pointer: each dot 4 px from its lengthened tick', !!dotBeside(r, 1) && !!dotBeside(r, 3) && !!dotBeside(r, 5) && r.ticks[2].w > 31,
+    { widths: r.ticks.map((t) => t.w) });
+  const box7 = await railBox();
+  await strip('s-wave-light', [...ticksOut(r, 15), { x: 0, y: (box7.h - 2 - 14) * 3, w: 154, h: 394 }], true);
+  // A new bookmark under question 2: its motion is paused as it starts, the page goes back to
+  // question 4, and the dot is shot at the halo's widest (300 ms into the halo).
+  await page.mouse.move(700, 300);
+  await seedStore([live(3, 2), gone(5, 3)], { clear: true });
+  await open('light');
+  await dotCount(2);
+  const made = await bookmark(1, 0);
+  await made.click();
+  const paused = await page
+    .waitForFunction(() => {
+      const d = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot.new')][0];
+      if (!d || d.getAnimations().length < 2) return null;
+      d.getAnimations().forEach((a) => a.pause());
+      return d.getAnimations().map((a) => a.animationName);
+    })
+    .then((h) => h.jsonValue());
+  await readAt(3);
+  await page.evaluate(() => {
+    for (const a of document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bdot.new').getAnimations()) a.currentTime = 480;
+  });
+  await page.waitForTimeout(100);
+  r = await rail();
+  check('a new bookmark\'s dot: grow-in, then the halo; at its widest, 4 px around the dot', JSON.stringify(paused) === '["dot-in","dot-halo"]' &&
+    /4px$/.test(dotBeside(r, 1)?.ring ?? '') && JSON.stringify(lit(r)) === '[[3,21]]', { paused, ring: dotBeside(r, 1)?.ring });
+  await strip('s-new-light');
+  await page.evaluate(() => {
+    for (const a of document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bdot.new')?.getAnimations() ?? []) a.finish();
+  });
+  // Reduced motion: no grow-in, no halo, no fade.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await toTop(); // a wheel turn ends the pin the jump left on question 4
+  const still = await bookmark(4, 0);
+  await still.click();
+  await dotCount(4);
+  const quiet = await page.evaluate(() =>
+    [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot')].map((d) => d.getAnimations().length),
+  );
+  check('reduced motion: a new dot appears with no grow-in and no halo', quiet.every((n) => n === 0), { quiet });
+  const removed = await bookmark(4, 0);
+  await removed.click();
+  await page.waitForTimeout(100);
+  const left = await page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot').length);
+  check('reduced motion: a deleted question\'s dot goes at once, with no fade', left === 3, { left });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+
+  // (e) A very long chat: 22 questions 5 px apart, question 16 being read. The scroller's box, just
+  // over 212 + 22 x 5 / .85 px tall, gives a pitch of 5 px, as the mockup draws it: layout floors
+  // each tick's height to 1/64 px, and rounds a fractional height, which a vertical scale avoids.
+  // At this pitch a tick's top is on half a pixel, which Chrome snaps a device pixel lower at three
+  // times the size than the mockup's 3x drawing in CSS px: each tick's own box is left out of the
+  // comparison. The mockup draws question 10's dot (all its bookmarks stale, 3 px across) with a
+  // ring; #69 decides it solid at 45 % (a 1 px ring can't be drawn under 4 px), so that dot is left
+  // out too. The other dots are compared.
+  page$.turns = 22;
+  page$.css = `.thread-scroll-container { height: 342px; transform: scaleY(${341.42 / 342}); transform-origin: 0 0 }`;
+  await seedStore([live(3, 1), live(4, 2), gone(9, 3), live(15, 4), live(18, 5)], { clear: true });
+  await open('light');
+  await dotCount(5);
+  await readAt(15);
+  r = await rail();
+  const pitch = (r.ticks.at(-1).y - r.ticks[0].y) / 21,
+    faint = dotBeside(r, 9);
+  check('a very long chat: ticks 5 px apart, dots 3 px across, question 16 alone lit', Math.abs(pitch - 5) < 0.01 && r.dots.length === 5 &&
+    [3, 4, 9, 15, 18].every((i) => dotBeside(r, i)?.w === 3) && JSON.stringify(lit(r)) === '[[15,21]]', { pitch, lit: lit(r), d: r.dots.map((d) => d.w) });
+  check('ticks too close for a ring: the all-stale dot is solid at 45 %', faint && !faint.cls.includes('stale') && faint.cls.includes('faint') &&
+    faint.color === LIGHT_DOT && Math.abs(faint.opacity - 0.45) < 0.001, { faint });
+  const top = r.ticks[0].y - 10.5;
+  await strip('s-dense-light', [
+    ...ticksOut(r, 10.5),
+    { x: Math.floor((faint.left - (r.ticks[0].right + 6) + 154 / 3 - 1) * 3), y: Math.floor((faint.y - top - faint.h / 2 - 1) * 3), w: 3 * (faint.w + 2) + 1, h: 3 * (faint.h + 2) + 1 },
+  ]);
+
+  page$.turns = TURNS;
+  page$.tail = 0;
+  page$.css = '';
+  await seedStore([], { clear: true });
+
+  // Against the #69 mockup's sections 1 and 2, when given.
+  if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) {
+    const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
+    await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
+    await mock.addStyleTag({ content: 'html { scrollbar-width: none } .ann, .ring { display: none }' });
+    await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
+    for (const b of built) {
+      const el = mock.locator(b.strip ? `[data-panel="${b.panel}"]` : `[data-panel="${b.panel}"] .rail`);
+      await el.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+      const box = await el.boundingBox(),
+        reference = `${shots}/mockup-${b.panel}.png`;
+      // A strip's own box is inside its frame's 1 px border.
+      const clip = b.strip ? { x: box.x + 1, y: box.y + 1, width: 154, height: 394 } : { x: box.x, y: box.y, width: 52, height: 188 };
+      await mock.screenshot({ path: reference, clip });
+      const diff = await compare(mock, b.file, reference, b.strip ? 13 : 0, b.masks ?? [], b.near),
+        strict = b.near ? await compare(mock, b.file, reference, 13, b.masks) : undefined,
+        whole = b.masks?.length ? await compare(mock, b.file, reference, 13) : undefined;
+      check(`the rail matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
+        { ...diff, ...(strict && { strict }), ...(whole && { unmasked: whole }), mockupAt: [box.x, box.y] });
+    }
+    await mock.close();
+  }
+}
+
 // 12. Earlier history (#51 addendum). After a reload a long chat lists only its latest questions; a
 // bookmark whose question is earlier sits on the rail's earlier-history dots until its answer is
 // loaded. The fixture opens with questions 8 to 12; each earlier page brings two more.
@@ -875,6 +1273,13 @@ async function earlierSection() {
         color: getComputedStyle(el).backgroundColor,
         shadow: getComputedStyle(el).boxShadow,
       }));
+      // The questions' bookmark dots (#71), each with its tick's name.
+      const bars = [...root.querySelectorAll('.tick .bar')];
+      const dots = [...root.querySelectorAll('.bdot:not(.gone)')].map((el) => {
+        const r = rect(el),
+          bar = bars.find((b) => Math.abs(rect(b).y - r.y) <= 0.6);
+        return { ...r, cls: el.className, label: bar?.parentElement.getAttribute('aria-label') ?? null };
+      });
       const card = root.querySelector('.card'),
         bmc = root.querySelector('.bmc'),
         a = root.activeElement;
@@ -884,7 +1289,9 @@ async function earlierSection() {
         busy: more.classList.contains('busy'),
         dotsMark: more.hidden ? null : (marks.find((m) => Math.abs(m.y - dotsY - 5) <= 0.6) ?? null),
         marks,
-        ticks: [...root.querySelectorAll('.tick .bar')].map((b) => rect(b).y),
+        dots,
+        ticks: bars.map((b) => rect(b).y),
+        tickRight: bars[0] && rect(bars[0]).right,
         card: {
           shown: card.classList.contains('show') && +getComputedStyle(card).opacity > 0.5,
           label: card.getAttribute('aria-label'),
@@ -908,13 +1315,13 @@ async function earlierSection() {
         active: a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null,
       };
     });
-  // The segment under question `turn`'s tick (0 = the chat's first question), among those loaded.
+  // The dot beside question `turn`'s tick (0 = the chat's first question), among those loaded.
   // A landing near the top loads one more page, as ChatGPT does: count from the loaded ticks.
   const under = (s, turn) => {
     const i = turn - (TURNS - s.ticks.length);
-    return i >= 0 && s.marks.find((m) => Math.abs(m.y - s.ticks[i] - 5) <= 0.6);
+    return i >= 0 && s.dots.find((m) => Math.abs(m.y - s.ticks[i]) <= 0.6);
   };
-  // Records segments growing in and fading out, in the rail's own layer.
+  // Records marks growing in and fading out, in the rail's own layer.
   const record = () =>
     page.evaluate(() => {
       const box = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.marks');
@@ -952,7 +1359,7 @@ async function earlierSection() {
     page$.pages = 0;
     await reseed(rows);
     await open(theme);
-    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === n, marks, { timeout: 5000 });
+    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark:not(.gone), .bdot:not(.gone)').length === n, marks, { timeout: 5000 });
     await page.mouse.move(700, 300);
     await page.waitForTimeout(200);
     return state();
@@ -977,13 +1384,14 @@ async function earlierSection() {
 
   // (a) At rest: the earlier bookmark on the dots, the loaded one under its question.
   let s = await openEarlier('light', [A, LATEST], 2);
-  const other = s.marks.find((m) => m !== s.dotsMark);
   check('earlier: the chat opens with its latest 5 questions and the earlier-history dots', s.ticks.length === 5 && s.more, { ticks: s.ticks.length });
-  check('earlier: one segment on the dots, 5 px below their centre, 8 × 2 px in the segments\' colour and ring',
-    !!s.dotsMark && s.dotsMark.w === 8 && s.dotsMark.h === 2 && s.dotsMark.color === other?.color && s.dotsMark.shadow === other?.shadow &&
-      Math.abs(s.dotsMark.right - other.right) < 0.5, { dotsMark: s.dotsMark, other });
-  check('earlier: the loaded question\'s bookmark stays under its tick (question 11)', !!under(s, 10), { marks: s.marks.length });
-  check('earlier: no segment under a loaded question the bookmark isn\'t from', s.marks.length === 2 && !under(s, 9) && !under(s, 8), { marks: s.marks.map((m) => m.y), ticks: s.ticks });
+  // The dots keep their segment until #72: 8 × 2 px in butter with its ring, right-aligned with the ticks.
+  check('earlier: one segment on the dots, 5 px below their centre, 8 × 2 px in butter with its ring',
+    !!s.dotsMark && s.dotsMark.w === 8 && s.dotsMark.h === 2 && s.dotsMark.color === 'rgb(251, 224, 122)' && s.dotsMark.shadow.includes('1px') &&
+      Math.abs(s.dotsMark.right - s.tickRight) < 0.5, { dotsMark: s.dotsMark, tickRight: s.tickRight });
+  check('earlier: the loaded question\'s bookmark is a dot beside its tick (question 11)', !!under(s, 10), { dots: s.dots.length });
+  check('earlier: no dot beside a loaded question the bookmark isn\'t from, no segment under any tick',
+    s.marks.length === 1 && s.dots.length === 1 && !under(s, 9) && !under(s, 8), { marks: s.marks.map((m) => m.y), dots: s.dots.map((m) => m.y), ticks: s.ticks });
   check('earlier: the dots\' segment is never "answer changed"; its name holds the text',
     s.dotsMark && !s.dotsMark.cls.includes('stale') && s.dotsMark.label === `Bookmark · earlier question: ${A.excerpt}`, { label: s.dotsMark?.label });
   // Scrolling the loaded part reads nothing and loads no page.
@@ -1013,8 +1421,8 @@ async function earlierSection() {
   s = await state();
   let rec = await recorded();
   check('earlier: the click loads earlier pages until the answer mounts and lands on the text', l.landed && page$.pages === 3, { ...l, pages: page$.pages });
-  check('earlier: the segment moves to its real tick (question 3) with the grow-in; the dots\' segment fades out',
-    !s.dotsMark && s.more && !!under(s, 2) && rec.grown >= 1 && rec.gone >= 1, { rec, marks: s.marks.length });
+  check('earlier: the bookmark moves to its real tick (question 3), its dot growing in; the dots\' segment fades out',
+    !s.dotsMark && s.more && !!under(s, 2) && rec.grown >= 1 && rec.gone >= 1, { rec, dots: s.dots.length });
 
   // (c) The list, a row's click, and what is left on the dots afterwards.
   const LIST = [eseed(1, 0, 1), eseed(1, 2, 2), eseed(3, 0, 3), eseed(4, 2, 4)];
@@ -1071,8 +1479,8 @@ async function earlierSection() {
   await page.keyboard.press('Enter');
   l = await landed(6, 0);
   s = await state();
-  check('earlier: Enter on a row loads and lands; focus moves to its segment under question 7',
-    l.landed && page$.pages === 1 && s.active?.cls.startsWith('mark') && under(s, 6)?.label === s.active.label &&
+  check('earlier: Enter on a row loads and lands; focus moves to question 7\'s tick, beside its dot',
+    l.landed && page$.pages === 1 && s.active?.cls.startsWith('tick') && !!under(s, 6) && under(s, 6).label === s.active.label &&
       s.dotsMark?.label === `Bookmark · earlier question: ${PARAGRAPH(3, 1).slice(0, 120).trim()}`, { ...l, active: s.active, pages: page$.pages });
 
   // (f) A click on the dots' segment targets the oldest; under reduced motion it goes at once.
@@ -1114,7 +1522,7 @@ async function earlierSection() {
   page$.regen.add(9);
   s = await openEarlier('light', [{ ...eseed(9, 0, 1), ask: sha(question(9)) }, eseed(9, 2, 2)], 2).catch(() => state());
   check('earlier: a regenerated answer\'s bookmark is stale under its loaded question; one stored without its question is on the dots',
-    !!under(s, 9)?.cls.includes('stale') && !!s.dotsMark && s.marks.length === 2, { marks: s.marks.map((m) => m.cls), dots: !!s.dotsMark });
+    !!under(s, 9)?.cls.includes('stale') && !!s.dotsMark && s.marks.length === 1 && s.dots.length === 1, { marks: s.marks.map((m) => m.cls), dots: s.dots.map((m) => m.cls) });
   page$.regen.delete(9);
 
   // (h) Screenshots of each mockup state, light and dark, English and Chinese, desktop and narrow.
@@ -1228,17 +1636,18 @@ try {
     const tx = opened.then((db) => db.transaction('geometry', 'readwrite').objectStore('geometry').clear());
     return tx.then(() => {});
   });
-  // ONLY=earlier, ONLY=one and ONLY=card run that section alone.
+  // ONLY=earlier, ONLY=one, ONLY=card and ONLY=dot run that section alone.
   if (process.env.ONLY === 'earlier') await earlierSection();
   else if (process.env.ONLY === 'one') await oneQuestionSection();
   else if (process.env.ONLY === 'card') await cardSection();
+  else if (process.env.ONLY === 'dot') await dotSection();
   else {
     await settings({});
     await open();
     const before = await rail();
-    check('rail draws no segment before any bookmark', before.marks.length === 0);
+    check('rail draws no dot before any bookmark', before.dots.length === 0 && before.marks.length === 0);
 
-    // 1. Hover, wait, click: the segment appears under question 7.
+    // 1. Hover, wait, click: a dot appears beside question 7's tick (#71).
     const TURN = 6,
       PARA = 3, // the narrow paragraph: blocks are p, h3, p, p, p, p, ul
       TEXT = PARAGRAPH(TURN, 2);
@@ -1273,20 +1682,40 @@ try {
     check('button stays while the pointer crosses the margin', hover.kept?.shown);
     await page.screenshot({ path: `${shots}/button-light.png`, clip: { x: hover.b.x - 60, y: hover.b.y - 50, width: 820, height: 160 } });
     await hover.click();
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1);
+    // The new dot's motion, read before it ends: its animations, their timing and the halo's widest.
+    const motion = await page
+      .waitForFunction(() => {
+        const d = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bdot');
+        if (!d) return null;
+        const halo = d.getAnimations().find((a) => a.animationName === 'dot-halo');
+        return {
+          cls: d.className,
+          easing: getComputedStyle(d).animationTimingFunction,
+          anims: d.getAnimations().map((a) => ({ name: a.animationName, duration: a.effect.getTiming().duration, delay: a.effect.getTiming().delay, iterations: a.effect.getTiming().iterations })),
+          grow: d.getAnimations().find((a) => a.animationName === 'dot-in')?.effect.getKeyframes().map((k) => k.scale),
+          halo: halo?.effect.getKeyframes().find((k) => k.offset === 0.5)?.boxShadow,
+        };
+      })
+      .then((h) => h.jsonValue());
     await page.waitForTimeout(60);
     const made = await rail();
-    const mark = made.marks[0],
-      tick = made.ticks[TURN],
+    const tick = made.ticks[TURN],
       pitch = made.ticks[1].y - made.ticks[0].y;
-    check('one segment, under question 7, 5 px below its tick', made.marks.length === 1 &&
-      Math.abs(mark.y - (tick.y + (pitch < 12 ? 0.4 * pitch : 5))) <= 0.6, { mark, tick, pitch });
-    check('segment is new: it grows in and pulses', mark.cls.includes('new'));
+    check("one dot, beside question 7's tick: on its row, its right edge 4 px left of the tick", made.dots.length === 1 && !!dotBeside(made, TURN),
+      { dot: made.dots[0], tick });
+    check('no segment under any question\'s tick', made.marks.length === 0 &&
+      (await page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length)) === 0);
+    check('the new dot grows in from 0 over 180 ms, cubic-bezier(.2, .8, .2, 1), then one 600 ms halo, 4 px, at 35 %',
+      motion.cls.includes('new') && motion.easing.startsWith('cubic-bezier(0.2, 0.8, 0.2, 1)') &&
+        JSON.stringify(motion.anims) === JSON.stringify([{ name: 'dot-in', duration: 180, delay: 0, iterations: 1 }, { name: 'dot-halo', duration: 600, delay: 180, iterations: 1 }]) &&
+        motion.grow?.[0] === '0' && / 4px$/.test(motion.halo) && /\/ 0\.35\)/.test(motion.halo),
+      motion);
     await page.waitForTimeout(900);
-    const settled = (await rail()).marks[0];
-    check('segment is 8 x 2 px, right-aligned with the ticks, butter yellow',
-      settled.w === 8 && settled.h === 2 && Math.abs(settled.right - tick.right) <= 0.5 && settled.color === 'rgb(251, 224, 122)',
-      { settled, tickRight: tick.right });
+    const settled = (await rail()).dots[0];
+    check('the dot is a 4 px circle in #d39e10; it takes no pointer events, is not focusable and is hidden from the accessibility tree',
+      settled.w === 4 && settled.h === 4 && settled.radius === '50%' && settled.color === 'rgb(211, 158, 16)' && settled.opacity === 1 &&
+        settled.pe === 'none' && settled.hidden === 'true' && settled.tag === 'I' && settled.tabIndex === -1,
+      { settled });
     await page.screenshot({ path: `${shots}/rail-light.png`, clip: { x: 1400 - 120, y: made.ticks[0].y - 30, width: 120, height: pitch * TURNS + 60 } });
     const saved = await stored();
     const excerpt = saved[0]?.excerpt ?? '';
@@ -1325,41 +1754,40 @@ try {
     const again = await bookmark(TURN, PARA);
     check('a bookmarked paragraph shows the filled button', again.kept?.on && again.kept.tip === 'Remove bookmark',
       { button: again.kept });
-    check('the paragraph is saved once', (await stored()).length === 1 && (await rail()).marks.length === 1);
+    check('the paragraph is saved once', (await stored()).length === 1 && (await rail()).dots.length === 1);
 
-    // 3. Hovering the segment grows it to 12 px; the tick's wave does not move it.
-    await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
-    await page.waitForTimeout(300);
-    const r0 = await rail();
-    await page.mouse.move(r0.marks[0].right - 4, r0.marks[0].y + 3, { steps: 4 });
-    await page.waitForTimeout(250);
-    const hot = (await rail()).marks[0];
-    check('the segment wins the pointer within 4 px and grows to 12 px', hot.w === 12 && hot.cls.includes('hover'), { hot });
+    // 3. The dot is not a target: the pointer over it is over its tick's row, which shows the tick's card.
+    await toTop();
+    const r0 = await rail(),
+      d0 = dotBeside(r0, TURN);
+    await page.mouse.move(d0.x, d0.y, { steps: 4 });
+    await page.waitForTimeout(350);
+    const overDot = await tickCard();
+    check("the pointer over the dot shows its tick's card", overDot.shown && overDot.merged && overDot.name === 'Bookmark · question 7 of 12',
+      { name: overDot.name, merged: overDot.merged });
 
-    // 4. Click the segment: the bookmarked paragraph lands 64 px below the scroller's top.
-    await page.mouse.click(r0.marks[0].right - 4, r0.marks[0].y + 3);
+    // 4. A click on the dot's position opens the question; the card's row lands on the paragraph.
+    await page.mouse.click(d0.x, d0.y);
     await page.waitForTimeout(3500);
+    check("a click on the dot's position opens its question", Math.abs((await questionTop(TURN)) - 64) <= 3, { fromTop: await questionTop(TURN) });
+    const viaRow = await jumpByRow(TURN);
     const landed = await block(TURN, PARA);
-    check('clicking the segment lands on the bookmarked paragraph', Math.abs(landed.fromTop - 64) <= 3, { fromTop: landed.fromTop });
+    check("clicking the bookmark's row in the tick's card lands on the bookmarked paragraph", viaRow && Math.abs(landed.fromTop - 64) <= 3, { fromTop: landed.fromTop });
     // A click on the tick itself still lands on the question.
-    await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
-    await page.waitForTimeout(300);
+    await toTop();
     const r1 = await rail();
-    await page.mouse.click(r1.ticks[TURN].x, r1.ticks[TURN].y - 3);
+    await page.mouse.click(r1.ticks[TURN].x, r1.ticks[TURN].y);
     await page.waitForTimeout(3500);
-    const q = await page.evaluate((id) => {
-      const sc = document.querySelector('.thread-scroll-container').getBoundingClientRect();
-      return document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - sc.top;
-    }, question(TURN));
+    const q = await questionTop(TURN);
     check('clicking the tick still lands on the question', Math.abs(q - 64) <= 3, { fromTop: q });
 
-    // 5. Reload: the segment is back, without the new-segment motion, from one read.
+    // 5. Reload: the dot is back, without the grow-in, from one read.
     const read = (await requests())['butter-bookmark-list'] || 0;
     await open();
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
+    await dotCount(1);
     const reloaded = await rail();
-    check('after a reload the segment is under question 7 again', reloaded.marks.length === 1 &&
-      Math.abs(reloaded.marks[0].y - reloaded.ticks[TURN].y - 5) <= 0.6 && !reloaded.marks[0].cls.includes('new'));
+    check('after a reload the dot is beside question 7 again', reloaded.dots.length === 1 && !!dotBeside(reloaded, TURN) &&
+      !reloaded.dots[0].cls.includes('new'));
     const afterLoad = (await requests())['butter-bookmark-list'] || 0;
     for (let k = 0; k < 20; k++) {
       await page.mouse.move(700, 400);
@@ -1372,7 +1800,7 @@ try {
       afterLoad - read === 1 && (afterScroll['butter-bookmark-list'] || 0) === afterLoad, { read, afterLoad, afterScroll });
 
     // 5b. Away to ChatGPT's home and Back through history (no reload): the rail leaves the chat and
-    // comes back to it, and its segment with it; hovering the rail is not needed.
+    // comes back to it, and its dot with it; hovering the rail is not needed.
     await page.mouse.move(700, 400);
     await page.evaluate(() => history.pushState({}, '', '/'));
     await page.waitForFunction(() => !document.querySelector('chatgpt-butter-nav').hasAttribute('data-on'), null, { timeout: 5000 });
@@ -1380,14 +1808,14 @@ try {
     await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').hasAttribute('data-on'), null, { timeout: 5000 });
     await page.waitForTimeout(1000);
     const backAgain = await rail();
-    check('away to the home page and Back: the segment is under question 7 again', backAgain.marks.length === 1 && markUnder(backAgain, TURN),
-      { marks: backAgain.marks.length });
+    check('away to the home page and Back: the dot is beside question 7 again', backAgain.dots.length === 1 && !!dotBeside(backAgain, TURN),
+      { dots: backAgain.dots.length });
 
-    // 6. Dark theme: the segment and the button in dark butter.
+    // 6. Dark theme: the dot and the button in dark butter.
     await open('dark');
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1);
+    await dotCount(1);
     const dark = await rail();
-    check('dark theme segment is #e3c766', dark.marks[0].color === 'rgb(227, 199, 102)', { color: dark.marks[0].color });
+    check('dark theme dot is #e3c766', dark.dots[0].color === 'rgb(227, 199, 102)', { color: dark.dots[0].color });
     await page.screenshot({ path: `${shots}/rail-dark.png`, clip: { x: 1400 - 120, y: dark.ticks[0].y - 30, width: 120, height: pitch * TURNS + 60 } });
     const hoverDark = await bookmark(2, 0);
     await page.screenshot({ path: `${shots}/button-dark.png`, clip: { x: hoverDark.b.x - 60, y: hoverDark.b.y - 50, width: 820, height: 160 } });
@@ -1419,10 +1847,10 @@ try {
       bySel && bySel.para === 2 && bySel.start === selStart && bySel.end === selStart + SEL.length && bySel.excerpt === SEL,
       { bySel });
     check('the selection survives the click', await page.evaluate(() => getSelection().toString()) === SEL);
-    check('the selection bookmark has its segment under question 3', markUnder(await rail(), 2));
+    check('the selection bookmark has its dot beside question 3', !!dotBeside(await rail(), 2));
     await page.evaluate(() => getSelection().removeAllRanges());
-    check('clicking its segment lands on the selected text, not the paragraph',
-      (await jumpBySegment(2)) && Math.abs((await textTop(2, 2, selStart)) - 64) <= 3,
+    check('clicking its row lands on the selected text, not the paragraph',
+      (await jumpByRow(2)) && Math.abs((await textTop(2, 2, selStart)) - 64) <= 3,
       { fromTop: await textTop(2, 2, selStart), paragraph: (await block(2, 2)).fromTop });
 
     // (b) A selection across paragraphs, saved with the shortcut: question 5, paragraphs 2 to 3.
@@ -1437,10 +1865,10 @@ try {
       cross && cross.para === 2 && cross.start === crossStart && cross.end === PARAGRAPH(4, 1).length &&
         cross.excerpt.startsWith('weighs the share') && [...cross.excerpt].length <= 240,
       { cross, via: headed ? 'Alt+Shift+M through XTest' : 'the worker relaying the command' });
-    check('its segment is under question 5', markUnder(await rail(), 4));
+    check('its dot is beside question 5', !!dotBeside(await rail(), 4));
     await page.evaluate(() => getSelection().removeAllRanges());
-    check('clicking it lands on the selection\'s start',
-      (await jumpBySegment(4)) && Math.abs((await textTop(4, 2, crossStart)) - 64) <= 3, { fromTop: await textTop(4, 2, crossStart) });
+    check('clicking its row lands on the selection\'s start',
+      (await jumpByRow(4)) && Math.abs((await textTop(4, 2, crossStart)) - 64) <= 3, { fromTop: await textTop(4, 2, crossStart) });
 
     // (c) Nothing selected: the shortcut bookmarks the first answer paragraph at or below the header.
     // Question 9's paragraph 2 sits 40 px down, under the 52 px header: paragraph 3 is the one.
@@ -1464,8 +1892,8 @@ try {
     check('with nothing selected the shortcut bookmarks the top paragraph below the header',
       top && top.para === 3 && top.start === 0 && top.end === PARAGRAPH(8, 2).length && PARAGRAPH(8, 2).startsWith(top.excerpt),
       { top });
-    check('its segment is under question 9', markUnder(await rail(), 8));
-    check('clicking it lands on that paragraph', (await jumpBySegment(8)) && Math.abs((await block(8, 3)).fromTop - 64) <= 3,
+    check('its dot is beside question 9', !!dotBeside(await rail(), 8));
+    check('clicking its row lands on that paragraph', (await jumpByRow(8)) && Math.abs((await block(8, 3)).fromTop - 64) <= 3,
       { fromTop: (await block(8, 3)).fromTop });
 
     // (d) A selection outside the answers (the user's question) creates nothing.
@@ -1476,7 +1904,7 @@ try {
       getSelection().selectAllChildren(q);
     }, question(10));
     await shortcut();
-    check('a selection in a question creates nothing', (await stored()).length === count && !markUnder(await rail(), 10));
+    check('a selection in a question creates nothing', (await stored()).length === count && !dotBeside(await rail(), 10));
     await page.evaluate(() => getSelection().removeAllRanges());
 
     // (d2) List items (#51): each item of a top-level list is a paragraph of its own. Question 4's
@@ -1498,8 +1926,8 @@ try {
     const liOther = await bookmark(3, LI - 1, true);
     check('the other item of the list is not shown as bookmarked', liOther.kept?.shown && !liOther.kept.on && liOther.kept.label === 'Bookmark: Fixture list item one',
       { button: liOther.kept });
-    check('clicking its segment lands on that item, not on the start of the list',
-      (await jumpBySegment(3)) && Math.abs((await block(3, LI)).fromTop - 64) <= 3,
+    check('clicking its row lands on that item, not on the start of the list',
+      (await jumpByRow(3)) && Math.abs((await block(3, LI)).fromTop - 64) <= 3,
       { fromTop: (await block(3, LI)).fromTop, list: (await block(3, LI - 1)).fromTop });
     // A selection inside the first item, saved with the button.
     await select(3, LI - 1, 8, LI - 1, 12);
@@ -1529,12 +1957,11 @@ try {
     // After a reload both list items' bookmarks resolve: live, not "answer changed".
     await open('light');
     await page.waitForTimeout(400);
-    // Questions 4 and 6: the only segments whose names hold the second item's text.
-    const liSegs = await page.evaluate((text) => {
-      const marks = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')];
-      return marks.filter((m) => (m.getAttribute('aria-label') || '').includes(text)).map((m) => m.className);
-    }, LI_TEXT);
-    check('after a reload the list items\' bookmarks are live', liSegs.length === 2 && liSegs.every((c) => !c.includes('stale')), { liSegs });
+    // Questions 4 and 6: the only ticks whose names hold the second item's text; their dots solid.
+    const liRail = await rail(),
+      liTicks = liRail.ticks.map((t, i) => [i, t.label]).filter(([, l]) => l.includes(LI_TEXT));
+    check('after a reload the list items\' bookmarks are live', liTicks.length === 2 &&
+      liTicks.every(([i, l]) => !l.includes('(answer changed)') && dotBeside(liRail, i) && !dotBeside(liRail, i).cls.includes('stale')), { liTicks });
 
     // (e) Dark theme, the selection tooltip.
     await open('dark');
@@ -1573,16 +2000,16 @@ try {
       await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
     });
 
-    // 7. Turning the rail off live hides a shown button and the segments at once.
+    // 7. Turning the rail off live hides a shown button and the dots at once.
     await open('light');
     const live = await bookmark(TURN, PARA);
     await settings({ opts: { rail: false } });
     await page.waitForTimeout(300);
     const liveOff = await page.evaluate(() => getComputedStyle(document.querySelector('chatgpt-butter-nav')).display);
-    check('rail switched off live: button and segments hide', live.kept?.shown && !(await button()).shown && liveOff === 'none', { liveOff });
+    check('rail switched off live: button and dots hide', live.kept?.shown && !(await button()).shown && liveOff === 'none', { liveOff });
     await settings({});
 
-    // 8. Rail off, then Butter paused, from a fresh load: neither the button nor a segment.
+    // 8. Rail off, then Butter paused, from a fresh load: neither the button nor a dot.
     for (const [name, butter] of [
       ['rail off', { opts: { rail: false } }],
       ['Butter paused', { enabled: false }],
@@ -1596,7 +2023,7 @@ try {
       const off = await page.evaluate(() => {
         const nav = document.querySelector('chatgpt-butter-nav');
         return {
-          marks: nav ? [...nav.shadowRoot.querySelectorAll('.mark')].filter((m) => m.getBoundingClientRect().width && getComputedStyle(nav).display !== 'none' && nav.hasAttribute('data-on')).length : 0,
+          marks: nav ? [...nav.shadowRoot.querySelectorAll('.bdot, .mark')].filter((m) => m.getBoundingClientRect().width && getComputedStyle(nav).display !== 'none' && nav.hasAttribute('data-on')).length : 0,
         };
       });
       await scrollTo(TURN);
@@ -1604,15 +2031,15 @@ try {
       await page.mouse.move(b.x + b.w / 2, b.y + b.h / 2);
       await page.waitForTimeout(400);
       const btn = await button();
-      check(`${name}: no segment and no button`, off.marks === 0 && !btn?.shown, { off, btn });
+      check(`${name}: no dot and no button`, off.marks === 0 && !btn?.shown, { off, btn });
       const after = (await requests())['butter-bookmark-list'] || 0;
       check(`${name}: the page reads no bookmarks`, after === reads, { reads, after });
       await settings({});
     }
-    // And back on, the segments return: questions 3, 5, 7 and 9.
+    // And back on, the dot returns: question 7's.
     await open('light');
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
-    check('rail back on: the segment returns', true);
+    await dotCount(1);
+    check('rail back on: the dot returns', !!dotBeside(await rail(), TURN));
 
     // 9. The rail's hover card (#53). Seed bookmarks straight into the store, as an earlier session
     // would have left them, then reload so the page reads them once.
@@ -1629,119 +2056,66 @@ try {
     const excerptOf = (turn, para, start = 0) =>
       [...SEEDS, ...saved].find((b) => b.turn === turn && b.para === para && b.start === start).excerpt;
     const ORDER = [[0], [2], [2, 20], [3], [4], [5]].map(([para, start]) => excerptOf(TURN, para, start));
-    const cardState = () =>
-      page.evaluate(() => {
-        const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
-          c = root.querySelector('.card'),
-          s = getComputedStyle(c),
-          r = c.getBoundingClientRect(),
-          box = root.querySelector('.bmc .rows');
-        const rect = (el) => {
-          const q = el.getBoundingClientRect();
-          return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height };
-        };
-        return {
-          shown: c.classList.contains('show') && +s.opacity > 0.5,
-          bm: c.classList.contains('bm'),
-          pe: s.pointerEvents,
-          meta: root.querySelector('.bmc .meta')?.textContent,
-          text: root.querySelector('.bmc .one')?.textContent,
-          x: root.querySelector('.bmc .meta .x') && { label: root.querySelector('.bmc .meta .x').getAttribute('aria-label'), ...rect(root.querySelector('.bmc .meta .x')) },
-          rows: [...root.querySelectorAll('.bmc .it')].map((it) => ({
-            text: it.querySelector('.go').textContent,
-            bg: getComputedStyle(it).backgroundColor,
-            xOpacity: +getComputedStyle(it.querySelector('.x')).opacity,
-            xLabel: it.querySelector('.x').getAttribute('aria-label'),
-            ...rect(it),
-            xAt: rect(it.querySelector('.x')),
-          })),
-          box: box && { client: box.clientHeight, scroll: box.scrollHeight },
-          rect: { x: r.left, y: r.top, w: r.width, h: r.height },
-          active: root.activeElement ? { cls: root.activeElement.className, label: root.activeElement.getAttribute('aria-label'), text: root.activeElement.textContent } : null,
-        };
-      });
-    const markFor = (r, turn) => r.marks.find((m) => Math.abs(m.y - r.ticks[turn].y - 5) <= 1);
-    const hoverSegment = async (turn) => {
-      await page.mouse.move(700, 300);
-      await page.waitForTimeout(200);
-      const r = await rail(),
-        m = markFor(r, turn);
-      await page.mouse.move(m.right - 4, m.y, { steps: 4 });
-      await page.waitForTimeout(350);
-      return m;
-    };
+    const cardState = tickCard;
     const shoot = async (name) => {
       const c = await cardState(),
         r = await rail();
       const y = Math.max(0, Math.min(c.rect.y, r.ticks[0].y) - 30);
       await page.screenshot({ path: `${shots}/${name}.png`, clip: { x: 1400 - 420, y, width: 420, height: Math.max(c.rect.y + c.rect.h, r.ticks.at(-1).y) - y + 30 } });
     };
-    // A wheel turn first: a user scroll ends the pin a jump leaves on its question.
-    const toTop = async () => {
-      await page.mouse.move(700, 400);
-      await page.mouse.wheel(0, -1);
-      await page.waitForTimeout(50);
-      await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
-      await page.waitForTimeout(300);
-    };
+    // The tick's card (#70) is the way to a question's bookmarks: hover the tick, then onto its rows.
     const cards = {};
     for (const theme of ['light', 'dark']) {
       await open(theme);
-      await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+      await dotCount(2);
       await toTop();
-      await hoverSegment(2);
+      await hoverTick(2);
       const single = await cardState();
+      const singleOn = await ontoRow(0);
       await shoot(`card-single-${theme}`);
-      await hoverSegment(TURN);
+      await hoverTick(TURN);
       const list = await cardState();
       // Across the rail and the gap, onto the first row: the card stays and the row lights up.
-      await page.mouse.move(list.rows[0].x, list.rows[0].y, { steps: 12 });
-      await page.waitForTimeout(250);
-      const onCard = await cardState();
+      const onCard = await ontoRow(0);
       await shoot(`card-list-${theme}`);
-      cards[theme] = { single, list, onCard };
+      cards[theme] = { single, singleOn, list, onCard };
     }
-    const { single, list, onCard } = cards.light;
-    check('one bookmark: the card shows "Bookmark · question 3 of 12", its excerpt and an ×',
-      single.shown && single.bm && single.meta === 'Bookmark · question 3 of 12' && single.text === excerptOf(2, 0) &&
-        single.x?.label === `Delete bookmark: ${excerptOf(2, 0)}`, { single });
-    check('the single card clamps its excerpt to three lines', single.rect.h < 13 * 1.45 * 4 + 40, { h: single.rect.h });
+    const { single, singleOn, list, onCard } = cards.light;
+    check('one bookmark: the tick\'s card, named "Bookmark · question 3 of 12", shows its excerpt and, on the row, an ×',
+      single.shown && single.merged && single.name === 'Bookmark · question 3 of 12' && single.rows.length === 1 &&
+        single.rows[0].text === excerptOf(2, 0) && singleOn.rows[0].xShown && singleOn.rows[0].xLabel === `Delete bookmark: ${excerptOf(2, 0)}`,
+      { single: single.name, rows: single.rows.map((r) => r.text) });
+    check('the single row clamps its excerpt to three lines', single.rows[0].lines <= 3, { lines: single.rows[0].lines });
     check('several: "Question 7 of 12 · 6 bookmarks" and the rows in answer order',
-      list.shown && list.meta === 'Question 7 of 12 · 6 bookmarks' && JSON.stringify(list.rows.map((x) => x.text)) === JSON.stringify(ORDER),
-      { meta: list.meta, rows: list.rows.map((x) => x.text) });
+      list.shown && list.name === 'Question 7 of 12 · 6 bookmarks' && JSON.stringify(list.rows.map((x) => x.text)) === JSON.stringify(ORDER),
+      { name: list.name, rows: list.rows.map((x) => x.text) });
     check('five rows show and the sixth scrolls',
       list.box && Math.abs(list.box.client - 5 * list.rows[0].h) <= 1 && list.box.scroll > list.box.client + list.rows[0].h / 2, { box: list.box, row: list.rows[0].h });
     check('the card takes the pointer while it shows bookmarks', list.pe === 'auto');
     check('moving onto the card keeps it open; the hovered row has a background and an ×',
-      onCard.shown && onCard.rows[0].bg !== 'rgba(0, 0, 0, 0)' && onCard.rows[0].xOpacity === 1 && onCard.rows[1].xOpacity === 0 &&
-        onCard.rows[0].xLabel === `Delete bookmark: ${ORDER[0]}`, { rows: onCard.rows.slice(0, 2) });
-    check('dark theme: the same cards', cards.dark.single.meta === single.meta && cards.dark.onCard.shown &&
+      onCard.shown && onCard.rows[0].bg !== 'rgba(0, 0, 0, 0)' && onCard.rows[0].xShown && !onCard.rows[1].xShown &&
+        onCard.rows[0].xLabel === `Delete bookmark: ${ORDER[0]}`, { rows: onCard.rows.slice(0, 2).map((r) => [r.bg, r.xShown]) });
+    check('dark theme: the same cards', cards.dark.single.name === single.name && cards.dark.onCard.shown &&
       cards.dark.onCard.rows[0].bg !== 'rgba(0, 0, 0, 0)', { dark: cards.dark.onCard.rows[0].bg });
 
     // Jump from a row: the fifth row (paragraph 4) lands 64 px below the scroller's top, card put away.
     await open('light');
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2);
-    await toTop();
-    await hoverSegment(TURN);
-    let c = await cardState();
-    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
-    await page.mouse.move(c.rows[4].x, c.rows[4].y, { steps: 4 });
-    await page.mouse.click(c.rows[4].x - 40, c.rows[4].y);
-    await page.waitForTimeout(3500);
+    await dotCount(2);
+    check('jump from the fifth row', await jumpByRow(TURN, 4));
     check('clicking a row jumps to that bookmark', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
     check('the card goes away after the jump', !(await cardState()).shown);
 
     // Delete the first row with its ×: the store and the card both lose it.
     await toTop();
-    await hoverSegment(TURN);
-    c = await cardState();
-    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+    await hoverTick(TURN);
+    let c = await ontoRow(0);
+    await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
     await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
     await page.waitForTimeout(400);
     c = await cardState();
     let left = (await stored()).filter((b) => b.turn === TURN);
     check('× deletes that bookmark; the card now lists five', left.length === 5 && !left.some((b) => b.para === 0) &&
-      c.shown && c.meta === 'Question 7 of 12 · 5 bookmarks' && c.rows.length === 5, { left: left.length, meta: c.meta });
+      c.shown && c.name === 'Question 7 of 12 · 5 bookmarks' && c.rows.length === 5, { left: left.length, name: c.name });
 
     // The filled button removes every bookmark in its paragraph (two in paragraph 2).
     await toTop();
@@ -1757,7 +2131,8 @@ try {
     check('clicking the filled button removes both bookmarks in that paragraph', left.length === 3 && !left.some((b) => b.para === 2) &&
       !(await button()).on, { left: left.map((b) => b.para) });
 
-    // Keyboard alone: Tab into the rail, arrows to the segment, left into the card, Enter to jump.
+    // Keyboard alone: Tab into the rail, arrows to the tick (no stop for its bookmarks), left into the
+    // card, Enter to jump.
     await toTop();
     await page.mouse.move(700, 300);
     const focused = () => page.evaluate(() => {
@@ -1767,14 +2142,16 @@ try {
     await page.evaluate(() => document.activeElement?.blur());
     for (let k = 0; k < 8 && !(await focused())?.cls.startsWith('tick'); k++) await page.keyboard.press('Tab');
     let f;
+    const stops = [];
     for (let k = 0; k < 30; k++) {
       f = await focused();
-      if (f?.cls.startsWith('mark') && f.label.startsWith('3 bookmarks')) break;
+      stops.push(f?.cls);
+      if (f?.cls.startsWith('tick') && f.label.includes(' · 3 bookmarks: ')) break;
       await page.keyboard.press('ArrowDown');
     }
     await page.waitForTimeout(250); // the card fades in
-    check('arrows reach the segment; its name holds the bookmark text', f?.cls.startsWith('mark') &&
-      f.label === `3 bookmarks: ${ORDER[3]}; ${ORDER[4]}; ${ORDER[5]}` && (await cardState()).shown, { f });
+    check('arrows walk the ticks only; the tick\'s name holds the bookmark text', f?.cls.startsWith('tick') && stops.every((x) => x?.startsWith('tick')) &&
+      f.label === `${QUESTION(TURN)} · 3 bookmarks: ${ORDER[3]}; ${ORDER[4]}; ${ORDER[5]}` && (await cardState()).shown, { f, stops });
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('ArrowDown');
     f = await focused();
@@ -1783,7 +2160,7 @@ try {
     await page.waitForTimeout(3500);
     check('Enter on a row jumps to it', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
     f = await focused();
-    check('after the jump, focus is back on the segment', f?.cls.startsWith('mark'), { f });
+    check('after the jump, focus is on the question\'s tick', f?.cls.startsWith('tick') && f.label.startsWith(QUESTION(TURN)), { f });
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Tab');
     f = await focused();
@@ -1797,40 +2174,46 @@ try {
     await page.keyboard.press('Escape');
     await page.mouse.move(700, 300);
 
-    // The single card's × under reduced motion: the segment goes at once.
+    // The single row's × under reduced motion: the dot goes at once.
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await toTop();
-    await hoverSegment(2);
-    c = await cardState();
-    await page.mouse.move(c.x.x, c.x.y, { steps: 12 });
-    await page.mouse.click(c.x.x, c.x.y);
+    await hoverTick(2);
+    c = await ontoRow(0);
+    await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
+    await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
     await page.waitForTimeout(150);
-    let r = await rail();
-    check('the single card × deletes; under reduced motion the segment goes at once',
-      !(await stored()).some((b) => b.turn === 2) && r.marks.length === 1 && !(await cardState()).shown, { marks: r.marks.length });
+    const allDots = () => page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot').length);
+    check('the single row\'s × deletes; under reduced motion the dot goes at once, with no fade',
+      !(await stored()).some((b) => b.turn === 2) && (await allDots()) === 1 && !(await cardState()).shown, { dots: await allDots() });
     await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-    // Delete question 7's last two: the last deletion fades the segment out over 160 ms.
-    await hoverSegment(TURN);
-    c = await cardState();
-    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
+    // Delete question 7's last two: the last deletion fades the dot out over 160 ms.
+    await hoverTick(TURN);
+    c = await ontoRow(0);
+    await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
     await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
     await page.waitForTimeout(400);
     c = await cardState();
-    check('one left: the card turns into the single card', c.shown && c.meta === 'Bookmark · question 7 of 12' && c.text === ORDER[5], { c });
-    await page.mouse.move(c.x.x, c.x.y, { steps: 6 });
-    await page.mouse.click(c.x.x, c.x.y);
+    check('one left: the card shows the single row', c.shown && c.name === 'Bookmark · question 7 of 12' && c.rows.length === 1 && c.rows[0].text === ORDER[5], { c: c.name });
+    c = await ontoRow(0);
+    await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
+    await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
     const fading = await page.waitForFunction(
-      () => [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].some((m) => m.classList.contains('gone') && +getComputedStyle(m).opacity < 1),
+      () => [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot')].some((m) => m.classList.contains('gone') && +getComputedStyle(m).opacity < 1),
       null, { timeout: 1000 }).then(() => true, () => false);
+    const fade = await page.evaluate(() => {
+      const d = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bdot.gone');
+      return d && getComputedStyle(d).transition;
+    });
     await page.waitForTimeout(400);
-    r = await rail();
-    check('deleting the last bookmark fades the segment out, then removes it', fading && r.marks.length === 0 && !(await cardState()).shown, { fading, marks: r.marks.length });
+    let r = await rail();
+    check('deleting the last bookmark fades the dot out over 160 ms, then removes it', fading && /opacity 0.16s/.test(fade ?? '') && r.dots.length === 0 &&
+      (await allDots()) === 0 && !(await cardState()).shown, { fading, fade, dots: r.dots.length });
 
     // Reload: every deletion is still gone.
     await open('light');
     await page.waitForTimeout(500);
-    check('after a reload the deletions are still gone', (await stored()).length === 0 && (await rail()).marks.length === 0);
+    check('after a reload the deletions are still gone', (await stored()).length === 0 && (await rail()).dots.length === 0);
 
     // 10. First-use notice (#56). Each run below starts unacknowledged: `settings` replaces the whole
     // settings object. The first three save, check the notice and press Undo; the last presses Got it.
@@ -1944,36 +2327,36 @@ try {
       await railHost('');
       built.push({ ...run, file });
       await page.screenshot({ path: `${shots}/notice-page-${run.theme}-${run.lang}.png` });
-      check(`notice (${name}): the save drew its segment`, (await rail()).marks.length === 1);
+      check(`notice (${name}): the save drew its dot`, (await rail()).dots.length === 1);
       if (i < 3) {
         await press('undo');
         await page
-          .waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 0, null, { timeout: 5000 })
+          .waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot:not(.gone)').length === 0, null, { timeout: 5000 })
           .catch(() => {});
         await page.waitForTimeout(300);
         const after = await notice();
-        check(`notice (${name}): Undo deletes the bookmark, its segment goes, the notice hides unacknowledged`,
-          (await stored()).length === 0 && (await rail()).marks.length === 0 && !after.shown &&
+        check(`notice (${name}): Undo deletes the bookmark, its dot goes, the notice hides unacknowledged`,
+          (await stored()).length === 0 && (await rail()).dots.length === 0 && !after.shown &&
             (await acknowledged()) === undefined,
-          { stored: (await stored()).length, marks: (await rail()).marks.length, after: after.shown });
+          { stored: (await stored()).length, dots: (await rail()).dots.length, after: after.shown });
       } else {
         await press('ok');
         await page.waitForTimeout(400);
         check(`notice (${name}): Got it keeps the bookmark and records the acknowledgement`,
-          !(await notice()).shown && (await stored()).length === 1 && (await rail()).marks.length === 1 &&
+          !(await notice()).shown && (await stored()).length === 1 && (await rail()).dots.length === 1 &&
             (await acknowledged()) === 'acknowledged');
       }
     }
     // A third save, and one after a reload: no notice.
     const third = await bookmark(TURN, 0);
     await third.click();
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1);
+    await dotCount(1);
     await page.waitForTimeout(800);
     check('after Got it, a third save shows no notice', !(await notice()).shown && (await stored()).length === 2);
     await open('light');
     const fourth = await bookmark(2, 0);
     await fourth.click();
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+    await dotCount(2);
     await page.waitForTimeout(800);
     check('after Got it and a reload, a save shows no notice', !(await notice()).shown && (await stored()).length === 3);
 
@@ -1983,40 +2366,23 @@ try {
     const LONE = 9;
     const STALE_SEEDS = [seed(LONE, 0), seed(TURN, 0, 0, null, 1), seed(TURN, 2, 0, null, 2), seed(TURN, 4, 0, null, 3)];
     await seedStore(STALE_SEEDS, { clear: true });
-    const staleState = () =>
-      page.evaluate(() => {
-        const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
-          bmc = root.querySelector('.bmc'),
-          one = bmc.querySelector('.one');
-        return {
-          shown: root.querySelector('.card').classList.contains('show'),
-          stale: bmc.classList.contains('stale'),
-          meta: bmc.querySelector('.meta')?.textContent,
-          warn: bmc.querySelector('.warn')?.textContent ?? null,
-          textColor: one && getComputedStyle(one.querySelector('span')).color,
-          metaColor: getComputedStyle(bmc.querySelector('.meta')).color,
-          flag: one && +getComputedStyle(bmc.querySelector('.meta .flag path')).opacity,
-          one: one && (() => {
-            const r = one.getBoundingClientRect();
-            return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-          })(),
-          rows: [...bmc.querySelectorAll('.it')].map((it) => ({
-            stale: it.classList.contains('stale'),
-            why: it.querySelector('.why')?.textContent ?? null,
-            color: getComputedStyle(it.querySelector('.tx')).color,
-            go: it.querySelector('.go').textContent,
-          })),
-        };
-      });
-    const segments = async () => {
-      const r = await rail(),
-        opacity = (turn) => page.evaluate((y) => {
-          const m = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].find(
-            (el) => Math.abs(el.getBoundingClientRect().top + 1 - y) <= 1.5);
-          return m ? { stale: m.classList.contains('stale'), opacity: +getComputedStyle(m).opacity, label: m.getAttribute('aria-label') } : null;
-        }, r.ticks[turn].y + 5);
-      return { lone: await opacity(LONE), turn: await opacity(TURN), count: r.marks.length };
+    // The tick's card for a stale bookmark: its name, footer and rows (the first's centre in `one`).
+    const staleState = async () => {
+      const c = await tickCard();
+      return { ...c, stale: c.rows.length === 1 && c.rows[0].stale, one: c.rows[0] && { x: c.rows[0].x - 40, y: c.rows[0].y } };
     };
+    // Questions 10's and 7's dots: hollow or solid, and their ticks' names.
+    const LIGHT_DOT = 'rgb(211, 158, 16)';
+    const dotsNow = async () => {
+      const r = await rail(),
+        at = (turn) => {
+          const d = dotBeside(r, turn);
+          return d ? { stale: d.cls.includes('stale'), bg: d.color, ring: d.ring, opacity: d.opacity, label: r.ticks[turn].label, x: d.x, y: d.y } : null;
+        };
+      return { lone: at(LONE), turn: at(TURN), count: r.dots.length };
+    };
+    const hollow = (d, color = LIGHT_DOT) => d?.stale && d.bg === 'rgba(0, 0, 0, 0)' && d.ring === `${color} 0px 0px 0px 1px inset` && d.opacity === 1;
+    const solid = (d, color = LIGHT_DOT) => d && !d.stale && d.bg === color && d.opacity === 1;
     // A control in the fixture page that stands in for ChatGPT's regenerate, edit and version arrows:
     // a real click, as the user's click on ChatGPT's own button would be.
     const act = async (fn, turn) => {
@@ -2049,39 +2415,37 @@ try {
       await page.waitForTimeout(900); // the page re-checks staleness 600 ms after a click
     };
     await open('light');
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+    await dotCount(2);
     await toTop();
-    let seg = await segments();
-    check('stale: before any change, both segments are live and full colour', seg.lone && !seg.lone.stale && seg.lone.opacity === 1 && seg.turn && !seg.turn.stale, { seg });
+    let seg = await dotsNow();
+    check('stale: before any change, both dots are solid', solid(seg.lone) && solid(seg.turn), { seg });
 
     // Regenerate question 10's answer and edit paragraph 2 of question 7's, in the page.
     await act('regen', LONE);
     await act('edit', TURN);
     await page.mouse.move(700, 300);
-    seg = await segments();
-    check('regenerated: the segment of a question whose only bookmark is stale turns pale (40 %)',
-      seg.lone?.stale && Math.abs(seg.lone.opacity - 0.4) < 0.01 && seg.lone.label.endsWith('(answer changed)'), { seg });
-    check('edited: one stale bookmark of three keeps the segment full colour', seg.turn && !seg.turn.stale && seg.turn.opacity === 1, { seg });
+    seg = await dotsNow();
+    check('regenerated: the dot of a question whose only bookmark is stale turns hollow, a 1 px inner ring in its colour',
+      hollow(seg.lone) && seg.lone.label.endsWith('(answer changed)'), { seg });
+    check('edited: one stale bookmark of three keeps the dot solid', solid(seg.turn), { seg });
     check('nothing about staleness is stored', (await stored()).length === 4 && (await stored()).every((b) => !('stale' in b)));
 
     const muted = { light: 'rgb(143, 143, 143)', dark: 'rgb(163, 163, 163)' };
-    await hoverSegment(LONE);
+    await hoverTick(LONE);
     let st = await staleState();
-    check('the stale single card: "Bookmark · answer changed", grey text, faded flag and the footer',
-      st.shown && st.stale && st.meta === 'Bookmark · answer changed' && st.textColor === muted.light && st.flag < 0.5 &&
-        st.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { st });
-    await hoverSegment(TURN);
+    check('the stale single row: the card is named "Bookmark · answer changed", grey text, a hollow dot and the footer',
+      st.shown && st.stale && st.name === 'Bookmark · answer changed' && st.rows[0].color === muted.light && st.rows[0].dot.bg === 'rgba(0, 0, 0, 0)' &&
+        st.rows[0].why === null && st.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { name: st.name, rows: st.rows, warn: st.warn });
+    await hoverTick(TURN);
     st = await staleState();
     check('the list: the edited paragraph\'s row is grey with "answer changed", the others are not',
       st.shown && st.rows.length === 3 && JSON.stringify(st.rows.map((r) => r.stale)) === '[false,true,false]' &&
         st.rows[1].why === 'answer changed' && st.rows[1].color === muted.light && st.rows[0].why === null && st.rows[0].color !== muted.light, { rows: st.rows });
 
-    // A jump to a stale bookmark lands at the start of its question: from the single card's text,
-    // then from the segment itself.
-    const questionTop = (turn) =>
-      page.evaluate((id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top, question(turn));
+    // A jump to a stale bookmark lands at the start of its question: from the single row, and a
+    // click on the hollow dot's position opens the question too.
     await toTop();
-    await hoverSegment(LONE);
+    await hoverTick(LONE);
     st = await staleState();
     await page.mouse.move(st.one.x, st.one.y, { steps: 12 });
     await page.mouse.click(st.one.x, st.one.y);
@@ -2089,26 +2453,23 @@ try {
     let atQuestion = await questionTop(LONE);
     check('clicking the stale bookmark lands at the start of its question', Math.abs(atQuestion - 64) <= 3, { atQuestion });
     await toTop();
-    const m10 = await hoverSegment(LONE);
-    await page.mouse.click(m10.right - 4, m10.y);
+    const d10 = (await dotsNow()).lone;
+    await page.mouse.move(d10.x, d10.y, { steps: 4 });
+    await page.mouse.click(d10.x, d10.y);
     await page.waitForTimeout(3500);
     atQuestion = await questionTop(LONE);
-    check('clicking the pale segment lands at the start of its question', Math.abs(atQuestion - 64) <= 3, { atQuestion });
+    check("a click on the hollow dot's position opens its question", Math.abs(atQuestion - 64) <= 3, { atQuestion });
     // The edited row too; a live row still lands on its paragraph.
     await toTop();
-    await hoverSegment(TURN);
-    c = await cardState();
-    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
-    await page.mouse.move(c.rows[1].x, c.rows[1].y, { steps: 4 });
+    await hoverTick(TURN);
+    c = await ontoRow(1);
     await page.mouse.click(c.rows[1].x - 40, c.rows[1].y);
     await page.waitForTimeout(3500);
     atQuestion = await questionTop(TURN);
     check('clicking the grey row lands at the start of its question', Math.abs(atQuestion - 64) <= 3, { atQuestion });
     await toTop();
-    await hoverSegment(TURN);
-    c = await cardState();
-    await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
-    await page.mouse.move(c.rows[2].x, c.rows[2].y, { steps: 4 });
+    await hoverTick(TURN);
+    c = await ontoRow(2);
     await page.mouse.click(c.rows[2].x - 40, c.rows[2].y);
     await page.waitForTimeout(3500);
     check('a live row next to it still lands on its paragraph', Math.abs((await block(TURN, 4)).fromTop - 64) <= 3, { fromTop: (await block(TURN, 4)).fromTop });
@@ -2117,17 +2478,17 @@ try {
     await toTop();
     await act('back', LONE);
     await page.mouse.move(700, 300);
-    seg = await segments();
-    await hoverSegment(LONE);
+    seg = await dotsNow();
+    await hoverTick(LONE);
     st = await staleState();
-    check('switched back to the original answer: the bookmark is live again', seg.lone && !seg.lone.stale && seg.lone.opacity === 1 &&
-      !st.stale && st.meta === 'Bookmark · question 10 of 12' && st.warn === null, { seg, st: st.meta });
+    check('switched back to the original answer: the bookmark is live again, its dot solid', solid(seg.lone) &&
+      !st.stale && st.name === 'Bookmark · question 10 of 12' && st.warn === null, { seg, st: st.name });
 
-    // Regenerating every bookmarked answer under question 7 turns its segment pale.
+    // Regenerating every bookmarked answer under question 7 turns its dot hollow.
     await act('regen', TURN);
     await page.mouse.move(700, 300);
-    seg = await segments();
-    check('all of question 7\'s bookmarks stale: now its segment is pale too', seg.turn?.stale && Math.abs(seg.turn.opacity - 0.4) < 0.01, { seg });
+    seg = await dotsNow();
+    check('all of question 7\'s bookmarks stale: now its dot is hollow too', hollow(seg.turn), { seg });
 
     // After a reload the regenerated answer is the conversation's version: the old message is gone
     // from the list, and the bookmark is still kept, stale, under question 10. Light and dark shots.
@@ -2136,42 +2497,41 @@ try {
     const staleShots = {};
     for (const theme of ['light', 'dark']) {
       await open(theme);
-      await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+      await dotCount(2);
       await toTop();
-      seg = await segments();
-      await hoverSegment(LONE);
+      seg = await dotsNow();
+      await hoverTick(LONE);
       const single = await staleState();
       await shoot(`card-stale-${theme}`);
-      await hoverSegment(TURN);
+      await hoverTick(TURN);
       const list = await staleState();
-      c = await cardState();
-      await page.mouse.move(c.rows[0].x, c.rows[0].y, { steps: 12 });
-      await page.waitForTimeout(250);
+      await ontoRow(0);
       await shoot(`card-list-stale-${theme}`);
       staleShots[theme] = { seg, single, list };
     }
     for (const theme of ['light', 'dark']) {
       const { seg, single, list } = staleShots[theme];
-      check(`after a reload (${theme}): the vanished message's bookmark is kept, stale and pale under question 10`,
-        seg.lone?.stale && Math.abs(seg.lone.opacity - 0.4) < 0.01 && single.stale && single.textColor === muted[theme] &&
-          single.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { seg, single: single.meta });
-      check(`after a reload (${theme}): the edited row stays grey, its segment full colour`,
-        !seg.turn?.stale && JSON.stringify(list.rows.map((r) => r.stale)) === '[false,true,false]' && list.rows[1].color === muted[theme], { rows: list.rows });
+      const dot = theme === 'dark' ? 'rgb(227, 199, 102)' : LIGHT_DOT;
+      check(`after a reload (${theme}): the vanished message's bookmark is kept, stale, its dot hollow beside question 10`,
+        hollow(seg.lone, dot) && single.stale && single.rows[0].color === muted[theme] &&
+          single.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.", { seg, single: single.name });
+      check(`after a reload (${theme}): the edited row stays grey, its dot solid`,
+        solid(seg.turn, dot) && JSON.stringify(list.rows.map((r) => r.stale)) === '[false,true,false]' && list.rows[1].color === muted[theme], { rows: list.rows });
     }
     check('after the reload, all four bookmarks are still stored', (await stored()).length === 4);
 
     // Chinese: the stale strings.
     await settings({ lang: 'zh', bookmarkNotice: 'acknowledged' });
     await open('light');
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 2, null, { timeout: 5000 });
+    await dotCount(2);
     await toTop();
-    await hoverSegment(LONE);
+    await hoverTick(LONE);
     const zhSingle = await staleState();
-    await hoverSegment(TURN);
+    await hoverTick(TURN);
     const zhList = await staleState();
     check('Chinese: "书签 · 回答已变化", its footer and the "回答已变化" row',
-      zhSingle.meta === '书签 · 回答已变化' && zhSingle.warn === '找不到这一段了。点击会跳到第 10 个问题的开头。' && zhList.rows[1].why === '回答已变化',
-      { meta: zhSingle.meta, warn: zhSingle.warn, why: zhList.rows[1].why });
+      zhSingle.name === '书签 · 回答已变化' && zhSingle.warn === '找不到这一段了。点击会跳到第 10 个问题的开头。' && zhList.rows[1].why === '回答已变化',
+      { name: zhSingle.name, warn: zhSingle.warn, why: zhList.rows[1].why });
     await settings({ bookmarkNotice: 'acknowledged' });
     page$.regen = new Set();
     page$.edited = new Set();
@@ -2179,8 +2539,8 @@ try {
     // 11c. An answer that streamed in this tab (#51). The user sends question 13 here: the rail
     // hears the send (a `butter-nav` 'send', as history/conversation-main.js reports it) and the turn
     // mounts with an answer no page GET lists. A bookmark on its paragraph 2 stays live after
-    // ChatGPT's virtualizer unmounts the turn and the bookmarks refresh, and its segment still
-    // lands on that paragraph once the turn mounts again.
+    // ChatGPT's virtualizer unmounts the turn and the bookmarks refresh, and its row still lands on
+    // that paragraph once the turn mounts again.
     const SENT = TURNS,
       SENT_PARA = 2;
     await seedStore([], { clear: true });
@@ -2196,12 +2556,12 @@ try {
     await page.waitForTimeout(400);
     const sentMark = await bookmark(SENT, SENT_PARA);
     await sentMark.click();
-    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
+    await dotCount(1);
     await page.waitForTimeout(800);
     const sentRows = await stored();
     check('streamed here: the sent question\'s answer, not in any page GET, takes a bookmark under question 13',
       sentRows.length === 1 && sentRows[0].msg === sha(answer(SENT)) && sentRows[0].ask === sha(question(SENT)) &&
-        sentRows[0].turn === SENT && sentRows[0].para === SENT_PARA && markUnder(await rail(), SENT), { stored: sentRows.map(({ turn, para }) => ({ turn, para })) });
+        sentRows[0].turn === SENT && sentRows[0].para === SENT_PARA && !!dotBeside(await rail(), SENT), { stored: sentRows.map(({ turn, para }) => ({ turn, para })) });
     // Scrolled away, the virtualizer swaps the turn for a placeholder of its height, as ChatGPT
     // keeps only the turns around the view. When the placeholder nears the view the turn mounts
     // again 700 ms later: rendering a far turn takes ChatGPT a second or more (rail/rail.js `jump`),
@@ -2227,32 +2587,32 @@ try {
     }, question(SENT));
     // The pointer reaching the rail re-checks the bookmarks (bookmarks/content.js `toRail`); then the
     // card is read afresh.
-    await hoverSegment(SENT);
+    await hoverTick(SENT);
     await page.mouse.move(700, 300);
     await page.waitForTimeout(400);
-    const sentSeg = await hoverSegment(SENT);
+    await hoverTick(SENT);
     const sentCard = await staleState(),
-      sentStale = await page.evaluate((y) => {
-        const m = [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark')].find(
-          (el) => Math.abs(el.getBoundingClientRect().top + 1 - y) <= 1.5);
-        return m ? { stale: m.classList.contains('stale'), opacity: +getComputedStyle(m).opacity, label: m.getAttribute('aria-label') } : null;
-      }, sentSeg.y),
+      sentRail = await rail(),
+      sentDot = dotBeside(sentRail, SENT),
       stillOut = await page.evaluate((id) => !document.querySelector(`[data-turn-key="${id}"]`), question(SENT));
-    check('streamed here, unmounted: the segment stays full colour, not "answer changed"',
-      unmounted && stillOut && sentStale && !sentStale.stale && sentStale.opacity === 1 && !sentStale.label.endsWith('(answer changed)'), { unmounted, stillOut, seg: sentStale });
+    check('streamed here, unmounted: the dot stays solid, not "answer changed"',
+      unmounted && stillOut && sentDot && !sentDot.cls.includes('stale') && sentDot.opacity === 1 && !sentRail.ticks[SENT].label.endsWith('(answer changed)'),
+      { unmounted, stillOut, dot: sentDot, label: sentRail.ticks[SENT].label });
     check('streamed here, unmounted: its card is live, with no "answer changed" or footer',
-      sentCard.shown && !sentCard.stale && sentCard.meta === 'Bookmark · question 13 of 13' && sentCard.warn === null, { meta: sentCard.meta, warn: sentCard.warn });
-    // The click mounts the turn again on the way and lands on the bookmarked paragraph.
-    await page.mouse.click(sentSeg.right - 4, sentSeg.y);
+      sentCard.shown && !sentCard.stale && sentCard.name === 'Bookmark · question 13 of 13' && sentCard.warn === null, { name: sentCard.name, warn: sentCard.warn });
+    // The row's click mounts the turn again on the way and lands on the bookmarked paragraph.
+    const sentOn = await ontoRow(0);
+    await page.mouse.click(sentOn.rows[0].x - 40, sentOn.rows[0].y);
     await page.waitForTimeout(3500);
     const remounted = await page.evaluate((id) => !!document.querySelector(`[data-turn-key="${id}"]`), question(SENT)),
       sentAt = remounted ? (await block(SENT, SENT_PARA)).fromTop : null,
       sentQuestion = remounted ? await questionTop(SENT) : null;
-    check('streamed here, unmounted: clicking the segment lands on the bookmarked paragraph, not the question',
+    check('streamed here, unmounted: clicking its row lands on the bookmarked paragraph, not the question',
       remounted && Math.abs(sentAt - 64) <= 3, { remounted, fromTop: sentAt, question: sentQuestion });
     await seedStore([], { clear: true });
 
     await cardSection();
+    await dotSection();
     await oneQuestionSection();
     await earlierSection();
 

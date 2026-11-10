@@ -107,7 +107,7 @@
     seeking = false,
     deferred = false,
     sent = ''; // what the rail was last sent: question, bookmarks and their stale flags
-  const fresh = new Set(); // keys of bookmarks just made in this tab: their segment grows in
+  const fresh = new Set(); // keys of bookmarks just made in this tab: their dot grows in
   let onDots = new Set(); // keys of the bookmarks last sent on the earlier-history dots
   const seen = new Map(); // key -> stale, as last resolved in this tab; never stored (#55)
   // `quiet`: only a re-check of staleness, so the rail hears nothing when nothing changed.
@@ -444,7 +444,7 @@
     hashOf.set(id, msg);
     if (owner === account && conv === view.conv) refresh();
     // Every save, by the button or the shortcut, comes through here: the first one tells the user
-    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its segment.
+    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its dot.
     if (r.created)
       globalThis.ButterBookmarkNotice?.saved(r.bookmark, () => {
         const at = list.findIndex((b) => b.key === r.bookmark.key);

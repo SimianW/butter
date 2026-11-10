@@ -123,15 +123,27 @@ test('a bookmark whose message is not in the conversation stays under the questi
   );
 });
 
-test('a segment sits 5 px below its tick, or 40 % of a pitch under 12 px', () => {
-  assert.equal(B.segmentOffset(14), 5);
-  assert.equal(B.segmentOffset(12), 5);
-  assert.equal(B.segmentOffset(10), 4);
-  assert.equal(B.segmentOffset(5), 2);
-  // The segment (2 px tall) never reaches the next tick (2 px tall, one pitch below). Below a
-  // 3.4 px pitch two 2 px marks can't fit in one pitch at all.
-  for (let pitch = 3.5; pitch <= 14; pitch += 0.5)
-    assert.ok(B.segmentOffset(pitch) + 1 < pitch - 1, `pitch ${pitch}`);
+test("the rail's dot is 4 px while ticks are 6 px apart or more, else the pitch minus 2, never under 2", () => {
+  assert.equal(B.dotSize(14), 4);
+  assert.equal(B.dotSize(6), 4);
+  assert.equal(B.dotSize(5), 3);
+  assert.equal(B.dotSize(4.5), 2.5);
+  assert.equal(B.dotSize(4), 2);
+  assert.equal(B.dotSize(3), 2);
+  // Dots on neighbouring rows never touch while there is room for the 2 px floor.
+  for (let pitch = 4; pitch <= 14; pitch += 0.5)
+    assert.ok(B.dotSize(pitch) < pitch, `pitch ${pitch}`);
+});
+
+test("the dot's right edge stays 4 px left of its tick at 12, 21 and 31 px", () => {
+  // `dotRight(scale)`: px from the tick's right end to the dot's right edge. A tick is 12 px at
+  // scale 1 (rest), 21 px at 1.75 (the question being read), 31.2 px at 2.6 (under the pointer).
+  for (const [scale, tick] of [
+    [1, 12],
+    [1.75, 21],
+    [2.6, 31.2],
+  ])
+    assert.ok(Math.abs(B.dotRight(scale) - (tick + 4)) < 1e-9, `scale ${scale}`);
 });
 
 test('excerpt collapses runs of whitespace as the page renders them', () => {
