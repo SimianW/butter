@@ -121,16 +121,18 @@ navigation and data changes keep the prototype's cancellation checks and time li
 
 ## Ask in branch
 
-Select text in a ChatGPT reply and an **Ask in branch** button appears 4 px to the right of
-ChatGPT's own **Ask ChatGPT** button. It copies that button's height, radius, background, shadow
-and font size from its computed style every frame while a selection is active, so it moves, shows
-and hides with it. Those come from the toolbar box that draws ChatGPT's button, not from the
-button: ChatGPT's button is transparent at rest and, while hovered, tints only itself, square and
-without a shadow. So a hovered, pressed or focused button is skipped when looking for the box, and
-Butter keeps the look it copied at rest until ChatGPT's button is back at rest. Its question box
-opens under the buttons (above the selection when there is no room below). While the box has focus
-the page selection moves into it, so ChatGPT hides its own button; Butter keeps its button where it
-was and paints the quote with the CSS Custom Highlight API. Esc gives the selection back; the
+Select text in a ChatGPT reply and Butter's selection pill appears 4 px to the right of ChatGPT's
+own **Ask ChatGPT** button: an **Ask in branch** icon cell, then a **Bookmark** cell when the rail
+is on (selection/pill.js). Each cell's label shows below the pill after 300 ms of hover. The pill
+copies that button's radius, background and shadow from its computed style every frame while a
+selection is active, so it moves, shows and hides with it. Those come from the toolbar box that
+draws ChatGPT's button, not from the button: ChatGPT's button is transparent at rest and, while
+hovered, tints only itself, square and without a shadow. So a hovered, pressed or focused button is
+skipped when looking for the box, and Butter keeps the look it copied at rest until ChatGPT's
+button is back at rest. Ask in branch's question box opens under the buttons (above the selection
+when there is no room below). While the box has focus the page selection moves into it, so ChatGPT
+hides its own button; Butter hides the pill, keeps the box anchored where ChatGPT's button was and
+paints the quote with the CSS Custom Highlight API. Esc gives the selection back; the
 unsent question is kept per tab, per quote.
 
 The quote is the selected text. A selection may include formulas: ChatGPT renders them with KaTeX

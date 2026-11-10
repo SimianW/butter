@@ -81,12 +81,12 @@
 :host { all: initial; position: fixed; inset: 0 auto auto 0; width: 0; height: 0; z-index: 2147483000;
   --fg: #0d0d0d; --fg2: #5d5d5d; --fg3: #8f8f8f; --bg: #fff; --bubble: #f4f4f4; --hair: rgb(0 0 0 / .1);
   --pop: #fff; --pop-shadow: 0 8px 24px rgb(0 0 0 / .12), 0 0 0 1px rgb(0 0 0 / .08);
-  --chip: #2f2f2f; --chip-fg: #fff; --scrim: rgb(255 255 255 / .86); --err: #d03e2b;
+  --scrim: rgb(255 255 255 / .86); --err: #d03e2b;
   font: 16px/1.65 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif;
   color: var(--fg); }
 :host([data-dark]) { --fg: #ececec; --fg2: #b4b4b4; --fg3: #8f8f8f; --bg: #212121; --bubble: #303030; --hair: rgb(255 255 255 / .1);
   --pop: #303030; --pop-shadow: 0 8px 24px rgb(0 0 0 / .45), 0 0 0 1px rgb(255 255 255 / .08);
-  --chip: #3a3a3a; --scrim: rgb(33 33 33 / .88); --err: #f1806d; }
+  --scrim: rgb(33 33 33 / .88); --err: #f1806d; }
 * { box-sizing: border-box; }
 button, textarea { font: inherit; color: inherit; margin: 0; }
 button { cursor: pointer; }

@@ -68,6 +68,9 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
+// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
+const PILL = 'chatgpt-butter-pill';
+const CELL = `${PILL} button[data-cell="branch"]`;
 const results = { at: new Date().toISOString(), lab: lab.id, runs: [] };
 const shot = async (page, file, masks = []) => {
   await page.evaluate(() => {
@@ -200,10 +203,11 @@ try {
     await mark('before');
     await dragSelect(page);
     await mark('selected');
-    await page.locator(`${HOST} .chip`).waitFor({ timeout: 5000 });
+    await page.locator(CELL).waitFor({ timeout: 5000 });
     await page.waitForTimeout(300);
     run.button = await page.evaluate((host) => {
-      const chip = document.querySelector(host).shadowRoot.querySelector('.chip');
+      // The pill draws the look; Ask in branch is its first cell.
+      const chip = document.querySelector(host).shadowRoot.querySelector('.pill');
       const ask = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Ask ChatGPT');
       let box = ask;
       for (let el = ask, i = 0; el && i < 3; el = el.parentElement, i++)
@@ -217,23 +221,16 @@ try {
         const s = getComputedStyle(el);
         return [s.height, s.borderTopLeftRadius, s.backgroundColor, s.boxShadow].join(' | ');
       };
-      // The label's text style (live, the label is the button's own text).
-      const font = (el) => {
-        const s = getComputedStyle(el);
-        return [s.fontFamily, s.fontSize, s.fontWeight, s.letterSpacing, s.lineHeight, s.webkitFontSmoothing, s.color].join(' | ');
-      };
       return {
         gap: Math.round((c.left - a.right) * 10) / 10,
         topDelta: Math.round((c.top - a.top) * 10) / 10,
         native: css(box),
         butter: css(chip),
-        nativeFont: font(ask),
-        butterFont: font(chip.querySelector('span')),
       };
-    }, HOST);
+    }, PILL);
     await mark('button shown');
     run.screenshots.push(await shot(page, `button-${width}.png`));
-    await page.locator(`${HOST} .chip`).click();
+    await page.locator(CELL).click();
     await mark('box open');
     await page.locator(`${HOST} textarea`).fill(QUESTION);
     await page.waitForTimeout(200);

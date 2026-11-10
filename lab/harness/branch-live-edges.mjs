@@ -114,6 +114,8 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
+// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
+const CELL = 'chatgpt-butter-pill button[data-cell="branch"]';
 // Screenshots show only Butter's UI and ChatGPT's selection toolbar; all page content is hidden.
 const shot = async (page, file, masks = []) => {
   await page.evaluate((ask) => {
@@ -205,8 +207,8 @@ const evidence = (page) =>
         replies: replies.length,
         repliesWithMoreActions: more,
         butterButton: (() => {
-          const chip = document.querySelector('chatgpt-butter-branch')?.shadowRoot?.querySelector('.chip');
-          return !!chip && getComputedStyle(chip).display !== 'none';
+          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
+          return !!pill?.querySelector('[data-cell="branch"]') && getComputedStyle(pill).display !== 'none';
         })(),
       };
     },
@@ -214,7 +216,7 @@ const evidence = (page) =>
   );
 const butterChip = async (page, timeout) =>
   page
-    .locator(`${HOST} .chip`)
+    .locator(CELL)
     .waitFor({ timeout })
     .then(() => true, () => false);
 const pageState = (page) =>
@@ -271,7 +273,7 @@ try {
   const before = await pageState(page);
   const latestPrint = await fingerprint(page);
   await page.waitForTimeout(300);
-  await page.locator(`${HOST} .chip`).click();
+  await page.locator(CELL).click();
   await page.locator(`${HOST} textarea`).fill(QUESTION);
   const opened = context.waitForEvent('page');
   const enterAt = Date.now();
