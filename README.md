@@ -17,7 +17,7 @@ Long ChatGPT chats, smooth as butter.
 Supports Chrome, Edge, Brave and Arc (Chromium 111+). Safari and Firefox are not supported.
 [Install and settings →](docs/install.md)
 
-Current version: **0.1.0-alpha.18** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.19** ([changelog](CHANGELOG.md)).
 
 ## Demo
 

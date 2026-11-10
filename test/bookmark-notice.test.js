@@ -194,7 +194,7 @@ test('Undo deletes the bookmark just saved and the next save shows the notice ag
   assert.equal(await stored(store), 1, 'page-script clicks are ignored');
   await tab.click('undo');
   assert.equal(await stored(store), 0);
-  assert.deepEqual(tab.undone, [first.key], 'the page is told, so the segment goes');
+  assert.deepEqual(tab.undone, [first.key], 'the page is told, so the dot goes');
   assert.equal(tab.host().inert, true);
   tab.elapse(160);
   assert.equal(tab.host().hidden, true);

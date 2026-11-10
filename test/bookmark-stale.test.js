@@ -1,4 +1,4 @@
-// Stale bookmarks (#55): resolution to live or stale, the all-stale segment and the stale card.
+// Stale bookmarks (#55): resolution to live or stale, the all-stale dot and the stale card.
 const test = require('node:test'),
   assert = require('node:assert/strict');
 const B = require('../extension/bookmarks/model.js');
@@ -129,15 +129,22 @@ test('whitespace and CJK text: compared as rendered, whitespace collapsed', () =
   assert.equal(B.resolve([b], items, page)[0].bookmarks[0].stale, false);
 });
 
-test('the segment is pale only when every bookmark under the question is stale', () => {
+test('the dot is hollow only when every bookmark under the question is stale', () => {
   const live = mark(),
     gone = mark({ para: 2, excerpt: 'Paragraph that was removed', key: 'k-gone' });
   const some = B.resolve([live, gone], items, view({ [A2]: ['Intro', PARA, OTHER] }));
   assert.deepEqual(flags(some), [{ question: 1, stale: false, rows: [false, true] }]);
   assert.equal(B.pale(some[0].bookmarks), false);
+  // One live bookmark keeps the dot solid.
+  assert.equal(B.dotLook(some[0].bookmarks, 4), 'solid');
   const all = B.resolve([live, gone], items, view({ [A2NEW]: ['x'] }));
   assert.deepEqual(flags(all), [{ question: 1, stale: true, rows: [true, true] }]);
   assert.equal(B.pale(all[0].bookmarks), true);
+  assert.equal(B.dotLook(all[0].bookmarks, 4), 'hollow');
+  // Under 4 px a 1 px ring can't be drawn: solid at 45 % instead.
+  assert.equal(B.dotLook(all[0].bookmarks, 3), 'faint');
+  assert.equal(B.dotLook(all[0].bookmarks, 2), 'faint');
+  assert.equal(B.dotLook(some[0].bookmarks, 2), 'solid');
   assert.equal(B.pale([]), false);
 });
 

@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.1.0-alpha.19] - 2026-11-10
+
+### Added
+
+- Added a butter highlight that sweeps through the bookmarked text when you jump to a bookmark,
+  then fades, in place of the flash on the question.
+- Added one highlight over the whole block when the bookmark is a code block or a table.
+
+### Changed
+
+- Replaced the segment under a bookmarked question's tick in the question rail with a small dot
+  beside the tick, one per question however many bookmarks it holds, so the rail is one even column
+  of ticks again. The dot is a deeper butter in light theme so it shows on white, and it is hollow
+  when every bookmark under that question has changed.
+- Moved a question's bookmarks into the card its tick already shows: hover the tick to see the
+  question with its bookmarks listed under it, click a row to jump to that bookmark, or remove one
+  with the × on its row. With the keyboard, press Left on the tick to reach the rows.
+- Showed bookmarks in earlier history that isn't loaded yet as a dot beside the rail's
+  earlier-history dots; hover those dots to see the bookmarks.
+
+### Fixed
+
+- Fixed the question rail's ticks sometimes no longer swelling under the pointer after you left a
+  chat for the home page and came back, until the page was reloaded.
+
+### Removed
+
+- Removed jumping to a question's first bookmark by clicking its mark on the rail. Clicking a tick
+  always opens its question; jump to a bookmark from the tick's card.
+
 ## [0.1.0-alpha.18] - 2026-11-09
 
 ### Added

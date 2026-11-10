@@ -18,6 +18,41 @@ The [history rail](history-rail.md) lives in `rail/rail.js` and `history/convers
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
+Bookmarks (`bookmarks/content.js`, `bookmarks/model.js`) show on the rail as one dot beside the tick
+of each question that holds them, however many it holds: a 4 px circle on the tick's row, its right
+edge 4 px left of the tick's end (`#d39e10` in light theme, `#e3c766` in dark). The rail places the
+dots in the frame loop that sets the ticks' widths, so a dot follows its tick as it lengthens for the
+question being read or under the pointer; at rest nothing runs. When ticks are under 6 px apart the
+dot is the pitch minus 2 px across, never under 2 px. A question whose bookmarks are all stale has a
+hollow dot, a 1 px ring (solid at 45 % opacity under 4 px, too small for a ring). A new bookmark's
+dot grows in over 180 ms and pulses one 600 ms halo; a question's last bookmark deleted fades its dot
+out over 160 ms; under reduced motion neither moves. The dot is no target: it takes no pointer
+events, is not focusable and is hidden from screen readers, so the pointer over it is over its tick's
+row, and the tick's name says what the question holds. No dots show while the rail is off or Butter
+is paused. Hovering or focusing a tick that holds bookmarks shows the question's
+usual card with its bookmarks under the question: the meta line, the question clamped to two lines,
+a divider, then one row per bookmark in answer order, each starting with a 5 px dot (`#d39e10` in
+light theme, `#e3c766` in dark; a hollow ring when the bookmark is stale, whose row is grey and says
+"answer changed"). Five rows show and the rest scroll; a single bookmark shows up to three lines,
+and when it is stale the card ends with a footer saying a click opens the question instead. This
+card takes the pointer and focus: it stays open while the pointer crosses to it, a row jumps to its
+bookmark and closes the card, × deletes the bookmark, and deleting the last one closes the card.
+Clicking the tick still opens the question, and a tick without bookmarks shows its card as before,
+inert. ArrowLeft on the tick enters the card. The tick's accessible name adds the bookmarks' count
+and text. The card's top sits on a whole pixel so its text draws as crisply as the page's.
+
+Bookmarks in earlier history that isn't loaded yet show the same 4 px dot, always solid, on the
+row of the rail's three earlier-history dots, 4 px left of the leftmost. Hovering or focusing the
+three dots then shows their bookmarks in a card of the same rows under the meta line "Earlier
+questions · k bookmarks" (or "Bookmark · earlier question" with a footer saying a click loads earlier
+messages first); without bookmarks they show their hint, as before. Clicking the three dots still
+loads earlier messages. A row loads earlier pages until its answer is on the page, with "Loading
+earlier questions…" in the card and a spinner on the row (Escape puts the card away and the loading
+goes on), then lands on the bookmark and closes the card. Once its history loads, a bookmark moves to
+its question's tick, its dot growing in there; the dot beside the three dots goes when none are
+left. ArrowLeft on the three dots enters their card, and their accessible name adds the bookmarks'
+count and text.
+
 ## Seek preview
 
 While you hold and drag the thread's native scrollbar thumb, `seek/preview-main.js` stops its scroll
@@ -160,6 +195,46 @@ size and line height, so the disclaimer shows again once the line goes; ChatGPT'
 alone. That text is found by hit-testing a 30 px band above the composer
 (`document.elementsFromPoint`), skipping the conversation's turns, so no selector of ChatGPT's is
 needed. With no such text, the line sits in its own row 8 px above the composer.
+
+## Landing on a bookmark
+
+When a jump from a bookmark row in the rail's card lands on a live bookmark, `bookmarks/content.js`
+washes the bookmarked text in butter for a moment: the paragraph, or for a selection only the
+selected text (a selection across paragraphs washes its part in the first one). A bookmarked code
+block or table gets one box over the whole block instead. The rail owns the
+trip: once the page has stopped (after its smooth scroll, or after the far trip's arrival), it calls
+the bookmark's `wash`, and on such a trip the question's bubble doesn't flash. A stale bookmark
+lands at its question's start with the bubble flash and no wash; a jump to a question is unchanged.
+A jump to a bookmark in earlier, unloaded history gets the wash too, once its messages have loaded
+and the page has landed.
+
+The wash is one box per rendered line of the range, 2 px above and below the text, rounded 3 px at
+the range's start and end, in `rgb(251 224 122 / .62)` (light) or `rgb(227 199 102 / .3)` (dark).
+It sweeps through the lines in reading order, each from its start to its end, in 360 ms under one
+`cubic-bezier(.3, .7, .3, 1)` (each line's share of the progress is its share of the width; the
+plan is `bookmarks/wash.js`, pure), holds 1.2 s and fades over 0.9 s ease-out, then is removed.
+A code block or a table (a paragraph whose text is all in a `<pre>`, ChatGPT's code widget surface
+`[data-code-block]`, or a `<table>`) has one box instead: the block's drawn box (the rounded panel
+inside ChatGPT's `<pre>`, or the table cut to a viewport that scrolls it sideways) grown 3 px on
+every side, its corners the block's own radius plus those 3 px, with the block's own border left
+clear between the ring outside it and the fill inside it (the mockup's `l-code-light`). It fades in
+over 160 ms ease-out instead of sweeping, then holds and fades the same way.
+Under reduced motion it shows at once, holds and fades. A new jump, a conversation change, a
+scrollbar drag starting, the rail off or Butter paused, or its text leaving the page removes it at
+once.
+
+The boxes are drawn in Butter's own fixed shadow-root layer (`chatgpt-butter-wash`), like the hover
+button's; nothing is inserted into ChatGPT's answer. They are measured from the range's text
+rectangles and clipped to the chat scroller below ChatGPT's header and above its composer. The
+header's edge is found where it is drawn: the fixed or sticky box over the scroller's top, or the
+scroller's own top when the scroller starts below the header, as it does in current ChatGPT
+(checked live on 2026-11-10); only with neither found is the header taken to overlap the
+scroller's first 52 px. The layer
+takes no pointer events. It blends with `multiply` in light theme and `lighten` in dark theme, so
+the text under it keeps its own colour in both: dark text stays dark on butter, light text stays
+light. Only while a wash shows, the scroller's `scroll`, the window's `resize` and a
+`ResizeObserver` on the scroller and the paragraph re-measure the boxes, so the wash stays on its
+text as the reader scrolls or the chat's width changes; the listeners go with the wash.
 
 ## Privacy
 

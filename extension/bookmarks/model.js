@@ -147,7 +147,7 @@
       return { question: g.question, bookmarks: rows, stale: pale(rows) };
     });
   }
-  // A question's segment turns pale only when every one of its bookmarks is stale.
+  // A question's dot turns hollow only when every one of its bookmarks is stale.
   const pale = (rows) => rows.length > 0 && rows.every((b) => b.stale);
   // A selection in an answer, as a bookmark's anchor. `paras` are the answer's paragraphs as
   // rendered text; `from` and `to` are `{ para, offset }` in UTF-16 units, in document order.
@@ -189,14 +189,28 @@
   // The tooltip's key hint from chrome.commands' `shortcut`: "Alt+Shift+M" reads "Alt Shift M", as
   // the mockup writes keys; a command without a key shows no hint.
   const keyHint = (shortcut) => (typeof shortcut === 'string' ? shortcut.split('+').join(' ') : '');
-  // Centre of a question's segment below its tick's centre, in px.
-  const segmentOffset = (pitch) => (pitch < 12 ? 0.4 * pitch : 5);
+  // The rail's bookmark dot (#71), one beside each tick whose question holds bookmarks. Its
+  // diameter: 4 px while ticks are 6 px apart or more, else the pitch minus 2 px, never under 2,
+  // so dots on neighbouring rows don't touch.
+  const dotSize = (pitch) => (pitch >= 6 ? 4 : Math.max(2, pitch - 2));
+  // Px from a mark's right end to the dot's right edge, for a mark `width` px long: the dot sits
+  // 4 px left of it. Earlier history's dot (#72) sits beside the rail's three dots this way.
+  const TICK = 12,
+    GAP = 4;
+  const dotBeside = (width) => width + GAP;
+  // Beside a tick: the tick is 12 px times its scale (12 at rest, 21 for the question being read,
+  // up to 31 under the pointer).
+  const dotRight = (scale) => dotBeside(TICK * scale);
+  // 'solid', or when every bookmark under the question is stale 'hollow' (a 1 px inner ring), or
+  // 'faint' (solid at 45 %) when the dot is too small for a ring.
+  const dotLook = (rows, size) => (!pale(rows) ? 'solid' : size >= 4 ? 'hollow' : 'faint');
   // What the rail's hover card shows for one question's bookmarks (`rows`, already in answer
   // order). `at` places the question: `{ n, total }`, `{ back }` (1 = the latest question) while
   // earlier questions aren't loaded and the total is unknown, or `{ earlier: true }` for the
   // bookmarks in that unloaded history, on the rail's earlier-history dots. One bookmark gets the
   // single card; several get a list that shows `visible` rows and scrolls for the rest. `label` is
-  // the segment's accessible name; `wait` the meta line while earlier messages load for a click.
+  // what the three dots' name appends for earlier history (#72); `wait` the meta line while earlier
+  // messages load for a click.
   const VISIBLE = 5;
   function card(rows, at, zh = false) {
     const k = rows.length,
@@ -249,6 +263,23 @@
       wait: zh ? '正在加载更早的问题…' : 'Loading earlier questions…',
     };
   }
+  // The card a tick shows when its question `q` holds bookmarks (#70): the question card's text,
+  // cut at 400 characters as that card cuts it, then the bookmarks (`rows`, in answer order) with
+  // `card`'s rules for one, several and a stale one. The visible meta line stays the question
+  // card's own; `group` names the card, with the meta line `card` gives.
+  function questionCard(q, rows, at, zh = false) {
+    const c = card(rows, at, zh);
+    return {
+      text: q.length > 400 ? q.slice(0, 400) + '…' : q,
+      single: c.single,
+      rows,
+      visible: c.visible,
+      stale: c.stale,
+      warn: c.warn,
+      tag: c.tag,
+      group: c.meta,
+    };
+  }
   // The bookmarks' text for an accessible name, a stale one marked so.
   const texts = (rows, zh) =>
     rows
@@ -256,13 +287,21 @@
         !b.stale ? b.excerpt : zh ? `${b.excerpt}（回答已变化）` : `${b.excerpt} (answer changed)`,
       )
       .join(zh ? '；' : '; ');
-  // The segment's accessible name: how many bookmarks, and their text.
+  // How many bookmarks, and their text: appended to a tick's name.
   function label(rows, zh = false) {
     const k = rows.length,
       t = texts(rows, zh);
     if (zh) return k === 1 ? `书签：${t}` : `${k} 个书签：${t}`;
     return k === 1 ? `Bookmark: ${t}` : `${k} bookmarks: ${t}`;
   }
+  // A tick's accessible name: its question's first 120 characters and, when the question holds
+  // bookmarks (#70), `label` after it.
+  const tickLabel = (q, rows = [], zh = false) =>
+    rows.length ? `${q.slice(0, 120)} · ${label(rows, zh)}` : q.slice(0, 120);
+  // The rail's three earlier-history dots' accessible name (#72): their `hint` and, when that
+  // history holds bookmarks, the earlier card's `label` after it.
+  const moreLabel = (hint, rows = [], zh = false) =>
+    rows.length ? `${hint} · ${card(rows, { earlier: true }, zh).label}` : hint;
   // The hover button's accessible name while it adds: the action and the start of the text it
   // would bookmark (the paragraph's, or the selection's), up to 80 characters.
   const LEAD = 80;
@@ -292,9 +331,15 @@
     anchor,
     topParagraph,
     keyHint,
-    segmentOffset,
+    dotSize,
+    dotBeside,
+    dotRight,
+    dotLook,
     card,
+    questionCard,
     label,
+    tickLabel,
+    moreLabel,
     addLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
