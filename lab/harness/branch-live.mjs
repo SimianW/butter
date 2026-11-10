@@ -28,6 +28,8 @@ const BRANCH_PATH = process.env.BRANCH_PATH ? new RegExp(process.env.BRANCH_PATH
 const SEND_PATH = /^\/backend-api\/(?:f\/)?conversation(?:\/prepare)?$|^\/backend-api\/sentinel\//;
 const QUESTION = 'Explain this passage briefly.';
 
+for (let i = 0; i < 60 && !(await L.cdpVersion(lab)); i++)
+  await new Promise((resolve) => setTimeout(resolve, 500));
 const { browser, context } = await L.connect(lab);
 await L.sendGuard(context, lab);
 if (BRANCH_PATH)
@@ -318,9 +320,7 @@ try {
     assert.equal(run.originalSendRequests.length, 0, 'nothing sent from the original tab');
     // Checked after both widths, so one run's drift doesn't hide the other's result.
     if (!run.originalUnchanged) drift.push(width);
-    // Discard the unsent branch: clear its composer, close the tab.
-    for (const editor of await dest.locator('.ProseMirror[contenteditable="true"]:visible').all())
-      await editor.fill('');
+    // Close the guarded, unsent branch without filling ChatGPT's composer.
     await dest.close();
   }
   assert.deepEqual(drift, [], 'original tab unchanged');

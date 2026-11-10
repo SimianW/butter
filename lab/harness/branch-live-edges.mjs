@@ -41,6 +41,8 @@ const WORK_LEAF = /^(Branch into Work mode|在工作模式中创建分支)$/;
 const WAITING = ['Waiting for the reply to finish…', '正在等待回复完成…'];
 const QUESTION = 'Explain this passage briefly.';
 
+for (let i = 0; i < 60 && !(await L.cdpVersion(lab)); i++)
+  await new Promise((resolve) => setTimeout(resolve, 500));
 const { browser, context } = await L.connect(lab);
 await L.sendGuard(context, lab);
 await context.route('**/*', (route) => {

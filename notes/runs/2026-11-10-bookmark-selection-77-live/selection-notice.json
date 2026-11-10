@@ -15,7 +15,7 @@
       "pass": true,
       "stored": 1,
       "top": 64,
-      "right": 75.8128662109375
+      "right": 74.058349609375
     },
     {
       "name": "Undo saved card deletes bookmark",
@@ -36,7 +36,8 @@
       "name": "pill absent for user question",
       "pass": true,
       "characters": 8,
-      "inUserQuestion": true
+      "inUserQuestion": true,
+      "nativeAskVisible": true
     },
     {
       "name": "no Butter page errors",

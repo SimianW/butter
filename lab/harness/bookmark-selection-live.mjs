@@ -14,6 +14,20 @@ assert.equal(
   (await fs.readFile(`${lab.lockPath}/owner`, 'utf8')).split('\n')[0],
   process.env.LAB_OWNER,
 );
+for (let i = 0; i < 60 && !(await L.cdpVersion(lab)); i++)
+  await new Promise((resolve) => setTimeout(resolve, 500));
+// Refuse the lab's own data before connecting or making any settings/bookmark write.
+const running = L.browserArgs(lab);
+assert.ok(running, 'running browser arguments must be readable');
+const defaults = lab.defaultExtensions || [];
+assert.ok(
+  running.extensions.length > 0 &&
+    running.extensions.every((extension) => !defaults.includes(extension)),
+  'Refusing default lab extensions: load a fresh task-owned extension first',
+);
+const expected = (process.env.LAB_EXTENSIONS || '').split(',').filter(Boolean);
+assert.equal(expected.length, 1, 'LAB_EXTENSIONS must name one fresh task-owned copy');
+assert.deepEqual(running.extensions, expected, 'running extension must match the task-owned copy');
 const { browser, context } = await L.connect(lab);
 await L.sendGuard(context, lab);
 const result = {
@@ -37,9 +51,15 @@ const watch = (p) =>
   });
 context.pages().forEach(watch);
 context.on('page', watch);
-const worker = context.serviceWorkers()[0] || (await context.waitForEvent('serviceworker'));
+const worker =
+  context.serviceWorkers().find((worker) => worker.url().endsWith('/storage/layout-worker.js')) ||
+  (await context.waitForEvent('serviceworker', {
+    predicate: (worker) => worker.url().endsWith('/storage/layout-worker.js'),
+  }));
 const count = () =>
   worker.evaluate(async () => {
+    // A brand-new task copy may not have opened its database yet. Do not create it here.
+    if (!(await indexedDB.databases()).some((db) => db.name === 'butter-layouts-v1')) return 0;
     const db = await new Promise((ok, no) => {
       const r = indexedDB.open('butter-layouts-v1');
       r.onsuccess = () => ok(r.result);
@@ -94,6 +114,15 @@ async function selectReply() {
   await page.mouse.up();
   await page.locator('chatgpt-butter-pill button[data-cell="bookmark"]').waitFor({ timeout: 5000 });
 }
+// This read-only freshness guard must pass before the main try can write or clear anything.
+let baseline;
+try {
+  baseline = await count();
+  assert.equal(baseline, 0, 'fresh task install');
+} catch (e) {
+  await browser.close();
+  throw e;
+}
 try {
   await worker.evaluate(() =>
     chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined' } }),
@@ -102,8 +131,6 @@ try {
   await page.goto(L.fixture(lab, 'math12'), { waitUntil: 'domcontentloaded' });
   await page.locator('chatgpt-butter-nav[data-on]').waitFor({ state: 'attached', timeout: 45000 });
   await page.waitForTimeout(3000);
-  const baseline = await count();
-  assert.equal(baseline, 0, 'fresh task install');
   await selectReply();
   const geometry = await page.evaluate(() => {
     const pill = document.querySelector('chatgpt-butter-pill').shadowRoot.querySelector('.pill');
@@ -227,71 +254,72 @@ try {
     });
   }
   assert.ok(q, 'a user question is available for a real drag');
-  if (q) {
-    await page.mouse.move(q.x + 1, q.y + q.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(q.x + q.width - 1, q.y + q.height / 2, { steps: 10 });
-    await page.mouse.up();
-    await page.waitForTimeout(700);
-    const selected = await page.evaluate(() => {
-      const selection = getSelection();
-      return {
-        characters: selection.toString().length,
-        inUserQuestion: !!selection.anchorNode?.parentElement?.closest(
-          '[data-user-message-bubble], [data-message-author-role="user"], [data-markdown-text-style="user-message"]',
-        ),
-      };
-    });
-    check(
-      'pill absent for user question',
+  await page.mouse.move(q.x + 1, q.y + q.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(q.x + q.width - 1, q.y + q.height / 2, { steps: 10 });
+  await page.mouse.up();
+  const nativeAsk = page.getByRole('button', { name: 'Ask ChatGPT', exact: true });
+  await nativeAsk.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+  // Give the pill its normal render window after the native control appears.
+  await page.waitForTimeout(700);
+  const nativeAskVisible = await nativeAsk.isVisible();
+  const selected = await page.evaluate(() => {
+    const selection = getSelection();
+    return {
+      characters: selection.toString().length,
+      inUserQuestion: !!selection.anchorNode?.parentElement?.closest(
+        '[data-user-message-bubble], [data-message-author-role="user"], [data-markdown-text-style="user-message"]',
+      ),
+    };
+  });
+  check(
+    'pill absent for user question',
+    nativeAskVisible &&
       selected.characters > 0 &&
-        selected.inUserQuestion &&
-        !(await page.locator('chatgpt-butter-pill .pill').isVisible()),
-      selected,
-    );
-  }
+      selected.inUserQuestion &&
+      !(await page.locator('chatgpt-butter-pill .pill').isVisible()),
+    { ...selected, nativeAskVisible },
+  );
   check('no Butter page errors', result.pageErrors.butter === 0, result.pageErrors);
 } catch (e) {
   result.failure = { kind: e.name };
-  result.userQuestionProbe = await page.evaluate(() =>
-    [...document.querySelectorAll('[data-user-message-bubble]')].map((q) => ({
-      length: q.textContent.trim().length,
-      display: getComputedStyle(q).display,
-      height: q.getBoundingClientRect().height,
-      hasTurn: !!q.closest('[data-turn-key]'),
-      children: [...q.children].map((c) => ({
-        display: getComputedStyle(c).display,
-        height: c.getBoundingClientRect().height,
-      })),
-    })),
-  );
   await fs.writeFile('/tmp/live-77-notice-error.txt', e.stack, { mode: 0o600 });
   console.log(`FAIL ${e.name}`);
   process.exitCode = 1;
 } finally {
-  // Clear only this fresh install's store, never the lab's normal extension data.
-  await worker.evaluate(async () => {
-    const db = await new Promise((ok, no) => {
-      const r = indexedDB.open('butter-layouts-v1');
-      r.onsuccess = () => ok(r.result);
-      r.onerror = no;
-    });
-    try {
-      await new Promise((ok, no) => {
-        const tx = db.transaction('bookmarks', 'readwrite');
-        tx.objectStore('bookmarks').clear();
-        tx.oncomplete = ok;
-        tx.onerror = no;
+  // Reached only after ownership and freshness passed; never clear the lab's normal data.
+  try {
+    await worker.evaluate(async () => {
+      const db = await new Promise((ok, no) => {
+        const r = indexedDB.open('butter-layouts-v1');
+        r.onsuccess = () => ok(r.result);
+        r.onerror = no;
       });
+      try {
+        await new Promise((ok, no) => {
+          const tx = db.transaction('bookmarks', 'readwrite');
+          tx.objectStore('bookmarks').clear();
+          tx.oncomplete = ok;
+          tx.onerror = no;
+        });
+      } finally {
+        db.close();
+      }
+    });
+  } catch (e) {
+    result.cleanupFailure = { kind: e.name };
+    console.log(`FAIL cleanup ${e.name}`);
+    process.exitCode = 1;
+  } finally {
+    try {
+      await fs.mkdir(out, { recursive: true });
+      await fs.writeFile(
+        path.join(out, 'selection-notice.json'),
+        JSON.stringify(result, null, 2) + '\n',
+      );
     } finally {
-      db.close();
+      await browser.close();
     }
-  });
-  await fs.mkdir(out, { recursive: true });
-  await fs.writeFile(
-    path.join(out, 'selection-notice.json'),
-    JSON.stringify(result, null, 2) + '\n',
-  );
-  await browser.close();
+  }
 }
 if (result.checks.some((c) => !c.pass)) process.exitCode = 1;
