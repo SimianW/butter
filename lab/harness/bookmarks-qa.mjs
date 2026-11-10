@@ -50,7 +50,7 @@
 // MARKUP=live runs only that one.
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa); each markup writes
 // to its own subdirectory.
-// The landing wash (#73), after the earlier history: see washSection (ONLY=wash runs it alone;
+// The landing wash (#73, #74), after the earlier history: see washSection (ONLY=wash runs it alone;
 // BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> adds the comparison with its section 5).
 // BUTTER_BOOKMARKS_MOCKUP=<1-Mockup.html> (gh issue artifact download 51 1 -R SimianW/butter) also
 // compares the notice in each theme and language with the mockup's section 4: same size, under 0.1%
@@ -1620,10 +1620,14 @@ async function earlierSection() {
 // reading order (about 360 ms), held 1.2 s, faded over 0.9 s, then gone with its listeners. It
 // covers the bookmark's range and nothing else, keeps the text's colour, follows a scroll during the
 // hold, and goes at once on a second jump, a scrollbar drag, a conversation change or a pause. A
-// stale bookmark lands with the bubble flash and no wash. ONLY=wash runs this part alone.
-// With BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> it also builds the mockup's chat (its
-// column, text and type) and compares the held wash with the panels l-3-light and l-sel-dark, on
-// the chat column only: under 0.1% of pixels differing by more than 24 in a channel.
+// stale bookmark lands with the bubble flash and no wash. Under a header that the scroller starts
+// below, it reaches the scroller's top. A code block and a table (#74) get one box over the whole
+// block that fades in instead of sweeping, and a bookmark in unloaded history is washed after its
+// pages load and the page lands. ONLY=wash runs this part alone.
+// With BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> it also builds the panels' frame (the
+// mockup's chat, its header, fade and composer, and the rail) and compares the held wash with the
+// panels l-3-light, l-sel-dark and l-code-light as whole frames, rail included: under 0.1% of
+// pixels differing by more than 24 in a channel.
 const WASH = 'chatgpt-butter-wash';
 // Question 6's answer for the block wash (#74): paragraphs around a code block and a table, each in
 // the markup's own shape (see washSection's part g).

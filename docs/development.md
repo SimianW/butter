@@ -12,7 +12,7 @@
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
-| `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`) and the sweep, hold and fade (`plan`). |
+| `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
 | `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the marks handed to the rail (`ButterRail.setMarks`), and the landing wash in its own layer. An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
@@ -83,7 +83,9 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 - Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, the
   rail dot's diameter from the pitch and its 4 px gap at 12, 21 and 31 px ticks),
   `test/bookmark-wash.test.js` (the landing wash's plan: lines filled in reading order in 360 ms, each
-  line's share of the progress by its width, the hold and fade, reduced motion, one box per line),
+  line's share of the progress by its width, the hold and fade, reduced motion, one box per line; a
+  code block's or a table's one box 3 px beyond it with its corners and its border left clear, faded
+  in over 160 ms, at once under reduced motion),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
   CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names; a tick's card for several bookmarks, one, a stale one and more
@@ -148,13 +150,22 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   jump, a scrollbar drag starting (the seek state `dragging`, sent by the harness as the seek preview
   sends it: the fixture has no layout for the preview), a conversation change and Butter paused
   remove it at once; a stale bookmark gets the bubble flash and no wash; reduced motion shows it
-  without a sweep. With `BUTTER_BOOKMARKS_DOT_MOCKUP=<#69 mockup>` (`gh issue artifact download 69 1
-  -R SimianW/butter`) it builds the mockup's chat (section 5's text, column and type, at 560 x 438)
-  and compares the held wash with the panels `l-3-light` and `l-sel-dark` on the chat column: under
-  0.1% of pixels differing by more than 24, masking pixels where the two chats already differ with
-  no wash shown (a glyph the two pages draw a pixel apart; the mask must stay under 0.5%), and checks
-  that a bookmarked code block there lands with the bubble flash and no wash. It shoots
-  `wash-*` and `mockup-l-*`. `ONLY=wash` runs this part alone.
+  without a sweep. Under a header that the chat's scroller starts below (as in current ChatGPT) the
+  wash reaches the scroller's top. A code block and a table (#74), in each markup's shape (ChatGPT's
+  `<pre>` round its rounded panel and a table in its scrolling wrapper for `MARKUP=old`; the code
+  widget's `[data-code-block]` surface and the table's frame for `MARKUP=live`), each get one box 3 px
+  beyond the block with its corners, fading in over about 160 ms with no sweep, held and faded, with
+  no bubble flash; under reduced motion the block's box shows at once. A bookmark in earlier,
+  unloaded history (opened from the earlier-history card, by `earlierRowJump`, the one place that
+  knows how that card opens) is washed once its pages have loaded and the page has landed. With
+  `BUTTER_BOOKMARKS_DOT_MOCKUP=<#69 mockup>` (`gh issue artifact download 69 1 -R SimianW/butter`) it
+  builds the panels' frame (section 5's chat, header, fade and composer in a 566 x 438 window, so
+  that the rail sits where the panels draw it; questions 3, 7 and 10 hold bookmarks, 10's stale) and
+  compares the held wash with the panels `l-3-light`, `l-sel-dark` and `l-code-light` as whole
+  frames, rail included, inside their border and rounded corners: under 0.1% of pixels differing by
+  more than 24, masking pixels where the two chats already differ with no wash shown (a glyph the
+  two pages draw a pixel apart; the mask must stay under 0.5%). It shoots `wash-*` and
+  `mockup-l-*`. `ONLY=wash` runs this part alone.
   Before the earlier history, the tick's card (#70; `ONLY=card` runs this part alone): questions 3, 5, 7 and 10 take
   the text and bookmarks of the #69 mockup's section 3. It hovers a tick that holds bookmarks and checks
   the card's meta line, question (two lines), rows in answer order with their dots (hollow and grey,
@@ -202,6 +213,17 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
   answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
   `MARKUP=live` runs only one).
+  The live check, `lab/harness/bookmarks-live.mjs` with `MODE=wash` (the lab lock, the send guard
+  and a fresh unpacked install, as its header says; `LAB_FIXTURE=demo-en12`, the fixture whose
+  answers hold long paragraphs and tables): on real ChatGPT markup in light and dark theme (the dark
+  pass switches ChatGPT's `<html data-theme>` on the page), it bookmarks a paragraph, a selection and
+  a table with the hover button, jumps to each from its tick's card, and checks that the wash's boxes
+  sit on the bookmarked lines (the table's box 3 px around it), that the text keeps its colour under
+  it, that there is no bubble flash, and that when the chat scrolls during the hold the boxes follow
+  their text while the header and composer show no butter and the wash reaches their edges. Only
+  numbers and booleans go to `summary.json`; the report goes to `notes/runs/` (the first one is
+  `notes/runs/2026-11-10-bookmarks-wash-live/`). No fixture answer holds a code block yet, so code
+  blocks are checked in the fixture only.
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.

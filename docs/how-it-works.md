@@ -189,24 +189,36 @@ needed. With no such text, the line sits in its own row 8 px above the composer.
 
 When a jump from a bookmark row in the rail's card lands on a live bookmark, `bookmarks/content.js`
 washes the bookmarked text in butter for a moment: the paragraph, or for a selection only the
-selected text (a selection across paragraphs washes its part in the first one). The rail owns the
+selected text (a selection across paragraphs washes its part in the first one). A bookmarked code
+block or table gets one box over the whole block instead. The rail owns the
 trip: once the page has stopped (after its smooth scroll, or after the far trip's arrival), it calls
 the bookmark's `wash`, and on such a trip the question's bubble doesn't flash. A stale bookmark
-lands at its question's start with the bubble flash and no wash, and so far a bookmarked code block
-or table keeps the bubble flash too; a jump to a question is unchanged.
+lands at its question's start with the bubble flash and no wash; a jump to a question is unchanged.
+A jump to a bookmark in earlier, unloaded history gets the wash too, once its messages have loaded
+and the page has landed.
 
 The wash is one box per rendered line of the range, 2 px above and below the text, rounded 3 px at
 the range's start and end, in `rgb(251 224 122 / .62)` (light) or `rgb(227 199 102 / .3)` (dark).
 It sweeps through the lines in reading order, each from its start to its end, in 360 ms under one
 `cubic-bezier(.3, .7, .3, 1)` (each line's share of the progress is its share of the width; the
 plan is `bookmarks/wash.js`, pure), holds 1.2 s and fades over 0.9 s ease-out, then is removed.
+A code block or a table (a paragraph whose text is all in a `<pre>`, ChatGPT's code widget surface
+`[data-code-block]`, or a `<table>`) has one box instead: the block's drawn box (the rounded panel
+inside ChatGPT's `<pre>`, or the table cut to a viewport that scrolls it sideways) grown 3 px on
+every side, its corners the block's own radius plus those 3 px, with the block's own border left
+clear between the ring outside it and the fill inside it (the mockup's `l-code-light`). It fades in
+over 160 ms ease-out instead of sweeping, then holds and fades the same way.
 Under reduced motion it shows at once, holds and fades. A new jump, a conversation change, a
 scrollbar drag starting, the rail off or Butter paused, or its text leaving the page removes it at
 once.
 
 The boxes are drawn in Butter's own fixed shadow-root layer (`chatgpt-butter-wash`), like the hover
 button's; nothing is inserted into ChatGPT's answer. They are measured from the range's text
-rectangles and clipped to the chat scroller below ChatGPT's header and above its composer. The layer
+rectangles and clipped to the chat scroller below ChatGPT's header and above its composer. The
+header's edge is found where it is drawn: the fixed or sticky box over the scroller's top, or the
+scroller's own top when the scroller starts below the header, as it does in current ChatGPT
+(checked live on 2026-11-10); only with neither found is the header taken to overlap the
+scroller's first 52 px. The layer
 takes no pointer events. It blends with `multiply` in light theme and `lighten` in dark theme, so
 the text under it keeps its own colour in both: dark text stays dark on butter, light text stays
 light. Only while a wash shows, the scroller's `scroll`, the window's `resize` and a
