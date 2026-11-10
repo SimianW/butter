@@ -264,41 +264,33 @@ async function targetBox(which, scroll = false) {
     [which, scroll],
   );
 }
-async function bookmarkParagraph(tooltipCheck = 'hover button tooltip reads Bookmark') {
+// Selects the target paragraph whole, then clicks the selection pill's Bookmark cell beside
+// ChatGPT's "Ask ChatGPT" (#77; the hover button in the margin is gone).
+const BOOKMARK_CELL = 'chatgpt-butter-pill button[data-cell="bookmark"]';
+async function bookmarkParagraph(cellCheck = 'the Bookmark cell is named Bookmark selection') {
   await targetBox(0, true);
   await page.waitForTimeout(1800);
   const b = await targetBox(0);
-  requireThat(b, 'target virtualized before hover');
+  requireThat(b, 'target virtualized before selecting');
   await page.mouse.move(10, 300);
-  await page.mouse.move(b.x, b.y);
-  await page.waitForTimeout(800);
-  const shown = await page.locator('chatgpt-butter-bookmark button.show').count();
-  summary.paragraphAttempt = {
-    inView: b.inView,
-    hoverButtonShown: shown,
-    hitTarget: await page.evaluate(
-      ([x, y]) => !!document.elementFromPoint(x, y)?.closest('p'),
-      [b.x, b.y],
-    ),
-  };
+  await page.evaluate(() => {
+    const t = window.__bookmarkLive,
+      el = document
+        .querySelector(`[data-turn-key="${t.turn}"]`)
+        .querySelector(t.answer)
+        .querySelectorAll(t.blocks)[t.paras[0]];
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    getSelection().removeAllRanges();
+    getSelection().addRange(r);
+  });
+  const cell = page.locator(BOOKMARK_CELL);
+  await cell.waitFor({ timeout: 3000 }).catch(() => {});
+  const shown = await cell.count();
+  summary.paragraphAttempt = { inView: b.inView, bookmarkCellShown: shown };
   if (shown) {
-    await page.locator('chatgpt-butter-bookmark button.show').hover();
-    await page.waitForTimeout(200);
-    const tooltip = await page.evaluate(() => {
-      const r = document.querySelector('chatgpt-butter-bookmark').shadowRoot;
-      return {
-        labelStartsBookmark: r
-          .querySelector('button')
-          .getAttribute('aria-label')
-          .startsWith('Bookmark: '),
-        labelHasText:
-          r.querySelector('button').getAttribute('aria-label').length > 'Bookmark: '.length,
-        tooltipIsBookmark: r.querySelector('.tip span').textContent === 'Bookmark',
-        tooltipVisible: getComputedStyle(r.querySelector('.tip')).opacity === '1',
-      };
-    });
-    await check(tooltipCheck, Object.values(tooltip).every(Boolean), tooltip);
-    await page.locator('chatgpt-butter-bookmark button.show').click();
+    await check(cellCheck, (await cell.getAttribute('aria-label')) === 'Bookmark selection', {});
+    await cell.click();
   }
   await page.waitForTimeout(800);
   // Button text is public Butter UI, never report surrounding page content.
@@ -416,7 +408,7 @@ async function listItemMatrix() {
     await page.evaluate(() => window.__bookmarkLive),
   );
   phase = 'bookmark-list-item';
-  await bookmarkParagraph('list item tooltip and accessible name match');
+  await bookmarkParagraph('list item: the Bookmark cell is named Bookmark selection');
   const stored = await storedCount();
   const item = await listItemBox();
   const anchor = await worker.evaluate(async () => {
@@ -856,7 +848,7 @@ async function watchEarlierLoading() {
 }
 // ---- MODE=wash (#69 "The landing wash", #74). On the real fixture chat, in light and in dark
 // theme: a paragraph, a selection inside another paragraph, and a table are bookmarked with the
-// hover button, then each is jumped to from its question's card, starting about 2500 px away. The
+// Bookmark cell, then each is jumped to from its question's card, starting about 2500 px away. The
 // fixtures hold no code block (none of their answers has one, checked on 2026-11-10), so the table
 // stands for the blocks the wash covers whole; the fixture harness covers code blocks. Checked on
 // ChatGPT's own markup: the boxes sit on the bookmarked text's lines (the table's one box 3 px
@@ -943,6 +935,13 @@ const installKit = () =>
       point(kind) {
         const r = block(kind)?.getBoundingClientRect();
         return r && { x: r.left + Math.min(150, r.width / 2), y: r.top + Math.min(12, r.height / 2) };
+      },
+      // The target whole, as a triple-click selects a paragraph.
+      selectWhole(kind) {
+        const r = document.createRange();
+        r.selectNodeContents(block(kind));
+        getSelection().removeAllRanges();
+        getSelection().addRange(r);
       },
       select() {
         const W = window.__wash,
@@ -1038,20 +1037,20 @@ const showTarget = (kind, y = 200) => page.evaluate(([k, y]) => window.__wk.show
 const targetPoint = (kind) => page.evaluate((k) => window.__wk.point(k), kind);
 const expectedBoxes = (kind) => page.evaluate((k) => window.__wk.expected(k), kind);
 const washNow = () => page.evaluate((WASH) => window.__wk.now(WASH), WASH_HOST);
-// Bookmarks target `kind` with the hover button: the paragraph or the table whole, or the
-// selection made in it.
+// Bookmarks target `kind` with the selection pill's Bookmark cell (#77): the paragraph or the
+// table selected whole, or the selection made in it.
 async function washBookmark(kind) {
   const before = await storedCount();
   await showTarget(kind);
   await page.waitForTimeout(1500);
-  if (kind === 'selection') await page.evaluate(() => window.__wk.select());
   const at = await targetPoint(kind);
   requireThat(at, `${kind} target unmounted`);
   await page.mouse.move(10, 300);
-  await page.mouse.move(at.x, at.y, { steps: 3 });
-  await page.waitForTimeout(900);
-  const button = page.locator('chatgpt-butter-bookmark button.show');
-  requireThat(await button.count(), `no hover button on the ${kind}`);
+  if (kind === 'selection') await page.evaluate(() => window.__wk.select());
+  else await page.evaluate((k) => window.__wk.selectWhole(k), kind);
+  const button = page.locator(BOOKMARK_CELL);
+  await button.waitFor({ timeout: 3000 }).catch(() => {});
+  requireThat(await button.count(), `no Bookmark cell for the ${kind}`);
   await button.click();
   await page.waitForTimeout(1200);
   await page.evaluate(() => getSelection().removeAllRanges());
@@ -1337,7 +1336,7 @@ async function washRun() {
         await worker.evaluate((v) => (globalThis.washTarget = v), await page.evaluate(() => window.__wash));
         phase = 'wash-bookmark';
         for (const kind of ['paragraph', 'selection', 'table'])
-          await check(`wash: the hover button bookmarks the ${kind}`, await washBookmark(kind), { stored: await storedCount() });
+          await check(`wash: the Bookmark cell bookmarks the ${kind}`, await washBookmark(kind), { stored: await storedCount() });
       } else await page.evaluate((v) => (window.__wash = v), await worker.evaluate(() => globalThis.washTarget));
       await page.locator('chatgpt-butter-nav .bdot').first().waitFor({ state: 'attached', timeout: 20000 });
       // The card lists them in answer order.

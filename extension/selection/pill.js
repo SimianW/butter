@@ -130,6 +130,7 @@ svg { display: block; width: 16px; height: 16px; }
     if (b) return b;
     b = document.createElement('button');
     b.setAttribute('type', 'button');
+    b.setAttribute('data-cell', id);
     b.innerHTML = cells.get(id).icon; // static markup only
     // Act on pointerdown: ChatGPT may hide its own button, and so the pill, before a click lands.
     b.addEventListener('pointerdown', (e) => {
