@@ -2,22 +2,31 @@ name: PR body
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
 
 jobs:
   pr-body:
+    # A draft PR has no review line yet, so its run is renamed instead of failing. It is not
+    # skipped under the required name: branch protection counts a skipped `pr-body` as passed.
+    # With no `pr-body` run on the head, the required check waits until ready_for_review runs it.
+    name: ${{ github.event.pull_request.draft && 'pr-body (draft, runs when ready)' || 'pr-body' }}
     runs-on: ubuntu-latest
     steps:
+      - if: github.event.pull_request.draft
+        run: echo "Draft PR; pr-body runs when it is marked ready for review."
       # The PR head, not the default merge ref: against a moved base the merge ref can hide
       # changes and compute a lower tier than review-tier.py does on the author's branch.
-      - uses: actions/checkout@v4
+      - if: ${{ !github.event.pull_request.draft }}
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - if: ${{ !github.event.pull_request.draft }}
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Check review tier and review lines
+        if: ${{ !github.event.pull_request.draft }}
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_REF: origin/${{ github.event.pull_request.base.ref }}
