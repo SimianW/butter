@@ -85,7 +85,8 @@ const TURNS = 12;
 const hex = (prefix, i) => `${prefix}-0000-4000-8000-${String(i).padStart(12, '0')}`;
 const question = (i) => hex('7a10c3d2', i),
   answer = (i) => hex('3e5b9f81', i);
-const QUESTION = (i) => `Fixture question ${i + 1} about query planning`;
+// `page$.asked` gives some questions other text, as the mockup's (#70).
+const QUESTION = (i) => page$.asked.get(i) ?? `Fixture question ${i + 1} about query planning`;
 // Long enough to wrap over four lines in the 720 px column: the excerpt keeps the first three.
 const PARAGRAPH = (i, k) =>
   `Fixture answer ${i + 1} paragraph ${k + 1}: the planner compares the estimated cost of a sequential scan with an index scan, ` +
@@ -98,8 +99,11 @@ const regen = (i) => hex('5c7d2e90', i);
 const REGENERATED = (i, k) =>
   `Regenerated answer ${i + 1}, point ${k + 1}: a different explanation of when an index helps a query.`;
 const EDITED = (i) => `Edited answer ${i + 1}: this paragraph now says something else entirely.`;
+// `page$.said` gives some answers other blocks, as the mockup's (#70).
 const blocks = (i) =>
-  page$.regen.has(i)
+  page$.said.has(i)
+    ? page$.said.get(i).join('')
+    : page$.regen.has(i)
     ? [0, 1, 2, 3].map((k) => `<p>${REGENERATED(i, k)}</p>`).join('')
     : [
     `<p>${PARAGRAPH(i, 0)}</p>`,
@@ -119,7 +123,7 @@ const messages = (from = 0, to = TURNS) =>
 // earlier messages come two questions per page from /messages?before=<first> when the chat is
 // scrolled near its top (#51 addendum). Each page is answered after `pageDelay` ms; `pages` counts them.
 // `turns`: the chat holds only its first `turns` questions (1: a one-question chat, no rail).
-const page$ = { theme: 'light', regen: new Set(), edited: new Set(), first: 0, turns: TURNS, pageDelay: 0, pages: 0 };
+const page$ = { theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0 };
 const PAGE_TURNS = 2;
 // The answer's wrapper in each markup. `data-fx-answer` is the harness's own handle on it.
 const answerAttrs = (id) =>
@@ -268,9 +272,11 @@ const seedStore = (rows, { clear = false } = {}) =>
 const sha = (s) => createHash('sha256').update(s).digest('hex');
 const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
 // Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
-async function compare(page, a, b) {
+// `radius`: the images are a card's own box with that corner radius; the corners outside it (the
+// page and the shadow behind the card, which differ between the two) are left out.
+async function compare(page, a, b, radius = 0) {
   return page.evaluate(
-    async ([a, b]) => {
+    async ([a, b, radius]) => {
       const load = (src) =>
         new Promise((r) => {
           const i = new Image();
@@ -287,12 +293,23 @@ async function compare(page, a, b) {
       };
       const p = data(x),
         q = data(y);
-      let n = 0;
-      for (let k = 0; k < p.length; k += 4)
+      const w = x.width,
+        h = x.height,
+        out = (i, j) => {
+          const dx = Math.max(0, radius - (i + 0.5), i + 0.5 - (w - radius)),
+            dy = Math.max(0, radius - (j + 0.5), j + 0.5 - (h - radius));
+          return dx > 0 && dy > 0 && Math.hypot(dx, dy) > radius - 1;
+        };
+      let n = 0,
+        all = 0;
+      for (let k = 0; k < p.length; k += 4) {
+        if (radius && out((k / 4) % w, Math.floor(k / 4 / w))) continue;
+        all++;
         if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
-      return { ratio: n / (p.length / 4) };
+      }
+      return { ratio: n / all, pixels: n };
     },
-    [await png(a), await png(b)],
+    [await png(a), await png(b), radius],
   );
 }
 
@@ -512,6 +529,318 @@ async function oneQuestionSection() {
   check('with a second question the rail shows the segment under question 1', (await stored()).length === 1 && two.marks.length === 1 && markUnder(two, 0),
     { stored: (await stored()).length, marks: two.marks.length });
   page$.turns = TURNS;
+  await seedStore([], { clear: true });
+}
+
+// 13. The tick's card (#70). Hovering or focusing a tick whose question holds bookmarks shows the
+// question's card with its bookmarks under the question. Questions 3, 5, 7 and 10 take the text of
+// the #69 mockup's section 3 and their bookmarks its rows, so the card can be compared with the
+// mockup's panels (BUTTER_BOOKMARKS_DOT_MOCKUP). ONLY=card runs this part alone.
+async function cardSection() {
+  await settings({ bookmarkNotice: 'acknowledged' });
+  const Q7 = 'Why does Postgres ignore my index on orders.status?',
+    TARGET =
+      'Postgres skips an index when it expects a large share of rows to match, roughly more than 5–10% of the table. ' +
+      'A sequential scan reads pages in order, which is cheaper than jumping around the heap for every matching row.',
+    VACUUM = 'Run VACUUM ANALYZE after a bulk load, so the planner sees the new row counts before the next query plans against them.';
+  page$.asked = new Map([
+    [2, 'How do I bulk-load 2M rows quickly?'],
+    [4, 'What does EXPLAIN ANALYZE actually measure, and why is it slower than the query itself?'],
+    [6, Q7],
+    [9, 'Should I add a partial index?'],
+  ]);
+  const p = (t) => `<p>${t}</p>`;
+  // Question 7's blocks: p, h3, p, p, p, p, p. Paragraph 5 no longer says what its bookmark kept.
+  page$.said = new Map([
+    [2, [p(VACUUM), p('Then check the plan again with EXPLAIN ANALYZE.')]],
+    [6, [p("Most of the time it isn't ignoring it. The planner decided a sequential scan is cheaper."), '<h3>When a sequential scan wins</h3>',
+      p(TARGET), p("Compare the planner's estimate with reality:"), p("EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'pending';"),
+      p('Run ANALYZE orders after a bulk load.'), p('A partial index on the rare statuses stays small, and the planner trusts it.')]],
+  ]);
+  const ACCOUNT = sha('user-fixture'),
+    CONV_HASH = sha(CONV);
+  const row = (turn, para, start, excerpt, time) =>
+    ({ account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: start + excerpt.length, excerpt, time });
+  const ROWS = [
+    row(6, 2, TARGET.indexOf('roughly'), 'roughly more than 5–10% of the table. A sequential scan reads pages in order.', 1),
+    row(6, 6, 0, 'A partial index on the rare statuses stays small, and the planner trusts it.', 2),
+    row(6, 5, 0, 'If estimated rows are far from actual rows, run ANALYZE orders to refresh the statistics.', 3),
+    row(6, 2, 0, TARGET, 4),
+    row(2, 0, 0, VACUUM, 5),
+    row(9, 2, 0, "Use a partial index when only a few statuses are queried often, for example WHERE status IN ('pending', 'failed').", 6),
+  ];
+  // Question 7's rows in answer order: paragraph 2 (twice), 5 (stale), 6.
+  const ORDER = [ROWS[3], ROWS[0], ROWS[2], ROWS[1]].map((b) => b.excerpt);
+  await seedStore(ROWS, { clear: true });
+  const marked = () =>
+    page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 3, null, { timeout: 5000 });
+  const tickCard = () =>
+    page.evaluate(() => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        c = root.querySelector('.card'),
+        s = getComputedStyle(c),
+        r = c.getBoundingClientRect(),
+        text = c.querySelector(':scope > .text'),
+        box = root.querySelector('.bmc .rows');
+      const rect = (el) => {
+        const q = el.getBoundingClientRect();
+        return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height };
+      };
+      return {
+        shown: c.classList.contains('show') && +s.opacity > 0.5,
+        merged: c.classList.contains('qb'),
+        role: c.getAttribute('role'),
+        name: c.getAttribute('aria-label'),
+        inert: c.inert,
+        pe: s.pointerEvents,
+        meta: getComputedStyle(c.querySelector(':scope > .meta')).display === 'none' ? null : c.querySelector(':scope > .meta').textContent,
+        text: getComputedStyle(text).display === 'none' ? null : text.textContent,
+        textLines: Math.round(text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight)),
+        rows: getComputedStyle(root.querySelector('.bmc')).display === 'none' ? [] : [...root.querySelectorAll('.bmc .it')].map((it) => {
+          const dot = it.querySelector('.dot'),
+            tx = it.querySelector('.tx'),
+            x = it.querySelector('.x');
+          return {
+            text: tx.textContent,
+            lines: Math.round(tx.getBoundingClientRect().height / parseFloat(getComputedStyle(tx).lineHeight)),
+            tag: it.querySelector('.why')?.textContent ?? null,
+            stale: it.classList.contains('stale'),
+            color: getComputedStyle(tx).color,
+            dot: dot && { w: dot.getBoundingClientRect().width, bg: getComputedStyle(dot).backgroundColor, ring: getComputedStyle(dot).boxShadow },
+            bg: getComputedStyle(it).backgroundColor,
+            xShown: getComputedStyle(x).display !== 'none' && +getComputedStyle(x).opacity === 1,
+            xLabel: x.getAttribute('aria-label'),
+            ...rect(it),
+            xAt: rect(x),
+          };
+        }),
+        flags: root.querySelectorAll('.bmc .flag').length,
+        warn: root.querySelector('.bmc .warn')?.textContent ?? null,
+        box: box && { client: box.clientHeight, scroll: box.scrollHeight },
+        rect: { x: r.left, y: r.top, w: r.width, h: r.height },
+      };
+    });
+  const tickName = (turn) =>
+    page.evaluate((turn) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick')[turn].getAttribute('aria-label'), turn);
+  const toTop = async () => {
+    await page.mouse.move(700, 400);
+    await page.mouse.wheel(0, -1);
+    await page.waitForTimeout(50);
+    await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
+    await page.waitForTimeout(300);
+  };
+  // On the tick's row, above its segment (which takes the pointer within 4 px of its own row).
+  const hoverTick = async (turn) => {
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(200);
+    const t = (await rail()).ticks[turn];
+    await page.mouse.move(t.x, t.y - 3, { steps: 4 });
+    await page.waitForTimeout(350);
+    return t;
+  };
+  // From the tick across the gap onto row k, then the pointer rests on its text.
+  const ontoRow = async (k) => {
+    const c = await tickCard();
+    await page.mouse.move(c.rows[k].x - 40, c.rows[k].y, { steps: 12 });
+    await page.waitForTimeout(300);
+    return tickCard();
+  };
+  // The card's own box, on whole pixels; `at` keeps its fractional position for the mockup.
+  const built = [];
+  const shoot = async (panel) => {
+    const { rect } = await tickCard(),
+      file = `${shots}/${panel}.png`;
+    await page.screenshot({ path: file, clip: { x: Math.floor(rect.x), y: Math.floor(rect.y), width: Math.round(rect.w), height: Math.round(rect.h) } });
+    built.push({ panel, file, at: rect });
+  };
+  const LIGHT_DOT = 'rgb(211, 158, 16)',
+    DARK_DOT = 'rgb(227, 199, 102)';
+  const seen = {};
+  for (const theme of ['light', 'dark']) {
+    await open(theme);
+    await marked();
+    await toTop();
+    await hoverTick(6);
+    const many = await tickCard();
+    const onCard = await ontoRow(1);
+    await shoot(`f-many-${theme}`);
+    await hoverTick(2);
+    const one = await ontoRow(0);
+    if (theme === 'light') await shoot('f-one-light');
+    await hoverTick(9);
+    const stale = await ontoRow(0);
+    if (theme === 'dark') await shoot('f-stale-dark');
+    await hoverTick(4);
+    const plain = await tickCard();
+    if (theme === 'dark') await shoot('f-plain-dark');
+    seen[theme] = { many, onCard, one, stale, plain };
+  }
+  const { many, onCard, one, stale, plain } = seen.light;
+  check('a tick that holds bookmarks: its card shows the meta line, the question and the rows in answer order',
+    many.shown && many.merged && many.meta === '7 / 12' && many.text === Q7 && JSON.stringify(many.rows.map((r) => r.text)) === JSON.stringify(ORDER),
+    { meta: many.meta, text: many.text, rows: many.rows.map((r) => r.text) });
+  check('the card is 280 px wide, a group named "Question 7 of 12 · 4 bookmarks", and takes the pointer',
+    Math.abs(many.rect.w - 280) < 0.5 && many.role === 'group' && many.name === 'Question 7 of 12 · 4 bookmarks' && !many.inert && many.pe === 'auto',
+    { w: many.rect.w, role: many.role, name: many.name, inert: many.inert, pe: many.pe });
+  check('the question is clamped to two lines; the rows are one line each', many.textLines <= 2 && many.rows.every((r) => r.lines === 1),
+    { textLines: many.textLines, lines: many.rows.map((r) => r.lines) });
+  check('each row starts with a 5 px dot, #d39e10 in light theme, hollow for the stale row; no flag',
+    many.flags === 0 && many.rows.every((r) => r.dot?.w === 5) &&
+      many.rows.filter((r) => !r.stale).every((r) => r.dot.bg === LIGHT_DOT) &&
+      many.rows[2].dot.bg === 'rgba(0, 0, 0, 0)' && many.rows[2].dot.ring.includes(LIGHT_DOT) && many.rows[2].dot.ring.includes('inset'),
+    { dots: many.rows.map((r) => r.dot), flags: many.flags });
+  check('the stale row is grey and ends with "answer changed"; the others have no tag',
+    many.rows[2].stale && many.rows[2].tag === 'answer changed' && many.rows[2].color === 'rgb(143, 143, 143)' &&
+      many.rows.filter((r) => !r.stale).every((r) => r.tag === null && r.color !== 'rgb(143, 143, 143)'),
+    { rows: many.rows.map((r) => [r.tag, r.color]) });
+  check('moving onto the card keeps it open; the hovered row has the hover background and an ×, the others no ×',
+    onCard.shown && onCard.merged && onCard.rows[1].bg !== 'rgba(0, 0, 0, 0)' && onCard.rows[1].xShown &&
+      onCard.rows[1].xLabel === `Delete bookmark: ${ORDER[1]}` && !onCard.rows[0].xShown && !onCard.rows[3].xShown,
+    { rows: onCard.rows.map((r) => [r.bg, r.xShown]) });
+  check('one bookmark: a single row whose text runs to three lines, no tag, no footer',
+    one.shown && one.merged && one.meta === '3 / 12' && one.name === 'Bookmark · question 3 of 12' && one.rows.length === 1 &&
+      one.rows[0].text === VACUUM && one.rows[0].lines >= 2 && one.rows[0].lines <= 3 && one.rows[0].tag === null && one.warn === null,
+    { meta: one.meta, name: one.name, rows: one.rows.map((r) => [r.text, r.lines]), warn: one.warn });
+  check("one stale bookmark: grey text, a hollow dot, no tag, and the footer about the paragraph that can't be found",
+    stale.shown && stale.merged && stale.meta === '10 / 12' && stale.rows.length === 1 && stale.rows[0].stale && stale.rows[0].tag === null &&
+      stale.rows[0].color === 'rgb(143, 143, 143)' && stale.rows[0].dot.bg === 'rgba(0, 0, 0, 0)' &&
+      stale.warn === "This paragraph can't be found any more. Clicking opens question 10 instead.",
+    { rows: stale.rows.map((r) => [r.tag, r.color, r.dot]), warn: stale.warn });
+  check("a tick without bookmarks: today's card, unchanged and inert",
+    plain.shown && !plain.merged && plain.role === 'tooltip' && plain.inert && plain.pe === 'none' && plain.meta === '5 / 12' &&
+      plain.text === 'What does EXPLAIN ANALYZE actually measure, and why is it slower than the query itself?' && plain.rows.length === 0,
+    { plain: { ...plain, rows: plain.rows.length } });
+  check('dark theme: the same card, its dots #e3c766',
+    seen.dark.many.merged && seen.dark.many.rows.filter((r) => !r.stale).every((r) => r.dot.bg === DARK_DOT) &&
+      seen.dark.many.rows[2].dot.ring.includes(DARK_DOT) && seen.dark.onCard.shown && seen.dark.stale.warn === stale.warn && !seen.dark.plain.merged,
+    { dots: seen.dark.many.rows.map((r) => r.dot) });
+  check("the tick's name appends the bookmarks' count and text, the stale one marked",
+    (await tickName(6)) === `${Q7} · 4 bookmarks: ${ORDER[0]}; ${ORDER[1]}; ${ORDER[2]} (answer changed); ${ORDER[3]}` &&
+      (await tickName(4)) === 'What does EXPLAIN ANALYZE actually measure, and why is it slower than the query itself?',
+    { seven: await tickName(6), five: await tickName(4) });
+
+  // Clicks. The tick still opens its question.
+  await open('light');
+  await marked();
+  await toTop();
+  let t = await hoverTick(6);
+  await page.mouse.click(t.x, t.y - 3);
+  await page.waitForTimeout(3500);
+  const questionTop = (turn) =>
+    page.evaluate((id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top, question(turn));
+  check('clicking a tick that holds bookmarks lands on its question', Math.abs((await questionTop(6)) - 64) <= 3, { fromTop: await questionTop(6) });
+  // A row jumps to its bookmark (the last row: paragraph 6) and the card closes.
+  await toTop();
+  await hoverTick(6);
+  let c = await ontoRow(3);
+  await page.mouse.click(c.rows[3].x - 40, c.rows[3].y);
+  await page.waitForTimeout(3500);
+  check('clicking a row lands on its bookmark', Math.abs((await block(6, 6)).fromTop - 64) <= 3, { fromTop: (await block(6, 6)).fromTop });
+  check('the card closes after a row is clicked', !(await tickCard()).shown);
+  // × deletes that bookmark: the first row.
+  await toTop();
+  await hoverTick(6);
+  c = await ontoRow(0);
+  await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
+  await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
+  await page.waitForTimeout(400);
+  c = await tickCard();
+  let left = (await stored()).filter((b) => b.turn === 6);
+  check('× deletes that bookmark; the card stays open with the rest', left.length === 3 && !left.some((b) => b.para === 2 && b.start === 0) &&
+    c.shown && c.merged && c.name === 'Question 7 of 12 · 3 bookmarks' && c.rows.length === 3, { left: left.length, name: c.name });
+  // The last one: question 3's only bookmark. Its card closes.
+  await hoverTick(2);
+  c = await ontoRow(0);
+  await page.mouse.move(c.rows[0].xAt.x, c.rows[0].xAt.y, { steps: 3 });
+  await page.mouse.click(c.rows[0].xAt.x, c.rows[0].xAt.y);
+  await page.waitForTimeout(400);
+  check("× on a question's last bookmark deletes it and closes the card", !(await stored()).some((b) => b.turn === 2) && !(await tickCard()).shown);
+
+  // Keyboard alone: Tab into the rail, arrows to tick 7, ArrowLeft into its card.
+  await toTop();
+  await page.mouse.move(700, 300);
+  const focused = () => page.evaluate(() => {
+    const a = document.querySelector('chatgpt-butter-nav')?.shadowRoot.activeElement;
+    return a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null;
+  });
+  await page.evaluate(() => document.activeElement?.blur());
+  for (let k = 0; k < 8 && !(await focused())?.cls.startsWith('tick'); k++) await page.keyboard.press('Tab');
+  let f;
+  for (let k = 0; k < 30; k++) {
+    f = await focused();
+    if (f?.cls.startsWith('tick') && f.label.startsWith(Q7)) break;
+    await page.keyboard.press('ArrowDown');
+  }
+  await page.waitForTimeout(250);
+  c = await tickCard();
+  check('focusing a tick that holds bookmarks shows its card', f?.label.startsWith(`${Q7} · 3 bookmarks: `) && c.shown && c.merged, { f, merged: c.merged });
+  await page.keyboard.press('ArrowLeft');
+  f = await focused();
+  const first = f;
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  f = await focused();
+  check('ArrowLeft focuses the first row; ArrowDown moves between rows',
+    first?.cls === 'go' && first.text.startsWith(ORDER[1]) && f?.cls === 'go' && f.text === ORDER[3], { first, f });
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(3500);
+  f = await focused();
+  check('Enter on a row jumps to it; focus ends on the tick', Math.abs((await block(6, 6)).fromTop - 64) <= 3 && f?.cls.startsWith('tick') && f.label.startsWith(Q7),
+    { fromTop: (await block(6, 6)).fromTop, f });
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Delete');
+  await page.waitForTimeout(400);
+  left = (await stored()).filter((b) => b.turn === 6);
+  f = await focused();
+  check('Delete removes the focused row; focus stays in the card', left.length === 2 && !left.some((b) => b.para === 2) &&
+    f?.cls === 'go' && (await tickCard()).rows.length === 2, { left: left.map((b) => b.para), f });
+  await page.keyboard.press('ArrowRight');
+  f = await focused();
+  const back = f;
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Escape');
+  f = await focused();
+  check('ArrowRight and Escape return to the tick', back?.cls.startsWith('tick') && back.label.startsWith(Q7) && f?.cls.startsWith('tick') && f.label.startsWith(Q7), { back, f });
+
+  // Reload: both deletions are still gone.
+  await page.evaluate(() => document.activeElement?.blur());
+  await open('light');
+  await page.waitForTimeout(500);
+  const after = await stored();
+  check('after a reload the deleted bookmarks are still gone', after.length === 3 && !after.some((b) => b.turn === 2) &&
+    after.filter((b) => b.turn === 6).length === 2 && (await tickName(2)) === 'How do I bulk-load 2M rows quickly?', { stored: after.map((b) => [b.turn, b.para]) });
+
+  // Against the #69 mockup's section 3, when given: the card's own box in each panel.
+  if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) {
+    const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
+    await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
+    await mock.addStyleTag({ content: 'html { scrollbar-width: none } .ann, .ring { display: none }' });
+    await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
+    for (const b of built) {
+      const card = mock.locator(`[data-panel="${b.panel}"] .card`);
+      await card.scrollIntoViewIfNeeded();
+      // The mockup centres its card with translateY(-50%), which puts a card of odd height on half a
+      // pixel and moves some lines' text by a pixel. Lift it by a whole number of pixels instead and
+      // put it on the built card's fraction of a pixel, so both draw on the same grid.
+      const frac = (v) => v - Math.floor(v);
+      await card.evaluate((el) => (el.style.transform = `translateY(${-Math.round(el.offsetHeight / 2)}px)`));
+      const box = await card.boundingBox();
+      await card.evaluate((el, [dx, dy]) => {
+        const s = getComputedStyle(el);
+        el.style.right = `${parseFloat(s.right) - dx}px`;
+        el.style.top = `${parseFloat(s.top) + dy}px`;
+      }, [frac(b.at.x) - frac(box.x), frac(b.at.y) - frac(box.y)]);
+      const moved = await card.boundingBox(),
+        reference = `${shots}/mockup-${b.panel}.png`;
+      await mock.screenshot({ path: reference, clip: { x: Math.floor(moved.x), y: Math.floor(moved.y), width: Math.round(b.at.w), height: Math.round(b.at.h) } });
+      const diff = await compare(mock, b.file, reference, 12);
+      check(`the card matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
+        { ...diff, built: [b.at.w, b.at.h], mockup: [moved.width, moved.height] });
+    }
+    await mock.close();
+  }
+  page$.asked = new Map();
+  page$.said = new Map();
   await seedStore([], { clear: true });
 }
 
@@ -899,9 +1228,10 @@ try {
     const tx = opened.then((db) => db.transaction('geometry', 'readwrite').objectStore('geometry').clear());
     return tx.then(() => {});
   });
-  // ONLY=earlier runs the earlier-history section alone.
+  // ONLY=earlier, ONLY=one and ONLY=card run that section alone.
   if (process.env.ONLY === 'earlier') await earlierSection();
   else if (process.env.ONLY === 'one') await oneQuestionSection();
+  else if (process.env.ONLY === 'card') await cardSection();
   else {
     await settings({});
     await open();
@@ -1922,6 +2252,7 @@ try {
       remounted && Math.abs(sentAt - 64) <= 3, { remounted, fromTop: sentAt, question: sentQuestion });
     await seedStore([], { clear: true });
 
+    await cardSection();
     await oneQuestionSection();
     await earlierSection();
 

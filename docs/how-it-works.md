@@ -18,6 +18,19 @@ The [history rail](history-rail.md) lives in `rail/rail.js` and `history/convers
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
+Bookmarks (`bookmarks/content.js`, `bookmarks/model.js`) show on the rail as a short segment under
+the tick of each question that holds them. Hovering or focusing such a tick shows the question's
+usual card with its bookmarks under the question: the meta line, the question clamped to two lines,
+a divider, then one row per bookmark in answer order, each starting with a 5 px dot (`#d39e10` in
+light theme, `#e3c766` in dark; a hollow ring when the bookmark is stale, whose row is grey and says
+"answer changed"). Five rows show and the rest scroll; a single bookmark shows up to three lines,
+and when it is stale the card ends with a footer saying a click opens the question instead. This
+card takes the pointer and focus: it stays open while the pointer crosses to it, a row jumps to its
+bookmark and closes the card, × deletes the bookmark, and deleting the last one closes the card.
+Clicking the tick still opens the question, and a tick without bookmarks shows its card as before,
+inert. ArrowLeft on the tick enters the card. The tick's accessible name adds the bookmarks' count
+and text. The card's top sits on a whole pixel so its text draws as crisply as the page's.
+
 ## Seek preview
 
 While you hold and drag the thread's native scrollbar thumb, `seek/preview-main.js` stops its scroll

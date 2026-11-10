@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 import seekMeta from '../extension/seek/seek-meta.js';
+import bookmarks from '../extension/bookmarks/model.js';
 
 const source = fs.readFileSync(new URL('../extension/rail/rail.js', import.meta.url), 'utf8');
 const conversation = '12345678-1234-1234-1234-123456789abc';
@@ -162,6 +163,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   const ctx = vm.createContext({
     document,
     ButterSeekMeta: seekMeta,
+    ButterBookmarks: bookmarks, // the manifest loads bookmarks/model.js before the rail
     navigator: { language: 'en' },
     location: { pathname: `/c/${conversation}` },
     Element: FakeElement,

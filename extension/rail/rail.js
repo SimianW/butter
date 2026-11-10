@@ -33,7 +33,7 @@
       if (shown !== -2) {
         const i = shown;
         shown = -2;
-        hover(i, shownBm);
+        hover(i, shownBm && !merged);
       }
       drawMarks();
       host.style.display = railOff() ? 'none' : '';
@@ -470,10 +470,10 @@
       color: #0d0d0d; font: 13px/1.45 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
       --surface: #fff; --line: rgb(0 0 0 / .08); --muted: #8f8f8f; --streak: rgb(0 0 0 / .09);
       --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08); --page: #fff; --butter: #fbe07a;
-      --hoverbg: rgb(0 0 0 / .06); }
+      --hoverbg: rgb(0 0 0 / .06); --dot: #d39e10; }
     :host([data-dark]) { color: #ececec; --surface: #2f2f2f; --line: rgb(255 255 255 / .1); --muted: #a3a3a3; --streak: rgb(255 255 255 / .1);
       --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3); --page: #212121; --butter: #e3c766;
-      --hoverbg: rgb(255 255 255 / .08); }
+      --hoverbg: rgb(255 255 255 / .08); --dot: #e3c766; }
     .rail { position: absolute; top: 0; right: 0; width: ${RAIL_W}px; box-sizing: border-box; padding: ${PAD}px 6px;
       transform: translate(calc(-1 * var(--r)), var(--y)); opacity: 0; pointer-events: none; will-change: transform;
       transition: opacity .3s; }
@@ -522,7 +522,7 @@
     .card.bm { max-width: 260px; }
     .card.bm.show { pointer-events: auto; }
     .card.bm.list { width: 268px; max-width: 268px; }
-    .card.bm > .meta, .card.bm > .text, .card:not(.bm) > .bmc { display: none; }
+    .card.bm > .meta, .card.bm > .text, .card:not(.bm, .qb) > .bmc { display: none; }
     .bmc .meta { display: flex; align-items: center; gap: 5px; }
     .flag { width: 8px; height: 10px; flex: none; }
     .flag path { fill: var(--butter); }
@@ -550,6 +550,22 @@
     .meta .wspin { margin: 0 0 0 auto; }
     .warn { font-size: 11px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line);
       max-width: 236px; }
+    .card.qb { width: 280px; max-width: 280px; }
+    .card.qb.show { pointer-events: auto; }
+    .card.qb > .text { -webkit-line-clamp: 2; }
+    .qb .bmc { margin-top: 7px; padding-top: 5px; border-top: 1px solid var(--line); }
+    .qb .it .go { padding: 4px 6px; }
+    .qb .bmc .it .x { display: none; justify-content: center; margin: 0 6px 0 1px; opacity: 1; }
+    .qb .bmc .it:hover .x, .qb .bmc .it:focus-within .x { display: grid; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dot); flex: none; }
+    .it.stale .dot { background: transparent; box-shadow: inset 0 0 0 1px var(--dot); }
+    .qb .it.solo { margin: 0 -6px; align-items: flex-start; }
+    .qb .solo .go { align-items: flex-start; }
+    .qb .solo .tx { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      overflow-wrap: anywhere; }
+    .qb .solo .dot { margin-top: 7px; }
+    .qb .bmc .solo .x { margin-top: 4px; }
+    .qb .warn { max-width: none; }
     .seek-card { max-width: 260px; }
     .seek-card .text { -webkit-line-clamp: 3; }
     .spin { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; border-radius: 50%;
@@ -634,9 +650,10 @@
       const m = markAt(e.clientY),
         x = lastX;
       lastX = e.clientX;
-      // On the way from a segment to its card the pointer crosses other ticks: while it heads left
-      // within the card's height, the card stays.
-      if (m === null && shownBm && e.clientX < x) {
+      // On the way from a segment or a tick to its card the pointer crosses other ticks: while it
+      // heads left within the card's height, the card stays. A tick's card also stays over a
+      // segment, which the way down to its rows can cross.
+      if ((m === null || merged) && shownBm && e.clientX < x) {
         const r = card.getBoundingClientRect();
         if (e.clientY >= r.top && e.clientY <= r.bottom) return kick();
       }
@@ -709,6 +726,15 @@
         bmc.querySelector('.go, .one')?.focus();
         return;
       }
+      // ArrowLeft on a tick whose question holds bookmarks enters its card (#70).
+      const t = ticks.indexOf(e.target);
+      if (e.key === 'ArrowLeft' && t >= 0 && marks.has(qs[t]?.id)) {
+        e.preventDefault();
+        held = false;
+        hover(t);
+        bmc.querySelector('.go')?.focus();
+        return;
+      }
       if (!d) return;
       e.preventDefault();
       held = false;
@@ -728,7 +754,8 @@
       if (!card.contains(e.relatedTarget) && !rail.contains(e.relatedTarget) && pointerY === null)
         leaveSoon();
     });
-    // In the card: arrows between rows, Delete removes one, ArrowRight or Escape back to the segment.
+    // In the card: arrows between rows, Delete removes one, ArrowRight or Escape back to the segment,
+    // or to the tick for a tick's card.
     card.addEventListener('keydown', (e) => {
       if (!shownBm) return;
       const rows = [...bmc.querySelectorAll('.go, .one')],
@@ -736,7 +763,7 @@
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (e.key === 'Escape' || e.key === 'ArrowRight') {
         e.preventDefault();
-        markEls.get(idAt(shown))?.focus();
+        (merged ? ticks[shown] : markEls.get(idAt(shown)))?.focus();
         // While earlier messages load for it, Escape puts the dots' card away; the loading goes on.
         if (e.key === 'Escape' && shown === EARLIER && wait) hover(-2);
       } else if (at >= 0 && d) {
@@ -800,6 +827,15 @@
     markEls.get(idAt(i))?.classList.add('hover');
   };
   const drawMarks = () => {
+    // A tick's name holds its question's bookmarks (#70).
+    ticks.forEach(
+      (t, i) =>
+        qs[i] &&
+        t.setAttribute(
+          'aria-label',
+          ButterBookmarks.tickLabel(qs[i].q, marks.get(qs[i].id)?.bookmarks, TXT.zh),
+        ),
+    );
     for (const [id, el] of markEls)
       if (!marks.has(id) || indexOf(id) == null || !geo) {
         markEls.delete(id);
@@ -836,7 +872,7 @@
       el.classList.toggle('hover', i === hotMark);
     }
   };
-  // The card open on a segment follows its bookmarks (a deletion, or one leaving the dots as its
+  // The card open on a segment or a tick follows its bookmarks (a deletion, or one leaving the dots as its
   // answer loads), keeping keyboard focus on the same row.
   const refill = () => {
     if (!host || !shownBm || shown === -2) return;
@@ -851,7 +887,10 @@
       if (inCard) (i === EARLIER ? more : ticks[i])?.focus();
       return;
     }
-    fillCard(shown);
+    if (merged) {
+      fillQuestion(shown);
+      host.style.setProperty('--cy', `${whole(tickY(shown))}px`);
+    } else fillCard(shown);
     if (inCard) {
       const rows = bmc.querySelectorAll('.go, .one');
       rows[Math.min(Math.max(at, 0), rows.length - 1)]?.focus();
@@ -954,6 +993,50 @@
       bmc.replaceChildren(head, rows);
     }
   };
+  // A tick's card when its question holds bookmarks (#70): the question's meta line and text, then
+  // a row per bookmark, each starting with the rail's dot; one bookmark's row runs to three lines.
+  const fillQuestion = (i) => {
+    const id = qs[i].id,
+      c = ButterBookmarks.questionCard(
+        qs[i].q,
+        marks.get(id).bookmarks,
+        cur.hasPrev ? { back: qs.length - i } : { n: i + 1, total: qs.length },
+        TXT.zh,
+      );
+    text.textContent = c.text;
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-label', c.group);
+    bmc.classList.remove('stale');
+    const rows = c.single ? null : make('div', 'rows');
+    rows?.style.setProperty('--rows', c.visible);
+    const its = c.rows.map((b) => {
+      const it = make('div', c.single ? 'it solo' : 'it'),
+        g = make('button', 'go'),
+        dot = make('i', 'dot'),
+        x = make('button', 'x');
+      dot.setAttribute('aria-hidden', 'true');
+      g.append(dot, make('span', 'tx', b.excerpt));
+      g.addEventListener('click', (ev) => jumpTo(id, b, ev.detail === 0));
+      // A stale row is grey; in a list it also says so (the space only separates them in its name).
+      if (b.stale) {
+        it.classList.add('stale');
+        if (!c.single) g.append(' ', make('span', 'why', c.tag));
+      }
+      x.innerHTML = X;
+      x.setAttribute('aria-label', TXT.del(b.excerpt));
+      x.addEventListener('click', () => !railOff() && marks.get(id)?.remove(b));
+      it.append(g, x);
+      return it;
+    });
+    rows?.append(...its);
+    bmc.replaceChildren(...(rows ? [rows] : its), ...(c.warn ? [make('div', 'warn', c.warn)] : []));
+  };
+  // The centre of a tick's card at `cy`, moved so that its top is on a whole pixel: its text and
+  // dots then draw as crisply as the page's.
+  const whole = (cy) => {
+    const h = parseFloat(getComputedStyle(card).height);
+    return Math.round(cy - h / 2) + h / 2;
+  };
   // A row's jump goes through the rail's own jump, landing on that bookmark's text. A row on the
   // dots' card loads earlier messages first, with the card left open to show it.
   const jumpTo = (id, b, keyboard) => {
@@ -962,7 +1045,7 @@
       m = marks.get(id);
     if (i == null || !m || railOff()) return;
     endOpening();
-    if (keyboard) markEls.get(id)?.focus();
+    if (keyboard) (merged ? ticks[i] : markEls.get(id))?.focus();
     hover(-2);
     if (!keyboard) {
       held = true;
@@ -1032,11 +1115,11 @@
     const i = idxOf.get(seek.id);
     if (i == null) return;
     rail.classList.add('hot');
-    card.classList.remove('bm', 'list');
+    card.classList.remove('bm', 'list', 'qb');
     card.setAttribute('role', 'tooltip');
     card.removeAttribute('aria-label');
     card.inert = true;
-    shownBm = false;
+    shownBm = merged = false;
     card.classList.add('show', 'seek-card');
     cardPos.classList.add('instant');
     meta.hidden = false;
@@ -1089,7 +1172,8 @@
   });
 
   let shown = -2,
-    shownBm = false, // the card shows question `shown`'s bookmarks rather than the question
+    shownBm = false, // the card shows bookmarks and takes the pointer: a segment's, the dots' or a tick's
+    merged = false, // the card is tick `shown`'s, with its question's bookmarks under the question (#70)
     held = false;
   const hover = (i, bm = false) => {
     if (seek) {
@@ -1097,11 +1181,14 @@
       return;
     }
     bm = bm && i >= EARLIER && marks.has(idAt(i)) && indexOf(idAt(i)) != null;
-    if ((i === shown && bm === shownBm) || !host || (held && i !== -2)) return;
+    const qb = !bm && i >= 0 && marks.has(qs[i]?.id);
+    if ((i === shown && (bm || qb) === shownBm && qb === merged) || !host || (held && i !== -2))
+      return;
     const was = shown;
     shown = i;
-    shownBm = bm;
-    card.inert = !bm;
+    shownBm = bm || qb;
+    merged = qb;
+    card.inert = !shownBm;
     if (i === -2) {
       card.classList.remove('show');
       return;
@@ -1109,6 +1196,7 @@
     // Slide between ticks; appear in place.
     cardPos.classList.toggle('instant', was === -2);
     card.classList.toggle('bm', bm);
+    card.classList.toggle('qb', qb);
     if (bm) {
       fillCard(i);
       // Centred on its segment; the dots' card, at the rail's top, comes down to stay in the chat.
@@ -1126,7 +1214,11 @@
     meta.hidden = i === -1;
     const q = i === -1 ? TXT.more : qs[i].q;
     text.textContent = q.length > 400 ? q.slice(0, 400) + '…' : q;
-    host.style.setProperty('--cy', `${i === -1 ? geo.top - MORE_H / 2 : tickY(i)}px`);
+    if (qb) fillQuestion(i);
+    host.style.setProperty(
+      '--cy',
+      `${i === -1 ? geo.top - MORE_H / 2 : qb ? whole(tickY(i)) : tickY(i)}px`,
+    );
     card.classList.add('show');
   };
 
@@ -1251,7 +1343,6 @@
     while (ticks.length > n) ticks.pop().remove();
     bars = ticks.map((b) => b.firstChild);
     ticks.forEach((b, i) => {
-      b.setAttribute('aria-label', qs[i].q.slice(0, 120));
       b.classList.toggle('busy', qs[i].id === busyId);
     });
     // A bar's animation state follows its question, not its slot: an older page adds questions at

@@ -249,6 +249,23 @@
       wait: zh ? '正在加载更早的问题…' : 'Loading earlier questions…',
     };
   }
+  // The card a tick shows when its question `q` holds bookmarks (#70): the question card's text,
+  // cut at 400 characters as that card cuts it, then the bookmarks (`rows`, in answer order) with
+  // `card`'s rules for one, several and a stale one. The visible meta line stays the question
+  // card's own; `group` names the card, with the meta line a segment's card shows.
+  function questionCard(q, rows, at, zh = false) {
+    const c = card(rows, at, zh);
+    return {
+      text: q.length > 400 ? q.slice(0, 400) + '…' : q,
+      single: c.single,
+      rows,
+      visible: c.visible,
+      stale: c.stale,
+      warn: c.warn,
+      tag: c.tag,
+      group: c.meta,
+    };
+  }
   // The bookmarks' text for an accessible name, a stale one marked so.
   const texts = (rows, zh) =>
     rows
@@ -263,6 +280,10 @@
     if (zh) return k === 1 ? `书签：${t}` : `${k} 个书签：${t}`;
     return k === 1 ? `Bookmark: ${t}` : `${k} bookmarks: ${t}`;
   }
+  // A tick's accessible name: its question's first 120 characters and, when the question holds
+  // bookmarks (#70), the segment's label after it.
+  const tickLabel = (q, rows = [], zh = false) =>
+    rows.length ? `${q.slice(0, 120)} · ${label(rows, zh)}` : q.slice(0, 120);
   // The hover button's accessible name while it adds: the action and the start of the text it
   // would bookmark (the paragraph's, or the selection's), up to 80 characters.
   const LEAD = 80;
@@ -294,7 +315,9 @@
     keyHint,
     segmentOffset,
     card,
+    questionCard,
     label,
+    tickLabel,
     addLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
