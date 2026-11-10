@@ -1,0 +1,573 @@
+{
+  "stage": "streaming-visible",
+  "shim": false,
+  "samples": [
+    {
+      "ms": 5596,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 1,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "claim": "job",
+      "incoming": "yes",
+      "sleeps": "17",
+      "lastSleep": "226",
+      "frames": 96,
+      "timers": 26,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 0,
+        "published": 0
+      },
+      "latestLength": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 6704,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 8,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "25",
+      "lastSleep": "174",
+      "frames": 136,
+      "timers": 35,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 0,
+        "published": 0
+      },
+      "latestLength": 6,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 7766,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 72,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "29",
+      "lastSleep": "306",
+      "frames": 161,
+      "timers": 40,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 5,
+        "published": 4
+      },
+      "latestLength": 1779,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 8832,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 89,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "33",
+      "lastSleep": "399",
+      "frames": 171,
+      "timers": 44,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 8,
+        "published": 7
+      },
+      "latestLength": 4739,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 10019,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 96,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "35",
+      "lastSleep": "425",
+      "frames": 175,
+      "timers": 47,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 9,
+        "published": 9
+      },
+      "latestLength": 5635,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 11218,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 108,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "38",
+      "lastSleep": "452",
+      "frames": 184,
+      "timers": 50,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 9,
+        "published": 9
+      },
+      "latestLength": 5635,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 12609,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 129,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "41",
+      "lastSleep": "112",
+      "frames": 190,
+      "timers": 53,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 11,
+        "published": 11
+      },
+      "latestLength": 7292,
+      "frozen": false,
+      "streaming": true,
+      "replies": 11,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 13622,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 140,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "42",
+      "lastSleep": "2932",
+      "frames": 192,
+      "timers": 54,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 12,
+        "published": 12
+      },
+      "latestLength": 13639,
+      "frozen": false,
+      "streaming": true,
+      "replies": 13,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 16332,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 187,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "42",
+      "lastSleep": "2932",
+      "frames": 193,
+      "timers": 54,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 21448,
+      "frozen": false,
+      "streaming": false,
+      "replies": 13,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 19370,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "state": "waiting-for-reply",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "52",
+      "lastSleep": "100",
+      "frames": 248,
+      "timers": 65,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 21448,
+      "frozen": false,
+      "streaming": false,
+      "replies": 13,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 20375,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "57",
+      "lastSleep": "100",
+      "frames": 273,
+      "timers": 69,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 21448,
+      "frozen": false,
+      "streaming": false,
+      "replies": 13,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 21604,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "62",
+      "lastSleep": "100",
+      "frames": 309,
+      "timers": 76,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 27,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 23263,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare",
+          "prepare"
+        ]
+      },
+      "state": "sending",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "64",
+      "lastSleep": "594",
+      "frames": 314,
+      "timers": 78,
+      "visibility": [],
+      "sendClicks": 1,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 42,
+      "frozen": false,
+      "streaming": false,
+      "replies": 27,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 24444,
+      "hidden": false,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare",
+          "prepare",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "state": "ready",
+      "cause": "",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "sleeps": "65",
+      "lastSleep": "184",
+      "frames": 318,
+      "timers": 81,
+      "visibility": [],
+      "sendClicks": 2,
+      "smoother": {
+        "smootherFrames": 13,
+        "published": 12
+      },
+      "latestLength": 42,
+      "frozen": false,
+      "streaming": false,
+      "replies": 26,
+      "menus": [],
+      "composer": true
+    }
+  ],
+  "requests": [
+    {
+      "keys": [
+        "conversation_id",
+        "message_id"
+      ],
+      "tailMatches": false,
+      "branch": true,
+      "send": false,
+      "ms": 20592
+    },
+    {
+      "branchResponse": 200,
+      "ms": 21066
+    },
+    {
+      "keys": [
+        "turn_attribution",
+        "branching_from_conversation_id",
+        "branching_from_message_id",
+        "action",
+        "model",
+        "parent_message_id",
+        "timezone",
+        "timezone_offset_min",
+        "is_do_not_remember",
+        "thinking_effort",
+        "client_contextual_info",
+        "conversation_mode",
+        "gizmo_id",
+        "local_function_names",
+        "messages",
+        "supported_encodings",
+        "genui_state_snapshots",
+        "client_prepare_state"
+      ],
+      "tailMatches": false,
+      "branch": false,
+      "send": true,
+      "ms": 23957
+    }
+  ],
+  "hiddenEnd": {
+    "ms": 24444,
+    "hidden": false,
+    "replay": {
+      "started": true,
+      "done": true,
+      "chunks": 189,
+      "mocks": [
+        "sentinel",
+        "prepare",
+        "sentinel",
+        "prepare",
+        "prepare",
+        "prepare",
+        "sentinel"
+      ]
+    },
+    "state": "ready",
+    "cause": "",
+    "claim": "job",
+    "incoming": "yes",
+    "started": "yes",
+    "sleeps": "65",
+    "lastSleep": "184",
+    "frames": 318,
+    "timers": 81,
+    "visibility": [],
+    "sendClicks": 2,
+    "smoother": {
+      "smootherFrames": 13,
+      "published": 12
+    },
+    "latestLength": 42,
+    "frozen": false,
+    "streaming": false,
+    "replies": 26,
+    "menus": [],
+    "composer": true
+  },
+  "resumed": null
+}

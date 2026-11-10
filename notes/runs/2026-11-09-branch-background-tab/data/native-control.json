@@ -1,0 +1,583 @@
+{
+  "samples": [
+    {
+      "ms": 0,
+      "hidden": true,
+      "frames": 130,
+      "timers": 33,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 1,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 1133,
+      "hidden": true,
+      "frames": 130,
+      "timers": 34,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 1,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 2136,
+      "hidden": true,
+      "frames": 130,
+      "timers": 35,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 41,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 3139,
+      "hidden": true,
+      "frames": 130,
+      "timers": 36,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 79,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 4140,
+      "hidden": true,
+      "frames": 130,
+      "timers": 37,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 91,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 5142,
+      "hidden": true,
+      "frames": 130,
+      "timers": 38,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 96,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 6145,
+      "hidden": true,
+      "frames": 130,
+      "timers": 39,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 108,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 7147,
+      "hidden": true,
+      "frames": 130,
+      "timers": 40,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 123,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 8155,
+      "hidden": true,
+      "frames": 130,
+      "timers": 41,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 140,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 10157,
+      "hidden": true,
+      "frames": 130,
+      "timers": 42,
+      "replay": {
+        "started": true,
+        "done": false,
+        "chunks": 181,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel"
+        ]
+      },
+      "streaming": true,
+      "butter": false
+    },
+    {
+      "ms": 11160,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 13236,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 14241,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 15246,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 16251,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 17256,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 18261,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 19266,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 20271,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 21277,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 22282,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 23285,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 24289,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 25294,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 26298,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 27303,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 28307,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 29312,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 30316,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    },
+    {
+      "ms": 31320,
+      "hidden": true,
+      "frames": 130,
+      "timers": 43,
+      "replay": {
+        "started": true,
+        "done": true,
+        "chunks": 189,
+        "mocks": [
+          "sentinel",
+          "prepare",
+          "sentinel",
+          "prepare"
+        ]
+      },
+      "streaming": false,
+      "butter": false
+    }
+  ],
+  "end": {
+    "hidden": true,
+    "frames": 130,
+    "timers": 43,
+    "replay": {
+      "started": true,
+      "done": true,
+      "chunks": 189,
+      "mocks": [
+        "sentinel",
+        "prepare",
+        "sentinel",
+        "prepare"
+      ]
+    },
+    "streaming": false,
+    "butter": false
+  },
+  "nativeBranchRendered": true
+}

@@ -7,7 +7,13 @@ import path from 'node:path';
 const extension = new URL('../extension/', import.meta.url).pathname;
 const ORIGINAL = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 const ID = '11111111-2222-4333-8444-555555555555';
-function worker(session, local = {}, now = () => 1000, tabs = { messages: [], removed: [] }) {
+function worker(
+  session,
+  local = {},
+  now = () => 1000,
+  tabs = { messages: [], removed: [] },
+  schedule = setTimeout,
+) {
   const listeners = [];
   const area = (rows) => ({
     get: async (key) =>
@@ -21,6 +27,7 @@ function worker(session, local = {}, now = () => 1000, tabs = { messages: [], re
     URL,
     crypto: globalThis.crypto,
     Date: { now },
+    setTimeout: schedule,
     chrome: {
       runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
       commands: { onCommand: { addListener() {} } },
@@ -106,4 +113,35 @@ test('Close tab: the worker closes only the tab that asks', async () => {
   assert.deepEqual(tabs.removed, [2]);
   assert.equal(await send({ type: 'butter-branch-close' }, { ...dest, id: 'other' }), undefined);
   assert.deepEqual(tabs.removed, [2]);
+});
+
+test('a branch tab can wait on the worker without a renderer timer', async () => {
+  let wake,
+    answered = false;
+  const send = worker({}, {}, undefined, undefined, (callback, ms) => {
+    assert.equal(ms, 100);
+    wake = callback;
+  });
+  const pending = send({ type: 'butter-branch-delay', ms: 100 }, dest).then((result) => {
+    answered = true;
+    return result;
+  });
+  assert.equal(typeof wake, 'function');
+  await Promise.resolve();
+  assert.equal(answered, false);
+  wake();
+  assert.deepEqual(await pending, { ok: true });
+});
+
+test('branch delays ignore foreign senders, pages without a tab, and unbounded waits', async () => {
+  const send = worker({}, {}, undefined, undefined, () => {
+    assert.fail('an invalid delay must not schedule work');
+  });
+  assert.equal(
+    await send({ type: 'butter-branch-delay', ms: 100 }, { ...dest, id: 'other' }),
+    undefined,
+  );
+  assert.equal(await send({ type: 'butter-branch-delay', ms: 100 }, {}), undefined);
+  for (const ms of [-1, 1001, '100', null, NaN])
+    assert.equal(await send({ type: 'butter-branch-delay', ms }, dest), undefined);
 });

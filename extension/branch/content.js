@@ -309,7 +309,7 @@
   // ---------------------------------------------------------------- new tab
   const clock = {
     now: () => performance.now(),
-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    sleep: B.sleeper(send, (resolve, ms) => setTimeout(resolve, ms)),
   };
   const domReady = () =>
     document.body

@@ -281,8 +281,19 @@
   // count.
   const replyStarted = (known, now) => now.length > 0 && !known.includes(now.at(-1));
 
+  // The new tab's run waits between its checks. Chrome can hold a hidden tab's page timers for
+  // tens of seconds once the page has rendered a long reply, which would stop the run until the
+  // tab is shown again; a reply from the extension worker still arrives. So the wait is a message
+  // to the worker (branch/worker.js), and a page timer only when the worker gives no answer:
+  // still starting, restarted, or the extension reloaded under this page.
+  const sleeper = (send, timer) => async (ms) => {
+    const result = await send({ type: 'butter-branch-delay', ms }).catch(() => null);
+    if (!result?.ok) await new Promise((resolve) => timer(resolve, ms));
+  };
+
   globalThis.ButterBranch = {
     TTL,
+    sleeper,
     replyStarted,
     confirmedFailure,
     formatMessage,

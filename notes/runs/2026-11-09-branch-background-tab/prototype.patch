@@ -1,0 +1,85 @@
+diff --git a/extension/branch/content.js b/extension/branch/content.js
+index 08600ab..fdbbe40 100644
+--- a/extension/branch/content.js
++++ b/extension/branch/content.js
+@@ -311,3 +311,8 @@
+     now: () => performance.now(),
+-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
++    // Used only by the incoming tab's claim/run. Page timers can stop for tens of
++    // seconds after rendering a large reply in the background; worker replies still arrive.
++    sleep: async (ms) => {
++      const result = await send({ type: 'butter-branch-delay', ms });
++      if (!result?.ok) throw new Error('branch-delay');
++    },
+   };
+diff --git a/extension/branch/worker.js b/extension/branch/worker.js
+index da44abb..082e221 100644
+--- a/extension/branch/worker.js
++++ b/extension/branch/worker.js
+@@ -11,2 +11,14 @@
+     if (sender.id !== chrome.runtime.id) return;
++    // A busy hidden renderer can exhaust Chrome's background timer budget. Keep the
++    // run's short polling delay in the extension worker, whose timer is not a page timer.
++    if (
++      message?.type === 'butter-branch-delay' &&
++      sender.tab?.id !== undefined &&
++      Number.isInteger(message.ms) &&
++      message.ms >= 0 &&
++      message.ms <= 1000
++    ) {
++      setTimeout(() => respond({ ok: true }), message.ms);
++      return true;
++    }
+     // Close tab on the failure card. A tab may close only itself; no "tabs" permission needed.
+diff --git a/test/branch-worker.test.mjs b/test/branch-worker.test.mjs
+index 435f5e1..405311c 100644
+--- a/test/branch-worker.test.mjs
++++ b/test/branch-worker.test.mjs
+@@ -9,3 +9,9 @@
+ const ID = '11111111-2222-4333-8444-555555555555';
+-function worker(session, local = {}, now = () => 1000, tabs = { messages: [], removed: [] }) {
++function worker(
++  session,
++  local = {},
++  now = () => 1000,
++  tabs = { messages: [], removed: [] },
++  schedule = setTimeout,
++) {
+   const listeners = [];
+@@ -23,2 +29,3 @@
+     Date: { now },
++    setTimeout: schedule,
+     chrome: {
+@@ -109 +116,32 @@
+ });
++
++test('a branch tab can wait on the worker without a renderer timer', async () => {
++  let wake,
++    answered = false;
++  const send = worker({}, {}, undefined, undefined, (callback, ms) => {
++    assert.equal(ms, 100);
++    wake = callback;
++  });
++  const pending = send({ type: 'butter-branch-delay', ms: 100 }, dest).then((result) => {
++    answered = true;
++    return result;
++  });
++  assert.equal(typeof wake, 'function');
++  await Promise.resolve();
++  assert.equal(answered, false);
++  wake();
++  assert.deepEqual(await pending, { ok: true });
++});
++
++test('branch delays ignore foreign senders, pages without a tab, and unbounded waits', async () => {
++  const send = worker({}, {}, undefined, undefined, () => {
++    assert.fail('an invalid delay must not schedule work');
++  });
++  assert.equal(
++    await send({ type: 'butter-branch-delay', ms: 100 }, { ...dest, id: 'other' }),
++    undefined,
++  );
++  assert.equal(await send({ type: 'butter-branch-delay', ms: 100 }, {}), undefined);
++  for (const ms of [-1, 1001, '100', null, NaN])
++    assert.equal(await send({ type: 'butter-branch-delay', ms }, dest), undefined);
++});

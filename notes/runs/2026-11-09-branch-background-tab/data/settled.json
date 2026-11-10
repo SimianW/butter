@@ -1,0 +1,197 @@
+{
+  "stage": "settled",
+  "shim": false,
+  "samples": [
+    {
+      "ms": 5683,
+      "hidden": true,
+      "state": "branching",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 29,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 6770,
+      "hidden": true,
+      "state": "branching",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 30,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 7773,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 31,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 17,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 8817,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 33,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 9823,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 33,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 11515,
+      "hidden": true,
+      "state": "sending",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 34,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 15593,
+      "hidden": true,
+      "state": "ready",
+      "cause": "",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 120,
+      "timers": 35,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 5687
+        }
+      ],
+      "sendClicks": 1,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    }
+  ],
+  "requests": [
+    {
+      "branch": true,
+      "send": false,
+      "ms": 6901
+    },
+    {
+      "branch": false,
+      "send": true,
+      "ms": 14428
+    }
+  ],
+  "hiddenEnd": {
+    "ms": 15593,
+    "hidden": true,
+    "state": "ready",
+    "cause": "",
+    "claim": "job",
+    "incoming": "yes",
+    "started": "yes",
+    "frames": 120,
+    "timers": 35,
+    "visibility": [
+      {
+        "hidden": true,
+        "at": 5687
+      }
+    ],
+    "sendClicks": 1,
+    "frozen": false,
+    "streaming": false,
+    "replies": 24,
+    "menus": [],
+    "composer": true
+  },
+  "resumed": null
+}
