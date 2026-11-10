@@ -358,6 +358,20 @@ class WorkflowTest(unittest.TestCase):
         self.assertIn("ref: ${{ github.event.pull_request.head.sha }}", workflow)
         self.assertIn("fetch-depth: 0", workflow)
 
+    def test_draft_runs_under_another_name_and_ready_runs_the_check(self):
+        # Branch protection counts a skipped required check as passed, so a draft must not
+        # skip `pr-body`: it runs under another name, and marking it ready runs the real check.
+        workflow = (ROOT / ".github" / "workflows" / "pr-body.yml").read_text(encoding="utf-8")
+        self.assertIn("types: [opened, edited, synchronize, reopened, ready_for_review]", workflow)
+        self.assertIn(
+            "name: ${{ github.event.pull_request.draft && 'pr-body (draft, runs when ready)' || 'pr-body' }}",
+            workflow,
+        )
+        job = workflow.split("  pr-body:\n", 1)[1].split("    steps:\n", 1)[0]
+        self.assertNotIn("    if:", job)
+        check_step = workflow.split("- name: Check review tier and review lines\n", 1)[1]
+        self.assertIn("if: ${{ !github.event.pull_request.draft }}", check_step.splitlines()[0])
+
 
 if __name__ == "__main__":
     unittest.main()
