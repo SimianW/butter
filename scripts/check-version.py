@@ -72,7 +72,7 @@ def check(root):
     changelog = read("CHANGELOG.md")
     if changelog is not None:
         first = next((line for line in changelog.splitlines() if line.startswith("## ")), None)
-        heading = re.fullmatch(r"## (.+) \(([0-9]{4}-[0-9]{2}-[0-9]{2})\)", first or "")
+        heading = re.fullmatch(r"## \[(.+)\] - ([0-9]{4}-[0-9]{2}-[0-9]{2})", first or "")
         valid_date = False
         if heading:
             try:
@@ -81,7 +81,7 @@ def check(root):
             except ValueError:
                 pass
         if not heading or heading[1] != name or not valid_date:
-            errors.append(f"CHANGELOG.md: first ## heading is {first!r}; expected '## {name} (YYYY-MM-DD)' with a valid date")
+            errors.append(f"CHANGELOG.md: first ## heading is {first!r}; expected '## [{name}] - YYYY-MM-DD' with a valid date")
 
     return name, version, errors
 

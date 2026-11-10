@@ -18,8 +18,7 @@
         title
           ? `Branched from “${title}” · original unchanged`
           : 'Branched from the original chat · original unchanged',
-      unsure:
-        'Butter couldn’t confirm this is a new branch. Your question is filled in but not sent; check before sending.',
+      unsure: 'Not sent: couldn’t confirm this is a new branch.',
       failed: 'Couldn’t create branch',
       // One sentence per cause; failedNote adds "Nothing was sent.".
       causes: {
@@ -50,7 +49,7 @@
       creatingNote: '完成后会在新对话中发送你的问题。',
       cancel: '取消',
       ready: (title) => (title ? `分支自《${title}》· 原对话不变` : '分支自原对话 · 原对话不变'),
-      unsure: '无法确认这是新的分支。问题已填入但没有发送，请确认后再发送。',
+      unsure: '未发送：无法确认这是新的分支。',
       failed: '没能创建分支',
       causes: {
         more: '找不到最新回复的 “More actions” 按钮。',
@@ -147,7 +146,7 @@ svg { display: block; }
 .card.err h3 { color: var(--err); }
 .card.err h3 svg { width: 18px; height: 18px; flex: none; }
 
-/* 4 · line above the composer */
+/* 4 · line: in the row of ChatGPT's disclaimer (.row), covering it; else above the composer */
 .line { position: fixed; display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--fg2); padding: 0 6px;
   transition: opacity .2s ease; }
 .line.out { opacity: 0; pointer-events: none; }
@@ -159,6 +158,11 @@ svg { display: block; }
 .line .xs:hover { background: var(--bubble); }
 .line .xs svg { width: 13px; height: 13px; }
 .line.unsure > svg { color: var(--err); }
+.line.row { justify-content: center; gap: 6px; background: var(--row-bg, var(--bg)); }
+.line.row .sp { display: none; }
+.line.row > svg { width: 14px; height: 14px; }
+.line.row .xs { width: 20px; height: 20px; }
+.line.row .xs svg { width: 12px; height: 12px; }
 
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } * { transition: none !important; } }
 :host([data-still]) .spinner { animation: none; }
@@ -190,9 +194,12 @@ svg { display: block; }
     });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme);
     theme();
-    // ChatGPT can replace <html>; attach to the current one.
+    // Live in <body>: macOS dictation apps (Typeless) reach the focused field through the
+    // Accessibility API and type nothing into a field mounted outside it. ChatGPT can replace
+    // <html> or <body>; attach to the current one, and to <html> only before <body> exists.
     const attach = () => {
-      if (host.parentNode !== document.documentElement) document.documentElement.append(host);
+      const parent = document.body || document.documentElement;
+      if (host.parentNode !== parent) parent.append(host);
     };
     const t = () => STRINGS[lang()];
     const el = (tag, cls, markup = '') => {
@@ -398,7 +405,7 @@ svg { display: block; }
       },
     };
 
-    // ---- 4 · line above the composer
+    // ---- 4 · line in the disclaimer's row, or above the composer
     let line = null;
     const note = {
       show({ kind, title, onClose }) {
@@ -411,7 +418,9 @@ svg { display: block; }
           `${kind === 'unsure' ? ICON.warn : ICON.branch}<span class="t"></span><span class="sp"></span><button class="xs" type="button">${ICON.x}</button>`,
         );
         line.setAttribute('role', 'status');
-        line.querySelector('.t').textContent = kind === 'unsure' ? s.unsure : s.ready(title);
+        const text = kind === 'unsure' ? s.unsure : s.ready(title);
+        line.querySelector('.t').textContent = text;
+        line.title = text; // readable when the row cuts it short
         line.querySelector('.xs').setAttribute('aria-label', s.close);
         line.querySelector('.xs').addEventListener('click', () => {
           note.remove();
@@ -419,14 +428,24 @@ svg { display: block; }
         });
         root.append(line);
       },
-      // rect: { left, width } of the composer, and top, the edge to sit 8 px above.
+      // rect: ChatGPT's disclaimer row (page.js disclaimerRow), which the line covers with the
+      // page's background and the disclaimer's type; or, with below, the composer box, whose top
+      // edge the line sits 8 px above in its own row.
       place(rect) {
         if (!line || !rect) return;
-        line.style.left = `${rect.left}px`;
-        line.style.width = `${rect.width}px`;
-        line.style.bottom = `${innerHeight - rect.top + 8}px`;
+        const row = !rect.below;
+        line.classList.toggle('row', row);
+        const st = line.style;
+        st.left = `${rect.left}px`;
+        st.width = `${rect.width}px`;
+        st.top = row ? `${rect.top}px` : '';
+        st.height = row ? `${rect.height}px` : '';
+        st.bottom = row ? '' : `${innerHeight - rect.top + 8}px`;
+        st.fontSize = row ? rect.fontSize : '';
+        st.lineHeight = row ? rect.lineHeight : '';
+        if (row && rect.background) st.setProperty('--row-bg', rect.background);
+        else st.removeProperty('--row-bg');
       },
-      height: () => line?.offsetHeight || 0,
       // ChatGPT's reply has started: fade out, or go at once under reduced motion.
       fade() {
         const el = line;

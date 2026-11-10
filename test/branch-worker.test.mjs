@@ -23,6 +23,7 @@ function worker(session, local = {}, now = () => 1000, tabs = { messages: [], re
     Date: { now },
     chrome: {
       runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
+      commands: { onCommand: { addListener() {} } },
       storage: { local: area(local), session: area(session), onChanged: { addListener() {} } },
       tabs: {
         sendMessage: async (id, message) => void tabs.messages.push([id, { ...message }]),

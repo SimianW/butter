@@ -11,6 +11,11 @@ version between X.Y.Z.N and the next alpha's X.Y.Z.(N+1), including the first
 alpha X.Y.Z (equivalent to X.Y.Z.0). A fifth component is invalid. Consequently
 tests cannot be ordered above the base and below the next alpha; remove the
 previous install before loading a test build unpacked from its zip.
+
+--dev builds the dev build: a test build tagged "dev" that also contains extension/dev/,
+a manifest adding the dev scripts, the save-bug shortcut and the downloads permission, and a
+popup.html that loads the popup's dev card (dev/popup.css and dev/popup.js).
+Every other build leaves extension/dev/ out.
 """
 import argparse
 import json
@@ -20,9 +25,70 @@ import re
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
+DEV_DIR = "dev"
 
 
-def package(root, tag=None):
+def dev_manifest(manifest):
+    """Return the dev build's manifest: the store manifest plus the dev-only entries."""
+    manifest = json.loads(json.dumps(manifest))
+    scripts = manifest.get("content_scripts", [])
+    if len(scripts) != 2 or scripts[0].get("world") == "MAIN" or scripts[1].get("world") != "MAIN":
+        raise ValueError("expected the isolated content scripts first, then the MAIN-world ones")
+    isolated, main = scripts
+    # After the store scripts: the content script relays to the MAIN-world recorder, which
+    # listens to the seek and layout-cache hooks (sources.js reads the turns and usage it saves);
+    # the toast confirms a save on the page.
+    isolated["js"] += [f"{DEV_DIR}/content.js", f"{DEV_DIR}/toast.js"]
+    main["js"] += [f"{DEV_DIR}/recorder.js", f"{DEV_DIR}/sources.js", f"{DEV_DIR}/recorder-main.js"]
+    # dev/worker.js imports the store worker, then adds the shortcut handling.
+    manifest["background"]["service_worker"] = f"{DEV_DIR}/worker.js"
+    manifest["permissions"] = [*manifest.get("permissions", []), "downloads"]
+    manifest["commands"] = {
+        **manifest.get("commands", {}),
+        "save-bug": {
+            "suggested_key": {"default": "Alt+Shift+B", "mac": "Alt+Shift+B"},
+            "description": "Save bug snapshot",
+        }
+    }
+    return manifest
+
+
+# The dev popup: dev/popup.css after the store stylesheet, and dev/popup.js before popup.js, so
+# its renderer exists for popup.js's first render.
+POPUP_HTML = "popup/popup.html"
+POPUP_DEV = (
+    (
+        '<link rel="stylesheet" href="popup.css" />\n',
+        f'<link rel="stylesheet" href="../{DEV_DIR}/popup.css" />\n',
+        "after",
+    ),
+    (
+        '<script src="popup.js" defer></script>',
+        f'<script src="../{DEV_DIR}/popup.js" defer></script>\n',
+        "before",
+    ),
+)
+
+
+def dev_popup_html(html):
+    """Return the dev build's popup.html: the store popup plus the dev card's stylesheet and script."""
+    for anchor, tag, where in POPUP_DEV:
+        if html.count(anchor) != 1:
+            raise ValueError(f"popup.html must contain {anchor.strip()!r} exactly once")
+        start = html.index(anchor)
+        indent = html[html.rindex("\n", 0, start) + 1 : start]
+        if where == "after":
+            html = html.replace(anchor, anchor + indent + tag)
+        else:
+            html = html.replace(anchor, tag + indent + anchor)
+    return html
+
+
+def package(root, tag=None, dev=False):
+    if dev:
+        if tag is not None:
+            raise ValueError("--dev is a test build tagged dev; it cannot take --test")
+        tag = "dev"
     if tag is not None and not re.fullmatch(r"[a-z0-9-]+", tag):
         raise ValueError("test tag must match [a-z0-9-]+")
 
@@ -47,11 +113,17 @@ def package(root, tag=None):
         ]
         version = f"{version}+{tag}.{max(numbers, default=0) + 1}"
         manifest["version_name"] = version
+    if dev:
+        manifest = dev_manifest(manifest)
 
     out = dist / f"butter-{version}.zip"
     with zipfile.ZipFile(out, "x" if tag is not None else "w", zipfile.ZIP_DEFLATED) as archive:
         for directory, dirs, files in os.walk(extension):
-            dirs[:] = sorted(name for name in dirs if not name.startswith("."))
+            dirs[:] = sorted(
+                name
+                for name in dirs
+                if not name.startswith(".") and (dev or Path(directory) != extension or name != DEV_DIR)
+            )
             for name in sorted(files):
                 if name.startswith("."):
                     continue
@@ -59,6 +131,8 @@ def package(root, tag=None):
                 archive_name = "butter/" + path.relative_to(extension).as_posix()
                 if tag is not None and path == manifest_path:
                     archive.writestr(archive_name, json.dumps(manifest, indent=2) + "\n")
+                elif dev and path == extension / POPUP_HTML:
+                    archive.writestr(archive_name, dev_popup_html(path.read_text(encoding="utf-8")))
                 else:
                     archive.write(path, archive_name)
     return out, manifest["version"]
@@ -66,14 +140,16 @@ def package(root, tag=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--test", metavar="TAG", help="build a numbered test zip without consuming an alpha")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--test", metavar="TAG", help="build a numbered test zip without consuming an alpha")
+    mode.add_argument("--dev", action="store_true", help="build a numbered dev zip (+dev.<N>) with bug capture")
     args = parser.parse_args()
     try:
-        out, numeric_version = package(ROOT, args.test)
+        out, numeric_version = package(ROOT, args.test, args.dev)
     except (ValueError, OSError) as error:
         parser.exit(1, f"error: {error}\n")
     print(out)
-    if args.test is not None:
+    if args.test is not None or args.dev:
         print(f"Note: Chrome version remains {numeric_version}; remove the previous install before loading this test build.")
 
 

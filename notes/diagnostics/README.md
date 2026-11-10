@@ -153,3 +153,204 @@ whose skipped display-math blocks had no geometry measured while on screen; any 
 the turn discarded what had been measured. From `+unseen-notice.9` such blocks keep their real
 box and get a flagged formula estimate instead (cache items carry `approx: true`); see the
 [run report](../runs/2026-11-06-math-pending-long-answer/report.md).
+
+## Bug files from the dev build
+
+The dev build saves everything the four snippets above report, plus the last 30 s of seek, press
+and preview decisions, as one JSON file per bug. A tester never needs to paste a snippet into a dev
+build. The snippets stay for store builds.
+
+### Build and install
+
+1. `python3 scripts/package.py --dev` builds `dist/butter-<version_name>+dev.<N>.zip`. The source
+   manifest is not changed; the store and `--test` zips never contain `extension/dev/`.
+2. Unzip it. In `chrome://extensions`, turn on Developer mode, remove any other Butter install, and
+   choose **Load unpacked** on the unzipped `butter/` folder.
+3. On Windows and Linux, set the shortcut in `chrome://extensions/shortcuts`: Alt+Shift+B is
+   Chrome's own "focus bookmarks bar" key there, so Chrome does not assign it. On a Mac,
+   Option+Shift+B is suggested.
+4. On a ChatGPT chat, press the shortcut, even while holding the scrollbar thumb. Each press
+   saves `Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json` (local time), with no prompt.
+
+### File format
+
+The file is JSON with two-space indentation. Every list of objects (events, readiness rows,
+structure nodes, cache items) has one object per line.
+
+| Field | What |
+|---|---|
+| `kind` | Always `"butter-diag"`. |
+| `formatVersion` | `1`. It stands in for the snippets' `schema: 1`. |
+| `bug`, `round` | The bug number in this round, and the round. They match the file path. |
+| `savedAt` | The save time, ISO 8601 in UTC. Event times are relative to it. |
+| `version` | The manifest's `version_name`, for example `0.1.0-alpha.15+dev.10`. |
+| `trigger` | `shortcut` or `button`. |
+| `pointerHeld` | Whether the left button was down when the snapshot was taken (a drag in progress). |
+| `settings` | Butter's normalized settings (`shared/status.js`). |
+| `events` | The last 30 s of events, oldest first (see below). |
+| `eventsDropped` | Only present when the whole-file cap dropped the oldest events: how many. |
+| `pressDecision` | `__seekDump.pressDecision`: the last qualifying press's summary (capture-press-decision.js). `{ "unavailable": "conversation-changed" }` when that press was in an earlier conversation. |
+| `turns` | `order`, `active`, `readiness`, `math` (see below). |
+| `failures` | `chrome.storage.session.butterFailures`, the popup's session failures. |
+| `usage` | `saved`, `store`, `cache` (see below). |
+| `redacted` | How many values the privacy filter dropped. |
+
+A part that could not be read is `{ "unavailable": <reason> }`, and the rest of the file still
+saves. The reasons are `missing` (no such source in this build), `error` (it threw), `redacted`
+(nothing allowed was left), `no-scroller` (no visible conversation scroller), `too-large` (cut
+by the whole-file cap) and `conversation-changed` (`pressDecision` only: the press was in an
+earlier conversation, see below).
+
+**Events.** Every event has `t`, in ms before the save (negative, rounded), and a `type`.
+Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtualizer's order.
+
+| `type` | Emitted when | Fields |
+|---|---|---|
+| `press` | A pointer press lands on the conversation scroller. | `kind` (`classic`, `overlay`, or null when it doesn't qualify), `reason` (the `classifyPress` rejection), `sequence` and `modelLength` (the press decision's), `layoutTurns`, `prepMs`, `scrollTop` |
+| `activation-reject` | A qualifying press doesn't become a drag. | `reason`: `wheel`, `key`, `not-held`, `selection` |
+| `seek` | Every seek update during a drag and its release. | `top`, `turn`, `offset`, `layout`, `known`, `items`, `textFallback`, `renderMs`, `jsMs` |
+| `preview` | The previewed question or the way it is shown changes. | `turn`, `mode` (`layout`, `estimate`, `text-fallback`, `unseen`), `layout`, `unseen`, `items` (rendered preview items), `estimate` (estimate surface shown), `textFallback` |
+| `preview-miss` | Along with a `preview` whose mode isn't `layout`. | `turn` (the turn the estimate or excerpt stands in for), `reason` (the mode), `layoutReason` (the press decision's reason for that turn) |
+| `release` | The drag ends, or a press ends without one. | `reason` (`pointerup`, `wheel`, `blur`, `chat-switch` and the other `finish()` reasons), `commit`, `top`, `durationMs` |
+| `commit` | The destination is handed to ChatGPT. | `turn`, `top`, `layout`, `retarget` (moved after an application adjustment) |
+| `retarget` | Landing corrects the scroll position. | `kind` (`drift`, `semantic`, `question`, `history-block`), `to`, `error` |
+| `reveal` | The real page is shown again. | `durationMs` (after the release), `error` (landing error in px), `timedOut`, `matched`, `fallback` (semantic anchor) |
+| `record` | The layout cache records a turn. | `turn`, `items`, `blocks`, `refresh` (replaces a record), `approx` (has estimated formula boxes) |
+| `rejection` | The layout cache rejects a turn's snapshot. | `turn`, `reason` (`core.validateSnapshot` reasons such as `math-pending`, `placeholder`, `zero-block`, and `estimated`) |
+| `restore` | Remount restore gives a turn its recorded sizes. | `turn`, `blocks` |
+| `conversation` | The page is on a different conversation than before, without a page load (ChatGPT switches chats in place). | `conversation`: the new conversation's ordinal on this page. The one the page loaded on is 0, and each switch adds 1, also back to an earlier chat or to a new-chat page. |
+
+**Conversation changes.** The recorder asks the seek code which conversation it is on
+(`__seekDump.conv`, the same URL check that ends a drag with `chat-switch`) before each event,
+every 250 ms and at the save. It keeps the answer only to compare it, and the file holds only the
+ordinal. A `conversation` event comes before every event from the new conversation, so the events
+after the last `conversation` event are from the conversation the file was saved in; with no
+`conversation` event, all of them are. A `release` with `chat-switch` follows the
+`conversation` event it was caused by. After a switch, `turns.active` drops the earlier
+conversation's seek (it reads `selection: "none"` until the next seek), and `pressDecision` is
+`{ "unavailable": "conversation-changed" }` until the next press. It is dropped rather than marked,
+because its turn indexes and counts describe another chat's turns.
+
+**`turns.order`**: `count` (turns in the order), `mounted`, `fiberFound`, `idsFromFallback` and
+`idsReason`. Without ChatGPT's virtualizer, the order is the mounted turns in DOM order, with
+`idsReason: "ids-from-dom"`.
+
+**`turns.active`**: the turn the seek last showed in this conversation. It has `turnIndex` and
+`selection` (`active-preview-update` during a drag, `last-seek-update` after one, `none` before any
+seek in this conversation, with nothing else), plus `preview`, `memory` and `dom`.
+
+**`turns.readiness`**: `rejectionDiagnosticsAvailable`, `currentSw` and `turns`, one row for every
+turn in the order.
+
+**`turns.math`**: one row per mounted turn.
+
+**`usage`**:
+
+- `saved` is the popup's layout usage across accounts (`conversations`, `bytes`), from the worker's
+  own `butter-layout-usage` handler.
+- `store` is this tab's layout store counters (`__butterLayoutCache.dump()`): `ready`, `loads`,
+  `hits`, `writes`, `bytes`, `errors`, `entries`, `pending` and `rejected`.
+- `cache` is the height cache's counters (`__heightCacheDump().stats`): `observed`, `records`,
+  `refreshes`, `restored`, `blocksRestored`, `recordMs`, `recordMax`, `hooks`, `parked`,
+  `released`, `adopted`, `approx`, `rejected` and `restoreMisses`.
+- Every reason map is a list of `{ reason, count }`, because a key must be a known name.
+
+### Where the snippets' fields went
+
+capture-preview-record.js:
+
+| Snippet field | In the bug file |
+|---|---|
+| `schema` | `formatVersion` |
+| `turnIndex` | `turns.active.turnIndex` |
+| `selection` | `turns.active.selection`. `explicit-index` has no counterpart: a shortcut can't take an index. |
+| `preview.active`, `updateTurnIndex`, `offset`, `layout`, `known`, `textFallback` | `turns.active.preview`, from the last `seek` event (the same values as `__seekDump`'s last update) |
+| `preview.estimateVisible` | `turns.active.preview.estimateVisible` |
+| `preview.renderedItems[]` | `turns.active.preview.renderedItems[]`. Only the preview's own classes (`it`, `math`, `display`) are kept, and `height` is rounded to 0.01 px. |
+| `memory.*` | `turns.active.memory.*`, same names. `recordedAt` is in ms before the save on the events' clock, or null for a stored record (the snippet gives the raw `performance.now()` time). |
+| `dom.mounted`, `dom.itemCount` | `turns.active.dom.mounted`, `turns.active.dom.itemCount` |
+| `dom.turn[]` | `turns.active.dom.turn[]`. `index`, `parent` and `contentVisibility` are the same. `tag` is `other` outside the HTML, SVG and MathML tags `dev/recorder.js` lists. `classes` and `dataAttributeNames` keep only the names it lists, with `classCount` for the total (a hashed `AdaptiveStreaming-…` class reads `adaptive-streaming`). `height` and `top` are rounded to 0.01 px. A `.katex` element is one node with `collapsed` (its descendant count). The tree stops at 1,000 nodes, marked `truncated: true`. |
+| `persisted` | Left out. Reading saved variants is an asynchronous storage load through the page bridge, up to 10 s, and the load updates expiry and access times. A snapshot is taken synchronously while the thumb may be held. `memory.source: "restored"` and the readiness rows' `fromStorage` show whether stored geometry is in use. Paste the snippet when the saved variants themselves matter. |
+
+capture-record-readiness.js:
+
+| Snippet field | In the bug file |
+|---|---|
+| `schema` | `formatVersion` |
+| `rejectionDiagnosticsAvailable` | `turns.readiness.rejectionDiagnosticsAvailable` |
+| `turns[].currentSw` | `turns.readiness.currentSw`, once (it is the same on every row) |
+| `turns[]`, every other field | `turns.readiness.turns[]`, same names and the same `layoutReason` codes. `rowHeightNow` is rounded to 0.01 px. |
+
+The snippet refuses to run during a hold. The bug file reads readiness during a hold too, because
+the memory is copied first and the rows are only measured.
+
+capture-press-decision.js: the whole `__seekDump.pressDecision` is `pressDecision`, unchanged, unless the
+press was in an earlier conversation (`conversation-changed`).
+
+capture-math-pending.js:
+
+| Snippet field | In the bug file |
+|---|---|
+| `schema` | `formatVersion` |
+| `turns[].index` | `turns.math[].index`. It is the turn's index in the virtualizer's order, where the snippet counts mounted turns. It is null for a mounted turn outside the order. |
+| `formulas`, `withoutKatex`, `missingInsideCvBlock`, `displayMissing` | Same names in `turns.math[]` |
+| `kinds` | Separate counts: `katexError`, `mathmlOnly`, `partsNoRoot` (`katex-parts-no-root`), `rawText`, `empty`, and `other` (the snippet's `other:<tags>`, without the tag list) |
+
+### Privacy rules
+
+- Keys must be on the allowlist in `extension/dev/recorder.js` (`KEYS`).
+- Values must be numbers, booleans, null, or strings from its closed list (`CODES`). That list holds
+  event types, reason codes and the known tag, class and data-attribute names.
+- Anything else is dropped, a key with its value, and counted in `redacted`. The filter applies to
+  every event and every part of the snapshot.
+- The sources in `extension/dev/sources.js` copy lengths, counts and geometry, never text, TeX,
+  attribute values or IDs.
+- The layout cache names a turn by its key inside the page. The dev listener turns the key into the
+  turn's index before recording, and the key is never stored.
+- A file never holds question or answer text, TeX, conversation or message IDs, URLs or account
+  identifiers. `test/dev-sources.test.js` and the fixture run check this.
+
+### Diagnostics rules
+
+Like the snippets, the dev build never calls `prepare()` or flushes measurements, and it never
+hydrates or clears storage. Butter's memory (cache records, recorder status, press decision and
+counters) is copied before any DOM rect or style read. The cache getter may refresh the layout
+fingerprint (one column read), exactly as the readiness snippet does. `usage.saved` goes through
+the same worker handler as the popup, which prunes expired rows as a popup open does. Store code
+has only passive hooks, each one null check while no dev listener is set:
+
+- `seek/preview-main.js`: `__seekDump.tap`, and the getter `__seekDump.conv` (the current
+  conversation, read by the recorder only to notice a switch);
+- `seek/layout-cache-main.js`: `__butterLayoutCache.tap`.
+
+### Caps and cost
+
+These are measured with `xvfb-run -a node lab/harness/dev-capture-qa.mjs` (Chromium
+156.0.8078.4, a 140-turn fixture chat, dev build `0.1.0-alpha.15+dev.10`). The results are in
+[the run report](../runs/2026-11-08-full-snapshot-44/report.md) and its `summary.json`.
+
+| | Measured | Cap |
+|---|---|---|
+| Event size | 146 bytes mean, 185 at most (seek events are the largest) | |
+| Event rate | 7.4 a second in a busy 29 s session (wheel reading and 11 drags). Of these, 3.4 a second were not seeks. | |
+| Seek rate | 3.9–6.7 a second under Xvfb, where the thumb drag scrolls at that rate even with 228 mouse moves and 60 frames a second. Scroll events come at most once a frame, so the bound is 120 a second at 120 Hz. | |
+| Events | about 3,700 in 30 s at 120 Hz | `MAX_EVENTS` 4,000 |
+| Event bytes | 3,700 × 185 ≈ 690 KB | `MAX_BYTES` 750,000 |
+| `pressDecision` | 74 KB for 140 turns (about 530 bytes a turn) | |
+| `turns.readiness` | 48 KB for 140 turns (about 340 bytes a turn) | |
+| `turns.math` | 20 KB for 120 mounted turns (about 165 bytes a turn; ChatGPT mounts only the turns near the viewport) | |
+| `turns.active` | 6 KB; structure rows average 170 bytes, at most 1,000 rows ≈ 170 KB | 1,000 nodes |
+| Whole file | 184 KB for the busy session | `MAX_FILE_BYTES` 1,400,000 |
+| Snapshot | 5.4 ms median, 7.4 ms at most to build and serialize in the page | |
+| Recording | 2.5 µs per `record()` call. A seek update's script time was 0.8 ms median and 1.0 ms p95, both with and without the listener. The same scroll positions previewed the same turns the same way, and every release landed with 0 px error. | |
+
+Over `MAX_FILE_BYTES`, the snapshot drops whole parts first, largest first, as
+`{ "unavailable": "too-large" }`, until the rest fits without events. Then it drops the oldest
+events, counted in `eventsDropped`. The worker downloads the file as a base64 `data:` URL. 1.4 MB
+keeps that URL under Chrome's 2 MiB URL constant (`url::kMaxURLChars`): the largest file that
+fits is 1,572,840 bytes. Chromium 156's `chrome.downloads` saved `data:` URLs of up to 256 MB in
+the run, but other Chrome versions may enforce the constant.
+
+The per-call cost comes from `node -e` over `extension/dev/recorder.js`: 200,000 `record('seek',
+…)` calls on a full buffer (the command is in the run report). A real Mac's seek rate is checked
+in #47's live run, from a saved file's event count over its window.

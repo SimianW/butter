@@ -2,8 +2,9 @@
 // ChatGPT-like page in branch-fixture.mjs. No ChatGPT requests: every chatgpt.com request is
 // fulfilled locally, and the run fails if anything else is requested.
 // Covers: mockup states 1–5, cancel via ×, Cancel and Esc, each failure type and its card's
-// buttons, status reporting, pop-up blocked and a failed hand-over, and the ready line's
-// placement clear of ChatGPT's disclaimer and its hiding when the reply appears.
+// buttons, status reporting, pop-up blocked and a failed hand-over, and the ready and unsure lines
+// taking ChatGPT's disclaimer row (covering it until they go) and the ready line's hiding when the
+// reply appears.
 // Run: npm ci --prefix lab/harness && node lab/harness/branch-qa.mjs
 // SHOTS=<dir> overrides the screenshot directory.
 import { chromium } from 'playwright';
@@ -103,8 +104,45 @@ const lineGeometry = (page) =>
       composer: box(document.querySelector('.composer')),
     };
   }, HOST);
-const overlap = (a, b) =>
-  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+// The line's box equals the disclaimer's, within 1 px.
+const assertCovers = (g, at) => {
+  assert.ok(g.disclaimer && g.line, `${at}: line and disclaimer ${JSON.stringify(g)}`);
+  for (const k of ['left', 'top', 'width', 'height'])
+    assert.ok(Math.abs(g.line[k] - g.disclaimer[k]) <= 1, `${at}: line ${k} ${JSON.stringify(g)}`);
+};
+// What the line looks like over the disclaimer, and what a click at the disclaimer's centre hits.
+const lineLook = (page) =>
+  page.evaluate((host) => {
+    const line = document.querySelector(host)?.shadowRoot?.querySelector('.line');
+    const disc = document.querySelector('.disclaimer > div');
+    const r = disc.getBoundingClientRect();
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    const css = (el) => el && getComputedStyle(el);
+    const parts = line && [line.querySelector('svg'), line.querySelector('.xs')].map((el) => el.getBoundingClientRect());
+    return {
+      hit: hit === document.querySelector(host) ? 'butter' : disc.contains(hit) || hit?.contains(disc) ? 'disclaimer' : hit?.className,
+      line: line && {
+        row: line.classList.contains('row'),
+        background: css(line).backgroundColor,
+        fontSize: css(line).fontSize,
+        lineHeight: css(line).lineHeight,
+        color: css(line).color,
+        icon: css(line.querySelector('svg')).color,
+        iconSize: parts[0].width,
+        xSize: parts[1].width,
+        gap: css(line).columnGap,
+        text: line.querySelector('.t').textContent,
+        title: line.title,
+        oneRow: line.querySelector('.t').scrollHeight <= line.querySelector('.t').clientHeight + 1,
+        truncated: line.querySelector('.t').scrollWidth > line.querySelector('.t').clientWidth,
+        // The icon, text and × as one group: its centre against the line's.
+        offCentre: (parts[0].left + parts[1].right) / 2 - (line.getBoundingClientRect().left + line.getBoundingClientRect().right) / 2,
+        err: css(line).getPropertyValue('--err').trim(),
+      },
+      disclaimer: { fontSize: css(disc).fontSize, lineHeight: css(disc).lineHeight, color: css(disc).color },
+      pageBackground: css(document.body).backgroundColor,
+    };
+  }, HOST);
 const files = [];
 const capture = async (page, state, width, theme) => {
   const file = `${state}-${width}-${theme}.png`;
@@ -405,12 +443,10 @@ try {
     assert.deepEqual(await dest.evaluate(() => fixture.branchedFrom), ['m-latest'], 'latest reply');
     assert.equal(await dest.evaluate(() => fixture.workClicks), 0, 'never Work mode');
     assert.equal(await dest.title(), 'Branch · Explain Corpus Meaning', 'title restored');
-    // Line placement: spanning the composer; its height is checked against ChatGPT's disclaimer
-    // below. The line appears as the sent composer shrinks; let one 200 ms placement tick follow it.
+    // Line placement: on ChatGPT's disclaimer, checked in full below. The line appears as the sent
+    // composer shrinks; let one 200 ms placement tick follow it.
     await dest.waitForTimeout(250);
-    const place = await lineGeometry(dest);
-    assert.equal(Math.round(place.line.left), Math.round(place.composer.left));
-    assert.equal(Math.round(place.line.width), Math.round(place.composer.width));
+    assertCovers(await lineGeometry(dest), 'new tab');
     // The original tab's box closes once the new tab has claimed the job.
     await boxClosed(page);
     // Original tab unchanged.
@@ -439,23 +475,56 @@ try {
     pass('new tab: overlay + title, latest reply branched, identity verified, sent once, line, original unchanged, job gone');
   }
 
-  // ---- Ready line and ChatGPT's disclaimer (on the composer's top edge, as live): the line sits
-  // 8 px above the disclaimer and never overlaps it; with no disclaimer, 8 px above the composer.
+  // ---- Ready and unsure lines and ChatGPT's disclaimer (on the composer's top edge, as live): the
+  // line takes the disclaimer's row, covering it with the page's background and its type; × brings
+  // the disclaimer back. Unsure: ChatGPT's Send button stays disabled past Butter's 3 s wait.
+  // With no disclaimer, the line sits in its own row 8 px above the composer.
+  const UNSURE = 'Not sent: couldn’t confirm this is a new branch.';
+  const READY = 'Branched from “Explain Corpus Meaning” · original unchanged';
   for (const theme of ['light', 'dark'])
-    for (const width of [1280, 800]) {
-      const page = await open(`theme=${theme}`, width);
-      const dest = await ask(page, { width });
-      await inShadow(dest, '.line').waitFor();
-      await dest.waitForTimeout(250);
-      const g = await lineGeometry(dest);
-      const at = `${width}px ${theme}`;
-      assert.ok(g.disclaimer, `${at}: fixture shows the disclaimer`);
-      assert.ok(!overlap(g.line, g.disclaimer), `${at}: line overlaps the disclaimer ${JSON.stringify(g)}`);
-      assert.equal(Math.round(g.disclaimer.top - g.line.bottom), 8, `${at}: line 8 px above the disclaimer`);
-      assert.ok(!overlap(g.line, g.composer), `${at}: line overlaps the composer`);
-      await dest.close();
-      await page.close();
-    }
+    for (const width of [1280, 390])
+      for (const kind of ['ready', 'unsure']) {
+        const at = `${kind} ${width}px ${theme}`;
+        const page = await open(`theme=${theme}`, width);
+        const dest = await ask(page, { width, fixture: kind === 'unsure' ? 'senddelay=60000' : '' });
+        await inShadow(dest, `.line.${kind}`).waitFor({ timeout: 30_000 });
+        await dest.waitForTimeout(250);
+        assertCovers(await lineGeometry(dest), at);
+        const look = await lineLook(dest);
+        const l = look.line;
+        assert.equal(look.hit, 'butter', `${at}: the disclaimer's centre hits Butter's line`);
+        assert.ok(l.row, `${at}: row mode`);
+        assert.equal(l.background, look.pageBackground, `${at}: opaque page background`);
+        assert.equal(l.fontSize, look.disclaimer.fontSize, `${at}: disclaimer's font size`);
+        assert.equal(l.lineHeight, look.disclaimer.lineHeight, `${at}: disclaimer's line height`);
+        assert.equal(l.color, look.disclaimer.color, `${at}: --fg2, the fixture's disclaimer colour`);
+        assert.deepEqual([l.iconSize, l.xSize, l.gap], [14, 20, '6px'], `${at}: icon, × and gap`);
+        assert.equal(l.text, kind === 'unsure' ? UNSURE : READY, `${at}: text`);
+        assert.equal(l.title, l.text, `${at}: full text as title`);
+        assert.ok(l.oneRow, `${at}: one row`);
+        assert.ok(Math.abs(l.offCentre) <= 1, `${at}: icon, text and × centred ${l.offCentre}`);
+        if (kind === 'unsure') {
+          const err = await dest.evaluate((host) => {
+            const probe = document.createElement('i');
+            probe.style.color = getComputedStyle(document.querySelector(host).shadowRoot.querySelector('.line')).getPropertyValue('--err');
+            document.body.append(probe);
+            const c = getComputedStyle(probe).color;
+            probe.remove();
+            return c;
+          }, HOST);
+          assert.equal(l.icon, err, `${at}: --err icon`);
+          assert.equal(await dest.evaluate(() => fixture.sent.length), 0, `${at}: nothing sent`);
+        }
+        await capture(dest, `line-${kind}`, width, theme);
+        console.log(`INFO ${at}: ${JSON.stringify({ ...l, err: undefined })}${l.truncated ? ' (truncated)' : ''}`);
+        // × removes the line; the disclaimer is visible again.
+        await inShadow(dest, '.line .xs').click();
+        assert.equal(await inShadow(dest, '.line').count(), 0, `${at}: × removes the line`);
+        assert.equal((await lineLook(dest)).hit, 'disclaimer', `${at}: disclaimer visible again`);
+        if (theme === 'dark' && kind === 'unsure') await capture(dest, `line-closed`, width, theme);
+        await dest.close();
+        await page.close();
+      }
   {
     const page = await open('nodisclaimer=1');
     const dest = await ask(page);
@@ -464,10 +533,22 @@ try {
     const g = await lineGeometry(dest);
     assert.equal(g.disclaimer, null);
     assert.equal(Math.round(g.composer.top - g.line.bottom), 8, 'no disclaimer: line 8 px above composer');
+    const fallback = await inShadow(dest, '.line').evaluate((el) => ({
+      row: el.classList.contains('row'),
+      fontSize: getComputedStyle(el).fontSize,
+      left: el.getBoundingClientRect().left,
+      width: el.getBoundingClientRect().width,
+    }));
+    assert.deepEqual(
+      fallback,
+      { row: false, fontSize: '13.5px', left: g.composer.left, width: g.composer.width },
+      'no disclaimer: own row spanning the composer, today\'s font size',
+    );
+    await capture(dest, 'line-ready-nodisclaimer', 1280, 'light');
     await dest.close();
     await page.close();
   }
-  pass('ready line clear of the disclaimer at 1280/800 light/dark; 8 px above the composer without one');
+  pass('ready and unsure lines cover the disclaimer at 1280/390 light/dark, opaque, its type, × brings it back; 8 px above the composer without one');
 
   // ---- Ready line and ChatGPT's reply: the line stays while no reply has appeared, and goes once
   // the reply to Butter's question starts to show: a fade, or at once under reduced motion.
@@ -1004,6 +1085,18 @@ try {
     assert.equal(await inShadow(dest, '.line').count(), 0, 'line gone on another route');
     await dest.close();
     await page.close();
+    // The unsure line in Chinese, in the disclaimer's row.
+    {
+      const p2 = await open();
+      const unsure = await ask(p2, { fixture: 'senddelay=60000' });
+      await inShadow(unsure, '.line.unsure').waitFor({ timeout: 30_000 });
+      await unsure.waitForTimeout(250);
+      assert.equal(await inShadow(unsure, '.line .t').innerText(), '未发送：无法确认这是新的分支。');
+      assertCovers(await lineGeometry(unsure), 'zh unsure');
+      await capture(unsure, 'line-unsure', 1280, 'light-zh');
+      await unsure.close();
+      await p2.close();
+    }
     const streaming = await open('lang=zh&stream=60000');
     const waiting = await askCard(streaming, '这里的 RAG 具体指什么？和微调有什么区别？');
     assert.equal(await heading(waiting), '正在等待回复完成…');

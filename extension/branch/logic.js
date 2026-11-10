@@ -9,6 +9,14 @@
       .map((line) => `> ${line}`)
       .join('\n')}\n\n${String(question).trim()}`;
 
+  // Whether the composer still holds `text`. ChatGPT's composer reads back each line break
+  // between its paragraphs as a blank line (live, 2026-11-08), so blank lines don't count.
+  const lines = (s) =>
+    String(s)
+      .trim()
+      .replace(/\n\s*\n/g, '\n');
+  const sameDraft = (draft, text) => lines(draft) === lines(text);
+
   const text = (s) => typeof s === 'string' && !!s.trim();
 
   // Conversation identity: a saved `/c/<uuid>` or an unsaved native branch
@@ -223,7 +231,9 @@
     text(job.quote) &&
     text(job.question) &&
     (job.title === undefined || typeof job.title === 'string');
-  const senderIdentity = (sender) => identity(sender?.url || sender?.tab?.url);
+  // The tab's URL first: sender.url keeps the URL the document loaded with, so after ChatGPT
+  // routes to another conversation (a sidebar click) it still names the previous one.
+  const senderIdentity = (sender) => identity(sender?.tab?.url || sender?.url);
   const jobId = (hash) => {
     const id = /^#butter-branch=([0-9a-f-]{36})$/.exec(hash || '')?.[1];
     return id && JOB_ID.test(id) ? id : null;
@@ -276,6 +286,7 @@
     replyStarted,
     confirmedFailure,
     formatMessage,
+    sameDraft,
     quoteOf,
     identity,
     saved,

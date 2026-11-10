@@ -1,6 +1,10 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
 import importlib.util
+import os
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
 
 
@@ -10,7 +14,7 @@ check_pr_body = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(check_pr_body)
 check_body = check_pr_body.check_body
 
-REVIEWED = "Reviewed with review-loop: 1 round with gpt-6.1-sol on high. Verdict: approved"
+REVIEWED = "Reviewed with review-loop: 1 round with gpt-6.1-sol on high at abc1234. Verdict: approved"
 
 
 class TierLineTest(unittest.TestCase):
@@ -88,12 +92,262 @@ class ReviewLineTest(unittest.TestCase):
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
+    def test_missing_review_line_prints_the_line_to_add(self):
+        failures, _ = check_body("Review tier: 1", 1, ["scripts/a.py"], head="1234abc")
+        self.assertIn(
+            "add `Reviewed with review-loop: <N> rounds with <model> at 1234abc. Verdict: approved`",
+            failures[0],
+        )
+
+    def test_missing_tier_line_prints_the_line_to_add(self):
+        failures, _ = check_body(REVIEWED, 2, ["extension/stream/x.js"])
+        self.assertIn("add `Review tier: 2`", failures[0])
+
+    def test_review_line_without_sha_fails(self):
+        body = "Review tier: 1\nReviewed with review-loop: 1 round with gpt-6.1-sol on high. Verdict: approved"
+        failures, _ = check_body(body, 1, ["scripts/a.py"])
+        self.assertEqual(len(failures), 1)
+        self.assertIn("`at <sha>`", failures[0])
+        self.assertIn("rounds with <model> at <sha>. Verdict: approved", failures[0])
+
+    def test_sha_is_read_from_the_last_review_line(self):
+        seen = []
+        body = (
+            "Review tier: 1\n"
+            "Reviewed with review-loop: 1 round with m at 1111111. Verdict: approved\n"
+            "Reviewed with review-loop: 2 rounds with m at 2222222. Verdict: approved"
+        )
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, ["2222222"])
+
+    def test_effort_is_optional(self):
+        seen = []
+        body = "Review tier: 1\nReviewed with review-loop: 2 rounds with gpt-6.1-sol at fd81ae1. Verdict: approved"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, ["fd81ae1"])
+
+    def test_gate_failures_fail_the_body(self):
+        body = f"Review tier: 1\n{REVIEWED}"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: ([f"bad {sha}"], []))
+        self.assertEqual(failures, ["bad abc1234"])
+
+    def test_tier_zero_skips_the_gate(self):
+        failures, _ = check_body("Review tier: 0", 0, ["README.md (Markdown)"], review_gate=self.fail)
+        self.assertEqual(failures, [])
+
 
 class LineEndingTest(unittest.TestCase):
     def test_crlf_body_passes(self):
         body = f"Summary\r\n\r\nReview tier: 1\r\n{REVIEWED}\r\n"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(failures, [])
+
+
+class ReviewedCommitTest(unittest.TestCase):
+    """Run the script against a throwaway repository with a PR branch reviewed at self.reviewed."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.git("init", "-q", "-b", "main")
+        self.write("README.md", "Butter\n")
+        self.write("extension/dev/capture.js", "export const a = 1;\n")
+        self.write("extension/shared/util.js", "export const u = 1;\n")
+        self.commit("base")
+        self.git("checkout", "-q", "-b", "pr")
+        self.write("extension/dev/capture.js", "export const a = 2;\n")
+        self.commit("pr change")
+        self.reviewed = self.rev("HEAD")[:7]
+
+    def git(self, *args):
+        return subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout
+
+    def rev(self, ref):
+        return self.git("rev-parse", ref).strip()
+
+    def write(self, path, text):
+        target = self.root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+
+    def commit(self, message):
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", message)
+
+    def run_check(self, body, base="main"):
+        return subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check-pr-body.py"), base],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+            env={**os.environ, "PR_BODY": body},
+        )
+
+    def body(self, sha=None, tier=1):
+        at = f" at {sha}" if sha else ""
+        return f"Review tier: {tier}\nReviewed with review-loop: 2 rounds with gpt-6.1-sol on high{at}. Verdict: approved"
+
+    def test_nothing_changed_after_the_sha_passes(self):
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: nothing changed after the reviewed commit {self.reviewed}", result.stdout)
+
+    def test_full_sha_passes(self):
+        result = self.run_check(self.body(self.rev("HEAD")))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_review_line_without_sha_fails(self):
+        result = self.run_check(self.body())
+        self.assertEqual(result.returncode, 1)
+        head = self.rev("HEAD")[:7]
+        self.assertIn(f"rounds with <model> at {head}. Verdict: approved", result.stdout)
+
+    def test_unknown_sha_fails(self):
+        result = self.run_check(self.body("deadbeef"))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("FAIL: reviewed commit deadbeef is not in this checkout", result.stdout)
+        self.assertIn("another review-loop round", result.stdout)
+
+    def test_tier_one_change_after_the_sha_fails(self):
+        self.write("extension/dev/capture.js", "export const a = 3;\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1", result.stdout)
+        self.assertIn("extension/dev/capture.js", result.stdout)
+        self.assertIn("update `at <sha>`", result.stdout)
+
+    def test_tier_two_change_after_the_sha_fails(self):
+        self.write("extension/storage/store.js", "export const s = 1;\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 2: extension/storage/store.js (high-risk directory)", result.stdout)
+
+    def test_uncommitted_tier_one_file_after_the_sha_fails(self):
+        self.write("scripts/new.py", "print()\n")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("scripts/new.py", result.stdout)
+
+    def test_reverting_a_pr_file_after_the_sha_fails(self):
+        self.write("extension/shared/util.js", "export const u = 2;\n")
+        self.commit("pr change 2")
+        reviewed = self.rev("HEAD")[:7]
+        self.write("extension/shared/util.js", "export const u = 1;\n")
+        self.commit("revert after review")
+        result = self.run_check(self.body(reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("extension/shared/util.js", result.stdout)
+
+    def test_only_notes_and_markdown_after_the_sha_pass(self):
+        self.write("notes/runs/2026-11-08-check/report.md", "Run\n")
+        self.write("notes/runs/2026-11-08-check/data.json", "{}\n")
+        self.write("CHANGELOG.md", "Log\n")
+        self.commit("notes after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: changes after the reviewed commit {self.reviewed} are tier 0", result.stdout)
+
+    def test_base_merged_after_the_sha_passes(self):
+        self.git("checkout", "-q", "main")
+        self.write("extension/shared/util.js", "export const u = 9;\n")
+        self.write("scripts/main_only.py", "print()\n")
+        self.commit("main moves")
+        self.git("checkout", "-q", "pr")
+        self.git("merge", "-q", "--no-edit", "main")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+
+    def test_base_merged_then_pr_change_fails(self):
+        self.git("checkout", "-q", "main")
+        self.write("scripts/main_only.py", "print()\n")
+        self.commit("main moves")
+        self.git("checkout", "-q", "pr")
+        self.git("merge", "-q", "--no-edit", "main")
+        self.write("extension/dev/capture.js", "export const a = 4;\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("extension/dev/capture.js", result.stdout)
+        self.assertNotIn("scripts/main_only.py", result.stdout)
+
+    def share_a_file_with_main(self):
+        """PR edits the first line of a tier 1 file main also has; review at that commit."""
+        lines = [f"line {n}" for n in range(1, 11)]
+        self.git("checkout", "-q", "main")
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("main adds tool")
+        self.git("checkout", "-q", "pr")
+        self.git("merge", "-q", "--no-edit", "main")
+        lines[0] = "line 1 by pr"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("pr edits tool")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        lines[0], lines[9] = "line 1", "line 10 by main"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("main edits tool")
+        self.git("checkout", "-q", "pr")
+        return lines
+
+    def test_base_merged_into_a_shared_file_after_the_sha_passes(self):
+        self.share_a_file_with_main()
+        self.git("merge", "-q", "--no-edit", "main")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+
+    def test_base_merged_into_a_shared_file_then_pr_change_fails(self):
+        lines = self.share_a_file_with_main()
+        self.git("merge", "-q", "--no-edit", "main")
+        lines[0], lines[4] = "line 1 by pr", "line 5 by pr after review"
+        self.write("scripts/tool.py", "\n".join(lines) + "\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 1", result.stdout)
+        self.assertIn("scripts/tool.py", result.stdout)
+
+    def test_rebased_onto_a_newer_base_passes(self):
+        self.share_a_file_with_main()
+        self.git("rebase", "-q", "main")
+        self.assertNotEqual(self.rev("HEAD")[:7], self.reviewed)
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+
+    def test_base_merge_with_a_resolved_conflict_stays_strict(self):
+        self.git("checkout", "-q", "main")
+        self.write("extension/dev/capture.js", "export const a = 5;\n")
+        self.commit("main edits the same line")
+        self.git("checkout", "-q", "pr")
+        merge = subprocess.run(["git", "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
+        self.assertNotEqual(merge.returncode, 0)
+        self.write("extension/dev/capture.js", "export const a = 2 + 5;\n")
+        self.commit("resolve by combining both sides")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 1", result.stdout)
+        self.assertIn("extension/dev/capture.js", result.stdout)
+
+    def test_tier_zero_pr_needs_no_review_line(self):
+        self.git("checkout", "-q", "-b", "docs", "main")
+        self.write("docs/guide.md", "Guide\n")
+        self.commit("docs")
+        result = self.run_check("Review tier: 0")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: tier 0 needs no review-loop line", result.stdout)
 
 
 class WorkflowTest(unittest.TestCase):

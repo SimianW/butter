@@ -18,6 +18,14 @@
     held: 0,
     hits: [],
   };
+  // Dev build only: dev/recorder-main.js sets a listener through __butterLayoutCache.tap. Unset in
+  // the store build, so each hook below is one null check and builds no summary.
+  let tap = null;
+  const emit = (type, fields, key) => {
+    try {
+      tap(type, fields, key);
+    } catch {}
+  };
   const turns = new Map(); // turnKey -> entry (see core.mergeRecord)
   const live = new Set(),
     meta = new WeakMap(),
@@ -782,6 +790,7 @@
   function reject(t, reason) {
     outcomes.set(t, { reason });
     S.rejected[reason] = (S.rejected[reason] || 0) + 1;
+    if (tap) emit('rejection', { reason }, t.dataset.turnKey);
     // The class going away is not observed, and an answer revealed in full by then may not
     // resize or mutate again, so look once more shortly after.
     if (reason === 'revealing' && !recheck.has(t)) {
@@ -1007,6 +1016,17 @@
       S.records++;
       if (approx) S.approx = (S.approx || 0) + 1;
       else stale.delete(t);
+      if (tap)
+        emit(
+          'record',
+          {
+            items: entry.items.length,
+            blocks: entry.blocks.length,
+            refresh: !!prev?.ready,
+            approx,
+          },
+          key,
+        );
       verified.set(t, entry);
       turns.delete(key);
       turns.set(key, entry);
@@ -1209,6 +1229,7 @@
     applied.add(t);
     S.restored++;
     S.blocksRestored += n;
+    if (tap) emit('restore', { blocks: n }, t.dataset.turnKey);
     if (S.hits.length < 200)
       S.hits.push({ t: performance.now(), key: t.dataset.turnKey, h: e.h, n });
   };
@@ -1260,6 +1281,10 @@
   });
   globalThis.__butterLayoutCache = {
     ...persistence,
+    // Dev build: the recorder's listener for record, rejection and restore (type, fields, turn key).
+    set tap(listener) {
+      tap = typeof listener === 'function' ? listener : null;
+    },
     column: shownColumn,
     flush: () => persistence.flush(),
     flushMeasurements: measure,

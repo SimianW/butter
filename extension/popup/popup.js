@@ -151,10 +151,13 @@ function render() {
     : prefs.layoutConsent === 'pending'
       ? `<div class="note">${t.note}${privacy}</div>`
       : '';
-  const html = `<div class="hd">${pat}<div class="word">Butter</div><a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
+  // Dev build only: dev/popup.js defines ButterDevPopup, and the store package leaves it out, so
+  // this passive slot renders nothing there. Its markup goes through patch() like the rest.
+  const dev = globalThis.ButterDevPopup?.render(prefs.lang) || {};
+  const html = `<div class="hd">${pat}<div class="word">Butter</div>${dev.tag || ''}<a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
     <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
     <div class="card ${paused ? 'paused' : ''}">${features.join('')}</div>
-    <div class="card">${row(groupKeys.indexOf('layout'))}${below}</div>
+    <div class="card">${row(groupKeys.indexOf('layout'))}${below}</div>${dev.card || ''}
     <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a>${privacy}<div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
   const template = document.createElement('template');
   template.innerHTML = `<div>${html}</div>`;

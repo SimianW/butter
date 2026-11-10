@@ -149,14 +149,17 @@ types nothing. Nothing is ever typed into or sent in the original tab. The page 
 (`branch/page.js`) is the only part that touches ChatGPT's DOM; the run takes it as a parameter, so
 `test/branch-run.test.js` drives it with a fake page.
 
-The grey "Branched from …" line above the composer fades out once ChatGPT's reply to the sent
-question starts to show (at once with reduced motion): the last reply in the conversation is one
-that wasn't there when Butter sent, keyed by its turn's `data-turn-key`, so older turns loading
-above don't count. Until then it stays; your own next send, its × or leaving the conversation hide
-it at once. It sits 8 px above the composer, or above ChatGPT's own text right on the composer's
-top edge, such as the "ChatGPT can make mistakes" disclaimer. That text is found by hit-testing the
-line's band (`document.elementsFromPoint`), skipping the conversation's turns, so no selector of
-ChatGPT's is needed.
+The grey "Branched from …" line fades out once ChatGPT's reply to the sent question starts to
+show (at once with reduced motion): the last reply in the conversation is one that wasn't there
+when Butter sent, keyed by its turn's `data-turn-key`, so older turns loading above don't count.
+Until then it stays; your own next send, its × or leaving the conversation hide it at once. The
+"Not sent" line shown when Butter can't be sure stays until one of those. Either line takes the row
+of ChatGPT's own text right on the composer's top edge, the "ChatGPT can make mistakes"
+disclaimer: it covers that text's box with the page's background behind it and copies its font
+size and line height, so the disclaimer shows again once the line goes; ChatGPT's DOM is left
+alone. That text is found by hit-testing a 30 px band above the composer
+(`document.elementsFromPoint`), skipping the conversation's turns, so no selector of ChatGPT's is
+needed. With no such text, the line sits in its own row 8 px above the composer.
 
 ## Privacy
 
@@ -166,7 +169,10 @@ Settings live in `chrome.storage.local`. Layouts live in the extension's Indexed
 ISOLATED world to the worker. The single `seek/layout-cache-main.js` owns measured warm entries,
 prefetched geometry, source matching, adoption and restore validation. Preview text stays in page
 memory. Disk records contain sizes, positions, typography dictionaries, source block indexes,
-math offsets and hashed identities, never chat text or credentials.
+math offsets and hashed identities, never chat text or credentials. Bookmarks share the database in
+their own `bookmarks` store, the only place chat text is persisted: each keeps at most three rendered
+lines (240 characters) of what the user marked, under hashed identities, until the user deletes it
+(see [layout-storage-data.md](layout-storage-data.md)).
 
 `history/conversation-main.js` passively selects the user id from `/backend-api/me` or
 `/api/auth/session` responses already fetched by ChatGPT, hashes it immediately, and forwards only

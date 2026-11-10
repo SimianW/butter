@@ -145,9 +145,9 @@
       const text = B.formatMessage(job.quote, job.question);
       const draft = page.composerText();
       if (draft === null) return { cause: 'composer' };
-      const normalized = draft.trim().replace(/\n{3,}/g, '\n\n');
-      if (normalized && normalized !== text) return { cause: 'composer', kept: true };
-      if (!normalized && !page.fill(text)) return { cause: 'composer' };
+      const typed = !!draft.trim();
+      if (typed && !B.sameDraft(draft, text)) return { cause: 'composer', kept: true };
+      if (!typed && !page.fill(text)) return { cause: 'composer' };
       return { text };
     }
 
@@ -213,7 +213,7 @@
         return { state: 'unsure', cause: 'unverified', identity: id };
       // ...and while the composer still holds exactly what Butter typed.
       const draft = page.composerText();
-      if (draft === null || draft.trim().replace(/\n{3,}/g, '\n\n') !== filled.text)
+      if (draft === null || !B.sameDraft(draft, filled.text))
         return { state: 'unsure', cause: 'composer', identity: id };
       if (!page.send(button)) return { state: 'unsure', cause: 'send', identity: id };
       return { state: 'ready', identity: id };

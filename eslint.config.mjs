@@ -10,7 +10,11 @@ export default [
   { ignores: ['lab/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
   {
     files: ['extension/**/*.js'],
-    ignores: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
+    ignores: [
+      'extension/storage/layout-worker.js',
+      'extension/branch/worker.js',
+      'extension/dev/worker.js',
+    ],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.browser, chrome: 'readonly' },
@@ -19,7 +23,11 @@ export default [
   },
   // The service worker gets worker globals instead of window globals.
   {
-    files: ['extension/storage/layout-worker.js', 'extension/branch/worker.js'],
+    files: [
+      'extension/storage/layout-worker.js',
+      'extension/branch/worker.js',
+      'extension/dev/worker.js',
+    ],
     languageOptions: {
       sourceType: 'script',
       globals: { ...globals.serviceworker, chrome: 'readonly' },
@@ -34,14 +42,45 @@ export default [
       'extension/storage/layout-bridge.js',
       'extension/shared/settings.js',
       'extension/consent/layout-consent.js',
+      'extension/bookmarks/notice.js',
       'extension/popup/popup.js',
       'extension/storage/layout-worker.js',
     ],
     languageOptions: { globals: { ButterStatus: 'readonly' } }, // defined in shared/status.js
   },
   {
+    files: ['extension/consent/layout-consent.js', 'extension/bookmarks/notice.js'],
+    languageOptions: { globals: { ButterCard: 'readonly' } }, // defined in consent/card.js
+  },
+  {
     files: ['extension/rail/rail.js'],
-    languageOptions: { globals: { ButterSeekMeta: 'readonly' } }, // defined in seek/seek-meta.js
+    languageOptions: {
+      globals: {
+        ButterSeekMeta: 'readonly', // defined in seek/seek-meta.js
+        ButterBookmarks: 'readonly', // defined in bookmarks/model.js
+      },
+    },
+  },
+  {
+    files: ['extension/bookmarks/content.js'],
+    languageOptions: { globals: { ButterBookmarks: 'readonly' } }, // defined in bookmarks/model.js
+  },
+  {
+    files: ['extension/bookmarks/content.js', 'extension/bookmarks/notice.js'],
+    languageOptions: { globals: { ButterBookmarkStore: 'readonly' } }, // defined in bookmarks/client.js
+  },
+  {
+    // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
+    files: ['extension/bookmarks/worker.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        ButterBookmarks: 'readonly',
+        database: 'readonly',
+        request: 'readonly',
+        serial: 'readonly',
+      },
+    },
   },
   {
     files: ['extension/popup/popup.js'],
@@ -72,6 +111,26 @@ export default [
     files: ['extension/branch/run.js'],
     languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
   },
+  {
+    files: ['extension/dev/sources.js'],
+    languageOptions: { globals: { require: 'readonly' } }, // falls back to recorder.js under node
+  },
+  {
+    // Dev build only (extension/dev/, left out of the store package).
+    files: ['extension/dev/recorder-main.js', 'extension/dev/worker.js', 'extension/dev/toast.js'],
+    languageOptions: {
+      globals: {
+        ButterDevRecorder: 'readonly', // dev/recorder.js
+        ButterDevSources: 'readonly', // dev/sources.js
+        ButterStatus: 'readonly', // shared/status.js
+      },
+    },
+  },
+  {
+    // The store worker's queue and message handler, which dev/worker.js imports.
+    files: ['extension/dev/worker.js'],
+    languageOptions: { globals: { serial: 'readonly', handle: 'readonly' } },
+  },
   // Files that also export themselves for node --test, behind a `typeof module` check.
   {
     files: [
@@ -83,6 +142,9 @@ export default [
       'extension/seek/core-main.js',
       'extension/branch/logic.js',
       'extension/branch/run.js',
+      'extension/bookmarks/model.js',
+      'extension/dev/recorder.js',
+      'extension/dev/sources.js',
     ],
     languageOptions: { globals: { module: 'readonly' } },
   },

@@ -11,13 +11,20 @@
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: native button, latest reply menu, composer; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
+| `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`), the segment's accessible name (`label`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
+| `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, and the marks handed to the rail (`ButterRail.setMarks`). An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
+| `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
+| `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
+| `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
+| `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
 | `lab/` | Test lab: browser launcher, replay benchmark and other harness scripts, ablation variants. |
 | `notes/review.md` | Historical risk review of the early extension code. |
 | `notes/runs/` | Curated lab reports and numeric results; private captures excluded. |
 | `report/report.html` | One-page visual summary. |
-| `scripts/package.py` | Builds `dist/butter-<version>.zip`. |
+| `scripts/package.py` | Builds `dist/butter-<version>.zip`; `--test <tag>` and `--dev` build numbered test zips. |
 | `CHANGELOG.md` | Versions. |
 
 The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` supplies the geometry wire format before the single
@@ -35,6 +42,13 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
   version label and the storage line masked; the run prints every panel's height and diff ratio,
   then fails with a summary if any differ.
+  The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
+  it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
+  states (recording, just saved, not on a ChatGPT tab, the tallest state, Chinese recording and
+  tallest) in both themes, each at most 600 px with the dev row unclipped. It also drives the card:
+  New round survives a reload, Open round folder, and the save button through the real worker.
+  `BUTTER_DEV_MOCKUP=<path>` (`gh issue artifact download 32 1 -R SimianW/butter`) compares the
+  English and dark dev states with that mockup's `dev-*-after` panels the same way.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
@@ -43,16 +57,89 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
   `node lab/harness/branch-qa.mjs` loads the real extension in its own headless Chromium over the
   synthetic page in `branch-fixture.mjs` (no ChatGPT requests; `lang=zh`, `stream=<ms>`, `work`,
-  `side`, `nobranch` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
+  `side`, `nobranch`, `nodisclaimer` and `temporary-chat=true` select ChatGPT variants) and writes the mockup-state
   screenshots to `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides).
   `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
   snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).
   `branch-live-edges.mjs` (same setup, `LANG_TAG=zh` with ChatGPT in Chinese) checks the streaming
   wait and the hidden-button cases on the live page; see its header for how the stream is held.
+- Dev build bug capture: `test/dev-recorder.test.js` and `test/dev-sources.test.js` (`node --test`)
+  cover the recorder and the `turns`/`usage` sources against planted page state, and
+  `test/dev-toast.test.js` the toast (text in both languages, no pointer events, focus, 2 s, replace).
+  The bug-file format is in [notes/diagnostics/README.md](../notes/diagnostics/README.md#bug-files-from-the-dev-build).
+  `xvfb-run -a node lab/harness/dev-capture-qa.mjs` builds the dev zip, loads it in its own
+  Chromium on a virtual display over a long synthetic chat (`dev-capture-fixture.mjs`, no ChatGPT
+  requests), presses the real shortcut through XTest (`xtest-keys.py`; keys sent over the
+  DevTools protocol never reach `chrome.commands`) and checks the files written to a temporary
+  Downloads folder. It measures the event rate and size, the snapshot's cost, seek behaviour with
+  and without the recorder, and `data:` URL downloads. It also checks that every save shows the
+  toast while a held drag continues, and shoots the toast on a light and a dark page; with
+  `BUTTER_DEV_MOCKUP=<#32 mockup>` (`gh issue artifact download 32 1 -R SimianW/butter`) it
+  compares them with the mockup's `toast-light` and `toast-dark` panels (same size, under 0.1% of
+  pixels differing). The saved files, screenshots and `summary.json` go to
+  `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
+- Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, segment offset),
+  `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
+  CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
+  line, rows, five-row limit and names), `test/bookmark-stale.test.js` (live and stale resolution: a
+  regenerated answer, an edited one, a vanished message, a version switched back; the all-stale
+  segment; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
+  relay and the key query) and `test/bookmark-notice.test.js` (the first bookmark notice: copy, Undo,
+  Got it, independence from the layout switch and consent) run under `node --test`.
+  `xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs` loads the real
+  extension in its own Chromium over a
+  synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
+  conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
+  paragraph, the segment under its question, landing on the paragraph from the segment, reload,
+  the filled button on a bookmarked paragraph, one read per conversation and none while scrolling,
+  the segment back after going to the home page and Back through history,
+  dark theme, and the rail off or Butter paused (nothing shown and no bookmark read). Then the hover card: the single and list cards,
+  moving onto the card, a jump from a row, × and the filled button deleting (the segment fading out,
+  or going at once under reduced motion), keyboard-only jump and delete, and a reload; it shoots
+  `card-single-*` and `card-list-*` in light and dark for comparison with the #51 mockup's section 3.
+  Stale bookmarks: it regenerates a bookmarked answer and edits a bookmarked paragraph in the page,
+  then serves the regenerated answer as the conversation's version and reloads; it checks the grey
+  "answer changed" row, the pale segment only when every bookmark under the question is stale, the
+  stale single card and its footer, jumps landing at the question's start, a switched-back version
+  turning live again, and the Chinese strings, and shoots `card-stale-*` and `card-list-stale-*`
+  (with the mockup set, also its `mockup-card-stale-*` and `mockup-card-list-*` to look at side by side).
+  It also bookmarks a selection with the button and with the shortcut (across paragraphs too), the
+  top paragraph with the shortcut and nothing selected, and nothing for a selection in a question,
+  each landing on its text, and checks that the tooltip shows the key Chrome reports and no hint once
+  the key is cleared in `chrome://extensions/shortcuts`. Under an X display it runs headed and
+  presses the real key through XTest (`xtest-keys.py`); without one it runs headless and asks the
+  worker to relay the command instead, which skips Chrome's key handling.
+  Earlier history (#51 addendum), run last: the fixture opens the chat with only its latest 5 questions
+  and serves earlier ones two per `/messages?before=` page when the chat is scrolled near its top,
+  as ChatGPT does. It checks the one segment on the earlier-history dots (5 px below their centre,
+  styled as any segment) and no segment under a loaded question it doesn't belong to, no reads or
+  page loads while scrolling, the single and list cards, the loading state (meta line, the clicked
+  row's spinner, blinking dots), clicks from the card's text, a row and the segment (the oldest)
+  loading pages only until the answer is known and landing on its text, the segment moving to its
+  tick with the grow-in, the dots' segment fading out (at once under reduced motion), Escape while
+  loading, the keyboard path, and a message gone from the whole conversation turning stale once all
+  is loaded. It shoots `earlier-{rest,single,list,loading,landed}-<theme>-<lang>-<desktop|narrow>`
+  (narrow: 600 px, the narrowest the rail draws at) and `earlier-rest-light-en-mobile390`; with
+  `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
+  -R SimianW/butter`) also the mockup's panels as `mockup-earlier-*`. `ONLY=earlier` runs this part
+  alone.
+  Before it, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
+  button and the button removes it, scrolling reads nothing, and with a second question the segment
+  shows under question 1 (`ONLY=one` runs this part alone).
+  It then drives the first bookmark notice in light and dark, English and Chinese:
+  Undo removes the segment and the next save shows it again, it stacks above a pending consent card,
+  and after Got it a third save and a reload show none. `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>`
+  (`gh issue artifact download 51 1 -R SimianW/butter`) compares the four notices with section 4 (same
+  size, under 0.1% of pixels differing). Screenshots and `summary.json` go to
+  `/tmp/butter-bookmarks-qa/` (`SHOTS=` overrides).
+  The run covers both answer markups, each in its own browser and screenshot subdirectory: the
+  earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
+  answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
+  `MARKUP=live` runs only one).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
-- PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check (tier and review lines) locally.
+- PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
@@ -70,6 +157,20 @@ Run `npm ci` to install the pinned development formatter, then `npm run format` 
 `python3 scripts/package.py` builds the zip. Version rules are in [AGENTS.md](../AGENTS.md).
 For testing, `python3 scripts/package.py --test <tag>` builds `dist/butter-<version_name>+<tag>.<N>.zip` without changing the source manifest or consuming an alpha number (tag: `[a-z0-9-]+`; numbering starts at 1 per base version and tag).
 Test zips retain the base Chrome numeric version; remove the previous install before loading one unpacked.
+`python3 scripts/package.py --dev` builds the dev build, `dist/butter-<version_name>+dev.<N>.zip`: a test build
+that also contains `extension/dev/`, whose popup.html loads the popup's dev card, and whose manifest adds the dev scripts, the `save-bug` command (suggested
+key Alt+Shift+B, Option+Shift+B on a Mac) and the `downloads` permission. The shortcut saves a privacy-safe
+snapshot of the last 30 s on a ChatGPT chat to `Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json`.
+On Windows and Linux, Alt+Shift+B is Chrome's own "focus bookmarks bar" key, so Chrome does not assign it
+automatically; set it in `chrome://extensions/shortcuts`. Until then the popup's save button shows only its
+camera icon. Only `--dev` zips carry the dev files.
+
+The dev card keeps the round in `chrome.storage.local.butterDev` (`round`, `bugs`, and after a save the
+`file` name and its `download` id). Its save button and New round go to the dev worker as
+`butter-dev-save` (with the active `tabId`) and `butter-dev-new-round` runtime messages, which only the
+extension's own pages may send; the worker serializes them with the shortcut's saves. Open round folder
+shows the round's last saved file through the downloads API; before the round's first save, when the
+round folder does not exist yet, it opens the Downloads folder.
 
 ## Layout storage API
 
@@ -114,6 +215,89 @@ The popup shows usage below Remember long-chat layouts and confirms Clear inline
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can
 save again while the setting is on. Set the option false for a persistent opt-out.
+
+## Bookmarks store API
+
+Version-1 runtime messages from content scripts to the service worker (`bookmarks/worker.js`),
+on the layout store's queue. Ids are SHA-256 hex, as layouts hash them; a bookmark is
+`{ account, conv, msg, ask, turn, para, start, end, excerpt, line, time }` (`ask` and `line` are
+missing from bookmarks saved before they were added; see
+[layout-storage-data.md](layout-storage-data.md#object-store-bookmarks-database-version-2)), and
+stored ones also carry their `key`.
+
+| Request `type` | Fields | Response |
+|---|---|---|
+| `butter-bookmark-list` | `account`, `conv` | `{ bookmarks }` for that conversation |
+| `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
+| `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
+| `butter-bookmark-key` | None (version 1 like the others) | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
+
+Unknown or raw account/conversation ids get `{ error: 'bookmark-identity' }`, a malformed bookmark or
+another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
+`{ error: 'bookmark-storage' }` (retry the same request up to three times). None of these depend on
+the layout setting, `layoutConsent` or layout Clear.
+
+The `bookmark` command (manifest `commands`, suggested key Alt+Shift+M, Option+Shift+M on a Mac,
+rebindable in `chrome://extensions/shortcuts`) makes the worker send `{ version: 1, type:
+'butter-bookmark-shortcut' }` to the tab it was pressed in. The content script bookmarks the selection
+inside one answer (anchored to its first paragraph), or with nothing selected the first answer
+paragraph whose top is at or below ChatGPT's 52 px header; a selection outside the answers creates
+nothing. Alt+Shift+M is in neither Chrome's accelerator table (Windows, Linux; on a Mac Chrome binds
+no Option+Shift letter) nor ChatGPT's documented shortcuts, and is not the dev build's Alt+Shift+B,
+which Chrome reserves on Windows and Linux for its bookmarks bar. `--dev` zips keep the `bookmark`
+command beside `save-bug`.
+
+On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
+it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever it renders
+(`complete`: no earlier page is left to load). The content script answers with
+`ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
+(or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
+`{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
+question's bookmarks in answer order, each with its `stale` flag, `stale` is set when all of them are
+stale (the segment shows at 40 % opacity), `land(turnElement, bookmark = bookmarks[0])` returns that
+bookmark's offset below the turn's top for the rail's jump (or null to land on the question, as a
+stale bookmark does), and `remove(bookmark)` deletes it from the store and sends the marks again.
+
+Staleness (`ButterBookmarks.resolve`) is computed on the page and never stored. A bookmark is live
+when its answer is rendered, its paragraph exists and that paragraph still contains the excerpt's
+first rendered line (its first `line` characters; its first 40 for a bookmark saved without `line`).
+It is stale when the paragraph or its text changed (an edited answer), when its question's turn is
+mounted with another answer (regenerated, or another version shown), or when its message is no
+longer in a fully loaded conversation or in its loaded question (`ask`), where it stays under that
+question; only a bookmark whose question isn't loaded (or, without `ask`, whose message isn't
+listed or rendered) waits on the earlier-history dots while earlier history is unloaded. A turn that isn't
+mounted keeps the state last seen in the tab. The content script resolves on every rail render, about
+0.6 s and 2.5 s after a click on the page (regenerate, edit and the version arrows are clicks), and
+when the pointer or focus reaches the rail; never while a scrollbar drag is seeking. The card shows a
+stale row grey with "answer changed", and a single stale bookmark with "Bookmark · answer changed",
+grey text and a footer saying a click opens its question instead.
+
+Earlier history (#51 addendum). After a reload ChatGPT lists only a long chat's latest questions.
+While earlier history isn't loaded, `ButterBookmarks.group` puts a bookmark whose message is neither
+listed nor rendered in the `EARLIER` group: the rail draws it as one segment 5 px below the "earlier"
+dots, never stale, with the card "Bookmark · earlier question" (one, with a footer) or "Earlier
+questions · k bookmarks" (oldest first). A click on the segment (the oldest), the card's text or a
+row runs the rail's earlier trip with that bookmark's key: pages load only until `setMarks` places
+the key under a question, then the trip lands on its text as a bookmark jump does (at the
+question's start when it turned stale: its message isn't in the now complete conversation). Meanwhile
+the dots blink, the card's meta line reads "Loading earlier questions…" and that row's × is a spinner;
+Escape or leaving puts the card away without stopping the trip. A bookmark leaving the dots grows in
+under its tick; the dots' segment fades out when none are left (at once under reduced motion, or
+when the dots go).
+
+The rail draws the hover card for a segment from `ButterBookmarks.card(bookmarks, at, zh)`
+(`{ single, meta, rows, visible, label, stale, warn, tag }`); the card takes the pointer while it shows bookmarks.
+Keyboard: the arrow keys walk the ticks and, after a question's tick, its segment; ArrowLeft enters
+the card, arrows move between rows, Enter jumps, Tab reaches a row's ×, Delete removes the row, and
+ArrowRight or Escape returns to the segment. A segment whose last bookmark is deleted fades out over
+160 ms (at once under reduced motion). The hover button shows filled on a paragraph that holds
+bookmarks; clicking it removes all of them.
+
+The first saved bookmark shows a notice (`bookmarks/notice.js`), whatever the layout switch and
+`layoutConsent` say. Undo sends `butter-bookmark-delete` for that bookmark and leaves the notice
+unacknowledged; Got it writes `bookmarkNotice: 'acknowledged'` into the `butter` settings, once per
+browser profile. `bookmarks/content.js`'s `create` is the only save path, so the button and the
+shortcut both reach it.
 
 ## Ask in branch handoff API
 

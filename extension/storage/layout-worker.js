@@ -4,6 +4,8 @@ importScripts(
   '../shared/status.js',
   '../branch/logic.js',
   '../branch/worker.js',
+  '../bookmarks/model.js',
+  '../bookmarks/worker.js',
 );
 let statusQueue = Promise.resolve();
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
@@ -41,11 +43,18 @@ const request = (r) =>
   });
 function database() {
   return (opened ||= new Promise((ok, no) => {
-    const r = indexedDB.open('butter-layouts-v1', 1);
-    r.onupgradeneeded = () => {
-      const rows = r.result.createObjectStore('geometry', { keyPath: 'key' });
-      rows.createIndex('conversation', ['account', 'conv']);
-      r.result.createObjectStore('state');
+    // Version 2 adds bookmarks (bookmarks/worker.js) beside the layout stores.
+    const r = indexedDB.open('butter-layouts-v1', 2);
+    r.onupgradeneeded = (e) => {
+      if (e.oldVersion < 1) {
+        const rows = r.result.createObjectStore('geometry', { keyPath: 'key' });
+        rows.createIndex('conversation', ['account', 'conv']);
+        r.result.createObjectStore('state');
+      }
+      if (e.oldVersion < 2)
+        r.result
+          .createObjectStore('bookmarks', { keyPath: 'key' })
+          .createIndex('conversation', ['account', 'conv']);
     };
     r.onsuccess = () => ok(r.result);
     r.onerror = () => {

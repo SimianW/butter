@@ -1,6 +1,8 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
 import json
 from pathlib import Path
+import posixpath
+import re
 import shutil
 import subprocess
 import sys
@@ -29,12 +31,13 @@ class PackageTests(unittest.TestCase):
         (self.extension / ".private").mkdir()
         (self.extension / ".private" / "secret").write_bytes(b"excluded")
 
-    def write_version(self, name="0.1.0-alpha.10", numeric="0.1.0.10"):
-        manifest = {"manifest_version": 3, "name": "Butter", "version_name": name, "version": numeric}
+    def write_version(self, name="0.1.0-alpha.10", numeric="0.1.0.10", base=None):
+        manifest = base or {"manifest_version": 3, "name": "Butter"}
+        manifest = {**manifest, "version_name": name, "version": numeric}
         (self.extension / "manifest.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
         (self.root / "README.md").write_text(f"Current version: **{name}**\n", encoding="utf-8")
         (self.root / "README.zh-CN.md").write_text(f"当前版本：**{name}**\n", encoding="utf-8")
-        (self.root / "CHANGELOG.md").write_text(f"## {name} (2026-11-04)\n", encoding="utf-8")
+        (self.root / "CHANGELOG.md").write_text(f"## [{name}] - 2026-11-04\n", encoding="utf-8")
 
     def run_script(self, script, *args):
         return subprocess.run(
@@ -96,6 +99,122 @@ class PackageTests(unittest.TestCase):
                             archive.read(f"butter/{relative}"),
                             (self.extension / relative).read_bytes(),
                         )
+
+    def use_real_extension(self):
+        shutil.rmtree(self.extension)
+        shutil.copytree(ROOT / "extension", self.extension)
+        real = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
+        self.write_version(base=real)
+
+    def source_commands(self):
+        return json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))["commands"]
+
+    def dev_files(self):
+        return sorted(
+            "butter/" + path.relative_to(self.extension).as_posix()
+            for path in (self.extension / "dev").rglob("*")
+            if path.is_file()
+        )
+
+    def test_dev_package_adds_dev_files_command_and_downloads_permission(self):
+        self.use_real_extension()
+        dev_files = self.dev_files()
+        self.assertIn("butter/dev/recorder.js", dev_files)
+        self.assertIn("butter/dev/sources.js", dev_files)
+        self.assertIn("butter/dev/toast.js", dev_files)
+        before = {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()}
+        for number in (1, 2):
+            path, result = self.package("--dev")
+            expected_name = f"0.1.0-alpha.10+dev.{number}"
+            self.assertEqual(path.name, f"butter-{expected_name}.zip")
+            self.assertIn("remove the previous install", result.stdout)
+            with zipfile.ZipFile(path) as archive:
+                names = set(archive.namelist())
+                manifest = json.loads(archive.read("butter/manifest.json"))
+            self.assertTrue(set(dev_files) <= names)
+            self.assertEqual(manifest["version_name"], expected_name)
+            self.assertEqual(manifest["version"], "0.1.0.10")
+            self.assertIn("downloads", manifest["permissions"])
+            command = manifest["commands"]["save-bug"]
+            self.assertEqual(command["suggested_key"]["default"], "Alt+Shift+B")
+            self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
+            # The dev build keeps the store's bookmark shortcut beside its own.
+            self.assertEqual(manifest["commands"]["bookmark"], self.source_commands()["bookmark"])
+            # Every script the dev manifest names is in the zip, after the store scripts it hooks.
+            isolated, main = manifest["content_scripts"]
+            self.assertEqual(isolated["js"][-2:], ["dev/content.js", "dev/toast.js"])
+            self.assertLess(isolated["js"].index("shared/status.js"), isolated["js"].index("dev/toast.js"))
+            self.assertEqual(
+                main["js"][-3:], ["dev/recorder.js", "dev/sources.js", "dev/recorder-main.js"]
+            )
+            # The recorder listens to both hook owners, so it runs after the last of them.
+            for hooked in ("seek/layout-cache-main.js", "seek/preview-main.js"):
+                self.assertLess(main["js"].index(hooked), main["js"].index("dev/recorder.js"))
+            self.assertLess(main["js"].index("seek/preview-main.js"), main["js"].index("dev/recorder-main.js"))
+            worker = manifest["background"]["service_worker"]
+            self.assertEqual(worker, "dev/worker.js")
+            for script in [*isolated["js"], *main["js"], worker]:
+                self.assertIn(f"butter/{script}", names)
+        self.assertEqual(before, {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()})
+        self.assertEqual(self.run_script("check-version.py").returncode, 0)
+
+    def test_dev_popup_loads_the_dev_card_before_popup_js(self):
+        self.use_real_extension()
+        path, _ = self.package("--dev")
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            html = archive.read("butter/popup/popup.html").decode()
+        self.assertIn("butter/dev/popup.js", names)
+        self.assertIn("butter/dev/popup.css", names)
+        # The dev stylesheet follows popup.css; the dev script defines its renderer before
+        # popup.js's first render, and every popup script still loads.
+        self.assertLess(html.index('href="popup.css"'), html.index('href="../dev/popup.css"'))
+        scripts = re.findall(r'<script src="([^"]+)" defer></script>', html)
+        self.assertEqual(scripts, ["../shared/status.js", "model.js", "../dev/popup.js", "popup.js"])
+        for script in scripts:
+            self.assertIn("butter/" + posixpath.normpath(posixpath.join("popup", script)), names)
+
+    def test_store_and_test_popups_load_no_dev_script(self):
+        self.use_real_extension()
+        source = (self.extension / "popup" / "popup.html").read_bytes()
+        self.assertNotIn(b"dev/", source)
+        for args in ((), ("--test", "demo")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    self.assertEqual(archive.read("butter/popup/popup.html"), source)
+
+    def test_store_and_test_packages_leave_dev_build_out(self):
+        self.use_real_extension()
+        source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
+        # The store manifest's only command is the bookmark shortcut; save-bug is dev-only.
+        self.assertEqual(list(source["commands"]), ["bookmark"])
+        self.assertNotIn("downloads", source["permissions"])
+        self.package("--dev")
+        for args in ((), ("--test", "demo")):
+            with self.subTest(args=args):
+                path, _ = self.package(*args)
+                with zipfile.ZipFile(path) as archive:
+                    names = archive.namelist()
+                    manifest = json.loads(archive.read("butter/manifest.json"))
+                self.assertEqual([name for name in names if name.startswith("butter/dev/")], [])
+                self.assertNotIn("butter/dev/toast.js", names)
+                self.assertEqual(manifest["commands"], source["commands"])
+                self.assertNotIn("downloads", manifest["permissions"])
+                self.assertEqual(manifest["background"], source["background"])
+                self.assertEqual(manifest["content_scripts"], source["content_scripts"])
+                self.assertNotIn("dev", json.dumps(manifest["content_scripts"]))
+
+    def test_dev_package_needs_both_content_script_entries(self):
+        result = self.run_script("package.py", "--dev")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected the isolated content scripts first", result.stderr)
+        self.assertFalse(any((self.root / "dist").glob("*.zip")))
+
+    def test_dev_and_test_flags_cannot_be_combined(self):
+        result = self.run_script("package.py", "--dev", "--test", "demo")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.root / "dist").exists())
 
     def test_numbering_uses_numeric_max_for_exact_base_and_tag(self):
         dist = self.root / "dist"

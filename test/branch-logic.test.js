@@ -100,6 +100,16 @@ test('expired, foreign or malformed jobs are refused and deleted', async () => {
   assert.deepEqual(store.rows, {});
 });
 
+test('a tab that reached the conversation through ChatGPT routing hands over and claims', async () => {
+  // Chrome's sender.url keeps the URL the document loaded with; after a sidebar click it names
+  // the previous conversation, while sender.tab.url follows the route.
+  const stale = `https://chatgpt.com/c/${LOCAL}`;
+  const store = memory(),
+    handoff = branch.handoff(store);
+  assert.deepEqual(await handoff.put(ID, job, { ...origin, url: stale }, 1000), { ok: true });
+  assert.deepEqual(await handoff.claim(ID, { ...dest, url: stale }, 2000), { job, origin: 7 });
+});
+
 test('pruning deletes only expired branch jobs', async () => {
   const store = memory({ other: 1 }),
     handoff = branch.handoff(store);
@@ -250,4 +260,12 @@ test('quote: a multi-line display formula keeps its lines, each quoted with "> "
 test('quote: a formula without its LaTeX source makes the selection unquotable', () => {
   const p = tree(para(t('See '), formula(null, 'x'), t('.')));
   assert.equal(branch.quoteOf(range(p, 0, p, 3), dom), null);
+});
+
+test('sameDraft ignores blank lines the composer adds between paragraphs, and nothing else', () => {
+  const typed = '> first\n> \n> second\n\nWhy?';
+  assert.ok(branch.sameDraft('> first\n\n> \n\n> second\n\n\n\n\nWhy?\n', typed));
+  assert.ok(branch.sameDraft(typed, typed));
+  assert.ok(!branch.sameDraft('> first\n> second\n\nWhy?', typed));
+  assert.ok(!branch.sameDraft('> first\n> \n> second\n\nWhy not?', typed));
 });

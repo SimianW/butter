@@ -105,6 +105,31 @@ def parse_manifest(text, label):
     return manifest
 
 
+def changed_since(rev, root):
+    """Paths that differ between rev and the working tree, untracked files included, sorted."""
+    tracked = git("diff", "--name-only", "--no-renames", "-z", rev, "--", cwd=root)
+    untracked = git("ls-files", "--others", "--exclude-standard", "-z", cwd=root)
+    return sorted({path for path in (tracked + untracked).decode("utf-8").split("\0") if path})
+
+
+def manifest_at(rev, root):
+    """Parsed extension/manifest.json at rev, or None when rev has none."""
+    listed = git("ls-tree", "--name-only", rev, "--", MANIFEST, cwd=root).decode().strip()
+    if not listed:
+        return None
+    text = git("show", f"{rev}:{MANIFEST}", cwd=root).decode("utf-8")
+    return parse_manifest(text, f"{MANIFEST} at {rev[:7]}")
+
+
+def working_manifest(root):
+    """Parsed extension/manifest.json in the working tree, or None when absent."""
+    try:
+        with open(f"{root}/{MANIFEST}", encoding="utf-8") as file:
+            return parse_manifest(file.read(), MANIFEST)
+    except FileNotFoundError:
+        return None
+
+
 def collect(base):
     """Return (merge_base, paths, manifest_before, manifest_after) for HEAD's work against base."""
     root = git("rev-parse", "--show-toplevel").decode().strip()
@@ -112,21 +137,12 @@ def collect(base):
         merge_base = git("merge-base", "HEAD", base, cwd=root).decode().strip()
     except GitError as error:
         raise GitError(f"cannot find the merge base of HEAD and {base!r}: {error}") from error
-    tracked = git("diff", "--name-only", "--no-renames", "-z", merge_base, "--", cwd=root)
-    untracked = git("ls-files", "--others", "--exclude-standard", "-z", cwd=root)
-    paths = sorted({path for path in (tracked + untracked).decode("utf-8").split("\0") if path})
+    paths = changed_since(merge_base, root)
 
     before = after = None
     if MANIFEST in paths:
-        listed = git("ls-tree", "--name-only", merge_base, "--", MANIFEST, cwd=root).decode().strip()
-        if listed:
-            text = git("show", f"{merge_base}:{MANIFEST}", cwd=root).decode("utf-8")
-            before = parse_manifest(text, f"{MANIFEST} at {merge_base[:7]}")
-        try:
-            with open(f"{root}/{MANIFEST}", encoding="utf-8") as file:
-                after = parse_manifest(file.read(), MANIFEST)
-        except FileNotFoundError:
-            pass
+        before = manifest_at(merge_base, root)
+        after = working_manifest(root)
     return merge_base, paths, before, after
 
 

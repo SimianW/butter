@@ -1,0 +1,162 @@
+{
+  "build": "0.1.0-alpha.15+dev.1",
+  "fixture": "math12",
+  "platform": "Linux",
+  "macDefaultBinding": "not checked: Linux lab",
+  "checks": {
+    "toastDuringHeldDrag": true,
+    "dragContinues": true,
+    "captureAndPrivacy": true
+  },
+  "cleanup": {
+    "preferencesRestored": true,
+    "labRestore": {
+      "ok": true,
+      "restarted": true,
+      "composerEmpty": true,
+      "pages": 1,
+      "defaultExtensions": true
+    },
+    "lockReleased": {
+      "lab": 1,
+      "lab_released": true,
+      "perf_released": false
+    }
+  },
+  "chromium": "156.0.8078.47",
+  "historyLoading": [
+    {
+      "turns": 5,
+      "scrollHeight": 1268
+    }
+  ],
+  "scroller": {
+    "x": 1589,
+    "top": 52,
+    "height": 860,
+    "scrollHeight": 16182,
+    "width": 20,
+    "scrollbarWidth": "thin",
+    "overflowY": "auto",
+    "orderCount": 6
+  },
+  "duringToast": {
+    "held": true,
+    "sessions": 1,
+    "updates": 13,
+    "scrollTop": 2930,
+    "reason": null,
+    "toast": "Bug 1 saved last 30 s · round 1",
+    "pointerEvents": "none",
+    "focusKept": true
+  },
+  "continued": {
+    "held": true,
+    "sessions": 1,
+    "updates": 25,
+    "scrollTop": 4676,
+    "reason": null,
+    "toast": "Bug 1 saved last 30 s · round 1",
+    "pointerEvents": "none",
+    "focusKept": true
+  },
+  "released": {
+    "held": false,
+    "sessions": 1,
+    "updates": 25,
+    "scrollTop": 5659,
+    "reason": "pointerup",
+    "toast": "Bug 1 saved last 30 s · round 1",
+    "pointerEvents": "none",
+    "focusKept": true
+  },
+  "commands": [
+    "save-bug"
+  ],
+  "privacy": {
+    "privateTokensChecked": 1263,
+    "textContainers": 33,
+    "mathSources": 348,
+    "matches": 0,
+    "stringInventory": [
+      "active-preview-update",
+      "auto",
+      "block",
+      "blockquote",
+      "button",
+      "classic",
+      "data-butter-seen",
+      "data-chatgpt-selection-message-id",
+      "data-markdown-text-style",
+      "data-math-source",
+      "data-state",
+      "data-talvt-turn-state",
+      "data-turn-key",
+      "data-user-message-bubble",
+      "declined",
+      "display",
+      "display-math",
+      "div",
+      "en",
+      "h1",
+      "h2",
+      "h4",
+      "heading",
+      "hr",
+      "it",
+      "katex",
+      "katex-display",
+      "layout",
+      "li",
+      "list",
+      "math",
+      "measured",
+      "ol",
+      "other",
+      "p",
+      "paragraph",
+      "path",
+      "press",
+      "preview",
+      "record",
+      "row-height-mismatch",
+      "seek",
+      "separator",
+      "span",
+      "strong",
+      "svg",
+      "table",
+      "tbody",
+      "td",
+      "th",
+      "thead",
+      "tr",
+      "ul",
+      "use",
+      "user",
+      "visible"
+    ],
+    "strippedValues": 0,
+    "note": "Original download passed; no private values needed stripping."
+  },
+  "capture": {
+    "file": "butter-diag/round-1/bug-01_06-11-20.json",
+    "bytes": 268908,
+    "sha256": "658097850534658ccb6e2aade9fc790474decb559faa644b56a04164694d53ad",
+    "pointerHeld": true,
+    "readinessRows": 6,
+    "redacted": 0,
+    "events": 21,
+    "eventTypes": {
+      "record": 6,
+      "press": 1,
+      "preview": 1,
+      "seek": 13
+    }
+  },
+  "requests": {
+    "sendGuard": true,
+    "blockedMutations": 23,
+    "sendAttempts": 0
+  }
+}
