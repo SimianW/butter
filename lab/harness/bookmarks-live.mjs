@@ -863,7 +863,7 @@ async function watchEarlierLoading() {
 // around it), the text keeps its colour under them, there is no bubble flash, and when the chat
 // scrolls during the hold the boxes follow their text while ChatGPT's header and composer show no
 // butter over it. Only numbers and booleans leave the page; the targets stay in page and worker
-// memory. ChatGPT's theme is its own client setting (localStorage `theme`); it is put back.
+// memory. The dark pass switches ChatGPT's <html data-theme> on the page (see washRun).
 const WASH_HOST = 'chatgpt-butter-wash';
 const ANSWER =
   ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
@@ -1293,14 +1293,25 @@ async function washRun() {
   );
   phase = 'wash-open';
   await open();
-  const theme0 = await page.evaluate(() => localStorage.getItem('theme'));
   try {
     for (const theme of ['light', 'dark']) {
       phase = `wash-theme-${theme}`;
-      await page.evaluate((t) => localStorage.setItem('theme', t), theme);
       await open();
-      const dark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
-      await check(`wash ${theme}: ChatGPT shows its ${theme} theme`, dark === (theme === 'dark'));
+      // ChatGPT draws its theme from <html data-theme>, set from the account's appearance
+      // setting (on its server; checked on 2026-11-10). The lab accounts are in light theme: the
+      // dark pass switches the attribute on the page, and ChatGPT's own dark styles follow.
+      const look = await page.evaluate((theme) => {
+        const html = document.documentElement;
+        if (html.getAttribute('data-theme') !== theme) {
+          html.setAttribute('data-theme', theme);
+          if (html.hasAttribute('data-appearance-mode')) html.setAttribute('data-appearance-mode', theme);
+        }
+        const [r, g, b] = getComputedStyle(document.body).backgroundColor.match(/\d+/g).map(Number);
+        return { background: [r, g, b], colorScheme: getComputedStyle(html).colorScheme, darkClass: html.classList.contains('dark') };
+      }, theme);
+      await page.waitForTimeout(500);
+      const dark = look.background.reduce((t, v) => t + v, 0) < 3 * 96;
+      await check(`wash ${theme}: ChatGPT shows its ${theme} theme`, dark === (theme === 'dark'), look);
       // The whole chat loaded, so that every question has its tick.
       await check(`wash ${theme}: the whole chat loads through the earlier-history dots`, await loadAll(), {
         ticks: (await railState()).ticks,
@@ -1343,9 +1354,9 @@ async function washRun() {
       await washJump(theme, 'table', order.indexOf('table'), null);
     }
   } finally {
-    phase = 'wash-theme-restore';
-    await page.evaluate((v) => (v == null ? localStorage.removeItem('theme') : localStorage.setItem('theme', v)), theme0);
-    summary.cleanup.themeRestored = (await page.evaluate(() => localStorage.getItem('theme'))) === theme0;
+    // The attribute lives in the page only: a load puts ChatGPT's own theme back.
+    phase = 'wash-end';
+    await open().catch(() => {});
   }
 }
 
