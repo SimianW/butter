@@ -146,6 +146,14 @@ test("the dot's right edge stays 4 px left of its tick at 12, 21 and 31 px", () 
     assert.ok(Math.abs(B.dotRight(scale) - (tick + 4)) < 1e-9, `scale ${scale}`);
 });
 
+test("earlier history's dot sits 4 px left of the three dots, however long they are (#72)", () => {
+  // `dotBeside(width)`: px from a mark's right end to the dot's right edge, for a mark `width` px
+  // long. The three dots span 17 px from the ticks' right end: their 2 px padding, three 3 px dots
+  // and two 3 px gaps.
+  assert.equal(B.dotBeside(17), 21);
+  assert.equal(B.dotBeside(12), B.dotRight(1));
+});
+
 test('excerpt collapses runs of whitespace as the page renders them', () => {
   const text = '  first item\n\n  second\titem  ';
   assert.equal(B.excerpt(text, [text.length]), 'first item second item');

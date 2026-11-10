@@ -131,6 +131,35 @@ test('earlier bookmarks in Chinese', () => {
   assert.ok(two.label.startsWith('更早的问题 · 2 个书签：'));
 });
 
+// The three dots (#72) keep their name and append the earlier-history label when they hold
+// bookmarks.
+const HINT = 'Earlier questions are not loaded yet. Click to load them.';
+test("the three dots' name: their hint, then the earlier bookmarks' meta line and text", () => {
+  assert.equal(B.moreLabel(HINT), HINT);
+  assert.equal(B.moreLabel(HINT, []), HINT);
+  assert.equal(
+    B.moreLabel(HINT, six.slice(0, 1)),
+    `${HINT} · Bookmark · earlier question: If estimated rows are far from actual rows, run ANALYZE orders`,
+  );
+  assert.equal(
+    B.moreLabel(HINT, six.slice(0, 2)),
+    `${HINT} · Earlier questions · 2 bookmarks: If estimated rows are far from actual rows, run ANALYZE orders; Most of the time it is not ignoring it`,
+  );
+});
+
+test("the three dots' name in Chinese", () => {
+  const hint = '更早的问题还没加载，点击加载';
+  assert.equal(B.moreLabel(hint, [], true), hint);
+  assert.equal(
+    B.moreLabel(hint, six.slice(0, 1), true),
+    `${hint} · 书签 · 更早的问题：If estimated rows are far from actual rows, run ANALYZE orders`,
+  );
+  assert.equal(
+    B.moreLabel(hint, six.slice(0, 2), true),
+    `${hint} · 更早的问题 · 2 个书签：If estimated rows are far from actual rows, run ANALYZE orders；Most of the time it is not ignoring it`,
+  );
+});
+
 // The hover button's accessible name (#53) holds the start of what it would bookmark; its visible
 // tooltip stays "Bookmark" / "Bookmark selection" (bookmarks/content.js).
 test("the add button's name holds the start of the paragraph or the selection", () => {
@@ -151,8 +180,8 @@ test("the add button's name holds the start of the paragraph or the selection", 
 });
 
 // The tick's card when its question holds bookmarks (#70): the question card's text, then its
-// bookmarks. The card is a group named by the meta line the segment's card shows; the tick keeps
-// its own name and appends the bookmarks'.
+// bookmarks. The card is a group named by the bookmark meta line `card` gives; the tick keeps its
+// own name and appends the bookmarks'.
 const Q7 = 'Why does Postgres ignore my index on orders.status?';
 
 test('a tick whose question holds several bookmarks: the question, then its rows in answer order', () => {

@@ -65,9 +65,12 @@ class FakeElement {
     child.parentElement = this;
     this.children.unshift(child);
   }
-  append(child) {
-    child.parentElement = this;
-    this.children.push(child);
+  append(...children) {
+    for (const child of children) {
+      if (typeof child === 'string') continue; // text: no element to look up
+      child.parentElement = this;
+      this.children.push(child);
+    }
   }
   replaceChildren(...children) {
     this.children = [];
@@ -99,6 +102,7 @@ class FakeElement {
     if (selector === '.thread-scroll-container' && this.className === 'thread-scroll-container')
       return this;
     if (selector === 'form' && this.tagName === 'form') return this;
+    if (this.matchesClass(selector)) return this;
     if (selector === '.ProseMirror[contenteditable="true"]' && this.className === 'ProseMirror')
       return this;
     if (
@@ -108,9 +112,19 @@ class FakeElement {
       return this;
     return this.parentElement?.closest(selector) ?? null;
   }
+  // Class selectors, alone or in a list (".go, .x"), on the class name the rail sets.
+  matchesClass(selector) {
+    return (
+      /^\.[\w-]+(, \.[\w-]+)*$/.test(selector) &&
+      selector.split(', ').some((c) => `${this.className ?? ''}`.split(' ').includes(c.slice(1)))
+    );
+  }
   querySelectorAll(selector) {
     return this.children.flatMap((child) => [
-      ...(selector === '[data-turn-key]' && child.getAttribute('data-turn-key') ? [child] : []),
+      ...((selector === '[data-turn-key]' && child.getAttribute('data-turn-key')) ||
+      child.matchesClass(selector)
+        ? [child]
+        : []),
       ...child.querySelectorAll(selector),
     ]);
   }
@@ -278,12 +292,14 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   sendButton.setAttribute('data-testid', 'send-button');
   form.append(composer);
   form.append(sendButton);
-  // Bookmarks under questions, as bookmarks/content.js sends them: { id: [stale, …] }.
+  // Bookmarks under questions, as bookmarks/content.js sends them: { id: [stale, …] }; id -1 is
+  // earlier history that isn't loaded yet (ButterBookmarks.EARLIER).
   const setMarks = (byId) =>
     ctx.ButterRail.setMarks(
       conversation,
       new Map(
-        Object.entries(byId).map(([id, flags]) => {
+        Object.entries(byId).map(([key, flags]) => {
+          const id = key === '-1' ? -1 : key;
           const bookmarks = flags.map((stale, k) => ({
             key: `${id}-${k}`,
             excerpt: `Bookmark ${k}`,
@@ -774,4 +790,107 @@ test("a question's last bookmark deleted: its dot fades out over 160 ms; with th
   nav.flush();
   assert.equal(nav.dots().length, 0);
   assert.equal(nav.host.style.display, 'none');
+});
+
+// Earlier history (#72): its bookmarks show as a dot beside the three dots, and the three dots
+// show their card. The dot is no arrow stop of its own.
+const EARLIER_HINT = 'Earlier questions are not loaded yet. Click to load them.';
+test("earlier history's bookmarks: one 4 px dot on the three dots' row, 4 px left of the leftmost, always solid", () => {
+  const nav = setup({ count: 4, hasPrev: true });
+  nav.setMarks({ '-1': [true, false], q1: [false] });
+  nav.flush();
+  const [earlier, q1] = nav.dots();
+  // The three dots end 8 px in from the rail's right edge (6 px padding, 2 px of their own) and
+  // span 15 px: the dot's right edge is 21 px left of the ticks' right end. Their row is the
+  // rail's first 16 px under its 10 px padding.
+  assert.equal(earlier.q, -1);
+  assert.equal(earlier.right, 21);
+  assert.equal(earlier.center, 18);
+  assert.equal(earlier.d, 4);
+  assert.equal(earlier.hidden, 'true');
+  assert.ok(!earlier.stale && !earlier.faint, 'solid: bookmarks in unloaded history count as live');
+  assert.equal(q1.q, 1);
+  // Only dots are drawn, nothing focusable.
+  assert.deepEqual(
+    nav.select('.marks').children.map((el) => [el.tagName, el.className]),
+    [
+      ['i', 'bdot'],
+      ['i', 'bdot'],
+    ],
+  );
+  // Under the pointer the three dots don't move: neither does their dot.
+  nav.pointer(-1);
+  for (let i = 0; i < 100 && nav.pendingFrames(); i++) nav.frame();
+  assert.equal(nav.dots()[0].right, 21);
+});
+
+test("the three dots' name appends the earlier-history label; without bookmarks, their hint alone", () => {
+  const nav = setup({ count: 3, hasPrev: true });
+  const more = nav.select('.more');
+  nav.setMarks({ '-1': [false, false] });
+  assert.equal(
+    more.getAttribute('aria-label'),
+    `${EARLIER_HINT} · Earlier questions · 2 bookmarks: Bookmark 0; Bookmark 1`,
+  );
+  nav.setMarks({});
+  assert.equal(more.getAttribute('aria-label'), EARLIER_HINT);
+});
+
+test("the three dots holding bookmarks show the earlier card; without, today's hint card", () => {
+  const nav = setup({ count: 3, hasPrev: true });
+  const card = nav.select('.card'),
+    more = nav.select('.more');
+  nav.select('.rail').emit('pointerenter');
+  nav.pointer(-1);
+  assert.ok(card.classList.contains('show'));
+  assert.ok(card.inert, 'the hint card takes no pointer');
+  assert.equal(card.getAttribute('role'), 'tooltip');
+  nav.select('.rail').emit('pointerleave');
+  nav.advanceClock(250);
+  nav.runTimers();
+  nav.setMarks({ '-1': [false, false] });
+  nav.select('.rail').emit('pointerenter');
+  nav.pointer(-1);
+  assert.ok(card.classList.contains('show'));
+  assert.ok(!card.inert, 'the bookmark card takes the pointer');
+  assert.equal(card.getAttribute('role'), 'group');
+  assert.equal(card.getAttribute('aria-label'), 'Earlier questions · 2 bookmarks');
+  assert.equal(nav.select('.meta').textContent, 'Earlier questions · 2 bookmarks');
+  // Each row starts with the rail's dot, not a flag.
+  const rows = nav.select('.bmc').querySelectorAll('.it');
+  assert.equal(rows.length, 2);
+  for (const it of rows) assert.equal(it.children[0].children[0].className, 'dot');
+  // Focus on the three dots shows it too.
+  nav.select('.rail').emit('pointerleave');
+  nav.advanceClock(250);
+  nav.runTimers();
+  assert.ok(!card.classList.contains('show'));
+  nav.select('.rail').emit('focusin', { target: more });
+  assert.ok(card.classList.contains('show'));
+  assert.equal(card.getAttribute('aria-label'), 'Earlier questions · 2 bookmarks');
+});
+
+test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Escape return; ArrowDown goes to the first tick', () => {
+  const nav = setup({ count: 3, hasPrev: true });
+  nav.setMarks({ '-1': [false, false], q0: [false] });
+  const more = nav.select('.more'),
+    ticks = nav.ticks(),
+    key = (el, k, target) => el.emit('keydown', { key: k, target, preventDefault() {} });
+  key(nav.select('.rail'), 'ArrowDown', more);
+  assert.equal(FakeElement.focused, ticks[0], 'no stop between the three dots and the first tick');
+  key(nav.select('.rail'), 'ArrowUp', ticks[0]);
+  assert.equal(FakeElement.focused, more);
+  key(nav.select('.rail'), 'ArrowLeft', more);
+  const card = nav.select('.card');
+  assert.ok(card.classList.contains('show'));
+  assert.equal(card.getAttribute('aria-label'), 'Earlier questions · 2 bookmarks');
+  const go = nav.select('.bmc').querySelectorAll('.go');
+  assert.equal(FakeElement.focused, go[0], 'the first row');
+  key(card, 'ArrowDown', go[0]);
+  assert.equal(FakeElement.focused, go[1]);
+  key(card, 'ArrowRight', go[1]);
+  assert.equal(FakeElement.focused, more);
+  key(nav.select('.rail'), 'ArrowLeft', more);
+  key(card, 'Escape', nav.select('.bmc').querySelectorAll('.go')[0]);
+  assert.equal(FakeElement.focused, more);
 });

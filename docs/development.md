@@ -96,13 +96,17 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   Got it, independence from the layout switch and consent) run under `node --test`, and
   `test/rail.test.mjs` checks that each dot keeps its 4 px gap through every frame of the hover wave
   and stays inside the rail, shrinks and turns faint for close ticks, fades out when its last
-  bookmark goes, and that the arrow stops are the ticks only.
+  bookmark goes, and that the arrow stops are the ticks only; and, for earlier history (#72), the
+  solid 4 px dot 4 px left of the three dots on their row, the three dots' name, their card on hover
+  and focus (their hint card without bookmarks), and ArrowLeft into it with ArrowRight and Escape
+  back. `test/bookmark-card.test.js` also covers the earlier card for one and several bookmarks and
+  the three dots' name, in English and Chinese.
   `xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs` loads the real
   extension in its own Chromium over a
   synthetic chat (every chatgpt.com request answered locally, including `/backend-api/me` and the
   conversation's messages; no ChatGPT requests): hover button timing and placement, saving a
   paragraph, its dot beside the question's tick (#71: 4 px, `#d39e10`, its grow-in and halo, no
-  pointer events, not focusable, hidden from the accessibility tree) and no segment under any tick,
+  pointer events, not focusable, hidden from the accessibility tree),
   the pointer over the dot showing the tick's card and a click there opening the question, landing
   on the paragraph from the card's row, reload,
   the filled button on a bookmarked paragraph, one read per conversation and none while scrolling,
@@ -127,14 +131,19 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   worker to relay the command instead, which skips Chrome's key handling.
   Earlier history (#51 addendum), run near the end: the fixture opens the chat with only its latest 5 questions
   and serves earlier ones two per `/messages?before=` page when the chat is scrolled near its top,
-  as ChatGPT does. It checks the one segment on the earlier-history dots (5 px below their centre,
-  8 × 2 px in butter) and no dot beside a loaded question it doesn't belong to, no reads or
-  page loads while scrolling, the single and list cards, the loading state (meta line, the clicked
-  row's spinner, blinking dots), clicks from the card's text, a row and the segment (the oldest)
-  loading pages only until the answer is known and landing on its text, the bookmark's dot growing
-  in beside its tick, the dots' segment fading out (at once under reduced motion), Escape while
-  loading, the keyboard path (focus ending on the question's tick), and a message gone from the whole conversation turning stale once all
-  is loaded. It shoots `earlier-{rest,single,list,loading,landed}-<theme>-<lang>-<desktop|narrow>`
+  as ChatGPT does. It checks the dot beside the three earlier-history dots (#72: 4 px, solid
+  `#d39e10`, on their row, its right edge 4 px left of the leftmost, no pointer events, not
+  focusable, hidden from the accessibility tree) and no dot beside a loaded question it doesn't
+  belong to, the three dots' name, no reads or page loads while scrolling, the single and list cards
+  on hovering the three dots (rows starting with the dot, 280 px), moving onto the card, the loading
+  state (meta line, the clicked row's spinner, blinking dots), a row's click loading pages only
+  until the answer is known and landing on its text, the bookmark's dot growing in beside its tick
+  and the dot beside the three dots fading out, × deleting, Escape while loading, the keyboard path
+  (ArrowDown from the three dots straight to the first tick, ArrowLeft into the card, ArrowRight
+  back, focus ending on the question's tick, Escape while loading), reduced motion (the moved dot
+  shown without growing, the other gone without fading), the hint card when earlier history holds
+  no bookmarks, a click on the three dots loading earlier messages, and a message gone from the
+  whole conversation turning stale once all is loaded. It shoots `earlier-{rest,single,list,loading,landed}-<theme>-<lang>-<desktop|narrow>`
   (narrow: 600 px, the narrowest the rail draws at) and `earlier-rest-light-en-mobile390`; with
   `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
   -R SimianW/butter`) also the mockup's panels as `mockup-earlier-*`. `ONLY=earlier` runs this part
@@ -189,11 +198,18 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   after a reload. Then the close-ups: a 7-question chat at rest in both themes, under the pointer,
   and a new bookmark with its grow-in and halo (its animations paused as they start and shot at the
   halo's widest), a new and a deleted dot under reduced motion (no grow-in, halo or fade), and a
-  22-question chat 5 px apart (3 px dots, the all-stale one solid at 45 %). It shoots the rail's box
-  as `f-after-light` and `f-after-dark`, and at three times its size (device scale factor 3 through
+  22-question chat 5 px apart (3 px dots, the all-stale one solid at 45 %). Last, earlier history
+  (#72): a chat opened with its latest 6 questions, two bookmarks in the history not loaded yet,
+  then the pointer on the three dots and across onto their card's first row. It shoots the rail's
+  box as `f-after-light` and `f-after-dark`, the three dots' card's own box as `f-earlier-light`
+  (through the DevTools protocol: after the strips' device metrics override a Playwright screenshot
+  resizes the page under the shot), and at three times its size (device scale factor 3 through
   the DevTools protocol, 154 × 394 px like the mockup's strip box) `s-rest-light`, `s-rest-dark`,
-  `s-wave-light`, `s-new-light` and `s-dense-light`; with `BUTTER_BOOKMARKS_DOT_MOCKUP` each is
-  compared with its panel (under 0.1% of pixels differing by more than 24). Left out of the
+  `s-wave-light`, `s-new-light`, `s-dense-light` and `s-earlier-light`; with
+  `BUTTER_BOOKMARKS_DOT_MOCKUP` each is compared with its panel (under 0.1% of pixels differing by
+  more than 24). In `s-earlier-light` a pixel matches when one within a device pixel of it does: the
+  three dots' top is on half a pixel, which Chrome snaps a device pixel lower at three times the
+  size. Left out of the
   comparison, with the reason in the harness: in `s-wave-light` each tick's box and the pill's
   bottom edge (the mockup draws the wave without the rail's hover pill and the ticks' thickening),
   with a 1 px neighbourhood for the dots, which sit on fractions of a pixel there; in
@@ -339,8 +355,7 @@ it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever
 (`complete`: no earlier page is left to load). The content script answers with
 `ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
 (or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
-`{ count, fresh, bookmarks, stale, land, wash, remove }`, where `fresh` grows the dot (or the earlier
-segment) in, `bookmarks` are the question's bookmarks in answer order, each with its `stale` flag,
+`{ count, fresh, bookmarks, stale, land, wash, remove }`, where `fresh` grows the dot in, `bookmarks` are the question's bookmarks in answer order, each with its `stale` flag,
 `stale` is set when all of them are stale (the dot is hollow), `land(turnElement, bookmark = bookmarks[0])` returns that
 bookmark's offset below the turn's top for the rail's jump (or null to land on the question, as a
 stale bookmark does), `wash(turnElement, bookmark)` washes that bookmark's text once a trip from a
@@ -364,42 +379,47 @@ grey text and a footer saying a click opens its question instead.
 
 Earlier history (#51 addendum). After a reload ChatGPT lists only a long chat's latest questions.
 While earlier history isn't loaded, `ButterBookmarks.group` puts a bookmark whose message is neither
-listed nor rendered in the `EARLIER` group: the rail draws it as one segment 5 px below the "earlier"
-dots, never stale, with the card "Bookmark · earlier question" (one, with a footer) or "Earlier
-questions · k bookmarks" (oldest first). A click on the segment (the oldest), the card's text or a
-row runs the rail's earlier trip with that bookmark's key: pages load only until `setMarks` places
+listed nor rendered in the `EARLIER` group: the rail draws one dot for it beside the three
+"earlier" dots (#72), never stale, and the three dots show its card, "Bookmark · earlier question"
+(one, with a footer) or "Earlier questions · k bookmarks" (oldest first). A click on the three dots
+still loads earlier messages. A click on a row runs the rail's earlier trip with that bookmark's
+key: pages load only until `setMarks` places
 the key under a question, then the trip lands on its text as a bookmark jump does (at the
 question's start when it turned stale: its message isn't in the now complete conversation). Meanwhile
 the dots blink, the card's meta line reads "Loading earlier questions…" and that row's × is a spinner;
 Escape or leaving puts the card away without stopping the trip; a keyboard trip ends with focus on
-the question's tick. A bookmark leaving the dots grows in as a dot beside its tick; the dots' segment
-fades out when none are left (at once under reduced motion, or when the dots go).
+the question's tick. A bookmark leaving the three dots grows in as a dot beside its tick; the dot
+beside the three dots fades out when none are left (at once under reduced motion, or when the three
+dots go).
 
 The rail draws a question's dot (#71) in its shadow root as an `aria-hidden` `<i class="bdot">`
 with no pointer events: `ButterBookmarks.dotSize(pitch)` across, `dotLook(bookmarks, size)` for
 solid, hollow (`.stale`, a 1 px inset ring) or faint (`.faint`, 45 %), and placed with `translate`
 by `placeDots()`, which `step()` calls on every frame of the hover wave after setting the ticks'
 scales, at `dotRight(scale)` (12 px times the tick's scale plus 4) left of the ticks' right end and
-centred on the tick's row. `.bdot.new` runs `dot-in` (scale 0 to 1, 180 ms) and one `dot-halo`
+centred on the tick's row. Earlier history's dot is always 4 px and solid, centred on the three
+dots' row at `dotBeside(17)` (the three dots span 17 px from the ticks' right end, plus 4) left of
+the ticks' right end. `.bdot.new` runs `dot-in` (scale 0 to 1, 180 ms) and one `dot-halo`
 (600 ms); `.bdot.gone` fades over 160 ms; reduced motion turns both off.
 
-The rail draws the hover card for the earlier-history segment from `ButterBookmarks.card(bookmarks, at, zh)`
-(`{ single, meta, rows, visible, label, stale, warn, tag }`); the card takes the pointer while it shows bookmarks.
+The rail draws the three dots' card from `ButterBookmarks.card(bookmarks, { earlier: true }, zh)`
+(`{ single, meta, rows, visible, label, stale, warn, tag, wait }`): the meta line (`wait` while
+earlier messages load for one of its rows), then the same rows as a tick's card, without the
+question and its divider. The three dots' name is `ButterBookmarks.moreLabel(hint, bookmarks, zh)`.
 A tick whose question holds bookmarks (#70) shows the question's own card with them under the
 question, from `ButterBookmarks.questionCard(question, bookmarks, at, zh)` (`{ text, single, rows,
 visible, stale, warn, tag, group }`): the question card's meta line and text (`text`, cut at 400
 characters, clamped to two lines), then a row per bookmark with a 5 px dot (`--dot`), its stale tag in
 a list, or one row of up to three lines with the stale footer (`warn`). The card is 280 px wide, a
-`group` named `group`, takes the pointer and focus, and keeps the segment card's two stay-open rules
-(also over the earlier-history segment while the pointer heads left). Its top is put on a whole pixel. The tick's name
+`group` named `group`, and takes the pointer and focus. Both cards stay open while the pointer crosses
+the gap onto them and while it heads left within the card's height across other ticks. Its top is put on a whole pixel. The tick's name
 is `ButterBookmarks.tickLabel(question, bookmarks, zh)`. ArrowLeft on the tick enters the card;
 ArrowRight or Escape and a keyboard jump return focus to the tick; when its last bookmark is deleted
 the card closes and focus, if it was in the card, goes back to the tick.
-Keyboard: the arrow keys walk the earlier-history dots, their segment and the ticks, one stop per
-question; ArrowLeft on a tick or the segment enters its card, arrows move between rows, Enter jumps,
-Tab reaches a row's ×, Delete removes the row, and ArrowRight or Escape returns to the tick or the
-segment. A dot or segment whose last bookmark is deleted fades out over 160 ms (at once under
-reduced motion). The hover button shows filled on a paragraph that holds
+Keyboard: the arrow keys walk the earlier-history dots and the ticks, one stop per question;
+ArrowLeft on a tick or the three dots enters its card, arrows move between rows, Enter jumps, Tab
+reaches a row's ×, Delete removes the row, and ArrowRight or Escape returns to the tick or the three
+dots. A dot whose last bookmark is deleted fades out over 160 ms (at once under reduced motion). The hover button shows filled on a paragraph that holds
 bookmarks; clicking it removes all of them.
 
 The first saved bookmark shows a notice (`bookmarks/notice.js`), whatever the layout switch and

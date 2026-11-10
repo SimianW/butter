@@ -29,13 +29,12 @@
     TXT = strings(document.documentElement?.getAttribute('data-butter-lang') === 'zh');
     if (host) {
       rail.setAttribute('aria-label', TXT.label);
-      more.setAttribute('aria-label', TXT.more);
       if (shown !== -2) {
         const i = shown;
         shown = -2;
-        hover(i, shownBm && !merged);
+        hover(i);
       }
-      drawMarks();
+      drawMarks(); // also the three dots' and the ticks' names
       host.style.display = railOff() ? 'none' : '';
       host.inert = !!railOff();
     }
@@ -469,10 +468,10 @@
     :host { all: initial; position: fixed; top: 0; right: 0; width: 0; height: 0; z-index: 20; display: block;
       color: #0d0d0d; font: 13px/1.45 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
       --surface: #fff; --line: rgb(0 0 0 / .08); --muted: #8f8f8f; --streak: rgb(0 0 0 / .09);
-      --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08); --page: #fff; --butter: #fbe07a;
+      --shadow: 0 10px 30px rgb(0 0 0 / .12), 0 1px 3px rgb(0 0 0 / .08);
       --hoverbg: rgb(0 0 0 / .06); --dot: #d39e10; }
     :host([data-dark]) { color: #ececec; --surface: #2f2f2f; --line: rgb(255 255 255 / .1); --muted: #a3a3a3; --streak: rgb(255 255 255 / .1);
-      --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3); --page: #212121; --butter: #e3c766;
+      --shadow: 0 10px 30px rgb(0 0 0 / .5), 0 1px 3px rgb(0 0 0 / .3);
       --hoverbg: rgb(255 255 255 / .08); --dot: #e3c766; }
     .rail { position: absolute; top: 0; right: 0; width: ${RAIL_W}px; box-sizing: border-box; padding: ${PAD}px 6px;
       transform: translate(calc(-1 * var(--r)), var(--y)); opacity: 0; pointer-events: none; will-change: transform;
@@ -484,7 +483,7 @@
     .rail.hot .pill { opacity: .94; transform: none; }
     button { all: unset; position: relative; display: flex; align-items: center; justify-content: flex-end;
       width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-    .more { height: ${MORE_H}px; gap: 3px; padding-right: 2px; }
+    .more { box-sizing: border-box; height: ${MORE_H}px; gap: 3px; padding-right: 2px; }
     .more i { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: .35; transition: opacity .2s; }
     .more:hover i, .more:focus-visible i { opacity: 1; }
     .more.busy i { animation: dots .7s ease-in-out infinite alternate; }
@@ -506,16 +505,6 @@
     .bdot.new { animation: dot-in .18s cubic-bezier(.2, .8, .2, 1), dot-halo .6s .18s; }
     @keyframes dot-in { from { scale: 0; } }
     @keyframes dot-halo { 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot) 35%, transparent); } }
-    .mark { position: absolute; right: 6px; top: 0; width: 8px; height: 2px; border-radius: 2px; background: var(--butter);
-      box-shadow: 0 0 0 1px var(--page); transform-origin: right center; }
-    .rail.hot .mark { box-shadow: 0 0 0 1px var(--surface); }
-    .mark.hover { width: 12px; }
-    .mark.stale { opacity: .4; }
-    .mark:focus-visible { outline-offset: 2px; border-radius: 2px; }
-    .mark.gone { opacity: 0; transition: opacity .16s; }
-    .mark.new { animation: mark-in .18s cubic-bezier(.2, .8, .2, 1), mark-pulse .6s .18s; }
-    @keyframes mark-in { from { transform: scaleX(0); } }
-    @keyframes mark-pulse { 50% { box-shadow: 0 0 0 1px var(--page), 0 0 0 5px color-mix(in srgb, var(--butter) 35%, transparent); } }
     .cardpos { position: absolute; top: 0; right: 0; pointer-events: none;
       transform: translate(calc(-1 * var(--r) - ${RAIL_W + 8}px), var(--cy));
       transition: transform .18s cubic-bezier(.2, .8, .2, 1); }
@@ -526,53 +515,37 @@
       transition: opacity .16s, transform .22s cubic-bezier(.2, .8, .2, 1); }
     .card.show { opacity: 1; transform: translate(0, -50%); }
     .meta { font-size: 11px; color: var(--muted); margin-bottom: 2px; font-variant-numeric: tabular-nums; }
-    .card.bm { max-width: 260px; }
-    .card.bm.show { pointer-events: auto; }
-    .card.bm.list { width: 268px; max-width: 268px; }
-    .card.bm > .meta, .card.bm > .text, .card:not(.bm, .qb) > .bmc { display: none; }
-    .bmc .meta { display: flex; align-items: center; gap: 5px; }
-    .flag { width: 8px; height: 10px; flex: none; }
-    .flag path { fill: var(--butter); }
-    .bmc button.x { width: 20px; height: 20px; margin: -3px -6px 0 auto; border-radius: 6px; display: grid; place-items: center;
-      color: var(--muted); flex: none; }
-    .bmc button.x:hover, .bmc button.x:focus-visible { background: var(--hoverbg); color: inherit; }
-    .x svg { width: 10px; height: 10px; }
-    .bmc .one { display: block; text-align: left; }
-    .one span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-width: 236px;
-      overflow-wrap: anywhere; }
-    .rows { margin: 0 -6px; max-height: calc(var(--rows) * (8px + 1.45em)); overflow-y: auto; overscroll-behavior: contain; }
-    .it { display: flex; align-items: center; border-radius: 6px; }
-    .it:hover, .it:focus-within { background: var(--hoverbg); }
-    .it .go { flex: 1; min-width: 0; justify-content: flex-start; gap: 7px; padding: 4px 0 4px 6px; }
-    .it .flag { width: 7px; height: 9px; }
-    .tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .bmc .it .x { width: 18px; height: 18px; margin: 0 6px 0 7px; opacity: 0; }
-    .it:hover .x, .it:focus-within .x { opacity: 1; }
-    .bmc.stale .one, .it.stale .go { color: var(--muted); }
-    .bmc.stale .meta .flag path, .it.stale .flag path { opacity: .45; }
-    .why { font-size: 11px; color: var(--muted); flex: none; }
-    .it.wait .go { color: var(--muted); }
-    .wspin { box-sizing: content-box; width: 10px; height: 10px; margin: 0 10px 0 7px; border-radius: 50%; flex: none;
-      border: 1.5px solid var(--muted); border-right-color: transparent; animation: spin .8s linear infinite; }
-    .meta .wspin { margin: 0 0 0 auto; }
-    .warn { font-size: 11px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line);
-      max-width: 236px; }
+    .card:not(.qb) > .bmc, .card.bare > .text { display: none; }
     .card.qb { width: 280px; max-width: 280px; }
     .card.qb.show { pointer-events: auto; }
     .card.qb > .text { -webkit-line-clamp: 2; }
-    .qb .bmc { margin-top: 7px; padding-top: 5px; border-top: 1px solid var(--line); }
-    .qb .it .go { padding: 4px 6px; }
-    .qb .bmc .it .x { display: none; justify-content: center; margin: 0 6px 0 1px; opacity: 1; }
-    .qb .bmc .it:hover .x, .qb .bmc .it:focus-within .x { display: grid; }
+    .bmc { margin-top: 7px; padding-top: 5px; border-top: 1px solid var(--line); }
+    .bare .bmc { margin-top: 2px; padding-top: 0; border-top: 0; }
+    .rows { margin: 0 -6px; max-height: calc(var(--rows) * (8px + 1.45em)); overflow-y: auto; overscroll-behavior: contain; }
+    .it { display: flex; align-items: center; border-radius: 6px; }
+    .it:hover, .it:focus-within { background: var(--hoverbg); }
+    .it .go { flex: 1; min-width: 0; justify-content: flex-start; gap: 7px; padding: 4px 6px; }
+    .tx { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bmc .it .x { display: none; width: 18px; height: 18px; margin: 0 6px 0 1px; border-radius: 6px; place-items: center;
+      justify-content: center;
+      color: var(--muted); flex: none; }
+    .bmc .it:hover .x, .bmc .it:focus-within .x { display: grid; }
+    .bmc .it .x:hover, .bmc .it .x:focus-visible { background: var(--hoverbg); color: inherit; }
+    .x svg { width: 10px; height: 10px; }
+    .it.stale .go, .it.wait .go { color: var(--muted); }
+    .why { font-size: 11px; color: var(--muted); flex: none; }
+    .wspin { box-sizing: content-box; width: 10px; height: 10px; margin: 0 10px 0 7px; border-radius: 50%; flex: none;
+      border: 1.5px solid var(--muted); border-right-color: transparent; animation: spin .8s linear infinite; }
+    .warn { font-size: 11px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
     .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dot); flex: none; }
     .it.stale .dot { background: transparent; box-shadow: inset 0 0 0 1px var(--dot); }
-    .qb .it.solo { margin: 0 -6px; align-items: flex-start; }
-    .qb .solo .go { align-items: flex-start; }
-    .qb .solo .tx { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    .it.solo { margin: 0 -6px; align-items: flex-start; }
+    .solo .go { align-items: flex-start; }
+    .solo .tx { white-space: normal; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
       overflow-wrap: anywhere; }
-    .qb .solo .dot { margin-top: 7px; }
-    .qb .bmc .solo .x { margin-top: 4px; }
-    .qb .warn { max-width: none; }
+    .solo .dot { margin-top: 7px; }
+    .bmc .solo .x { margin-top: 4px; }
+    .solo .wspin { margin-top: 7px; }
     .seek-card { max-width: 260px; }
     .seek-card .text { -webkit-line-clamp: 3; }
     .spin { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; border-radius: 50%;
@@ -587,8 +560,8 @@
     .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
       background: var(--streak); will-change: transform;
       -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
-    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .mark.new, .bdot.new { animation: none; }
-      .mark.gone, .bdot.gone { transition: none; } }`;
+    @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .bdot.new { animation: none; }
+      .bdot.gone { transition: none; } }`;
 
   let host = null,
     rail,
@@ -654,18 +627,15 @@
     });
     rail.addEventListener('pointermove', (e) => {
       pointerY = e.clientY;
-      const m = markAt(e.clientY),
-        x = lastX;
+      const x = lastX;
       lastX = e.clientX;
-      // On the way from the dots' segment or a tick to its card the pointer crosses other ticks:
-      // while it heads left within the card's height, the card stays. A tick's card also stays over
-      // the dots' segment, which the way up to its rows can cross.
-      if ((m === null || merged) && shownBm && e.clientX < x) {
+      // On the way from a tick or the three dots to its card the pointer crosses other ticks: while
+      // it heads left within the card's height, the card stays.
+      if (shownBm && e.clientX < x) {
         const r = card.getBoundingClientRect();
         if (e.clientY >= r.top && e.clientY <= r.bottom) return kick();
       }
-      hoverMark(m);
-      hover(m !== null ? m : indexAt(e.clientY), m !== null);
+      hover(indexAt(e.clientY));
       kick();
     });
     rail.addEventListener('pointerleave', () => {
@@ -677,63 +647,39 @@
         return;
       }
       rail.classList.remove('hot');
-      hoverMark(null);
       pointerY = null;
       hover(-2);
       kick();
     });
-    rail.addEventListener('focusin', (e) => {
-      const s = segmentOf(e.target);
-      if (s !== null) hover(s, true);
-      else hover(e.target === more ? -1 : ticks.indexOf(e.target));
-    });
+    rail.addEventListener('focusin', (e) =>
+      hover(e.target === more ? -1 : ticks.indexOf(e.target)),
+    );
     rail.addEventListener('focusout', (e) => {
       if (pointerY === null && !card.contains(e.relatedTarget)) hover(-2);
     });
     rail.addEventListener('click', (e) => {
       if (railOff()) return;
       endOpening();
-      const s = e.detail === 0 ? segmentOf(e.target) : null;
-      const m = s !== null ? s : e.detail === 0 ? null : markAt(e.clientY); // the dots' segment
       const i =
-        m !== null
-          ? m
-          : e.target === more
-            ? -1
-            : e.detail === 0
-              ? ticks.indexOf(e.target)
-              : indexAt(e.clientY);
+        e.target === more ? -1 : e.detail === 0 ? ticks.indexOf(e.target) : indexAt(e.clientY);
       // The click starts the trip: put the card away until the pointer comes back to the rail. While
       // the page is busy, moves on the way out and the leave event arrive late and would hold it up.
       if (i >= -1 && e.detail !== 0) {
         hover(-2);
         held = true;
       }
-      // The dots' segment: the oldest bookmark in earlier history.
-      if (m === EARLIER) earlierJump(marks.get(EARLIER)?.bookmarks[0], e.detail === 0);
-      else if (i === -1) loadEarlier();
+      if (i === -1) loadEarlier();
       else if (i >= 0) jump(i);
     });
-    // Arrows walk the earlier-history dots, their segment and the ticks; ArrowLeft on the segment
-    // enters its card.
+    // Arrows walk the earlier-history dots and the ticks. ArrowLeft on one that holds bookmarks
+    // enters its card (#70, #72).
     rail.addEventListener('keydown', (e) => {
-      const stops = [...(more.hidden ? [] : [more, markEls.get(EARLIER)]), ...ticks].filter(
-          Boolean,
-        ),
+      const stops = [...(more.hidden ? [] : [more]), ...ticks],
         at = stops.indexOf(e.target),
-        s = segmentOf(e.target),
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (at < 0) return;
-      if (e.key === 'ArrowLeft' && s !== null) {
-        e.preventDefault();
-        held = false;
-        hover(s, true);
-        bmc.querySelector('.go, .one')?.focus();
-        return;
-      }
-      // ArrowLeft on a tick whose question holds bookmarks enters its card (#70).
-      const t = ticks.indexOf(e.target);
-      if (e.key === 'ArrowLeft' && t >= 0 && marks.has(qs[t]?.id)) {
+      const t = e.target === more ? EARLIER : ticks.indexOf(e.target);
+      if (e.key === 'ArrowLeft' && holds(t)) {
         e.preventDefault();
         held = false;
         hover(t);
@@ -760,15 +706,15 @@
         leaveSoon();
     });
     // In the card: arrows between rows, Delete removes one, ArrowRight or Escape back to the tick,
-    // or to the dots' segment for its card.
+    // or to the three dots for theirs.
     card.addEventListener('keydown', (e) => {
       if (!shownBm) return;
-      const rows = [...bmc.querySelectorAll('.go, .one')],
+      const rows = [...bmc.querySelectorAll('.go')],
         at = rows.indexOf(e.target),
         d = e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0;
       if (e.key === 'Escape' || e.key === 'ArrowRight') {
         e.preventDefault();
-        (merged ? ticks[shown] : markEls.get(idAt(shown)))?.focus();
+        (shown === EARLIER ? more : ticks[shown])?.focus();
         // While earlier messages load for it, Escape puts the dots' card away; the loading goes on.
         if (e.key === 'Escape' && shown === EARLIER && wait) hover(-2);
       } else if (at >= 0 && d) {
@@ -776,7 +722,7 @@
         rows[Math.max(0, Math.min(rows.length - 1, at + d))].focus();
       } else if (at >= 0 && (e.key === 'Delete' || e.key === 'Backspace')) {
         e.preventDefault();
-        (e.target.closest('.it') || bmc).querySelector('.x')?.click();
+        e.target.closest('.it')?.querySelector('.x')?.click();
       }
     });
   };
@@ -791,56 +737,50 @@
   const tickY = (i) => geo.top + (i + 0.5) * geo.pitch;
 
   // ---- Bookmarks on the rail (bookmarks/content.js sends them). A question that holds bookmarks
-  // shows one dot beside its tick (#71): no pointer events, no focus, hidden from the accessibility
-  // tree; its tick's name says what it holds, and the tick's card lists them. Bookmarks in earlier
-  // history that isn't loaded yet share one segment under the "earlier" dots: its key in `marks`
-  // and its index are both EARLIER (-1, the dots' index); within 4 px it wins the pointer, and it is
-  // an arrow stop after the dots. Indexes are null for none.
+  // shows one dot beside its tick (#71), and earlier history that isn't loaded yet one beside the
+  // three dots (#72): no pointer events, no focus, hidden from the accessibility tree; the tick's or
+  // the three dots' name says what they hold, and their card lists them. Earlier history's key in
+  // `marks` and its index are both EARLIER (-1, the three dots' index).
   const EARLIER = -1; // ButterBookmarks.EARLIER
   let marks = new Map(), // question id or EARLIER -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
-    marksItems = null, // the conversation's items `marks` were worked out from
-    hotMark = null;
-  const markEls = new Map(), // EARLIER -> its segment
-    dotEls = new Map(); // question id -> its dot
+    marksItems = null; // the conversation's items `marks` were worked out from
+  const dotEls = new Map(); // question id or EARLIER -> its dot
+  // The three dots' span from the ticks' right end: their 2 px padding, three 3 px dots and two
+  // 3 px gaps (see .more in CSS).
+  const DOTS_W = 17;
   const idAt = (i) => (i === EARLIER ? EARLIER : qs[i]?.id);
-  // A mark's index, or null while it has no place: the dots show only while earlier history isn't loaded.
+  // A mark's index, or null while it has no place: the three dots show only while earlier history
+  // isn't loaded.
   const indexOf = (id) => (id === EARLIER ? (cur.hasPrev ? EARLIER : null) : idxOf.get(id));
-  // The dots' segment sits 5 px below their centre.
-  const markY = () => geo.top - MORE_H / 2 + 5;
-  const segmentOf = (el) => (el && el === markEls.get(EARLIER) ? (indexOf(EARLIER) ?? null) : null);
+  // Whether index `i` (a tick, or EARLIER for the three dots) holds bookmarks.
+  const holds = (i) => (i === EARLIER ? indexOf(EARLIER) != null : i >= 0) && marks.has(idAt(i));
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const markAt = (y) =>
-    geo && marks.has(EARLIER) && indexOf(EARLIER) != null && Math.abs(markY() - y) <= 4
-      ? EARLIER
-      : null;
-  const hoverMark = (i) => {
-    if (i === hotMark) return;
-    markEls.get(idAt(hotMark))?.classList.remove('hover');
-    hotMark = i;
-    markEls.get(idAt(i))?.classList.add('hover');
-  };
   // Each dot's right edge 4 px left of its tick's current length, centred on the tick's row. The
   // hover wave's frames call this with the ticks' widths, so the dot needs no motion of its own.
+  // Earlier history's dot sits the same way beside the three dots, which don't move.
   const placeDots = () => {
     if (!geo) return;
     const d = ButterBookmarks.dotSize(geo.pitch);
     for (const [id, el] of dotEls) {
+      if (id === EARLIER) {
+        el.style.translate = `${-ButterBookmarks.dotBeside(DOTS_W)}px ${(geo.top - MORE_H / 2 - geo.y - 2).toFixed(2)}px`;
+        continue;
+      }
       const j = idxOf.get(id);
       if (j == null || cs[j] == null) continue;
       el.style.translate = `${(-ButterBookmarks.dotRight(cs[j])).toFixed(2)}px ${(tickY(j) - geo.y - d / 2).toFixed(2)}px`;
     }
   };
-  // A question's last bookmark deleted, or the last one on the dots loaded: its mark fades out (at
-  // once under reduced motion).
+  // A question's last bookmark deleted, or the last one on the three dots loaded: its dot fades out
+  // (at once under reduced motion).
   const drop = (el) => {
     if (geo && !reduced()) {
       el.classList.add('gone');
-      el.removeAttribute('aria-label');
       setTimeout(() => el.remove(), 160);
     } else el.remove();
   };
   const drawMarks = () => {
-    // A tick's name holds its question's bookmarks (#70).
+    // A tick's name holds its question's bookmarks (#70), the three dots' name earlier history's (#72).
     ticks.forEach(
       (t, i) =>
         qs[i] &&
@@ -849,12 +789,10 @@
           ButterBookmarks.tickLabel(qs[i].q, marks.get(qs[i].id)?.bookmarks, TXT.zh),
         ),
     );
-    for (const [id, el] of markEls)
-      if (!marks.has(id) || indexOf(id) == null || !geo) {
-        markEls.delete(id);
-        if (indexOf(id) != null) drop(el);
-        else el.remove();
-      }
+    more?.setAttribute(
+      'aria-label',
+      ButterBookmarks.moreLabel(TXT.more, marks.get(EARLIER)?.bookmarks, TXT.zh),
+    );
     for (const [id, el] of dotEls)
       if (!marks.has(id) || indexOf(id) == null || !geo) {
         dotEls.delete(id);
@@ -866,61 +804,47 @@
     for (const [id, m] of marks) {
       const i = indexOf(id);
       if (i == null) continue;
-      if (i !== EARLIER) {
-        let el = dotEls.get(id);
-        if (!el) {
-          el = document.createElement('i');
-          el.className = m.fresh ? 'bdot new' : 'bdot';
-          el.setAttribute('aria-hidden', 'true');
-          markBox.append(el);
-          dotEls.set(id, el);
-        }
-        el.setAttribute('data-q', i);
-        el.style.width = el.style.height = `${d}px`;
-        const look = ButterBookmarks.dotLook(m.bookmarks, d);
-        el.classList.toggle('stale', look === 'hollow');
-        el.classList.toggle('faint', look === 'faint');
+      let el = dotEls.get(id);
+      if (!el) {
+        el = document.createElement('i');
+        el.className = m.fresh ? 'bdot new' : 'bdot';
+        el.setAttribute('aria-hidden', 'true');
+        markBox.append(el);
+        dotEls.set(id, el);
+      }
+      el.setAttribute('data-q', i);
+      // Beside the three dots: always 4 px and solid, as bookmarks in unloaded history count as live.
+      if (i === EARLIER) {
+        el.style.width = el.style.height = '4px';
         continue;
       }
-      let el = markEls.get(id);
-      if (!el) {
-        // Reached by the rail's arrow keys only, as a stop after the dots.
-        el = document.createElement('button');
-        el.className = m.fresh ? 'mark new' : 'mark';
-        el.tabIndex = -1;
-        markBox.append(el);
-        markEls.set(id, el);
-      }
-      el.setAttribute(
-        'aria-label',
-        ButterBookmarks.card(m.bookmarks, { earlier: true }, TXT.zh).label,
-      );
-      el.style.top = `${(markY() - geo.y - 1).toFixed(2)}px`;
-      el.classList.toggle('hover', i === hotMark);
+      el.style.width = el.style.height = `${d}px`;
+      const look = ButterBookmarks.dotLook(m.bookmarks, d);
+      el.classList.toggle('stale', look === 'hollow');
+      el.classList.toggle('faint', look === 'faint');
     }
     placeDots();
   };
-  // The card open on the dots' segment or a tick follows its bookmarks (a deletion, or one leaving
-  // the dots as its answer loads), keeping keyboard focus on the same row.
+  // The card open on the three dots or a tick follows its bookmarks (a deletion, or one leaving
+  // the three dots as its answer loads), keeping keyboard focus on the same row.
   const refill = () => {
     if (!host || !shownBm || shown === -2) return;
     const a = host.shadowRoot.activeElement,
       inCard = card.contains(a),
-      at = [...bmc.querySelectorAll('.go, .one')].indexOf(
-        a?.closest('.it')?.querySelector('.go') ?? a,
-      );
-    if (!marks.has(idAt(shown)) || indexOf(idAt(shown)) == null) {
+      at = [...bmc.querySelectorAll('.go')].indexOf(a?.closest('.it')?.querySelector('.go') ?? a);
+    if (!holds(shown)) {
       const i = shown;
       hover(-2);
       if (inCard) (i === EARLIER ? more : ticks[i])?.focus();
       return;
     }
-    if (merged) {
+    if (shown === EARLIER) fillEarlier();
+    else {
       fillQuestion(shown);
       host.style.setProperty('--cy', `${whole(tickY(shown))}px`);
-    } else fillCard(shown);
+    }
     if (inCard) {
-      const rows = bmc.querySelectorAll('.go, .one');
+      const rows = bmc.querySelectorAll('.go');
       rows[Math.min(Math.max(at, 0), rows.length - 1)]?.focus();
     }
   };
@@ -936,9 +860,8 @@
     },
   };
 
-  // ---- The hover card for the dots' segment: one bookmark's text, or a list of them in answer order.
-  const FLAG =
-    '<svg class="flag" viewBox="0 0 8 10" aria-hidden="true"><path d="M0 0h8v10L4 7.3 0 10z"/></svg>';
+  // ---- The card of a tick or the three dots that hold bookmarks: a row per bookmark, each
+  // starting with the rail's dot; one bookmark's row runs to three lines.
   const X =
     '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
   const make = (tag, cls, txt) => {
@@ -948,81 +871,43 @@
     if (txt != null) e.textContent = txt;
     return e;
   };
-  const fillCard = (i) => {
-    const id = idAt(i),
-      m = marks.get(id),
-      earlier = i === EARLIER;
-    const c = ButterBookmarks.card(
-      m.bookmarks,
-      earlier
-        ? { earlier: true }
-        : cur.hasPrev
-          ? { back: qs.length - i }
-          : { n: i + 1, total: qs.length },
-      TXT.zh,
-    );
-    // While earlier messages load for one of the dots' bookmarks, the meta line says so and its
-    // row shows a spinner where its × was.
-    const loading = earlier && !!wait,
-      title = loading ? c.wait : c.meta,
-      spinner = () => {
-        const e = make('span', 'wspin');
-        e.setAttribute('aria-hidden', 'true');
-        return e;
-      };
-    card.classList.toggle('list', !c.single);
-    bmc.classList.toggle('stale', c.stale);
-    card.setAttribute('role', 'group');
-    card.setAttribute('aria-label', title);
-    const x = (b) => {
-      const e = make('button', 'x');
-      e.innerHTML = X;
-      e.setAttribute('aria-label', TXT.del(b.excerpt));
-      e.addEventListener('click', () => !railOff() && marks.get(id)?.remove(b));
-      return e;
-    };
-    const go = (b, cls) => {
-      const e = make('button', cls);
-      e.addEventListener('click', (ev) => jumpTo(id, b, ev.detail === 0));
-      return e;
-    };
-    const head = make('div', 'meta');
-    if (c.single) {
-      head.innerHTML = FLAG;
-      head.append(
-        make('span', null, title),
-        loading && wait.key === c.rows[0].key ? spinner() : x(c.rows[0]),
-      );
-      const one = go(c.rows[0], 'one');
-      one.append(make('span', null, c.rows[0].excerpt));
-      // A stale bookmark: its paragraph is gone, and a click lands at the question's start.
-      if (c.warn) bmc.replaceChildren(head, one, make('div', 'warn', c.warn));
-      else bmc.replaceChildren(head, one);
-    } else {
-      if (earlier) head.innerHTML = FLAG;
-      head.append(make('span', null, title));
-      const rows = make('div', 'rows');
-      rows.style.setProperty('--rows', c.visible);
-      for (const b of c.rows) {
-        const it = make('div', 'it'),
-          g = go(b, 'go');
-        g.innerHTML = FLAG;
-        g.append(make('span', 'tx', b.excerpt));
-        if (b.stale) {
-          it.classList.add('stale');
-          g.append(' ', make('span', 'why', c.tag)); // the space only separates them in its name
-        }
-        if (loading && wait.key === b.key) {
-          it.classList.add('wait');
-          it.append(g, spinner());
-        } else it.append(g, x(b));
-        rows.append(it);
+  // The rows of `c` (a `ButterBookmarks.card` or `questionCard`) for the bookmarks under `id`, a
+  // question id or EARLIER, then its footer. While earlier messages load for one of the three dots'
+  // bookmarks (`wait`), its row shows a spinner where its × was.
+  const fillRows = (id, c) => {
+    const rows = c.single ? null : make('div', 'rows');
+    rows?.style.setProperty('--rows', c.visible);
+    const its = c.rows.map((b) => {
+      const it = make('div', c.single ? 'it solo' : 'it'),
+        g = make('button', 'go'),
+        dot = make('i', 'dot');
+      dot.setAttribute('aria-hidden', 'true');
+      g.append(dot, make('span', 'tx', b.excerpt));
+      g.addEventListener('click', (ev) => jumpTo(id, b, ev.detail === 0));
+      // A stale row is grey; in a list it also says so (the space only separates them in its name).
+      if (b.stale) {
+        it.classList.add('stale');
+        if (!c.single) g.append(' ', make('span', 'why', c.tag));
       }
-      bmc.replaceChildren(head, rows);
-    }
+      if (id === EARLIER && wait?.key === b.key) {
+        const spin = make('span', 'wspin');
+        spin.setAttribute('aria-hidden', 'true');
+        it.classList.add('wait');
+        it.append(g, spin);
+      } else {
+        const x = make('button', 'x');
+        x.innerHTML = X;
+        x.setAttribute('aria-label', TXT.del(b.excerpt));
+        x.addEventListener('click', () => !railOff() && marks.get(id)?.remove(b));
+        it.append(g, x);
+      }
+      return it;
+    });
+    rows?.append(...its);
+    bmc.replaceChildren(...(rows ? [rows] : its), ...(c.warn ? [make('div', 'warn', c.warn)] : []));
   };
   // A tick's card when its question holds bookmarks (#70): the question's meta line and text, then
-  // a row per bookmark, each starting with the rail's dot; one bookmark's row runs to three lines.
+  // its bookmarks.
   const fillQuestion = (i) => {
     const id = qs[i].id,
       c = ButterBookmarks.questionCard(
@@ -1034,30 +919,18 @@
     text.textContent = c.text;
     card.setAttribute('role', 'group');
     card.setAttribute('aria-label', c.group);
-    bmc.classList.remove('stale');
-    const rows = c.single ? null : make('div', 'rows');
-    rows?.style.setProperty('--rows', c.visible);
-    const its = c.rows.map((b) => {
-      const it = make('div', c.single ? 'it solo' : 'it'),
-        g = make('button', 'go'),
-        dot = make('i', 'dot'),
-        x = make('button', 'x');
-      dot.setAttribute('aria-hidden', 'true');
-      g.append(dot, make('span', 'tx', b.excerpt));
-      g.addEventListener('click', (ev) => jumpTo(id, b, ev.detail === 0));
-      // A stale row is grey; in a list it also says so (the space only separates them in its name).
-      if (b.stale) {
-        it.classList.add('stale');
-        if (!c.single) g.append(' ', make('span', 'why', c.tag));
-      }
-      x.innerHTML = X;
-      x.setAttribute('aria-label', TXT.del(b.excerpt));
-      x.addEventListener('click', () => !railOff() && marks.get(id)?.remove(b));
-      it.append(g, x);
-      return it;
-    });
-    rows?.append(...its);
-    bmc.replaceChildren(...(rows ? [rows] : its), ...(c.warn ? [make('div', 'warn', c.warn)] : []));
+    fillRows(id, c);
+  };
+  // The three dots' card (#72): its meta line ("Earlier questions · k bookmarks", or "Loading
+  // earlier questions…" while messages load for one of them), then the bookmarks.
+  const fillEarlier = () => {
+    const c = ButterBookmarks.card(marks.get(EARLIER).bookmarks, { earlier: true }, TXT.zh),
+      title = wait ? c.wait : c.meta;
+    meta.hidden = false;
+    meta.textContent = title;
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-label', title);
+    fillRows(EARLIER, c);
   };
   // The centre of a tick's card at `cy`, moved so that its top is on a whole pixel: its text and
   // dots then draw as crisply as the page's.
@@ -1077,10 +950,7 @@
     hover(-2);
     if (!keyboard) {
       held = true;
-      if (pointerY === null) {
-        rail.classList.remove('hot');
-        hoverMark(null);
-      }
+      if (pointerY === null) rail.classList.remove('hot');
     }
     jump(
       i,
@@ -1137,7 +1007,6 @@
     leaveTimer = setTimeout(() => {
       if (overCard || pointerY !== null || card.contains(host.shadowRoot.activeElement)) return;
       rail.classList.remove('hot');
-      hoverMark(null);
       hover(-2);
     }, 200);
   };
@@ -1149,11 +1018,11 @@
     const i = idxOf.get(seek.id);
     if (i == null) return;
     rail.classList.add('hot');
-    card.classList.remove('bm', 'list', 'qb');
+    card.classList.remove('qb', 'bare');
     card.setAttribute('role', 'tooltip');
     card.removeAttribute('aria-label');
     card.inert = true;
-    shownBm = merged = false;
+    shownBm = false;
     card.classList.add('show', 'seek-card');
     cardPos.classList.add('instant');
     meta.hidden = false;
@@ -1206,41 +1075,36 @@
   });
 
   let shown = -2,
-    shownBm = false, // the card shows bookmarks and takes the pointer: the dots' segment's or a tick's
-    merged = false, // the card is tick `shown`'s, with its question's bookmarks under the question (#70)
+    shownBm = false, // the card shows bookmarks and takes the pointer: a tick's or the three dots'
     held = false;
-  const hover = (i, bm = false) => {
+  const hover = (i) => {
     if (seek) {
       showSeek();
       return;
     }
-    bm = bm && i === EARLIER && marks.has(EARLIER) && indexOf(EARLIER) != null;
-    const qb = !bm && i >= 0 && marks.has(qs[i]?.id);
-    if ((i === shown && (bm || qb) === shownBm && qb === merged) || !host || (held && i !== -2))
-      return;
+    const bm = holds(i);
+    if ((i === shown && bm === shownBm) || !host || (held && i !== -2)) return;
     const was = shown;
     shown = i;
-    shownBm = bm || qb;
-    merged = qb;
-    card.inert = !shownBm;
+    shownBm = bm;
+    card.inert = !bm;
     if (i === -2) {
       card.classList.remove('show');
       return;
     }
     // Slide between ticks; appear in place.
     cardPos.classList.toggle('instant', was === -2);
-    card.classList.toggle('bm', bm);
-    card.classList.toggle('qb', qb);
-    if (bm) {
-      fillCard(i);
-      // The dots' card, centred on their segment at the rail's top, comes down to stay in the chat.
-      let cy = markY();
+    card.classList.toggle('qb', bm);
+    card.classList.toggle('bare', bm && i === EARLIER);
+    if (bm && i === EARLIER) {
+      fillEarlier();
+      // The three dots' card, centred on their row at the rail's top, comes down to stay in the chat.
+      let cy = geo.top - MORE_H / 2;
       if (box) cy = Math.max(cy, box.top + 8 + card.offsetHeight / 2);
-      host.style.setProperty('--cy', `${cy}px`);
+      host.style.setProperty('--cy', `${whole(cy)}px`);
       card.classList.add('show');
       return;
     }
-    card.classList.remove('list');
     card.setAttribute('role', 'tooltip');
     card.removeAttribute('aria-label');
     meta.textContent =
@@ -1248,10 +1112,10 @@
     meta.hidden = i === -1;
     const q = i === -1 ? TXT.more : qs[i].q;
     text.textContent = q.length > 400 ? q.slice(0, 400) + '…' : q;
-    if (qb) fillQuestion(i);
+    if (bm) fillQuestion(i);
     host.style.setProperty(
       '--cy',
-      `${i === -1 ? geo.top - MORE_H / 2 : qb ? whole(tickY(i)) : tickY(i)}px`,
+      `${i === -1 ? geo.top - MORE_H / 2 : bm ? whole(tickY(i)) : tickY(i)}px`,
     );
     card.classList.add('show');
   };

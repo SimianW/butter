@@ -23,7 +23,7 @@ tick that holds bookmarks and the dot that starts each row of the tick's card us
 Light theme takes a deeper butter than `--butter`: `#d39e10` is 2.42:1 on ChatGPT's white page,
 where `#fbe07a` is 1.31:1 and a resting tick 1.92:1. Dark theme keeps the rail's butter, `#e3c766`,
 9.68:1 on `#212121`. The dot is a non-text mark; its information is also in its tick's accessible
-name. The earlier-history segment still uses the rail's `--butter` (`#fbe07a` / `#e3c766`).
+name. The dot beside the rail's earlier-history dots takes the same colour.
 
 ## Tokens
 

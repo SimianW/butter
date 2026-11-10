@@ -29,8 +29,7 @@ dot grows in over 180 ms and pulses one 600 ms halo; a question's last bookmark 
 out over 160 ms; under reduced motion neither moves. The dot is no target: it takes no pointer
 events, is not focusable and is hidden from screen readers, so the pointer over it is over its tick's
 row, and the tick's name says what the question holds. No dots show while the rail is off or Butter
-is paused. Bookmarks in earlier history that isn't loaded yet keep one short segment under the
-rail's earlier-history dots, with its own card. Hovering or focusing a tick that holds bookmarks shows the question's
+is paused. Hovering or focusing a tick that holds bookmarks shows the question's
 usual card with its bookmarks under the question: the meta line, the question clamped to two lines,
 a divider, then one row per bookmark in answer order, each starting with a 5 px dot (`#d39e10` in
 light theme, `#e3c766` in dark; a hollow ring when the bookmark is stale, whose row is grey and says
@@ -41,6 +40,18 @@ bookmark and closes the card, × deletes the bookmark, and deleting the last one
 Clicking the tick still opens the question, and a tick without bookmarks shows its card as before,
 inert. ArrowLeft on the tick enters the card. The tick's accessible name adds the bookmarks' count
 and text. The card's top sits on a whole pixel so its text draws as crisply as the page's.
+
+Bookmarks in earlier history that isn't loaded yet show the same 4 px dot, always solid, on the
+row of the rail's three earlier-history dots, 4 px left of the leftmost. Hovering or focusing the
+three dots then shows their bookmarks in a card of the same rows under the meta line "Earlier
+questions · k bookmarks" (or "Bookmark · earlier question" with a footer saying a click loads earlier
+messages first); without bookmarks they show their hint, as before. Clicking the three dots still
+loads earlier messages. A row loads earlier pages until its answer is on the page, with "Loading
+earlier questions…" in the card and a spinner on the row (Escape puts the card away and the loading
+goes on), then lands on the bookmark and closes the card. Once its history loads, a bookmark moves to
+its question's tick, its dot growing in there; the dot beside the three dots goes when none are
+left. ArrowLeft on the three dots enters their card, and their accessible name adds the bookmarks'
+count and text.
 
 ## Seek preview
 
