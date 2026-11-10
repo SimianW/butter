@@ -81,10 +81,11 @@ build, CI).
 - Every change reaches `main` through a PR. Before merging, run
   `python3 scripts/review-tier.py origin/main` and put its `Review tier: N` line in the PR
   body (the `pr` skill); CI's `pr-body` check enforces the tier and review lines, and
-  `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Tier 0 merges
-  on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the final diff, at
-  the round budget the tier sets. Every review in this repo, including when the user asks to
-  review a PR or branch, runs `review-loop`.
+  `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
+  draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
+  Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
+  final diff, at the round budget the tier sets. Every review in this repo, including when the
+  user asks to review a PR or branch, runs `review-loop`.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
