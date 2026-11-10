@@ -269,3 +269,30 @@ test('sameDraft ignores blank lines the composer adds between paragraphs, and no
   assert.ok(!branch.sameDraft('> first\n> second\n\nWhy?', typed));
   assert.ok(!branch.sameDraft('> first\n> \n> second\n\nWhy not?', typed));
 });
+
+test('the run waits on the worker, and on a page timer only when the worker gives no answer', async () => {
+  const timers = [];
+  const timer = (resolve, ms) => {
+    timers.push(ms);
+    resolve();
+  };
+  const sent = [];
+  const answer = (reply) => (message) => {
+    sent.push(message);
+    return reply();
+  };
+  await branch.sleeper(
+    answer(async () => ({ ok: true })),
+    timer,
+  )(100);
+  assert.deepEqual(sent, [{ type: 'butter-branch-delay', ms: 100 }]);
+  assert.deepEqual(timers, []);
+  // No answer (worker restarted), a refusal, or a closed channel (extension reloaded).
+  for (const reply of [
+    async () => undefined,
+    async () => ({ error: 'x' }),
+    () => Promise.reject(new Error('gone')),
+  ])
+    await branch.sleeper(answer(reply), timer)(100);
+  assert.deepEqual(timers, [100, 100, 100]);
+});

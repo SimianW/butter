@@ -9,6 +9,18 @@
   serial(() => handoff.prune(Date.now()));
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender.id !== chrome.runtime.id) return;
+    // A busy hidden renderer can exhaust Chrome's background timer budget. Keep the
+    // run's short polling delay in the extension worker, whose timer is not a page timer.
+    if (
+      message?.type === 'butter-branch-delay' &&
+      sender.tab?.id !== undefined &&
+      Number.isInteger(message.ms) &&
+      message.ms >= 0 &&
+      message.ms <= 1000
+    ) {
+      setTimeout(() => respond({ ok: true }), message.ms);
+      return true;
+    }
     // Close tab on the failure card. A tab may close only itself; no "tabs" permission needed.
     if (message?.type === 'butter-branch-close' && sender.tab?.id !== undefined) {
       chrome.tabs.remove(sender.tab.id).then(

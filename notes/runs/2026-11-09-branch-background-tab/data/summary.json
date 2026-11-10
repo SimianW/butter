@@ -1,0 +1,346 @@
+{
+  "baselineHead": "0fd5b2384b6b14cf9c3b2a60ef17e41f0ec2a696",
+  "version": "0.1.0-alpha.18",
+  "browser": "Chrome/156.0.8078.47",
+  "headed": true,
+  "normalFlags": [],
+  "diagnosticArmFlag": "--disable-background-timer-throttling",
+  "checks": {
+    "node": {
+      "passed": 456,
+      "failed": 0
+    },
+    "python": {
+      "passed": 70,
+      "failed": 0
+    },
+    "format": "passed",
+    "lint": "passed",
+    "version": "passed",
+    "diffWhitespace": "passed"
+  },
+  "restoration": {
+    "restored": true,
+    "pages": 1,
+    "composerEmpty": true,
+    "labReleased": true
+  },
+  "runs": [
+    {
+      "artifact": "excluded-invalid-branch.json",
+      "excluded": true,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "verifying",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        29,
+        44
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": "failed",
+      "branchHttp200": false,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "immediate.json",
+      "excluded": false,
+      "stage": "immediate",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        0,
+        9
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": false,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "native-control.json",
+      "excluded": false,
+      "stage": "native-control",
+      "fromUI": false,
+      "endBeforeForeground": null,
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        33,
+        43
+      ],
+      "nativeBranchRendered": true,
+      "foregroundResult": null,
+      "branchHttp200": false,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "no-timer-throttle.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        30,
+        123
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "settled.json",
+      "excluded": false,
+      "stage": "settled",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        29,
+        35
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": false,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "streaming-red.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "waiting-for-reply",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        29,
+        40
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": "verifying",
+      "branchHttp200": false,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "streaming-timers-red.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "verifying",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        28,
+        41
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": "ready",
+      "branchHttp200": true,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "streaming-visible.json",
+      "excluded": false,
+      "stage": "streaming-visible",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": false,
+      "allSamplesHidden": false,
+      "nativeRafDelta": 222,
+      "pageTimerCounter": [
+        26,
+        81
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "worker-hidden-1.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        31,
+        48
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": false,
+      "workerIdle": null
+    },
+    {
+      "artifact": "worker-hidden-2.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        35,
+        53
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": true,
+      "workerIdle": {
+        "before": {
+          "scheduled": 148,
+          "completed": 148
+        },
+        "after": {
+          "scheduled": 148,
+          "completed": 148
+        }
+      }
+    },
+    {
+      "artifact": "worker-hidden-3.json",
+      "excluded": false,
+      "stage": "streaming",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        34,
+        50
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": true,
+      "workerIdle": {
+        "before": {
+          "scheduled": 113,
+          "completed": 113
+        },
+        "after": {
+          "scheduled": 113,
+          "completed": 113
+        }
+      }
+    },
+    {
+      "artifact": "worker-ui-immediate.json",
+      "excluded": false,
+      "stage": "immediate",
+      "fromUI": true,
+      "endBeforeForeground": "ready",
+      "hidden": true,
+      "allSamplesHidden": true,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        2,
+        5
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": true,
+      "workerIdle": {
+        "before": {
+          "scheduled": 28,
+          "completed": 28
+        },
+        "after": {
+          "scheduled": 28,
+          "completed": 28
+        }
+      }
+    },
+    {
+      "artifact": "worker-ui-visible.json",
+      "excluded": false,
+      "stage": "visible",
+      "fromUI": true,
+      "endBeforeForeground": "ready",
+      "hidden": false,
+      "allSamplesHidden": false,
+      "nativeRafDelta": 0,
+      "pageTimerCounter": [
+        3,
+        44
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": true,
+      "workerIdle": {
+        "before": {
+          "scheduled": 145,
+          "completed": 145
+        },
+        "after": {
+          "scheduled": 145,
+          "completed": 145
+        }
+      }
+    },
+    {
+      "artifact": "worker-visible.json",
+      "excluded": false,
+      "stage": "streaming-visible",
+      "fromUI": false,
+      "endBeforeForeground": "ready",
+      "hidden": false,
+      "allSamplesHidden": false,
+      "nativeRafDelta": 205,
+      "pageTimerCounter": [
+        44,
+        94
+      ],
+      "nativeBranchRendered": null,
+      "foregroundResult": null,
+      "branchHttp200": true,
+      "guardedSendObserved": true,
+      "workerIdle": {
+        "before": {
+          "scheduled": 236,
+          "completed": 236
+        },
+        "after": {
+          "scheduled": 236,
+          "completed": 236
+        }
+      }
+    }
+  ],
+  "privacy": {
+    "filesScanned": 26,
+    "unexpectedIdentifierOrCredentialMatches": 0,
+    "rawReplayExported": false
+  }
+}

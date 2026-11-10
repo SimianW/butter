@@ -1,0 +1,347 @@
+{
+  "stage": "immediate",
+  "shim": false,
+  "samples": [
+    {
+      "ms": 302,
+      "hidden": true,
+      "frames": 0,
+      "timers": 0,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 0,
+      "menus": [],
+      "composer": false
+    },
+    {
+      "ms": 1384,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 0,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 0,
+      "menus": [],
+      "composer": false
+    },
+    {
+      "ms": 2625,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 2,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 0,
+      "menus": [],
+      "composer": false
+    },
+    {
+      "ms": 3665,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 2,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 0,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 4703,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 2,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 5,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 6190,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 2,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 7641,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 3,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 8645,
+      "hidden": true,
+      "state": "loading",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 4,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 9648,
+      "hidden": true,
+      "state": "branching",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 5,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 10651,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 6,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 10,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 11653,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 6,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 13173,
+      "hidden": true,
+      "state": "verifying",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 8,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 14583,
+      "hidden": true,
+      "state": "sending",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 9,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 0,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    },
+    {
+      "ms": 16619,
+      "hidden": true,
+      "state": "ready",
+      "cause": "",
+      "claim": "job",
+      "incoming": "yes",
+      "started": "yes",
+      "frames": 0,
+      "timers": 9,
+      "visibility": [
+        {
+          "hidden": true,
+          "at": 286
+        }
+      ],
+      "sendClicks": 1,
+      "frozen": false,
+      "streaming": false,
+      "replies": 24,
+      "menus": [],
+      "composer": true
+    }
+  ],
+  "requests": [
+    {
+      "branch": true,
+      "send": false,
+      "ms": 10431
+    },
+    {
+      "branch": false,
+      "send": true,
+      "ms": 14054
+    }
+  ],
+  "hiddenEnd": {
+    "ms": 16619,
+    "hidden": true,
+    "state": "ready",
+    "cause": "",
+    "claim": "job",
+    "incoming": "yes",
+    "started": "yes",
+    "frames": 0,
+    "timers": 9,
+    "visibility": [
+      {
+        "hidden": true,
+        "at": 286
+      }
+    ],
+    "sendClicks": 1,
+    "frozen": false,
+    "streaming": false,
+    "replies": 24,
+    "menus": [],
+    "composer": true
+  },
+  "resumed": null
+}
