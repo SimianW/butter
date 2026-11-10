@@ -63,7 +63,12 @@ export default [
   },
   {
     files: ['extension/bookmarks/content.js'],
-    languageOptions: { globals: { ButterBookmarks: 'readonly' } }, // defined in bookmarks/model.js
+    languageOptions: {
+      globals: {
+        ButterBookmarks: 'readonly', // defined in bookmarks/model.js
+        ButterWash: 'readonly', // defined in bookmarks/wash.js
+      },
+    },
   },
   {
     files: ['extension/bookmarks/content.js', 'extension/bookmarks/notice.js'],
@@ -143,6 +148,7 @@ export default [
       'extension/branch/logic.js',
       'extension/branch/run.js',
       'extension/bookmarks/model.js',
+      'extension/bookmarks/wash.js',
       'extension/dev/recorder.js',
       'extension/dev/sources.js',
     ],

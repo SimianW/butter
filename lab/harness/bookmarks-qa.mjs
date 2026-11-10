@@ -23,7 +23,7 @@
 // First-use notice (#56): the first save shows it, Undo deletes the bookmark and its segment and the
 // next save shows it again (light and dark, English and Chinese, with layout consent pending,
 // declined, granted and switched off), Got it keeps it away on a third save and after a reload.
-// Earlier history (#51 addendum), run last: the chat opens with its latest 5 questions and loads
+// Earlier history (#51 addendum), near the end: the chat opens with its latest 5 questions and loads
 // earlier ones two per page, as ChatGPT does; a bookmark in that history sits on the rail's
 // earlier-history dots, its card, the loading state, a click loading pages until its answer mounts
 // and landing on the text, keyboard, Escape, reduced motion, and screenshots of each state in light
@@ -47,6 +47,8 @@
 // MARKUP=live runs only that one.
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-bookmarks-qa); each markup writes
 // to its own subdirectory.
+// The landing wash (#73), after the earlier history: see washSection (ONLY=wash runs it alone;
+// BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> adds the comparison with its section 5).
 // BUTTER_BOOKMARKS_MOCKUP=<1-Mockup.html> (gh issue artifact download 51 1 -R SimianW/butter) also
 // compares the notice in each theme and language with the mockup's section 4: same size, under 0.1%
 // of pixels differing by more than 24 in a channel.
@@ -123,7 +125,7 @@ const messages = (from = 0, to = TURNS) =>
 // earlier messages come two questions per page from /messages?before=<first> when the chat is
 // scrolled near its top (#51 addendum). Each page is answered after `pageDelay` ms; `pages` counts them.
 // `turns`: the chat holds only its first `turns` questions (1: a one-question chat, no rail).
-const page$ = { theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0 };
+const page$ = { theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0, scene: null };
 const PAGE_TURNS = 2;
 // The answer's wrapper in each markup. `data-fx-answer` is the harness's own handle on it.
 const answerAttrs = (id) =>
@@ -220,7 +222,7 @@ await context.route('**/*', (route) => {
       }),
     );
   }
-  return route.fulfill({ contentType: 'text/html', body: html() });
+  return route.fulfill({ contentType: 'text/html', body: page$.scene ? mockHtml() : html() });
 });
 const worker = context.serviceWorkers()[0] || (await context.waitForEvent('serviceworker'));
 const settings = (butter) =>
@@ -274,16 +276,19 @@ const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).t
 // Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
 // `radius`: the images are a card's own box with that corner radius; the corners outside it (the
 // page and the shadow behind the card, which differ between the two) are left out.
-async function compare(page, a, b, radius = 0) {
+// With `plain` ([a's page, b's page] without the drawing under test), pixels where those two
+// already differ (the pages' own text drawn a pixel apart) are masked: `ratio` is over the rest,
+// `strict` over all, `masked` the share masked.
+async function compare(page, a, b, { radius = 0, plain = null } = {}) {
   return page.evaluate(
-    async ([a, b, radius]) => {
+    async ([a, b, radius, plain]) => {
       const load = (src) =>
         new Promise((r) => {
           const i = new Image();
           i.onload = () => r(i);
           i.src = src;
         });
-      const [x, y] = await Promise.all([load(a), load(b)]);
+      const [x, y, ...pl] = await Promise.all([a, b, ...(plain ?? [])].map(load));
       if (x.width !== y.width || x.height !== y.height) return { size: [x.width, x.height, y.width, y.height] };
       const data = (img) => {
         const c = new OffscreenCanvas(img.width, img.height),
@@ -292,7 +297,8 @@ async function compare(page, a, b, radius = 0) {
         return g.getImageData(0, 0, img.width, img.height).data;
       };
       const p = data(x),
-        q = data(y);
+        q = data(y),
+        [u, v] = pl.map(data);
       const w = x.width,
         h = x.height,
         out = (i, j) => {
@@ -300,16 +306,22 @@ async function compare(page, a, b, radius = 0) {
             dy = Math.max(0, radius - (j + 0.5), j + 0.5 - (h - radius));
           return dx > 0 && dy > 0 && Math.hypot(dx, dy) > radius - 1;
         };
+      const off = (p, q, k) => Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24;
       let n = 0,
-        all = 0;
+        px = 0,
+        all = 0,
+        masked = 0;
       for (let k = 0; k < p.length; k += 4) {
         if (radius && out((k / 4) % w, Math.floor(k / 4 / w))) continue;
-        all++;
-        if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
+        px++;
+        const d = off(p, q, k);
+        all += d;
+        if (u && off(u, v, k)) masked++;
+        else n += d;
       }
-      return { ratio: n / all, pixels: n };
+      return u ? { ratio: n / (px - masked), strict: all / px, masked: masked / px } : { ratio: n / px, pixels: n };
     },
-    [await png(a), await png(b), radius],
+    [await png(a), await png(b), radius, plain && (await Promise.all(plain.map(png)))],
   );
 }
 
@@ -833,7 +845,7 @@ async function cardSection() {
       const moved = await card.boundingBox(),
         reference = `${shots}/mockup-${b.panel}.png`;
       await mock.screenshot({ path: reference, clip: { x: Math.floor(moved.x), y: Math.floor(moved.y), width: Math.round(b.at.w), height: Math.round(b.at.h) } });
-      const diff = await compare(mock, b.file, reference, 12);
+      const diff = await compare(mock, b.file, reference, { radius: 12 });
       check(`the card matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
         { ...diff, built: [b.at.w, b.at.h], mockup: [moved.width, moved.height] });
     }
@@ -1195,6 +1207,514 @@ async function earlierSection() {
   await reseed([]);
 }
 
+// 14. The landing wash (#73). A jump from a tick card row to a live bookmark washes its text once the
+// page has stopped, instead of flashing the question's bubble: a sweep through the lines in
+// reading order (about 360 ms), held 1.2 s, faded over 0.9 s, then gone with its listeners. It
+// covers the bookmark's range and nothing else, keeps the text's colour, follows a scroll during the
+// hold, and goes at once on a second jump, a scrollbar drag, a conversation change or a pause. A
+// stale bookmark lands with the bubble flash and no wash. ONLY=wash runs this part alone.
+// With BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> it also builds the mockup's chat (its
+// column, text and type) and compares the held wash with the panels l-3-light and l-sel-dark, on
+// the chat column only: under 0.1% of pixels differing by more than 24 in a channel.
+const WASH = 'chatgpt-butter-wash';
+async function washSection() {
+  const ACCOUNT = sha('user-fixture'),
+    CONV_HASH = sha(CONV);
+  // A bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, li, li),
+  // from `start` to `end` (the whole paragraph by default).
+  const wseed = (turn, para, start = 0, end = null, text = PARAGRAPH(turn, para === 0 ? 0 : para - 1)) => ({
+    account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: end ?? text.length,
+    excerpt: text.slice(start, Math.min(end ?? text.length, start + 120)).trim(), time: Date.now() + para,
+  });
+  const T = 4,
+    PARA = wseed(T, 2), // a whole paragraph, four lines
+    SEL = wseed(T, 4, 20, 150), // a selection of about two lines in another one
+    STALE = wseed(8, 2); // question 9's third paragraph, edited below
+  await settings({ bookmarkNotice: 'acknowledged' });
+  await seedStore([PARA, SEL, STALE], { clear: true });
+  page$.edited.add(8);
+  const sc = '.thread-scroll-container';
+  if (!page) page = await context.newPage();
+  const cdp = await context.newCDPSession(page);
+
+  // ---- Helpers. Only `rowJump` knows how a question's bookmark card opens.
+  const railMarks = () => page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length);
+  const openChat = async (theme, marks = 2) => {
+    await open(theme);
+    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === n, marks, { timeout: 5000 });
+  };
+  // Opens question `turn`'s card from its tick (#70: the tick's card holds its bookmarks), crosses
+  // the gap onto the row that holds `b`'s excerpt and clicks it. The pointer stays on the tick's
+  // row above its segment, which takes the pointer within 4 px of its own row.
+  const rowJump = async (turn, b) => {
+    await page.mouse.move(5, 300);
+    await page.waitForTimeout(150);
+    const t = (await rail()).ticks[turn];
+    await page.mouse.move(t.x, t.y - 3, { steps: 4 });
+    await page.waitForTimeout(350);
+    const at = await page.evaluate((text) => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        e = [...root.querySelectorAll('.card.qb.show .bmc .go')].find((x) => x.textContent.includes(text)),
+        q = e?.getBoundingClientRect();
+      return q && { x: q.left + Math.min(q.width / 2, 60), y: q.top + q.height / 2 };
+    }, b.excerpt.slice(0, 40));
+    await page.mouse.move(at.x, at.y, { steps: 12 });
+    await page.waitForTimeout(300);
+    await page.mouse.click(at.x, at.y);
+    await page.mouse.move(5, 300);
+  };
+  // Records every frame from now: the wash's boxes and how far each is filled, the layer's opacity,
+  // the scroller's position and any bubble flash; and nodes added inside the answers.
+  const record = () =>
+    page.evaluate(([WASH, sc]) => {
+      const R = (window.__wash = { frames: [], added: 0, clicks: [], stop: false });
+      const fill = (s) => {
+        if (s === 'none') return 1;
+        const m = /inset\(([^)]*)\)/.exec(s);
+        if (!m) return 1;
+        const p = m[1].split(' ');
+        const right = p[1] ?? p[0];
+        return right.endsWith('%') ? 1 - parseFloat(right) / 100 : parseFloat(right) === 0 ? 1 : 0;
+      };
+      const mo = new MutationObserver((ms) => {
+        for (const m of ms) R.added += [...m.addedNodes].filter((n) => n.nodeType === 1 || n.nodeType === 3).length;
+      });
+      for (const a of document.querySelectorAll('[data-markdown-text-style]')) mo.observe(a, { childList: true, subtree: true });
+      addEventListener('click', () => R.clicks.push(performance.now()), true);
+      const loop = (t) => {
+        const host = document.querySelector(WASH),
+          div = host?.shadowRoot.querySelector('div');
+        R.frames.push({
+          t,
+          host: !!host,
+          op: div ? +getComputedStyle(div).opacity : 0,
+          boxes: div ? [...div.querySelectorAll('i')].map((i) => fill(getComputedStyle(i).clipPath)) : [],
+          top: document.querySelector(sc).scrollTop,
+          flash: !!document.querySelector('[data-butter-flash]'),
+        });
+        if (!R.stop) requestAnimationFrame(loop);
+      };
+      requestAnimationFrame(loop);
+    }, [WASH, sc]);
+  const recorded = () => page.evaluate(() => ((window.__wash.stop = true), window.__wash));
+  // The phases of the first wash in a recording, in ms.
+  const phases = (R) => {
+    const f = R.frames,
+      i0 = f.findIndex((x) => x.host && x.boxes.length);
+    if (i0 < 0) return { washed: false, flash: f.some((x) => x.flash), added: R.added };
+    const t0 = f[i0].t,
+      full = f.find((x, i) => i >= i0 && x.boxes.length && x.boxes.every((v) => v > 0.999)),
+      fading = f.find((x, i) => i >= i0 && x.host && x.op < 0.999),
+      end = f.find((x, i) => i > i0 && !x.host);
+    // When each line starts and ends filling, in reading order.
+    const lines = f[i0].boxes.map((_, k) => ({
+      start: f.find((x, i) => i >= i0 && x.boxes[k] > 0.001)?.t - t0,
+      full: f.find((x, i) => i >= i0 && x.boxes[k] > 0.999)?.t - t0,
+    }));
+    const around = f.filter((x) => x.t >= t0 - 50 && x.t <= t0 + 600).map((x) => x.top);
+    return {
+      washed: true,
+      lines: f[i0].boxes.length,
+      first: f[i0].boxes,
+      sweep: full ? Math.round(full.t - t0) : null,
+      hold: full && fading ? Math.round(fading.t - full.t) : null,
+      fade: fading && end ? Math.round(end.t - fading.t) : null,
+      order: lines.every((l, k) => !k || (l.start >= lines[k - 1].start && lines[k - 1].full <= l.start + 17)),
+      moved: Math.max(...around) - Math.min(...around),
+      flash: f.some((x) => x.flash),
+      added: R.added,
+      t0,
+      startedAfterClick: R.clicks.length ? Math.round(t0 - R.clicks.at(-1)) : null,
+    };
+  };
+  const washHost = () => page.evaluate((WASH) => !!document.querySelector(WASH), WASH);
+  const waitWash = () => page.waitForFunction((WASH) => document.querySelector(WASH)?.shadowRoot.querySelector('i'), WASH, { timeout: 15000 });
+  // The wash's boxes now, and the lines of the bookmark's text measured here: each line's text
+  // rectangles joined, 2 px above and below. They match within 1 px when it covers its range only.
+  const coverage = (b) =>
+    page.evaluate(([WASH, id, b, PARAS]) => {
+      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[b.para];
+      // The range from its offsets in the paragraph's text (the mockup's chat has a span in it).
+      const r = document.createRange(),
+        w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(), at = 0; n; at += n.data.length, n = w.nextNode()) {
+        if (b.start >= at && b.start < at + n.data.length) r.setStart(n, b.start - at);
+        if (b.end > at && b.end <= at + n.data.length) r.setEnd(n, b.end - at);
+      }
+      const lines = [];
+      for (const q of r.getClientRects()) {
+        if (!q.width) continue;
+        const l = lines.find((x) => Math.abs(x.top - q.top) < 4);
+        if (l) ((l.left = Math.min(l.left, q.left)), (l.right = Math.max(l.right, q.right)));
+        else lines.push({ left: q.left, right: q.right, top: q.top, bottom: q.bottom });
+      }
+      const host = document.querySelector(WASH),
+        boxes = host ? [...host.shadowRoot.querySelectorAll('i')].map((i) => i.getBoundingClientRect()) : [];
+      const want = lines.map((l) => ({ left: l.left, right: l.right, top: l.top - 2, bottom: l.bottom + 2 }));
+      const ok = boxes.length === want.length && boxes.every((q, k) => ['left', 'right', 'top', 'bottom'].every((s) => Math.abs(q[s] - want[k][s]) <= 1));
+      const clip = host?.shadowRoot.querySelector('div').getBoundingClientRect(),
+        s = host && getComputedStyle(host),
+        box = boxes[0],
+        hit = box && document.elementFromPoint(box.left + 10, box.top + box.height / 2);
+      return {
+        ok,
+        boxes: boxes.map((q) => [q.left, q.top, q.width, q.height].map(Math.round)),
+        want: want.map((q) => [q.left, q.top, q.right - q.left, q.bottom - q.top].map(Math.round)),
+        // Rounded at the range's start and end only, as one highlight broken across lines.
+        radius: host && [...host.shadowRoot.querySelectorAll('i')].map((i) => getComputedStyle(i).borderRadius).join(' / '),
+        color: host && getComputedStyle(host.shadowRoot.querySelector('i')).backgroundColor,
+        blend: s?.mixBlendMode,
+        pointer: s?.pointerEvents,
+        clipTop: clip && Math.round(clip.top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top),
+        through: !!hit && el.contains(hit),
+        inAnswer: !!el.closest('article').querySelector(WASH),
+      };
+    }, [WASH, answer(b.turn), b, PARAS]);
+  // Listeners on the chat scroller (scroll) and the window (resize), by CDP, as Butter's content
+  // scripts added them (their own world: DevTools lists a world's listeners only from inside it).
+  const butterWorld = async () => {
+    const contexts = [];
+    const on = (e) => contexts.push(e.context);
+    cdp.on('Runtime.executionContextCreated', on);
+    await cdp.send('Runtime.enable');
+    await cdp.send('Runtime.disable');
+    cdp.off('Runtime.executionContextCreated', on);
+    return contexts.findLast((c) => c.auxData?.type === 'isolated' && c.origin.startsWith('chrome-extension://') && c.auxData.isDefault === false)?.id;
+  };
+  const listeners = async () => {
+    const contextId = await butterWorld();
+    const of = async (expression, type) => {
+      const { result } = await cdp.send('Runtime.evaluate', { expression, contextId });
+      const { listeners } = await cdp.send('DOMDebugger.getEventListeners', { objectId: result.objectId });
+      return listeners.filter((l) => l.type === type).length;
+    };
+    return { world: !!contextId, scroll: await of(`document.querySelector('${sc}')`, 'scroll'), resize: await of('window', 'resize') };
+  };
+  // The text's own colour under the wash: the darkest (light theme) or lightest (dark theme) pixel
+  // inside the first box, from a screenshot.
+  const textUnder = async (theme) => {
+    const box = await page.evaluate((WASH) => {
+      const q = document.querySelector(WASH).shadowRoot.querySelector('i').getBoundingClientRect();
+      return { x: Math.round(q.left) + 2, y: Math.round(q.top) + 3, width: Math.round(q.width) - 4, height: Math.round(q.height) - 6 };
+    }, WASH);
+    const file = `${shots}/wash-text-${theme}.png`;
+    await page.screenshot({ path: file, clip: box });
+    return page.evaluate(async ([src, dark]) => {
+      const i = new Image();
+      await new Promise((r) => ((i.onload = r), (i.src = src)));
+      const c = new OffscreenCanvas(i.width, i.height),
+        g = c.getContext('2d');
+      g.drawImage(i, 0, 0);
+      const d = g.getImageData(0, 0, i.width, i.height).data;
+      let best = null;
+      for (let k = 0; k < d.length; k += 4) {
+        const v = d[k] + d[k + 1] + d[k + 2];
+        if (!best || (dark ? v > best.v : v < best.v)) best = { v, rgb: [d[k], d[k + 1], d[k + 2]] };
+      }
+      return best.rgb;
+    }, [await png(file), theme === 'dark']);
+  };
+
+  // (a) A paragraph, from the top of the chat: a far trip.
+  await openChat('light');
+  const idle = await listeners();
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await record();
+  await rowJump(T, PARA);
+  await waitWash();
+  await page.waitForTimeout(800); // into the hold
+  const cover = await coverage(PARA),
+    during = await listeners(),
+    ink = await textUnder('light');
+  await page.screenshot({ path: `${shots}/wash-paragraph-light.png` });
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  await page.waitForTimeout(100);
+  let p = await phases(await recorded());
+  const after = await listeners();
+  check('wash: a row jump to a paragraph washes it, starting only once the page has stopped', p.washed && p.moved <= 2 && p.startedAfterClick > 0, p);
+  check('wash: no bubble flash on that trip', p.washed && !p.flash);
+  check('wash: one box per line over exactly the bookmarked paragraph, 2 px above and below, rounded 3 px at its start and end',
+    cover.ok && cover.boxes.length > 1 && cover.radius === ['3px 0px 0px 3px', ...Array(cover.boxes.length - 2).fill('0px'), '0px 3px 3px 0px'].join(' / ') && cover.color === 'rgba(251, 224, 122, 0.62)', cover);
+  check('wash: the sweep fills the lines in reading order in about 360 ms', p.order && Math.abs(p.sweep - 360) <= 50, { sweep: p.sweep, first: p.first });
+  check('wash: held about 1.2 s, then faded over about 0.9 s', Math.abs(p.hold - 1200) <= 50 && Math.abs(p.fade - 900) <= 60, { hold: p.hold, fade: p.fade });
+  check('wash: afterwards the layer is gone, and so are its scroll and resize listeners',
+    !(await washHost()) && idle.world && during.scroll === idle.scroll + 1 && during.resize === idle.resize + 1 && after.scroll === idle.scroll && after.resize === idle.resize,
+    { idle, during, after });
+  check('wash: Butter\'s own layer, multiplied in light theme, under the header, taking no pointer events; nothing added inside the answer',
+    cover.blend === 'multiply' && cover.pointer === 'none' && cover.through && cover.clipTop === 52 && !cover.inAnswer && p.added === 0, { ...cover, added: p.added });
+  check('wash: the text keeps its colour in light theme', Math.max(...ink) <= 40, { ink });
+  console.log('wash phases (paragraph, far trip)', JSON.stringify({ sweep: p.sweep, hold: p.hold, fade: p.fade }));
+
+  // (b) A selection, from near by (a glide); a scroll during the hold keeps it on its text.
+  await record();
+  await rowJump(T, SEL);
+  await waitWash();
+  await page.waitForTimeout(700);
+  const selCover = await coverage(SEL),
+    top0 = await page.evaluate((sc) => document.querySelector(sc).scrollTop, sc);
+  await page.mouse.move(700, 500);
+  await page.mouse.wheel(0, 60);
+  await page.waitForTimeout(250);
+  const scrolled = await coverage(SEL),
+    dy = (await page.evaluate((sc) => document.querySelector(sc).scrollTop, sc)) - top0;
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  p = await phases(await recorded());
+  check('wash: a bookmarked selection washes that text only, not its whole paragraph', p.washed && !p.flash && p.moved <= 2 && selCover.ok && selCover.boxes.length >= 2, { ...selCover, moved: p.moved });
+  check('wash: it stays on its text while the chat scrolls during the hold',
+    dy > 20 && scrolled.ok && Math.abs(scrolled.boxes[0][1] - (selCover.boxes[0][1] - dy)) <= 1, { dy, before: selCover.boxes[0], after: scrolled.boxes[0] });
+  console.log('wash phases (selection, glide)', JSON.stringify({ sweep: p.sweep, hold: p.hold, fade: p.fade }));
+
+  // (c) Removed at once: a second jump, a scrollbar drag, a conversation change, Butter paused.
+  const goneIn = async (act) => {
+    await waitWash();
+    await page.waitForTimeout(600);
+    await page.evaluate((WASH) => {
+      window.__gone = null;
+      const at = performance.now();
+      new MutationObserver((ms, o) => {
+        if (!document.querySelector(WASH)) {
+          window.__gone = performance.now() - at;
+          o.disconnect();
+        }
+      }).observe(document.body, { childList: true });
+    }, WASH);
+    await act();
+    await page.waitForFunction(() => window.__gone !== null, null, { timeout: 3000 }).catch(() => {});
+    return page.evaluate(() => window.__gone);
+  };
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await rowJump(T, PARA);
+  const second = await goneIn(async () => {
+    const r = await rail();
+    await page.mouse.click(r.ticks[1].right - 4, r.ticks[1].y);
+  });
+  check('wash: a second jump removes it at once', second !== null && second < 200, { ms: second });
+  await page.waitForTimeout(3500);
+  await rowJump(T, PARA);
+  // A scrollbar drag: seek/preview-main.js tells the page with this event as the drag starts. (The
+  // fixture's chat has no layout for the preview to engage, so the harness sends it, as the
+  // preview does, and the drag's end after it.)
+  const seekState = (state) =>
+    page.evaluate(([conv, state, id, n]) => document.dispatchEvent(new CustomEvent('butter-seek-state', {
+      detail: JSON.stringify({ conv, state, id, n, lit: [id], total: 12, unseen: false }),
+    })), [CONV, state, question(T), T + 1]);
+  const drag = await goneIn(() => seekState('dragging'));
+  check('wash: a scrollbar drag starting (seek state "dragging") removes it at once', drag !== null && drag < 100, { ms: drag });
+  await seekState('idle');
+  await page.waitForTimeout(1500); // the rail's seek card goes 1 s after the drag ends
+  await rowJump(T, SEL);
+  const paused = await goneIn(() => settings({ enabled: false }));
+  check('wash: Butter paused removes it at once', paused !== null && paused < 300, { ms: paused });
+  await settings({});
+  await openChat('light');
+  await rowJump(T, PARA);
+  // ChatGPT shows another chat: a new path, and the old chat's turns leave the page.
+  const moved = await goneIn(() =>
+    page.evaluate(() => {
+      history.pushState({}, '', '/c/00000000-0000-4000-8000-000000000000');
+      document.querySelector('.content').replaceChildren();
+    }));
+  check('wash: a conversation change removes it at once', moved !== null && moved < 100, { ms: moved });
+
+  // (d) A stale bookmark: the bubble flash at its question's start, and no wash.
+  await openChat('light');
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await record();
+  await rowJump(8, STALE);
+  await page.waitForTimeout(4500);
+  p = await phases(await recorded());
+  check('wash: a stale bookmark lands with the bubble flash and no wash', !p.washed && p.flash, p);
+
+  // (e) Reduced motion: no sweep; it shows at once, holds 1.2 s and fades over 0.9 s.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await record();
+  await rowJump(T, PARA);
+  await waitWash();
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  p = await phases(await recorded());
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  check('wash: under reduced motion it appears without a sweep, holds 1.2 s and fades over 0.9 s',
+    p.washed && p.first.every((v) => v > 0.999) && p.sweep === 0 && Math.abs(p.hold - 1200) <= 50 && Math.abs(p.fade - 900) <= 60, p);
+
+  // (f) Dark theme: the text keeps its colour.
+  await openChat('dark');
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await rowJump(T, PARA);
+  await waitWash();
+  await page.waitForTimeout(800);
+  const darkCover = await coverage(PARA),
+    darkInk = await textUnder('dark');
+  await page.screenshot({ path: `${shots}/wash-paragraph-dark.png` });
+  check('wash: dark theme washes in rgb(227 199 102 / .3), lightened, and the text keeps its colour',
+    darkCover.ok && darkCover.color === 'rgba(227, 199, 102, 0.3)' && darkCover.blend === 'lighten' && darkInk.every((v) => Math.abs(v - 236) <= 12),
+    { ink: darkInk, blend: darkCover.blend });
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  page$.edited.delete(8);
+
+  if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) await washMockup({ rowJump, waitWash, coverage, sc, record, recorded, phases });
+  await seedStore([], { clear: true });
+  await cdp.detach();
+}
+
+// The mockup's chat for the wash comparison: its question and answer (section 5's text, column,
+// type and colours) as question 7 of the fixture chat, the other turns short; with its header and
+// composer. Set by washMockup; `page$.scene` null is the usual fixture.
+const MOCK_TURN = 6;
+const mockHtml = () => {
+  const s = page$.scene;
+  const turn = (i) =>
+    i === MOCK_TURN
+      ? `<div><article data-turn-key="${question(i)}"><div class="user">${userOf(i).replace(QUESTION(i), s.q)}</div>` +
+        `<div ${answerAttrs(answer(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${s.blocks.join('')}</div></div></article></div>`
+      : `<div><article class="filler" data-turn-key="${question(i)}"><div class="user">${userOf(i)}</div>` +
+        `<div ${answerAttrs(answer(i))}><div data-markdown-text-style="assistant-message" class="markdown prose"><p>Fixture answer ${i + 1}.</p></div></div></article></div>`;
+  return `<!doctype html><html lang="en" class="${page$.theme}"><head><meta charset="utf-8"><title>Fixture chat</title><style>
+body { margin:0; overflow:hidden; background:#fff; color:#0d0d0d; font:14.5px/1.6 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif }
+.dark body { background:#212121; color:#ececec }
+header { position:fixed; top:0; left:0; right:0; height:44px; background:inherit; z-index:5; display:flex; align-items:center; padding:0 16px; font-weight:600; font-size:15px }
+.thread-scroll-container { height:100vh; overflow-y:scroll; overflow-anchor:none; scrollbar-width:none }
+.content { padding:64px 0 600px }
+article { display:block; width:386px; margin:0 0 24px 70px }
+article.filler { height:300px; overflow:hidden }
+.user { display:flex; justify-content:flex-end }
+[data-user-message-bubble] { margin:0 0 18px; max-width:300px; padding:8px 14px; background:#f4f4f4; border-radius:18px }
+.dark [data-user-message-bubble] { background:#303030 }
+[data-markdown-text-style] p { margin:0 0 14px }
+[data-markdown-text-style] h3 { margin:18px 0 8px; font-size:16px; font-weight:600 }
+[data-markdown-text-style] pre { margin:0 0 14px; background:#f9f9f9; border:1px solid rgb(0 0 0 / .08); border-radius:10px; padding:10px 12px; font:12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space:pre-wrap }
+.dark [data-markdown-text-style] pre { background:#171717; border-color:rgb(255 255 255 / .08) }
+#thread-bottom-container { position:fixed; left:60px; right:100px; bottom:12px; height:44px; box-sizing:border-box; border-radius:22px; background:#f4f4f4; color:#5d5d5d; display:flex; align-items:center; padding:0 18px; font-size:14px; z-index:3 }
+.dark #thread-bottom-container { background:#303030; color:#b4b4b4 }
+</style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from({ length: TURNS }, (_, i) => turn(i)).join('')}</div></div>` +
+    `<div id="thread-bottom-container">Ask anything</div><script>fetch('/backend-api/me'); fetch('/backend-api/conversation/${CONV}');</script></body></html>`;
+};
+// Called by washSection, which defines the helpers it passes.
+async function washMockup({ rowJump, waitWash, coverage, sc, record, recorded, phases }) {
+  const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
+  await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
+  // No scrollbar: the centred mockup stays on whole pixels (as for the notice above).
+  await mock.addStyleTag({ content: 'html { scrollbar-width: none }' });
+  await mock.click('label:has(#labels-off)');
+  await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
+  // The panels' chat: the question, the answer's blocks, and the washed paragraph with the
+  // selection's offsets in it. The wash's span stays as a plain span: the browser draws the text
+  // of an inline element as a run of its own, so the glyphs match the panel's to the pixel.
+  page$.scene = await mock.evaluate(() => {
+    const col = document.querySelector('[data-panel="l-sel-dark"] .col').cloneNode(true),
+      land = col.querySelector('.land'),
+      goal = land.closest('p'),
+      at = goal.textContent.indexOf(land.textContent),
+      sel = [at, at + land.textContent.length];
+    land.removeAttribute('class');
+    land.removeAttribute('style');
+    goal.removeAttribute('class');
+    const q = col.querySelector('.q'),
+      blocks = [...col.children].filter((e) => e !== q);
+    return { q: q.innerHTML, blocks: blocks.map((e) => e.outerHTML), goal: blocks.indexOf(goal), text: goal.textContent, sel };
+  });
+  const s = page$.scene;
+  // The chat column, below the header and above the composer's fade: x 60..470, y 44..350 of the
+  // frame's inside (the mockup's frame has a 1 px border; the built window is 560 px wide, the
+  // rail's minimum, and only its right edge differs).
+  const REGION = { x: 60, y: 44, width: 410, height: 306 };
+  await page.setViewportSize({ width: 560, height: 438 });
+  for (const [theme, panel, [start, end]] of [
+    ['light', 'l-3-light', [0, s.text.length]],
+    ['dark', 'l-sel-dark', s.sel],
+  ]) {
+    const b = {
+      account: sha('user-fixture'), conv: sha(CONV), msg: sha(answer(MOCK_TURN)), turn: MOCK_TURN, para: s.goal, start, end,
+      excerpt: s.text.slice(start, Math.min(end, start + 120)).trim(), time: Date.now(),
+    };
+    await seedStore([b], { clear: true });
+    await page.bringToFront(); // a tab in the background draws no frames
+    await open(theme);
+    await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
+    await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+    await page.waitForTimeout(300);
+    await rowJump(MOCK_TURN, b);
+    await waitWash();
+    await page.waitForTimeout(400);
+    // Where the panel has the chat: the question's turn 457 px above the window's top. A wheel
+    // turn first ends the pin the jump leaves on its landing.
+    await page.mouse.move(300, 200);
+    await page.mouse.wheel(0, 1);
+    await page.waitForTimeout(50);
+    await page.evaluate(([sc, id]) => {
+      const el = document.querySelector(sc);
+      el.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top + 457;
+    }, [sc, question(MOCK_TURN)]);
+    await page.waitForTimeout(120);
+    const cover = await coverage(b),
+      composer = await page.evaluate((WASH) => ({
+        clip: document.querySelector(WASH)?.shadowRoot.querySelector('div').getBoundingClientRect().bottom,
+        composer: document.querySelector('#thread-bottom-container').getBoundingClientRect().top,
+      }), WASH);
+    const built = `${shots}/wash-${panel}.png`,
+      holding = () =>
+        page.evaluate((WASH) => {
+          const d = document.querySelector(WASH)?.shadowRoot.querySelector('div');
+          return !!d && +getComputedStyle(d).opacity === 1 && [...d.querySelectorAll('i')].every((i) => getComputedStyle(i).clipPath === 'none');
+        }, WASH);
+    const before = await holding();
+    await page.screenshot({ path: built, clip: REGION });
+    const held = before && (await holding());
+    check(`wash mockup ${panel}: built at the hold, on the bookmarked text, clipped above the composer`,
+      held && cover.ok && composer.clip === composer.composer, { held, boxes: cover.boxes, ...composer });
+    // The same chat once the wash has gone, for the mask below.
+    await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+    const builtPlain = `${shots}/wash-${panel}-after.png`;
+    await page.screenshot({ path: builtPlain, clip: REGION });
+    await mock.bringToFront();
+    // The panel at the window's top left, on the built chat's pixel grid.
+    const frame = mock.locator(`[data-panel="${panel}"]`);
+    await frame.evaluate((el) => Object.assign(el.style, { position: 'fixed', left: '0px', top: '0px', zIndex: 99 }));
+    await mock.waitForTimeout(100);
+    const reference = `${shots}/mockup-${panel}.png`,
+      referencePlain = `${shots}/mockup-${panel}-plain.png`,
+      at = { ...REGION, x: 1 + REGION.x, y: 1 + REGION.y };
+    await mock.screenshot({ path: reference, clip: at });
+    await frame.evaluate((el) => el.querySelector('.land').style.setProperty('background', 'none'));
+    await mock.screenshot({ path: referencePlain, clip: at });
+    await frame.evaluate((el) => {
+      el.style.cssText = '';
+      el.querySelector('.land').style.removeProperty('background');
+    });
+    // Masked where the two chats differ without any wash: the same text, a glyph drawn a pixel
+    // apart (a code line, a letter) by the two pages. The mask stays small or the check fails.
+    const diff = await compare(mock, built, reference, { plain: [builtPlain, referencePlain] });
+    check(`wash: the held wash matches the mockup's ${panel} on the chat column`,
+      diff.ratio !== undefined && diff.ratio < 0.001 && diff.masked < 0.005, diff);
+  }
+  // A bookmarked code block keeps the bubble's flash for now (#74 washes the whole block).
+  const code = s.blocks.findIndex((h) => h.startsWith('<pre') && h.includes('CREATE INDEX')),
+    codeText = await page.evaluate(([id, k, PARAS]) =>
+      document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k].textContent, [answer(MOCK_TURN), code, PARAS]);
+  const cb = {
+    account: sha('user-fixture'), conv: sha(CONV), msg: sha(answer(MOCK_TURN)), turn: MOCK_TURN, para: code, start: 0, end: codeText.length,
+    excerpt: codeText.slice(0, 120).trim(), time: Date.now(),
+  };
+  await seedStore([cb], { clear: true });
+  await page.bringToFront();
+  await open('light');
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length === 1, null, { timeout: 5000 });
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await record();
+  await rowJump(MOCK_TURN, cb);
+  await page.waitForTimeout(4000);
+  const cp = phases(await recorded());
+  check('wash: a bookmarked code block lands with the bubble flash and no wash (for now)', code >= 0 && !cp.washed && cp.flash, { code, ...cp });
+  page$.scene = null;
+  await mock.close();
+  await page.bringToFront();
+  await page.setViewportSize({ width: 1400, height: 900 });
+}
+
 try {
   // Existing users have a version-1 database with saved layouts: the upgrade keeps them and adds
   // the bookmarks store. (Reaches into the worker's connection to rebuild a version-1 database.)
@@ -1228,10 +1748,11 @@ try {
     const tx = opened.then((db) => db.transaction('geometry', 'readwrite').objectStore('geometry').clear());
     return tx.then(() => {});
   });
-  // ONLY=earlier, ONLY=one and ONLY=card run that section alone.
+  // ONLY=earlier, ONLY=one, ONLY=card and ONLY=wash run that section alone.
   if (process.env.ONLY === 'earlier') await earlierSection();
   else if (process.env.ONLY === 'one') await oneQuestionSection();
   else if (process.env.ONLY === 'card') await cardSection();
+  else if (process.env.ONLY === 'wash') await washSection();
   else {
     await settings({});
     await open();
@@ -2255,6 +2776,7 @@ try {
     await cardSection();
     await oneQuestionSection();
     await earlierSection();
+    await washSection();
 
     // Against the mockup's section 4, when given.
     if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
