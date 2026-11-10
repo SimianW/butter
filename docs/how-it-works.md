@@ -161,6 +161,34 @@ alone. That text is found by hit-testing a 30 px band above the composer
 (`document.elementsFromPoint`), skipping the conversation's turns, so no selector of ChatGPT's is
 needed. With no such text, the line sits in its own row 8 px above the composer.
 
+## Landing on a bookmark
+
+When a jump from a bookmark row in the rail's card lands on a live bookmark, `bookmarks/content.js`
+washes the bookmarked text in butter for a moment: the paragraph, or for a selection only the
+selected text (a selection across paragraphs washes its part in the first one). The rail owns the
+trip: once the page has stopped (after its smooth scroll, or after the far trip's arrival), it calls
+the bookmark's `wash`, and on such a trip the question's bubble doesn't flash. A stale bookmark
+lands at its question's start with the bubble flash and no wash, and so far a bookmarked code block
+or table keeps the bubble flash too; a jump to a question is unchanged.
+
+The wash is one box per rendered line of the range, 2 px above and below the text, rounded 3 px at
+the range's start and end, in `rgb(251 224 122 / .62)` (light) or `rgb(227 199 102 / .3)` (dark).
+It sweeps through the lines in reading order, each from its start to its end, in 360 ms under one
+`cubic-bezier(.3, .7, .3, 1)` (each line's share of the progress is its share of the width; the
+plan is `bookmarks/wash.js`, pure), holds 1.2 s and fades over 0.9 s ease-out, then is removed.
+Under reduced motion it shows at once, holds and fades. A new jump, a conversation change, a
+scrollbar drag starting, the rail off or Butter paused, or its text leaving the page removes it at
+once.
+
+The boxes are drawn in Butter's own fixed shadow-root layer (`chatgpt-butter-wash`), like the hover
+button's; nothing is inserted into ChatGPT's answer. They are measured from the range's text
+rectangles and clipped to the chat scroller below ChatGPT's header and above its composer. The layer
+takes no pointer events. It blends with `multiply` in light theme and `lighten` in dark theme, so
+the text under it keeps its own colour in both: dark text stays dark on butter, light text stays
+light. Only while a wash shows, the scroller's `scroll`, the window's `resize` and a
+`ResizeObserver` on the scroller and the paragraph re-measure the boxes, so the wash stays on its
+text as the reader scrolls or the chat's width changes; the listeners go with the wash.
+
 ## Privacy
 
 Settings live in `chrome.storage.local`. Layouts live in the extension's IndexedDB

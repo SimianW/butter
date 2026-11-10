@@ -12,8 +12,9 @@
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (button, question box, overlay, line) and the glue for both tabs. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail segment's offset, what the rail's hover card lists (`card`), the segment's accessible name (`label`), the excerpt's first-line length (`firstLine`) and the hover button's name while it adds (`addLabel`). |
+| `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`) and the sweep, hold and fade (`plan`). |
 | `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
-| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, and the marks handed to the rail (`ButterRail.setMarks`). An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the hover button (paragraph, selection or remove), the shortcut, the marks handed to the rail (`ButterRail.setMarks`), and the landing wash in its own layer. An answer's paragraphs are its top-level blocks, each item of a top-level list on its own. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
 | `extension/bookmarks/notice.js` | The first bookmark notice: shown after the first save, Undo deletes that bookmark, Got it sets `bookmarkNotice: 'acknowledged'` in settings. |
 | `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notice share: look, font, position, motion, and stacking when both show. |
@@ -80,6 +81,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   pixels differing). The saved files, screenshots and `summary.json` go to
   `notes/runs/2026-11-08-full-snapshot-44/` (`OUT=` overrides).
 - Bookmarks: `test/bookmark-model.test.js` (excerpt, identity, allowlist, grouping, earlier history, segment offset),
+  `test/bookmark-wash.test.js` (the landing wash's plan: lines filled in reading order in 360 ms, each
+  line's share of the progress by its width, the hold and fade, reduced motion, one box per line),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
   CJK text, the viewport-top rule, the key hint), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names), `test/bookmark-stale.test.js` (live and stale resolution: a
@@ -110,7 +113,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   the key is cleared in `chrome://extensions/shortcuts`. Under an X display it runs headed and
   presses the real key through XTest (`xtest-keys.py`); without one it runs headless and asks the
   worker to relay the command instead, which skips Chrome's key handling.
-  Earlier history (#51 addendum), run last: the fixture opens the chat with only its latest 5 questions
+  Earlier history (#51 addendum), run near the end: the fixture opens the chat with only its latest 5 questions
   and serves earlier ones two per `/messages?before=` page when the chat is scrolled near its top,
   as ChatGPT does. It checks the one segment on the earlier-history dots (5 px below their centre,
   styled as any segment) and no segment under a loaded question it doesn't belong to, no reads or
@@ -124,7 +127,25 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   `BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51 Earlier history mockup>` (`gh issue artifact download 51 2
   -R SimianW/butter`) also the mockup's panels as `mockup-earlier-*`. `ONLY=earlier` runs this part
   alone.
-  Before it, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
+  The landing wash (#73), after it: a jump from a card row to a paragraph (a far trip) and to a
+  selection (a glide) washes that range and nothing else (one box per line, measured against the
+  text's own rectangles), starting only once the page has stopped and with no bubble flash; the
+  phases are measured frame by frame (about 360 ms of sweep in reading order, 1.2 s held, 0.9 s of
+  fade) and printed; afterwards the layer is gone and so are its scroll and resize listeners
+  (counted by CDP in the content scripts' world). The text keeps its colour in light and dark theme,
+  the layer multiplies (light) or lightens (dark), takes no pointer events, stays under the header,
+  and adds nothing inside the answer. A wheel scroll during the hold keeps it on its text; a second
+  jump, a scrollbar drag starting (the seek state `dragging`, sent by the harness as the seek preview
+  sends it: the fixture has no layout for the preview), a conversation change and Butter paused
+  remove it at once; a stale bookmark gets the bubble flash and no wash; reduced motion shows it
+  without a sweep. With `BUTTER_BOOKMARKS_DOT_MOCKUP=<#69 mockup>` (`gh issue artifact download 69 1
+  -R SimianW/butter`) it builds the mockup's chat (section 5's text, column and type, at 560 x 438)
+  and compares the held wash with the panels `l-3-light` and `l-sel-dark` on the chat column: under
+  0.1% of pixels differing by more than 24, masking pixels where the two chats already differ with
+  no wash shown (a glyph the two pages draw a pixel apart; the mask must stay under 0.5%), and checks
+  that a bookmarked code block there lands with the bubble flash and no wash. It shoots
+  `wash-*` and `mockup-l-*`. `ONLY=wash` runs this part alone.
+  Before the earlier history, a one-question chat: the rail stays hidden, yet a bookmark made there shows the filled
   button and the button removes it, scrolling reads nothing, and with a second question the segment
   shows under question 1 (`ONLY=one` runs this part alone).
   It then drives the first bookmark notice in light and dark, English and Chinese:
@@ -252,11 +273,14 @@ it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever
 (`complete`: no earlier page is left to load). The content script answers with
 `ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
 (or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
-`{ count, fresh, bookmarks, stale, land, remove }`, where `fresh` grows the segment in, `bookmarks` are the
+`{ count, fresh, bookmarks, stale, land, wash, remove }`, where `fresh` grows the segment in, `bookmarks` are the
 question's bookmarks in answer order, each with its `stale` flag, `stale` is set when all of them are
 stale (the segment shows at 40 % opacity), `land(turnElement, bookmark = bookmarks[0])` returns that
 bookmark's offset below the turn's top for the rail's jump (or null to land on the question, as a
-stale bookmark does), and `remove(bookmark)` deletes it from the store and sends the marks again.
+stale bookmark does), `wash(turnElement, bookmark)` washes that bookmark's text once a trip from a
+card row has landed on it (false when it is stale; the rail then flashes the bubble instead), and
+`remove(bookmark)` deletes it from the store and sends the marks again. The rail calls
+`ButterBookmarkPage.unwash()` as any jump starts.
 
 Staleness (`ButterBookmarks.resolve`) is computed on the page and never stored. A bookmark is live
 when its answer is rendered, its paragraph exists and that paragraph still contains the excerpt's
