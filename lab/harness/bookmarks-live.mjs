@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -1059,48 +1060,63 @@ async function washBookmark(kind) {
 const within = (got, want, px = 1) =>
   got.length === want.length &&
   got.every((g, k) => ['left', 'right', 'top', 'bottom'].every((s) => Math.abs(g[s] - want[k][s]) <= px));
-// Pixel statistics of two screenshots of one region, in a blank tab of the lab browser:
-// `differ`, the share of pixels differing by more than 24 in a channel; `ink`, the darkest (light)
-// or lightest (dark) pixel of each.
-let pixels = null;
-async function comparePixels(a, b, dark) {
-  pixels ??= await context.newPage();
-  return pixels.evaluate(
-    async ([a, b, dark]) => {
-      const load = (src) =>
-        new Promise((ok) => {
-          const i = new Image();
-          i.onload = () => ok(i);
-          i.src = src;
-        });
-      const [x, y] = await Promise.all([a, b].map(load));
-      const data = (i) => {
-        const c = new OffscreenCanvas(i.width, i.height),
-          g = c.getContext('2d');
-        g.drawImage(i, 0, 0);
-        return g.getImageData(0, 0, i.width, i.height).data;
-      };
-      const p = data(x),
-        q = data(y);
-      let n = 0;
-      const ink = (d) => {
-        let best = null;
-        for (let k = 0; k < d.length; k += 4) {
-          const v = d[k] + d[k + 1] + d[k + 2];
-          if (!best || (dark ? v > best.v : v < best.v)) best = { v, rgb: [d[k], d[k + 1], d[k + 2]] };
-        }
-        return best.rgb;
-      };
-      for (let k = 0; k < p.length; k += 4)
-        if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
-      return { differ: n / (p.length / 4), ink: [ink(p), ink(q)] };
-    },
-    [
-      `data:image/png;base64,${a.toString('base64')}`,
-      `data:image/png;base64,${b.toString('base64')}`,
-      dark,
-    ],
-  );
+// Pixel statistics of two screenshots of one region, decoded here (a second tab would put the
+// chat in the background, where Chrome draws no frames): `differ`, the share of pixels differing
+// by more than 24 in a channel; `ink`, the darkest (light) or lightest (dark) pixel of each.
+// Decodes Chrome's PNGs: 8-bit RGB or RGBA, not interlaced.
+function decodePng(buf) {
+  let at = 8,
+    width = 0,
+    height = 0,
+    type = 0;
+  const idat = [];
+  while (at < buf.length) {
+    const len = buf.readUInt32BE(at),
+      kind = buf.toString('latin1', at + 4, at + 8),
+      body = buf.subarray(at + 8, at + 8 + len);
+    if (kind === 'IHDR') {
+      width = body.readUInt32BE(0);
+      height = body.readUInt32BE(4);
+      requireThat(body[8] === 8 && body[12] === 0, 'unexpected PNG format');
+      type = body[9];
+    } else if (kind === 'IDAT') idat.push(body);
+    at += 12 + len;
+  }
+  const bpp = type === 6 ? 4 : 3,
+    raw = zlib.inflateSync(Buffer.concat(idat)),
+    stride = width * bpp,
+    out = Buffer.alloc(height * stride);
+  for (let y = 0; y < height; y++) {
+    const f = raw[y * (stride + 1)],
+      row = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? out[y * stride + x - bpp] : 0,
+        b = y ? out[(y - 1) * stride + x] : 0,
+        c = x >= bpp && y ? out[(y - 1) * stride + x - bpp] : 0;
+      const p = a + b - c,
+        pr = Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c) ? a : Math.abs(p - b) <= Math.abs(p - c) ? b : c;
+      const v = [row[x], row[x] + a, row[x] + b, row[x] + ((a + b) >> 1), row[x] + pr][f];
+      out[y * stride + x] = v & 255;
+    }
+  }
+  return { width, height, bpp, data: out };
+}
+function comparePixels(a, b, dark) {
+  const p = decodePng(a),
+    q = decodePng(b);
+  requireThat(p.width === q.width && p.height === q.height, 'screenshots differ in size');
+  const ink = (m) => {
+    let best = null;
+    for (let k = 0; k < m.data.length; k += m.bpp) {
+      const v = m.data[k] + m.data[k + 1] + m.data[k + 2];
+      if (!best || (dark ? v > best.v : v < best.v)) best = { v, rgb: [m.data[k], m.data[k + 1], m.data[k + 2]] };
+    }
+    return best.rgb;
+  };
+  let n = 0;
+  for (let k = 0, j = 0; k < p.data.length; k += p.bpp, j += q.bpp)
+    if (Math.max(...[0, 1, 2].map((c) => Math.abs(p.data[k + c] - q.data[j + c]))) > 24) n++;
+  return { differ: n / (p.width * p.height), ink: [ink(p), ink(q)] };
 }
 // A box as a screenshot clip, `pad` px inside it and cut to the window; null when nothing is left.
 const clipOfBox = (q, view, pad = 0) => {
@@ -1212,8 +1228,8 @@ async function washJump(theme, kind, rank, edge) {
   await page.evaluate((top) => (window.__wk.sc().scrollTop = top), inkTop);
   await page.waitForTimeout(500);
   const inkAfter = inkClip && (await page.screenshot({ clip: inkClip }));
-  const ink = inkDuring && (await comparePixels(inkDuring, inkAfter, dark)),
-    bandStat = bandClip && (await comparePixels(bandDuring, bandAfter, dark));
+  const ink = inkDuring && comparePixels(inkDuring, inkAfter, dark),
+    bandStat = bandClip && comparePixels(bandDuring, bandAfter, dark);
   const name = kind === 'table' ? 'a table' : `a ${kind}`;
   const numbers = (q) => q.map((b) => [b.left, b.top, b.right - b.left, b.bottom - b.top].map(Math.round));
   await check(`wash ${theme}: ${name} is washed on its own lines${kind === 'table' ? ' (one box 3 px around the table)' : ''}`,
@@ -1330,7 +1346,6 @@ async function washRun() {
     phase = 'wash-theme-restore';
     await page.evaluate((v) => (v == null ? localStorage.removeItem('theme') : localStorage.setItem('theme', v)), theme0);
     summary.cleanup.themeRestored = (await page.evaluate(() => localStorage.getItem('theme'))) === theme0;
-    await pixels?.close();
   }
 }
 
