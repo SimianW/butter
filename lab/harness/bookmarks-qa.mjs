@@ -3,8 +3,7 @@
 // conversation's messages, which Butter's own fetch hook reads), and the run fails if anything
 // else is requested. No ChatGPT requests.
 // Checks: hover a paragraph, the button waits 120 ms, click it, a dot appears beside the right
-// question's tick (#71) with its grow-in and halo, no segment under any tick, the pointer over the
-// dot shows the tick's card and a click there opens the question, the card's row lands on the
+// question's tick (#71) with its grow-in and halo, the pointer over the dot shows the tick's card and a click there opens the question, the card's row lands on the
 // paragraph, a reload shows the dot again, a bookmarked paragraph shows the filled button, the
 // conversation's bookmarks are read once and not during scrolling, going to the home page and Back
 // through history shows the dot again, and with the rail off or Butter paused neither the button
@@ -26,11 +25,13 @@
 // First-use notice (#56): the first save shows it, Undo deletes the bookmark and its dot and the
 // next save shows it again (light and dark, English and Chinese, with layout consent pending,
 // declined, granted and switched off), Got it keeps it away on a third save and after a reload.
-// Earlier history (#51 addendum), near the end: the chat opens with its latest 5 questions and loads
-// earlier ones two per page, as ChatGPT does; a bookmark in that history sits on the rail's
-// earlier-history dots, its card, the loading state, a click loading pages until its answer mounts
-// and landing on the text, keyboard, Escape, reduced motion, and screenshots of each state in light
-// and dark, English and Chinese, at 1400 and 600 px (ONLY=earlier runs this part alone;
+// Earlier history (#51 addendum, #72), near the end: the chat opens with its latest 5 questions and
+// loads earlier ones two per page, as ChatGPT does; a bookmark in that history shows a dot beside the
+// rail's earlier-history dots, which show its card on hover or focus (their hint card without
+// bookmarks; a click on them still loads earlier messages), the loading state, a row's click loading
+// pages until its answer mounts and landing on the text, the dot growing in at its question's tick,
+// ×, keyboard, Escape, reduced motion, and screenshots of each state in light and dark, English and
+// Chinese, at 1400 and 600 px (ONLY=earlier runs this part alone;
 // BUTTER_BOOKMARKS_EARLIER_MOCKUP=<2-Earlier-history-mockup.html> also shoots the mockup's panels).
 // Selection and shortcut (#54): a selection's tooltip and the key Chrome reports, a selection saved
 // with the button and with the shortcut (also across paragraphs), the top paragraph with the
@@ -362,8 +363,8 @@ async function open(theme = 'light') {
   );
   await page.waitForTimeout(400);
 }
-// The rail: its ticks (each bar's box and its tick's name), the bookmark dots beside them (#71), and
-// `marks`, the segments (only the earlier-history dots keep one).
+// The rail: its ticks (each bar's box and its tick's name) and the bookmark dots beside them (#71),
+// also the one beside the earlier-history dots (#72).
 const rail = () =>
   page.evaluate(() => {
     const root = document.querySelector('chatgpt-butter-nav').shadowRoot;
@@ -388,11 +389,6 @@ const rail = () =>
           tabIndex: el.tabIndex,
         };
       }),
-      marks: [...root.querySelectorAll('.mark:not(.gone)')].map((el) => ({
-        ...center(el),
-        cls: el.className,
-        color: getComputedStyle(el).backgroundColor,
-      })),
       visible: getComputedStyle(document.querySelector('chatgpt-butter-nav')).display !== 'none',
     };
   });
@@ -661,6 +657,30 @@ async function oneQuestionSection() {
     { stored: (await stored()).length, dots: two.dots.length });
   page$.turns = TURNS;
   await seedStore([], { clear: true });
+}
+
+// The rail's card shot as `b.file` (its own box at `b.at`, a viewport rect) against the card in
+// the #69 mockup's panel `b.panel`, open in `mock`: under 0.1% of pixels differing by more than 24.
+async function cardMatches(mock, b) {
+  const card = mock.locator(`[data-panel="${b.panel}"] .card`);
+  await card.scrollIntoViewIfNeeded();
+  // The mockup centres its card with translateY(-50%), which puts a card of odd height on half a
+  // pixel and moves some lines' text by a pixel. Lift it by a whole number of pixels instead and
+  // put it on the built card's fraction of a pixel, so both draw on the same grid.
+  const frac = (v) => v - Math.floor(v);
+  await card.evaluate((el) => (el.style.transform = `translateY(${-Math.round(el.offsetHeight / 2)}px)`));
+  const box = await card.boundingBox();
+  await card.evaluate((el, [dx, dy]) => {
+    const s = getComputedStyle(el);
+    el.style.right = `${parseFloat(s.right) - dx}px`;
+    el.style.top = `${parseFloat(s.top) + dy}px`;
+  }, [frac(b.at.x) - frac(box.x), frac(b.at.y) - frac(box.y)]);
+  const moved = await card.boundingBox(),
+    reference = `${shots}/mockup-${b.panel}.png`;
+  await mock.screenshot({ path: reference, clip: { x: Math.floor(moved.x), y: Math.floor(moved.y), width: Math.round(b.at.w), height: Math.round(b.at.h) } });
+  const diff = await compare(mock, b.file, reference, { radius: 12 });
+  check(`the card matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
+    { ...diff, built: [b.at.w, b.at.h], mockup: [moved.width, moved.height] });
 }
 
 // 13. The tick's card (#70). Hovering or focusing a tick whose question holds bookmarks shows the
@@ -946,27 +966,7 @@ async function cardSection() {
     await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
     await mock.addStyleTag({ content: 'html { scrollbar-width: none } .ann, .ring { display: none }' });
     await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
-    for (const b of built) {
-      const card = mock.locator(`[data-panel="${b.panel}"] .card`);
-      await card.scrollIntoViewIfNeeded();
-      // The mockup centres its card with translateY(-50%), which puts a card of odd height on half a
-      // pixel and moves some lines' text by a pixel. Lift it by a whole number of pixels instead and
-      // put it on the built card's fraction of a pixel, so both draw on the same grid.
-      const frac = (v) => v - Math.floor(v);
-      await card.evaluate((el) => (el.style.transform = `translateY(${-Math.round(el.offsetHeight / 2)}px)`));
-      const box = await card.boundingBox();
-      await card.evaluate((el, [dx, dy]) => {
-        const s = getComputedStyle(el);
-        el.style.right = `${parseFloat(s.right) - dx}px`;
-        el.style.top = `${parseFloat(s.top) + dy}px`;
-      }, [frac(b.at.x) - frac(box.x), frac(b.at.y) - frac(box.y)]);
-      const moved = await card.boundingBox(),
-        reference = `${shots}/mockup-${b.panel}.png`;
-      await mock.screenshot({ path: reference, clip: { x: Math.floor(moved.x), y: Math.floor(moved.y), width: Math.round(b.at.w), height: Math.round(b.at.h) } });
-      const diff = await compare(mock, b.file, reference, { radius: 12 });
-      check(`the card matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
-        { ...diff, built: [b.at.w, b.at.h], mockup: [moved.width, moved.height] });
-    }
+    for (const b of built) await cardMatches(mock, b);
     await mock.close();
   }
   page$.asked = new Map();
@@ -978,9 +978,11 @@ async function cardSection() {
 // read lit (`f-after-*`: questions 3, 7 and 10 hold bookmarks, 10's all stale), then the mockup's
 // close-ups at three times their size: a 7-question chat at rest in both themes (`s-rest-*`), under
 // the pointer (`s-wave-light`), with a new bookmark at its halo's widest (`s-new-light`), and a
-// 22-question chat 5 px apart (`s-dense-light`). Each answer runs past the view, so only the
-// question jumped to is lit, as in the mockup. With BUTTER_BOOKMARKS_DOT_MOCKUP each shot is
-// compared with its panel: the rail's own box for `f-after-*`, the strip's box otherwise. Also the
+// 22-question chat 5 px apart (`s-dense-light`), and earlier history with a dot beside the three dots
+// (`s-earlier-light`, #72) and their card (`f-earlier-light`). Each answer runs past the view, so only
+// the question jumped to is lit, as in the mockup. With BUTTER_BOOKMARKS_DOT_MOCKUP each shot is
+// compared with its panel: the rail's own box for `f-after-*`, the card's own box for
+// `f-earlier-light`, the strip's box otherwise. Also the
 // dot's gap through every frame of the hover wave, its motion under reduced motion, and no dot with
 // the rail off or Butter paused, back after a reload. ONLY=dot runs this part alone.
 async function dotSection() {
@@ -1065,7 +1067,6 @@ async function dotSection() {
       d10.cls.includes('stale') && d10.color === 'rgba(0, 0, 0, 0)' && d10.ring === `${LIGHT_DOT} 0px 0px 0px 1px inset`, { d7: d7.cls, d10: [d10.color, d10.ring] });
   check('dark theme: the dots in #e3c766, the hollow ring too', at.dark.dots.length === 3 && dotBeside(at.dark, 2)?.color === DARK_DOT &&
     dotBeside(at.dark, 9)?.ring === `${DARK_DOT} 0px 0px 0px 1px inset`, { dots: at.dark.dots.map((d) => [d.color, d.ring]) });
-  check('no segment under any tick', r.marks.length === 0);
 
   // (b) Through every frame of the hover wave each dot keeps 4 px from its tick, inside the rail.
   const frames = page.evaluate(
@@ -1225,17 +1226,73 @@ async function dotSection() {
   ]);
 
   page$.turns = TURNS;
-  page$.tail = 0;
   page$.css = '';
+
+  // (f) Earlier history (#72), as the mockup's s-earlier-light and f-earlier-light draw it: the chat
+  // opens with its latest 6 questions, the fifth being read and the third holding a bookmark; two
+  // bookmarks in the history not loaded yet (the panel's rows) put the dot beside the three dots.
+  // Then the pointer on the three dots and across onto the first row of their card.
+  page$.first = 6;
+  const early = (turn, time, excerpt) => ({ ...live(turn, time), excerpt });
+  await seedStore([
+    early(1, 1, 'COPY is the fastest way in: one transaction, no per-row overhead.'),
+    early(2, 2, 'Drop the indexes first and rebuild them after the load.'),
+    live(8, 3),
+  ], { clear: true });
+  await open('light');
+  await dotCount(2);
+  await readAt(4);
+  r = await rail();
+  check('earlier history at rest: question 11 alone lit, a dot beside question 9 and one beside the three dots',
+    JSON.stringify(lit(r)) === '[[4,21]]' && !!dotBeside(r, 2) && r.dots.length === 2, { lit: lit(r), dots: r.dots.map((d) => [d.y, d.right]) });
+  // The three dots' top is on half a pixel, which Chrome snaps a device pixel lower at three times
+  // the size: a pixel matches when one within a device pixel of it in the mockup does.
+  await strip('s-earlier-light', [], true);
+  const dotsRow = await page.evaluate(() => {
+    const m = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.more').getBoundingClientRect();
+    return { x: m.left + m.width / 2 - 10, y: m.top + m.height / 2 };
+  });
+  await page.mouse.move(dotsRow.x, dotsRow.y, { steps: 4 });
+  await page.waitForTimeout(350);
+  const firstRow = await page.evaluate(() => {
+    const it = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bmc .it').getBoundingClientRect();
+    return { x: it.left + it.width / 2 - 40, y: it.top + it.height / 2 };
+  });
+  await page.mouse.move(firstRow.x, firstRow.y, { steps: 12 });
+  await page.waitForTimeout(400);
+  const earlierCard = await page.evaluate(() => {
+    const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+      c = root.querySelector('.card'),
+      q = c.getBoundingClientRect();
+    return { shown: c.classList.contains('show'), meta: root.querySelector('.card > .meta').textContent, rect: { x: q.left, y: q.top, w: q.width, h: q.height } };
+  });
+  check('hovering the three dots: their card, "Earlier questions · 2 bookmarks", stays on the way to its first row',
+    earlierCard.shown && earlierCard.meta === 'Earlier questions · 2 bookmarks', earlierCard);
+  // Through the DevTools protocol, as the strips are: after their device metrics override a
+  // Playwright screenshot resizes the page under the shot.
+  const cardFile = `${shots}/f-earlier-light.png`,
+    cr = earlierCard.rect,
+    cdp = await context.newCDPSession(page),
+    { data: cardPng } = await cdp.send('Page.captureScreenshot', { format: 'png', clip: { x: Math.floor(cr.x), y: Math.floor(cr.y), width: Math.round(cr.w), height: Math.round(cr.h), scale: 1 } });
+  await cdp.detach();
+  await fs.writeFile(cardFile, Buffer.from(cardPng, 'base64'));
+  built.push({ panel: 'f-earlier-light', file: cardFile, card: true, at: cr });
+  await page.mouse.move(700, 300);
+  page$.first = 0;
+  page$.tail = 0;
   await seedStore([], { clear: true });
 
-  // Against the #69 mockup's sections 1 and 2, when given.
+  // Against the #69 mockup's sections 1, 2 and 3, when given.
   if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) {
     const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
     await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
     await mock.addStyleTag({ content: 'html { scrollbar-width: none } .ann, .ring { display: none }' });
     await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
     for (const b of built) {
+      if (b.card) {
+        await cardMatches(mock, b);
+        continue;
+      }
       const el = mock.locator(b.strip ? `[data-panel="${b.panel}"]` : `[data-panel="${b.panel}"] .rail`);
       await el.evaluate((e) => e.scrollIntoView({ block: 'center' }));
       const box = await el.boundingBox(),
@@ -1268,55 +1325,70 @@ async function earlierSection() {
   const reseed = (rows) => seedStore(rows, { clear: true });
   const FIRST = 7,
     LATEST = eseed(10, 0, 100);
+  // The rail: the three dots (their row, the leftmost one's left edge, their name), the dot beside
+  // them (#72), the questions' dots with their ticks' names, and the card.
   const state = () =>
     page.evaluate(() => {
       const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
         more = root.querySelector('.more'),
         mr = more.getBoundingClientRect(),
-        dotsY = mr.top + mr.height / 2;
+        dotsY = mr.top + mr.height / 2,
+        dotsLeft = more.querySelector('i').getBoundingClientRect().left;
       const rect = (el) => {
         const q = el.getBoundingClientRect();
         return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: q.width, h: q.height, top: q.top, right: q.right };
       };
-      const marks = [...root.querySelectorAll('.mark:not(.gone)')].map((el) => ({
-        ...rect(el),
-        cls: el.className,
-        label: el.getAttribute('aria-label'),
-        color: getComputedStyle(el).backgroundColor,
-        shadow: getComputedStyle(el).boxShadow,
-      }));
+      const bars = [...root.querySelectorAll('.tick .bar')],
+        all = [...root.querySelectorAll('.bdot:not(.gone)')],
+        beside = more.hidden ? null : all.find((el) => Math.abs(rect(el).y - dotsY) <= 0.6);
       // The questions' bookmark dots (#71), each with its tick's name.
-      const bars = [...root.querySelectorAll('.tick .bar')];
-      const dots = [...root.querySelectorAll('.bdot:not(.gone)')].map((el) => {
-        const r = rect(el),
-          bar = bars.find((b) => Math.abs(rect(b).y - r.y) <= 0.6);
-        return { ...r, cls: el.className, label: bar?.parentElement.getAttribute('aria-label') ?? null };
-      });
+      const dots = all
+        .filter((el) => el !== beside)
+        .map((el) => {
+          const r = rect(el),
+            bar = bars.find((b) => Math.abs(rect(b).y - r.y) <= 0.6);
+          return { ...r, cls: el.className, label: bar?.parentElement.getAttribute('aria-label') ?? null };
+        });
       const card = root.querySelector('.card'),
         bmc = root.querySelector('.bmc'),
-        a = root.activeElement;
+        a = root.activeElement,
+        cs = getComputedStyle(card);
       return {
         more: !more.hidden,
+        moreRect: rect(more),
+        moreLabel: more.getAttribute('aria-label'),
         dotsY,
+        dotsLeft,
         busy: more.classList.contains('busy'),
-        dotsMark: more.hidden ? null : (marks.find((m) => Math.abs(m.y - dotsY - 5) <= 0.6) ?? null),
-        marks,
+        dotsDot: beside && {
+          ...rect(beside),
+          cls: beside.className,
+          color: getComputedStyle(beside).backgroundColor,
+          ring: getComputedStyle(beside).boxShadow,
+          pe: getComputedStyle(beside).pointerEvents,
+          hidden: beside.getAttribute('aria-hidden'),
+          tag: beside.tagName,
+          tabIndex: beside.tabIndex,
+        },
         dots,
         ticks: bars.map((b) => rect(b).y),
-        tickRight: bars[0] && rect(bars[0]).right,
         card: {
-          shown: card.classList.contains('show') && +getComputedStyle(card).opacity > 0.5,
+          shown: card.classList.contains('show') && +cs.opacity > 0.5,
+          bm: card.classList.contains('qb'),
+          inert: card.inert,
+          pe: cs.pointerEvents,
+          role: card.getAttribute('role'),
           label: card.getAttribute('aria-label'),
-          meta: bmc.querySelector('.meta')?.textContent,
-          metaFlag: !!bmc.querySelector('.meta .flag'),
-          metaSpin: !!bmc.querySelector('.meta .wspin'),
-          text: bmc.querySelector('.one')?.textContent ?? null,
-          one: bmc.querySelector('.one') && rect(bmc.querySelector('.one')),
+          meta: root.querySelector('.card > .meta').textContent,
+          text: getComputedStyle(root.querySelector('.card > .text')).display === 'none' ? null : root.querySelector('.card > .text').textContent,
+          w: card.getBoundingClientRect().width,
           warn: bmc.querySelector('.warn')?.textContent ?? null,
           why: bmc.querySelectorAll('.why').length,
-          x: bmc.querySelector('.meta .x')?.getAttribute('aria-label') ?? null,
-          rows: [...bmc.querySelectorAll('.it')].map((it) => ({
-            text: it.querySelector('.go').textContent,
+          flags: bmc.querySelectorAll('svg.flag').length,
+          rows: !card.classList.contains('qb') ? [] : [...bmc.querySelectorAll('.it')].map((it) => ({
+            text: it.querySelector('.tx').textContent,
+            dot: !!it.querySelector('.go > .dot:first-child'),
+            lines: Math.round(it.querySelector('.tx').getBoundingClientRect().height / parseFloat(getComputedStyle(it.querySelector('.tx')).lineHeight)),
             wait: it.classList.contains('wait'),
             spin: !!it.querySelector('.wspin'),
             del: it.querySelector('.x')?.getAttribute('aria-label') ?? null,
@@ -1371,20 +1443,27 @@ async function earlierSection() {
     page$.pages = 0;
     await reseed(rows);
     await open(theme);
-    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark:not(.gone), .bdot:not(.gone)').length === n, marks, { timeout: 5000 });
+    await page.waitForFunction((n) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot:not(.gone)').length === n, marks, { timeout: 5000 });
     await page.mouse.move(700, 300);
     await page.waitForTimeout(200);
     return state();
   };
-  const hoverDots = async () => {
+  // The pointer onto the three dots, then (`row`) across onto that row of their card.
+  const hoverDots = async (row = null) => {
     await page.mouse.move(700, 300);
     await page.waitForTimeout(200);
-    const s = await state();
-    if (!s.dotsMark) return s;
-    await page.mouse.move(s.dotsMark.right - 4, s.dotsMark.y, { steps: 4 });
+    let s = await state();
+    if (!s.more) return s;
+    await page.mouse.move(s.moreRect.x - 10, s.dotsY, { steps: 4 });
     await page.waitForTimeout(350);
+    s = await state();
+    if (row === null || !s.card.rows[row]) return s;
+    await page.mouse.move(s.card.rows[row].x - 40, s.card.rows[row].y, { steps: 10 });
+    await page.waitForTimeout(250);
     return state();
   };
+  const LIGHT_DOT = 'rgb(211, 158, 16)',
+    HINT = 'Earlier questions are not loaded yet. Click to load them.';
   const tab = async (cls) => {
     await page.evaluate(() => document.activeElement?.blur());
     for (let k = 0; k < 10 && !(await state()).active?.cls.startsWith(cls); k++) await page.keyboard.press('Tab');
@@ -1394,18 +1473,19 @@ async function earlierSection() {
   page$.pageDelay = 300;
   const A = eseed(2, 2, 1);
 
-  // (a) At rest: the earlier bookmark on the dots, the loaded one under its question.
+  // (a) At rest: the earlier bookmark's dot beside the three dots, the loaded one beside its tick.
   let s = await openEarlier('light', [A, LATEST], 2);
   check('earlier: the chat opens with its latest 5 questions and the earlier-history dots', s.ticks.length === 5 && s.more, { ticks: s.ticks.length });
-  // The dots keep their segment until #72: 8 × 2 px in butter with its ring, right-aligned with the ticks.
-  check('earlier: one segment on the dots, 5 px below their centre, 8 × 2 px in butter with its ring',
-    !!s.dotsMark && s.dotsMark.w === 8 && s.dotsMark.h === 2 && s.dotsMark.color === 'rgb(251, 224, 122)' && s.dotsMark.shadow.includes('1px') &&
-      Math.abs(s.dotsMark.right - s.tickRight) < 0.5, { dotsMark: s.dotsMark, tickRight: s.tickRight });
-  check('earlier: the loaded question\'s bookmark is a dot beside its tick (question 11)', !!under(s, 10), { dots: s.dots.length });
-  check('earlier: no dot beside a loaded question the bookmark isn\'t from, no segment under any tick',
-    s.marks.length === 1 && s.dots.length === 1 && !under(s, 9) && !under(s, 8), { marks: s.marks.map((m) => m.y), dots: s.dots.map((m) => m.y), ticks: s.ticks });
-  check('earlier: the dots\' segment is never "answer changed"; its name holds the text',
-    s.dotsMark && !s.dotsMark.cls.includes('stale') && s.dotsMark.label === `Bookmark · earlier question: ${A.excerpt}`, { label: s.dotsMark?.label });
+  const d = s.dotsDot;
+  check("earlier: a 4 px dot on the three dots' row, its right edge 4 px left of the leftmost, solid #d39e10",
+    !!d && d.w === 4 && d.h === 4 && Math.abs(d.y - s.dotsY) <= 0.5 && Math.abs(d.right - (s.dotsLeft - 4)) <= 0.5 &&
+      d.color === LIGHT_DOT && d.ring === 'none' && !d.cls.includes('stale'), { d, dotsY: s.dotsY, dotsLeft: s.dotsLeft });
+  check('earlier: the dot takes no pointer events, is not focusable and is hidden from the accessibility tree',
+    d?.pe === 'none' && d.hidden === 'true' && d.tag === 'I' && d.tabIndex === -1, { d });
+  check('earlier: the loaded question\'s bookmark is a dot beside its tick (question 11), and no other', !!under(s, 10) && s.dots.length === 1 && !under(s, 9) && !under(s, 8),
+    { dots: s.dots.map((m) => m.y), ticks: s.ticks });
+  check("earlier: the three dots keep their name and append the earlier label with the bookmark's text",
+    s.moreLabel === `${HINT} · Bookmark · earlier question: ${A.excerpt}`, { label: s.moreLabel });
   // Scrolling the loaded part reads nothing and loads no page.
   const before = await requests();
   await page.mouse.move(700, 500);
@@ -1417,33 +1497,37 @@ async function earlierSection() {
   check('earlier: scrolling reads no bookmarks and loads no page', JSON.stringify(await requests()) === JSON.stringify(before) && page$.pages === 0,
     { before, after: await requests(), pages: page$.pages });
 
-  // (b) The single card, and a click on its text: earlier pages load until the answer mounts.
+  // (b) Hovering the three dots: the single card. Moving onto it keeps it; a click on its row loads
+  // earlier pages until the answer mounts.
   s = await hoverDots();
-  check('earlier: hovering the dots\' segment shows "Bookmark · earlier question", the text, × and the footer',
-    s.card.shown && s.card.meta === 'Bookmark · earlier question' && s.card.text === A.excerpt && s.card.x === `Delete bookmark: ${A.excerpt}` &&
+  check('earlier: hovering the three dots shows "Bookmark · earlier question", a row starting with the dot, and the footer',
+    s.card.shown && s.card.bm && !s.card.inert && s.card.pe === 'auto' && s.card.role === 'group' && s.card.label === 'Bookmark · earlier question' &&
+      s.card.meta === 'Bookmark · earlier question' && s.card.text === null && s.card.flags === 0 && s.card.rows.length === 1 &&
+      s.card.rows[0].text === A.excerpt && s.card.rows[0].dot && s.card.rows[0].lines <= 3 && s.card.rows[0].del === `Delete bookmark: ${A.excerpt}` &&
       s.card.warn === "This question isn't loaded yet. Clicking loads earlier messages first.", { card: s.card });
   await record();
-  await page.mouse.move(s.card.one.x, s.card.one.y, { steps: 10 });
-  await page.mouse.click(s.card.one.x, s.card.one.y);
+  s = await hoverDots(0);
+  check('earlier: moving onto the card keeps it open', s.card.shown && s.card.bm, { shown: s.card.shown });
+  await page.mouse.click(s.card.rows[0].x - 40, s.card.rows[0].y);
   await page.waitForTimeout(150);
   s = await state();
   check('earlier: while loading, the card stays with "Loading earlier questions…", a spinner for its × and blinking dots',
-    s.card.shown && s.card.meta === 'Loading earlier questions…' && s.card.metaSpin && !s.card.x && s.busy, { card: s.card, busy: s.busy });
+    s.card.shown && s.card.meta === 'Loading earlier questions…' && s.card.rows[0]?.spin && !s.card.rows[0].del && s.busy, { card: s.card, busy: s.busy });
   let l = await landed(2, 2);
   s = await state();
   let rec = await recorded();
   check('earlier: the click loads earlier pages until the answer mounts and lands on the text', l.landed && page$.pages === 3, { ...l, pages: page$.pages });
-  check('earlier: the bookmark moves to its real tick (question 3), its dot growing in; the dots\' segment fades out',
-    !s.dotsMark && s.more && !!under(s, 2) && rec.grown >= 1 && rec.gone >= 1, { rec, dots: s.dots.length });
+  check("earlier: the bookmark moves to its real tick (question 3), its dot growing in; the dot beside the three dots fades out; the card goes on landing",
+    !s.dotsDot && s.more && !!under(s, 2) && rec.grown >= 1 && rec.gone >= 1 && !s.card.shown && s.moreLabel === HINT, { rec, dots: s.dots.length, label: s.moreLabel });
 
-  // (c) The list, a row's click, and what is left on the dots afterwards.
+  // (c) The list, a row's click, and what is left on the three dots afterwards.
   const LIST = [eseed(1, 0, 1), eseed(1, 2, 2), eseed(3, 0, 3), eseed(4, 2, 4)];
   s = await openEarlier('light', [...LIST, LATEST], 2);
   s = await hoverDots();
-  check('earlier: several: "Earlier questions · 4 bookmarks", oldest first, the flag in the meta line',
-    s.card.shown && s.card.meta === 'Earlier questions · 4 bookmarks' && s.card.metaFlag &&
-      JSON.stringify(s.card.rows.map((r) => r.text)) === JSON.stringify(LIST.map((b) => b.excerpt)) &&
-      s.dotsMark.label === `Earlier questions · 4 bookmarks: ${LIST.map((b) => b.excerpt).join('; ')}`, { card: s.card });
+  check('earlier: several: "Earlier questions · 4 bookmarks", oldest first, each row starting with the dot, 280 px',
+    s.card.shown && s.card.meta === 'Earlier questions · 4 bookmarks' && s.card.flags === 0 && s.card.rows.every((r) => r.dot && r.lines === 1) &&
+      Math.abs(s.card.w - 280) < 0.5 && JSON.stringify(s.card.rows.map((r) => r.text)) === JSON.stringify(LIST.map((b) => b.excerpt)) &&
+      s.moreLabel === `${HINT} · Earlier questions · 4 bookmarks: ${LIST.map((b) => b.excerpt).join('; ')}`, { card: s.card, label: s.moreLabel });
   await page.mouse.move(s.card.rows[0].x, s.card.rows[0].y, { steps: 10 });
   await page.mouse.move(s.card.rows[3].x, s.card.rows[3].y, { steps: 4 });
   await page.mouse.click(s.card.rows[3].x - 40, s.card.rows[3].y);
@@ -1457,63 +1541,112 @@ async function earlierSection() {
   await page.waitForTimeout(300);
   s = await state();
   check('earlier: a row\'s click lands on that bookmark after two pages', l.landed && page$.pages === 2, { ...l, pages: page$.pages });
-  check('earlier: the loaded ones move to questions 4 and 5; question 2\'s two stay on the dots',
-    !!under(s, 3) && !!under(s, 4) && s.dotsMark?.label?.startsWith('Earlier questions · 2 bookmarks: '), { label: s.dotsMark?.label });
+  check('earlier: the loaded ones move to questions 4 and 5; question 2\'s two stay on the three dots',
+    !!under(s, 3) && !!under(s, 4) && !!s.dotsDot && s.moreLabel.startsWith(`${HINT} · Earlier questions · 2 bookmarks: `), { label: s.moreLabel });
+  // × deletes that bookmark; the card stays with the other.
+  s = await hoverDots(0);
+  const x0 = await page.evaluate(() => {
+    const r = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.bmc .it .x').getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  await page.mouse.move(x0.x, x0.y, { steps: 3 });
+  await page.mouse.click(x0.x, x0.y);
+  await page.waitForTimeout(400);
+  s = await state();
+  check('earlier: × deletes that bookmark; the card stays with the other, now the single card',
+    !(await stored()).some((b) => b.turn === 1 && b.para === 0) && s.card.shown && s.card.meta === 'Bookmark · earlier question' && s.card.rows.length === 1 &&
+      s.card.rows[0].text === LIST[1].excerpt && !!s.dotsDot, { card: s.card });
 
   // (d) Escape while loading puts the card away; the loading goes on and lands.
   await record();
-  s = await hoverDots();
-  await page.mouse.move(s.card.rows[0].x, s.card.rows[0].y, { steps: 10 });
+  s = await hoverDots(0);
   await page.mouse.click(s.card.rows[0].x - 40, s.card.rows[0].y);
   await page.waitForTimeout(150);
   await page.keyboard.press('Escape');
   await page.waitForTimeout(250);
   const escaped = await state();
-  l = await landed(1, 0);
+  l = await landed(1, 2);
   s = await state();
   rec = await recorded();
   // Question 2 lands at the chat's top, where the fixture loads the last page too.
   check('earlier: Escape closes the card but the loading goes on and lands', !escaped.card.shown && l.landed && page$.pages >= 3, { shown: escaped.card.shown, ...l, pages: page$.pages });
-  check('earlier: none left on the dots: their segment goes', !s.dotsMark && !!under(s, 1), { rec });
+  check('earlier: none left on the three dots: the dot beside them goes', !s.dotsDot && !!under(s, 1), { rec });
 
-  // (e) Keyboard alone: the dots, their segment, its card's rows; Enter loads and lands.
+  // (e) Keyboard alone: the three dots, their card's rows; Enter loads and lands.
   s = await openEarlier('light', [eseed(3, 2, 1), eseed(6, 0, 2), LATEST], 2);
   let f = await tab('more');
-  await page.keyboard.press('ArrowDown');
   await page.waitForTimeout(250);
   s = await state();
-  check('earlier: ArrowDown from the dots reaches their segment and opens its card',
-    f?.cls.startsWith('more') && s.active?.cls.startsWith('mark') && s.active.label === s.dotsMark?.label && s.card.shown && s.card.meta === 'Earlier questions · 2 bookmarks', { f, active: s.active });
+  check('earlier: focusing the three dots shows their card', f?.cls.startsWith('more') && s.card.shown && s.card.meta === 'Earlier questions · 2 bookmarks', { f, card: s.card.meta });
+  await page.keyboard.press('ArrowDown');
+  const next = (await state()).active;
+  await page.keyboard.press('ArrowUp');
+  s = await state();
+  check('earlier: ArrowDown goes from the three dots straight to the first tick, ArrowUp back',
+    next?.cls.startsWith('tick') && next.label.startsWith(QUESTION(FIRST)) && s.active?.cls.startsWith('more'), { next, active: s.active });
   await page.keyboard.press('ArrowLeft');
+  const entered = (await state()).active;
   await page.keyboard.press('ArrowDown');
   s = await state();
-  check('earlier: ArrowLeft enters the card, ArrowDown moves to the next row', s.active?.cls === 'go' && s.active.text === PARAGRAPH(6, 0).slice(0, 120).trim(), { active: s.active });
+  check('earlier: ArrowLeft enters the card on its first row, ArrowDown moves to the next row',
+    entered?.cls === 'go' && entered.text === PARAGRAPH(3, 1).slice(0, 120).trim() && s.active?.cls === 'go' && s.active.text === PARAGRAPH(6, 0).slice(0, 120).trim(), { entered, active: s.active });
+  await page.keyboard.press('ArrowRight');
+  const back = (await state()).active;
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   l = await landed(6, 0);
   s = await state();
-  check('earlier: Enter on a row loads and lands; focus moves to question 7\'s tick, beside its dot',
-    l.landed && page$.pages === 1 && s.active?.cls.startsWith('tick') && !!under(s, 6) && under(s, 6).label === s.active.label &&
-      s.dotsMark?.label === `Bookmark · earlier question: ${PARAGRAPH(3, 1).slice(0, 120).trim()}`, { ...l, active: s.active, pages: page$.pages });
+  check('earlier: ArrowRight returns to the three dots; Enter on a row loads and lands; focus moves to question 7\'s tick, beside its dot',
+    back?.cls.startsWith('more') && l.landed && page$.pages === 1 && s.active?.cls.startsWith('tick') && !!under(s, 6) && under(s, 6).label === s.active.label &&
+      s.moreLabel === `${HINT} · Bookmark · earlier question: ${PARAGRAPH(3, 1).slice(0, 120).trim()}`, { back, ...l, active: s.active, pages: page$.pages });
 
-  // (f) A click on the dots' segment targets the oldest; under reduced motion it goes at once.
+  // (f) Reduced motion, keyboard alone: the last bookmark on the three dots moves to its tick, which
+  // shows its dot without growing in; the dot beside the three dots goes without fading. Escape
+  // while its messages load puts the card away; the loading goes on.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await record();
-  s = await state();
-  await page.mouse.move(s.dotsMark.right - 4, s.dotsMark.y, { steps: 4 });
-  await page.mouse.click(s.dotsMark.right - 4, s.dotsMark.y);
+  await tab('more');
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(150);
+  const loading = await state();
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(250);
+  const away = await state();
   l = await landed(3, 2);
   s = await state();
   rec = await recorded();
-  check('earlier: clicking the dots\' segment loads and lands on the oldest; reduced motion removes it at once',
-    l.landed && s.more && !s.dotsMark && !!under(s, 3) && rec.gone === 0, { ...l, rec, more: s.more });
+  const moved = await page.evaluate(() => [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot')].map((el) => el.getAnimations().length));
+  check('earlier: keyboard alone, Escape while loading puts the card away and the loading goes on',
+    loading.card.shown && loading.card.meta === 'Loading earlier questions…' && !away.card.shown && away.busy && l.landed, { loading: loading.card.meta, away: away.card.shown, ...l });
+  check('earlier: under reduced motion the moved dot shows without growing and the dot beside the three dots goes without fading',
+    s.more && !s.dotsDot && !!under(s, 3) && rec.gone === 0 && moved.every((n) => n === 0), { rec, moved, more: s.more });
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 
-  // (g) A bookmark whose message is gone from the whole conversation: on the dots while history
-  // is unloaded, then today's stale bookmark once it is all loaded, landing at its question.
+  // (f2) Clicking the three dots still loads earlier messages; without bookmarks in earlier history
+  // they show their hint card.
+  s = await openEarlier('light', [LATEST], 1);
+  s = await hoverDots();
+  check("earlier: no bookmarks in earlier history: no dot beside the three dots, which show today's hint card",
+    !s.dotsDot && s.card.shown && !s.card.bm && s.card.inert && s.card.role === 'tooltip' && s.card.text === HINT && s.moreLabel === HINT, { card: s.card });
+  s = await openEarlier('light', [A, LATEST], 2);
+  s = await hoverDots();
+  const ticks0 = s.ticks.length;
+  await page.mouse.click(s.moreRect.x - 10, s.dotsY);
+  for (let k = 0; k < 40 && (await state()).ticks.length === ticks0; k++) await page.waitForTimeout(250);
+  s = await state();
+  check('earlier: clicking the three dots loads earlier messages (also when they hold bookmarks)', page$.pages >= 1 && s.ticks.length > ticks0,
+    { pages: page$.pages, ticks: [ticks0, s.ticks.length] });
+  // That trip goes on loading: leave the page, so that no page of it counts in the next part.
+  await page.goto('about:blank');
+
+  // (g) A bookmark whose message is gone from the whole conversation: on the three dots while
+  // history is unloaded, then today's stale bookmark once it is all loaded, landing at its question.
   s = await openEarlier('light', [eseed(2, 0, 1, regen(2))], 1);
-  check('earlier: an unknown message waits on the dots, live', !!s.dotsMark && !s.dotsMark.cls.includes('stale'));
-  await page.mouse.move(s.dotsMark.right - 4, s.dotsMark.y, { steps: 4 });
-  await page.mouse.click(s.dotsMark.right - 4, s.dotsMark.y);
+  check('earlier: an unknown message waits on the three dots, live', !!s.dotsDot && !s.dotsDot.cls.includes('stale'));
+  s = await hoverDots(0);
+  await page.mouse.click(s.card.rows[0].x - 40, s.card.rows[0].y);
   let q = null;
   for (let k = 0; k < 120; k++) {
     await page.waitForTimeout(250);
@@ -1530,11 +1663,11 @@ async function earlierSection() {
 
   // (g2) Question 10's answer was regenerated (the new one is the conversation's current version)
   // while earlier history is unloaded. A bookmark stored with its question (`ask`) is stale under
-  // that loaded question (#55); one stored without it keeps going on the dots, as before.
+  // that loaded question (#55); one stored without it keeps going on the three dots, as before.
   page$.regen.add(9);
   s = await openEarlier('light', [{ ...eseed(9, 0, 1), ask: sha(question(9)) }, eseed(9, 2, 2)], 2).catch(() => state());
-  check('earlier: a regenerated answer\'s bookmark is stale under its loaded question; one stored without its question is on the dots',
-    !!under(s, 9)?.cls.includes('stale') && !!s.dotsMark && s.marks.length === 1 && s.dots.length === 1, { marks: s.marks.map((m) => m.cls), dots: s.dots.map((m) => m.cls) });
+  check('earlier: a regenerated answer\'s bookmark is stale under its loaded question; one stored without its question is on the three dots',
+    !!under(s, 9)?.cls.includes('stale') && !!s.dotsDot && s.dots.length === 1, { dots: s.dots.map((m) => m.cls), beside: s.dotsDot?.cls });
   page$.regen.delete(9);
 
   // (h) Screenshots of each mockup state, light and dark, English and Chinese, desktop and narrow.
@@ -1583,7 +1716,7 @@ async function earlierSection() {
         s = await state();
         check(`earlier (${tag}): every state draws, with its strings`,
           single.meta === t.one && single.warn === t.foot && list.meta === t.many && loading.meta === t.wait && loading.rows[3]?.spin &&
-            l.landed && !!s.dotsMark && !!under(s, 4), { single: single.meta, list: list.meta, loading: loading.meta, landed: l.landed });
+            l.landed && !!s.dotsDot && !!under(s, 4), { single: single.meta, list: list.meta, loading: loading.meta, landed: l.landed });
       }
   // Under 560 px of chat the rail doesn't draw at all (unchanged).
   await page.setViewportSize({ width: 390, height: 844 });
@@ -2165,7 +2298,7 @@ try {
     await settings({});
     await open();
     const before = await rail();
-    check('rail draws no dot before any bookmark', before.dots.length === 0 && before.marks.length === 0);
+    check('rail draws no dot before any bookmark', before.dots.length === 0);
 
     // 1. Hover, wait, click: a dot appears beside question 7's tick (#71).
     const TURN = 6,
@@ -2223,8 +2356,6 @@ try {
       pitch = made.ticks[1].y - made.ticks[0].y;
     check("one dot, beside question 7's tick: on its row, its right edge 4 px left of the tick", made.dots.length === 1 && !!dotBeside(made, TURN),
       { dot: made.dots[0], tick });
-    check('no segment under any question\'s tick', made.marks.length === 0 &&
-      (await page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark').length)) === 0);
     check('the new dot grows in from 0 over 180 ms, cubic-bezier(.2, .8, .2, 1), then one 600 ms halo, 4 px, at 35 %',
       motion.cls.includes('new') && motion.easing.startsWith('cubic-bezier(0.2, 0.8, 0.2, 1)') &&
         JSON.stringify(motion.anims) === JSON.stringify([{ name: 'dot-in', duration: 180, delay: 0, iterations: 1 }, { name: 'dot-halo', duration: 600, delay: 180, iterations: 1 }]) &&
@@ -2543,7 +2674,7 @@ try {
       const off = await page.evaluate(() => {
         const nav = document.querySelector('chatgpt-butter-nav');
         return {
-          marks: nav ? [...nav.shadowRoot.querySelectorAll('.bdot, .mark')].filter((m) => m.getBoundingClientRect().width && getComputedStyle(nav).display !== 'none' && nav.hasAttribute('data-on')).length : 0,
+          marks: nav ? [...nav.shadowRoot.querySelectorAll('.bdot')].filter((m) => m.getBoundingClientRect().width && getComputedStyle(nav).display !== 'none' && nav.hasAttribute('data-on')).length : 0,
         };
       });
       await scrollTo(TURN);

@@ -193,12 +193,14 @@
   // diameter: 4 px while ticks are 6 px apart or more, else the pitch minus 2 px, never under 2,
   // so dots on neighbouring rows don't touch.
   const dotSize = (pitch) => (pitch >= 6 ? 4 : Math.max(2, pitch - 2));
-  // Px from the tick's right end to the dot's right edge: the tick is 12 px times its scale (12 at
-  // rest, 21 for the question being read, up to 31 under the pointer), and the dot sits 4 px
-  // left of it.
+  // Px from a mark's right end to the dot's right edge, for a mark `width` px long: the dot sits
+  // 4 px left of it. Earlier history's dot (#72) sits beside the rail's three dots this way.
   const TICK = 12,
     GAP = 4;
-  const dotRight = (scale) => TICK * scale + GAP;
+  const dotBeside = (width) => width + GAP;
+  // Beside a tick: the tick is 12 px times its scale (12 at rest, 21 for the question being read,
+  // up to 31 under the pointer).
+  const dotRight = (scale) => dotBeside(TICK * scale);
   // 'solid', or when every bookmark under the question is stale 'hollow' (a 1 px inner ring), or
   // 'faint' (solid at 45 %) when the dot is too small for a ring.
   const dotLook = (rows, size) => (!pale(rows) ? 'solid' : size >= 4 ? 'hollow' : 'faint');
@@ -207,8 +209,8 @@
   // earlier questions aren't loaded and the total is unknown, or `{ earlier: true }` for the
   // bookmarks in that unloaded history, on the rail's earlier-history dots. One bookmark gets the
   // single card; several get a list that shows `visible` rows and scrolls for the rest. `label` is
-  // the accessible name of the mark that holds them; `wait` the meta line while earlier messages
-  // load for a click.
+  // what the three dots' name appends for earlier history (#72); `wait` the meta line while earlier
+  // messages load for a click.
   const VISIBLE = 5;
   function card(rows, at, zh = false) {
     const k = rows.length,
@@ -296,6 +298,10 @@
   // bookmarks (#70), `label` after it.
   const tickLabel = (q, rows = [], zh = false) =>
     rows.length ? `${q.slice(0, 120)} · ${label(rows, zh)}` : q.slice(0, 120);
+  // The rail's three earlier-history dots' accessible name (#72): their `hint` and, when that
+  // history holds bookmarks, the earlier card's `label` after it.
+  const moreLabel = (hint, rows = [], zh = false) =>
+    rows.length ? `${hint} · ${card(rows, { earlier: true }, zh).label}` : hint;
   // The hover button's accessible name while it adds: the action and the start of the text it
   // would bookmark (the paragraph's, or the selection's), up to 80 characters.
   const LEAD = 80;
@@ -326,12 +332,14 @@
     topParagraph,
     keyHint,
     dotSize,
+    dotBeside,
     dotRight,
     dotLook,
     card,
     questionCard,
     label,
     tickLabel,
+    moreLabel,
     addLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
