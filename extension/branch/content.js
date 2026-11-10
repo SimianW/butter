@@ -1,6 +1,7 @@
 // Isolated world, document_start. Ask in branch, both halves:
-// - original tab: a button next to ChatGPT's "Ask ChatGPT" for a selection in a reply, the
-//   question box, and the handoff (new tab opened inside the gesture, job through the worker);
+// - original tab: the Ask in branch cell of the selection pill (selection/pill.js, next to
+//   ChatGPT's "Ask ChatGPT") for a selection in a reply, the question box, and the handoff (new
+//   tab opened inside the gesture, job through the worker);
 // - new tab: claims the job once, covers the page while run.js makes and verifies the branch,
 //   then shows the line above the composer.
 // Nothing here types into or sends in the original tab.
@@ -29,12 +30,7 @@
   // ---------------------------------------------------------------- original tab
   const drafts = new Map(); // per tab, per conversation and quote: unsent questions
   let sel = null,
-    boxOpen = false,
-    frame = 0,
-    native = null,
-    nativeAt = 0,
-    last = null,
-    selectionTimer;
+    boxOpen = false;
   const draftKey = (s) => `${s.identity}\n${s.quote}`;
   const elementOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement);
 
@@ -65,70 +61,22 @@
     return { range: range.cloneRange(), quote: text.trim(), identity };
   };
 
+  // Ends the question box and forgets the selection; the pill goes back to the page selection.
   const hideSelectionUI = () => {
-    cancelAnimationFrame(frame);
-    frame = 0;
     sel = null;
     boxOpen = false;
-    native = null;
-    last = null;
     highlight(null);
-    ui?.button.hide();
     ui?.question.close();
+    ButterPill.release();
   };
 
-  // Follow ChatGPT's button every frame while a selection is active: same top edge, 4 px to
-  // its right, shown and hidden with it. While the question box is open, Butter's button is hidden.
-  // The page selection has moved into the box, so ChatGPT's button goes away too; the box stays
-  // anchored where ChatGPT's button last was, relative to the quote. Once the box closes, Butter's
-  // button comes back with ChatGPT's if the selection is still there.
-  const tick = () => {
-    frame = 0;
-    if (!sel || off()) return hideSelectionUI();
-    if (!sel.range.startContainer.isConnected || B.identity(location.href) !== sel.identity)
-      return hideSelectionUI();
-    const now = performance.now();
-    if (!native || !P.visible(native.box) || now - nativeAt > 250) {
-      native = P.nativeAsk();
-      nativeAt = now;
-    }
-    // ChatGPT's toolbar offers "Ask in side chat": Work mode, where Butter has no button.
-    if (native?.sideChat) return hideSelectionUI();
-    const u = getUI();
-    const area = sel.range.getBoundingClientRect();
-    if (native) {
-      const r = native.box.getBoundingClientRect();
-      // While ChatGPT's button is hovered, pressed or focused, keep the look it had at rest.
-      const busy = P.nativeBusy(native);
-      last = {
-        dx: r.left - area.left,
-        dy: r.top - area.bottom,
-        width: r.width,
-        height: r.height,
-        style: busy && last?.style ? last.style : P.nativeStyle(native),
-      };
-    } else if (!boxOpen) last = null;
-    if (last) {
-      const anchor = { left: area.left + last.dx, top: area.bottom + last.dy };
-      anchor.right = anchor.left + last.width;
-      anchor.bottom = anchor.top + last.height;
-      if (boxOpen) {
-        u.button.hide();
-        placeBox(anchor, area);
-      } else {
-        const width = u.button.el.offsetWidth || 120;
-        let left = anchor.right + 4;
-        if (left + width > innerWidth - 8) left = anchor.left - 4 - width;
-        u.button.show(left, anchor.top, last.style);
-      }
-    } else {
-      u.button.hide();
-      if (boxOpen) placeBox({ left: area.left, top: area.bottom, bottom: area.bottom }, area);
-    }
-    frame = requestAnimationFrame(tick);
-  };
-  const follow = () => {
-    if (!frame) frame = requestAnimationFrame(tick);
+  // While the question box is open the pill is hidden, and the box stays anchored where ChatGPT's
+  // button last was relative to the quote (selection/pill.js follows it): the page selection has
+  // moved into the box, so ChatGPT's button has gone. Without that anchor, under the quote. Once
+  // the box closes, the pill comes back with ChatGPT's button if the selection is still there.
+  const placeHeld = (current, anchor, area) => {
+    if (off() || B.identity(location.href) !== current.identity) return hideSelectionUI();
+    placeBox(anchor || { left: area.left, top: area.bottom, bottom: area.bottom }, area);
   };
 
   // Under the buttons, left-aligned with them; above the selection when there is no room below.
@@ -170,7 +118,7 @@
       s.removeAllRanges();
       s.addRange(sel.range);
     }
-    onSelection();
+    ButterPill.release();
   };
   const openBox = () => {
     if (!sel || boxOpen) return;
@@ -184,7 +132,10 @@
       onClose: () => closeBox(true),
     });
     highlight(current.range);
-    tick();
+    ButterPill.hold(current.range, {
+      place: (anchor, area) => placeHeld(current, anchor, area),
+      lost: hideSelectionUI,
+    });
     input.focus({ preventScroll: true });
     input.setSelectionRange(input.value.length, input.value.length);
   };
@@ -216,10 +167,7 @@
   // Keep (or reopen) the box for this selection and say why it didn't go through. A selection
   // the user has moved on to is left alone; the draft still waits for the old one.
   const showReason = (current, reason) => {
-    if (!sel && !boxOpen && current.range.startContainer.isConnected) {
-      sel = current;
-      follow();
-    }
+    if (!sel && !boxOpen && current.range.startContainer.isConnected) sel = current;
     if (sel === current && !boxOpen) openBox();
     if (sel === current) ui.question.reason(ui.strings()[reason]);
   };
@@ -260,16 +208,18 @@
       .catch(() => handoffFailed(id));
   };
 
-  const onSelection = () => {
-    if (boxOpen) return;
-    if (off()) return hideSelectionUI();
-    sel = readSelection();
-    if (sel) follow();
-    else hideSelectionUI();
-  };
-  document.addEventListener('selectionchange', () => {
-    clearTimeout(selectionTimer);
-    selectionTimer = setTimeout(onSelection, 40);
+  // The pill's Ask in branch cell: the branch icon, its label on hover. It opens the question box
+  // on a primary pointerdown or a keyboard click.
+  ButterPill.register({
+    id: 'branch',
+    feature: 'branch',
+    icon: ButterBranchUI.ICON.branch,
+    label: () => ButterBranchUI.strings().ask,
+    wants: () => !!(sel = readSelection()),
+    activate: () => openBox(),
+    reset() {
+      if (!boxOpen) sel = null;
+    },
   });
   document.addEventListener('butter-settings', () => {
     if (!off()) return;
@@ -291,21 +241,6 @@
     },
     true,
   );
-  const wireButton = () => {
-    const chip = getUI().button.el;
-    // Open on pointerdown: keeps the page selection, and ChatGPT may hide its own button
-    // (and so Butter's) before a click would land.
-    chip.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
-      e.preventDefault();
-      openBox();
-    });
-    chip.addEventListener('mousedown', (e) => e.preventDefault());
-    chip.addEventListener('click', (e) => {
-      if (e.detail === 0) openBox(); // keyboard
-    });
-  };
-
   // ---------------------------------------------------------------- new tab
   const clock = {
     now: () => performance.now(),
@@ -555,5 +490,4 @@
   };
 
   if (incoming) claim(incoming);
-  domReady().then(wireButton);
 })();

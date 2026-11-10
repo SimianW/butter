@@ -189,6 +189,25 @@
   // The tooltip's key hint from chrome.commands' `shortcut`: "Alt+Shift+M" reads "Alt Shift M", as
   // the mockup writes keys; a command without a key shows no hint.
   const keyHint = (shortcut) => (typeof shortcut === 'string' ? shortcut.split('+').join(' ') : '');
+  // The same key for the Bookmark cell's aria-keyshortcuts (#77), in ARIA's key names: macOS's
+  // symbols and Chrome's modifier and key names spelled out.
+  const ARIA = {
+    '⌥': 'Alt',
+    '⇧': 'Shift',
+    '⌃': 'Control',
+    '⌘': 'Meta',
+    Ctrl: 'Control',
+    MacCtrl: 'Control',
+    Command: 'Meta',
+    Comma: ',',
+    Period: '.',
+  };
+  const ariaKeys = (shortcut) =>
+    typeof shortcut === 'string' && shortcut
+      ? (shortcut.includes('+') ? shortcut.split('+') : shortcut.match(/[⌥⇧⌃⌘]|[^⌥⇧⌃⌘]+/g))
+          .map((k) => ARIA[k] ?? k)
+          .join('+')
+      : '';
   // The rail's bookmark dot (#71), one beside each tick whose question holds bookmarks. Its
   // diameter: 4 px while ticks are 6 px apart or more, else the pitch minus 2 px, never under 2,
   // so dots on neighbouring rows don't touch.
@@ -302,21 +321,6 @@
   // history holds bookmarks, the earlier card's `label` after it.
   const moreLabel = (hint, rows = [], zh = false) =>
     rows.length ? `${hint} · ${card(rows, { earlier: true }, zh).label}` : hint;
-  // The hover button's accessible name while it adds: the action and the start of the text it
-  // would bookmark (the paragraph's, or the selection's), up to 80 characters.
-  const LEAD = 80;
-  function addLabel(text, selection = false, zh = false) {
-    const all = [...flat(text)],
-      lead = all.slice(0, LEAD).join('').trim() + (all.length > LEAD ? '…' : '');
-    const action = zh
-      ? selection
-        ? '为选中内容加书签'
-        : '加书签'
-      : selection
-        ? 'Bookmark selection'
-        : 'Bookmark';
-    return lead ? `${action}${zh ? '：' : ': '}${lead}` : action;
-  }
   const api = {
     EARLIER,
     excerpt,
@@ -331,6 +335,7 @@
     anchor,
     topParagraph,
     keyHint,
+    ariaKeys,
     dotSize,
     dotBeside,
     dotRight,
@@ -340,7 +345,6 @@
     label,
     tickLabel,
     moreLabel,
-    addLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ButterBookmarks = api;
