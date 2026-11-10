@@ -189,6 +189,7 @@
         bookmarks: g.bookmarks,
         stale: g.stale,
         land: (turn, b = first) => locate(turn, b),
+        wash: (turn, b = first, draw = true) => washAt(turn, b, draw),
         remove: (b) => remove(owner, conv, [b]),
       });
     }
@@ -221,8 +222,10 @@
       return;
     }
     seeking = m.state === 'dragging' || m.state === 'loading';
-    if (seeking) hide();
-    else if (deferred) {
+    if (seeking) {
+      hide();
+      unwash(); // a scrollbar drag puts the wash away as it starts
+    } else if (deferred) {
       deferred = false;
       refresh();
     }
@@ -232,9 +235,12 @@
   globalThis.ButterBookmarkPage = {
     sync(conv, items, complete = false) {
       if (conv === view.conv && items === view.items && complete === view.complete) return;
+      if (conv !== view.conv) unwash();
       view = { conv, items, complete };
       refresh();
     },
+    // Called by the rail as any jump starts.
+    unwash: () => unwash(),
   };
 
   // ---- Text in a paragraph, as rendered: formulas count once (their visible glyphs, not MathML).
@@ -355,6 +361,16 @@
       line: B.firstLine(a.text, ends),
     };
   };
+  // The chat's scroller: the nearest ancestor of `el` that scrolls.
+  const scrollerOf = (el) => {
+    let s = el.parentElement;
+    while (
+      s &&
+      !(s.scrollHeight > s.clientHeight && /auto|scroll/.test(getComputedStyle(s).overflowY))
+    )
+      s = s.parentElement;
+    return s;
+  };
   // With nothing selected: the first answer paragraph whose top is at or below ChatGPT's header.
   // Turns off screen skip layout (stream/containment.css), so their blocks' boxes are stale: only
   // the turns showing below the header are read, and only their answers' blocks measured.
@@ -363,16 +379,7 @@
       boxes = turns.map((t) => t.getBoundingClientRect()),
       seen = boxes.findIndex((b) => b.height && b.bottom > HEADER);
     if (seen < 0) return null;
-    let scroller = turns[seen].parentElement;
-    while (
-      scroller &&
-      !(
-        scroller.scrollHeight > scroller.clientHeight &&
-        /auto|scroll/.test(getComputedStyle(scroller).overflowY)
-      )
-    )
-      scroller = scroller.parentElement;
-    const box = scroller?.getBoundingClientRect(),
+    const box = scrollerOf(turns[seen])?.getBoundingClientRect(),
       line = Math.max(0, box?.top ?? 0) + HEADER,
       bottom = box?.bottom ?? innerHeight;
     const blocks = turns
@@ -381,13 +388,19 @@
     const tops = blocks.map((b) => b.getBoundingClientRect().top);
     return blocks[B.topParagraph(tops, line)] ?? null;
   };
-  // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
-  // the question's start) when it is stale now: its answer, paragraph or text no longer there.
-  const locate = (turn, b) => {
+  // A bookmark's paragraph in its question's turn; null when it is stale now: its answer,
+  // paragraph or text no longer there.
+  const blockIn = (turn, b) => {
     const raw = rawOf.get(b.msg),
       answer = raw && answersIn(turn).find((a) => a.id === raw)?.answer,
       block = answer && blocksOf(answer)[b.para];
-    if (!block || !B.matches(b, paragraphs(answer))) return null;
+    return block && B.matches(b, paragraphs(answer)) ? block : null;
+  };
+  // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
+  // the question's start) when it is stale now.
+  const locate = (turn, b) => {
+    const block = blockIn(turn, b);
+    if (!block) return null;
     let top = block.getBoundingClientRect().top;
     if (b.start > 0) {
       const at = textNodes(block).findLast((x) => x.start <= b.start);
@@ -509,6 +522,9 @@
     zone = null, // its box extended over the margin to the button: the pointer may cross it
     waiting = null,
     timer = 0;
+  const isDark = () =>
+    document.documentElement.classList.contains('dark') ||
+    /dark/.test(getComputedStyle(document.documentElement).colorScheme);
   const build = () => {
     host = document.createElement('chatgpt-butter-bookmark');
     const root = host.attachShadow({ mode: 'open' });
@@ -518,12 +534,7 @@
     kbd = root.querySelector('.tip kbd');
     label();
     document.body.append(host);
-    const dark = () =>
-      host.toggleAttribute(
-        'data-dark',
-        document.documentElement.classList.contains('dark') ||
-          /dark/.test(getComputedStyle(document.documentElement).colorScheme),
-      );
+    const dark = () => host.toggleAttribute('data-dark', isDark());
     dark();
     new MutationObserver(dark).observe(document.documentElement, {
       attributes: true,
@@ -655,9 +666,161 @@
   document.addEventListener('butter-settings', () => {
     TXT = strings(zh());
     label();
-    if (railOff()) hide();
+    if (railOff()) {
+      hide();
+      unwash();
+    }
     refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
   });
+
+  // ---- The landing wash (#73). When a bookmark trip from a card row lands on live text, the rail
+  // calls its `wash`: the bookmark's range is washed in butter, line by line in reading order, held
+  // and faded (bookmarks/wash.js has the plan). The boxes are in Butter's own fixed layer, as the
+  // hover button is, so nothing goes into ChatGPT's answer. They are measured from the range's
+  // text, clipped to the scroller between ChatGPT's header and composer, and measured again on the
+  // scroller's scroll and resize, listened to only while the wash shows. Light theme multiplies the
+  // butter into the page and dark theme lightens it, so the text keeps its own colour in both. As
+  // one highlight broken across lines, the range's start and end are rounded, the line ends between
+  // them are not (the mockup's section 5). A code block or a table keeps the bubble's flash.
+  const W = ButterWash;
+  const COMPOSER = '#thread-bottom-container, form:has(.ProseMirror[contenteditable="true"])';
+  const WASH_CSS = `
+    :host { all: initial; position: fixed; inset: 0; z-index: 19; display: block; pointer-events: none; mix-blend-mode: multiply; }
+    :host([data-dark]) { mix-blend-mode: lighten; }
+    div { position: fixed; overflow: hidden; }
+    i { position: absolute; background: rgb(251 224 122 / .62); }
+    i:first-child { border-start-start-radius: 3px; border-end-start-radius: 3px; }
+    i:last-child { border-start-end-radius: 3px; border-end-end-radius: 3px; }
+    :host([data-dark]) i { background: rgb(227 199 102 / .3); }`;
+  // The rectangles of a bookmark's text in its paragraph: its text runs only, so an element in the
+  // range (a link, bold text) adds no box of its own.
+  const rectsOf = (block, b) => {
+    const r = document.createRange(),
+      out = [];
+    for (const { n, start } of textNodes(block)) {
+      const from = Math.max(b.start, start),
+        to = Math.min(b.end, start + n.data.length);
+      if (from >= to) continue;
+      r.setStart(n, from - start);
+      r.setEnd(n, to - start);
+      out.push(...r.getClientRects());
+    }
+    return out;
+  };
+  // The part of the scroller the wash may paint: under the header, above the composer.
+  const clipOf = (sc) => {
+    const r = sc.getBoundingClientRect(),
+      top = Math.max(0, r.top) + HEADER,
+      c = document.querySelector(COMPOSER)?.getBoundingClientRect();
+    let bottom = Math.min(r.bottom, innerHeight);
+    if (c?.height && c.top > top && c.top < bottom) bottom = c.top;
+    return { left: r.left, top, width: sc.clientWidth, height: Math.max(0, bottom - top) };
+  };
+  let wash = null; // the wash showing: its layer, scroller and listener
+  // Removes the wash at once: a new jump, a conversation change, a scrollbar drag, the rail off.
+  function unwash() {
+    const w = wash;
+    if (!w) return;
+    wash = null;
+    w.sc.removeEventListener('scroll', w.draw);
+    removeEventListener('resize', w.draw);
+    w.ro?.disconnect();
+    w.host.remove();
+  }
+  const BLOCK_WASH = 'pre, table'; // their whole-block wash is still to come
+  // Washes bookmark `b` in its question's `turn`, or with `draw` false only says whether it would.
+  // False when it can't: stale, a code block or a table, or nothing to show.
+  function washAt(turn, b, draw = true) {
+    const block = blockIn(turn, b),
+      sc = block && scrollerOf(block);
+    if (!sc || railOff() || seeking || block.matches(BLOCK_WASH) || block.querySelector(BLOCK_WASH))
+      return false;
+    if (!draw) return true;
+    unwash();
+    const host = document.createElement('chatgpt-butter-wash'),
+      root = host.attachShadow({ mode: 'open' });
+    root.innerHTML = `<style>${WASH_CSS}</style><div></div>`;
+    host.toggleAttribute('data-dark', isDark());
+    const clip = root.querySelector('div'),
+      rtl = getComputedStyle(block).direction === 'rtl',
+      reduced = matchMedia('(prefers-reduced-motion: reduce)').matches,
+      // The sweep runs from each line's start: its right end in right-to-left text.
+      [hidden, shown] = rtl
+        ? ['inset(0 0 0 100%)', 'inset(0 0 0 0%)']
+        : ['inset(0 100% 0 0)', 'inset(0 0% 0 0)'],
+      start = document.timeline.currentTime,
+      // Every part of the wash keeps the time it started, also when its lines are drawn again.
+      play = (el, frames, timing) => {
+        const a = el.animate(frames, timing);
+        a.startTime = start;
+        return a;
+      };
+    clip.dir = rtl ? 'rtl' : 'ltr'; // the rounded start and end follow the text's direction
+    const w = { host, sc, conv: convOfPath(), boxes: [], plan: null, ro: null };
+    w.draw = () => {
+      if (wash !== w) return;
+      const lines = block.isConnected && convOfPath() === w.conv ? W.boxes(rectsOf(block, b)) : [];
+      if (!lines.length) return unwash(); // its text left the page
+      const c = clipOf(sc);
+      Object.assign(clip.style, {
+        left: `${c.left}px`,
+        top: `${c.top}px`,
+        width: `${c.width}px`,
+        height: `${c.height}px`,
+      });
+      // A change of width can rewrap the text: the lines are laid out again, in step with the sweep.
+      if (lines.length !== w.boxes.length) {
+        w.plan = W.plan(
+          lines.map((l) => l.width),
+          { reduced },
+        );
+        w.boxes = w.plan.sweep.map(({ from, to }) => {
+          const el = document.createElement('i');
+          if (!reduced)
+            play(
+              el,
+              [
+                { clipPath: hidden, offset: 0 },
+                { clipPath: hidden, offset: from },
+                { clipPath: shown, offset: to },
+                { clipPath: shown, offset: 1 },
+              ],
+              { duration: w.plan.in, easing: w.plan.easing },
+            );
+          return el;
+        });
+        clip.replaceChildren(...w.boxes);
+      }
+      lines.forEach((l, k) =>
+        Object.assign(w.boxes[k].style, {
+          left: `${l.left - c.left}px`,
+          top: `${l.top - c.top}px`,
+          width: `${l.width}px`,
+          height: `${l.height}px`,
+        }),
+      );
+    };
+    wash = w;
+    document.body.append(host);
+    w.draw();
+    if (wash !== w) return false;
+    const p = w.plan;
+    play(clip, [{ opacity: 1 }, { opacity: 0 }], {
+      delay: p.in + p.hold,
+      duration: p.fade,
+      easing: p.fadeEasing,
+      fill: 'forwards',
+    }).finished.then(
+      () => wash === w && unwash(),
+      () => {},
+    );
+    sc.addEventListener('scroll', w.draw, { passive: true });
+    addEventListener('resize', w.draw, { passive: true });
+    w.ro = new ResizeObserver(w.draw);
+    w.ro.observe(sc);
+    w.ro.observe(block);
+    return true;
+  }
 
   // ---- The bookmark shortcut (a Chrome command; bookmarks/worker.js relays it to this tab). It
   // bookmarks the selection inside one answer, or with nothing selected the paragraph at the top.

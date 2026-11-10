@@ -1082,7 +1082,13 @@
         hoverMark(null);
       }
     }
-    jump(i, false, (turn) => m.land(turn, b));
+    jump(
+      i,
+      false,
+      (turn) => m.land(turn, b),
+      null,
+      (turn, draw) => m.wash?.(turn, b, draw),
+    );
   };
   // Loads earlier pages until `b`'s answer is known and mounted, then lands on its text.
   // `wait` is that bookmark while its pages load: the dots blink and its row shows a spinner.
@@ -1515,6 +1521,17 @@
   let landing = null;
   const landOff = (el) =>
     (landing && el.getAttribute('data-turn-key') === landing.id && landing.land(el)) || 0;
+  // A bookmark trip from a card row that lands on live text gets the wash (#73) instead of the
+  // bubble's flash: once the page has stopped, bookmarks/content.js washes the bookmarked text.
+  // A stale bookmark (or a code block's or a table's) lands with the flash, as a question jump does.
+  const washes = (el) =>
+    !!landing?.wash &&
+    el?.getAttribute('data-turn-key') === landing.id &&
+    !!landing.wash(el, false);
+  const washAt = (el) => {
+    el = el && mountedEl(el.getAttribute('data-turn-key'));
+    if (washes(el)) landing.wash(el);
+  };
   const targetTop = (el, off = 0) =>
     Math.max(
       0,
@@ -1531,8 +1548,11 @@
 
   // `want`: an earlier trip for a bookmark (its key) on the dots. Pages load only until bookmarks/
   // content.js places it under a question, then the trip lands on its text as a bookmark jump does.
-  const jump = async (i, earlier = false, land = null, want = null) => {
-    landing = land && !earlier ? { id: qs[i].id, land } : null;
+  // `wash(turn, draw)`: the bookmark's landing wash, for a trip from a card row (`draw` false: only
+  // whether there is one).
+  const jump = async (i, earlier = false, land = null, want = null, wash = null) => {
+    landing = land && !earlier ? { id: qs[i].id, land, wash } : null;
+    globalThis.ButterBookmarkPage?.unwash(); // a new jump puts the last wash away at once
     // Repeated input for the current destination keeps its in-progress readiness work.
     // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
     if (!earlier && trip && !journey?.earlier && busyId === qs[i].id) return;
@@ -1641,6 +1661,11 @@
                 b = m?.bookmarks.find((x) => x.key === want);
               return b ? m.land(turn, b) : null;
             },
+            wash: (turn, draw) => {
+              const m = marks.get(id),
+                b = m?.bookmarks.find((x) => x.key === want);
+              return !!b && !!m.wash?.(turn, b, draw);
+            },
           };
           // Focus follows a keyboard trip to the bookmark's tick; the dots' card goes away.
           setWait(null);
@@ -1724,7 +1749,10 @@
       landed = true;
       anchor.off = 0;
       await arrive(el, lead);
-      if (tok === jumpTok) landedAt(); // stopped moving; settle only nudges by a few px
+      if (tok === jumpTok) {
+        landedAt(); // stopped moving; settle only nudges by a few px
+        washAt(el);
+      }
       await settle(el, live);
     } finally {
       const expired = tok === jumpTok && performance.now() >= end;
@@ -1737,7 +1765,10 @@
           const t = targetTop(el);
           if (pinned) sc.scrollTop = t;
           landed = Math.abs(t - sc.scrollTop) <= 2;
-          if (landed) flash(el);
+          if (landed) {
+            flash(el);
+            washAt(el);
+          }
         }
       }
       if (trip?.tok === tok) arrive(null, 0);
@@ -1763,6 +1794,7 @@
     const done = scrollEnd();
     sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
     await done;
+    if (live()) washAt(el);
     await settle(el, live);
   };
   // A few quiet frames don't mean neighbouring answers have finished mounting/typesetting. Keep
@@ -1905,7 +1937,7 @@
 
   const flash = (el) => {
     const b = el.querySelector('[data-user-message-bubble]');
-    if (!b) return;
+    if (!b || washes(el)) return;
     b.removeAttribute('data-butter-flash');
     void b.offsetWidth;
     b.setAttribute('data-butter-flash', '');
