@@ -1789,7 +1789,10 @@
         () => {},
       );
     }
-    if (!(el && lead)) return new Promise((r) => setTimeout(r, 250));
+    // Already there (near the chat's bottom both clamp): smooth scrolling won't move, so no
+    // scrollend would come.
+    if (!(el && lead) || Math.abs(targetTop(el) - sc.scrollTop) < 1)
+      return new Promise((r) => setTimeout(r, 250));
     const done = scrollEnd();
     sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
     return done;

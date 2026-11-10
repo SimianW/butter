@@ -2284,6 +2284,35 @@ async function washSection() {
   p = await startsAtOnce(TURNS - 1, LAST);
   check('wash: a bookmark in the last answer, with the chat at its bottom, washes within about 300 ms',
     p.washed && p.still <= 1 && p.startedAfterClick <= 300, { startedAfterClick: p.startedAfterClick, still: p.still });
+  // A far trip from the top to the last answer's last block, in a chat with little room below its
+  // last answer: the page waits `lead` px short of the bottom and the bottom both, so the arrival
+  // has nowhere to scroll. The wash starts after the target's 150 ms steady check and the 250 ms
+  // reveal (about 430 ms after the page's last move), not after the 1.5 s wait for a scrollend.
+  page$.css = '.content { padding-bottom: 150px }';
+  const END = wseed(TURNS - 1, 7, 0, null, 'Fixture list item two');
+  await seedStore([SEL, END], { clear: true });
+  await openChat('light', 2);
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await record();
+  await rowJump(TURNS - 1, END);
+  await waitWash();
+  const bottom = await page.evaluate((sc) => {
+    const s = document.querySelector(sc);
+    return s.scrollHeight - s.clientHeight - s.scrollTop;
+  }, sc);
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  {
+    const R = await recorded();
+    p = phases(R);
+    const f = R.frames.filter((x) => x.t <= p.t0),
+      last = f.findLast((x, i) => i && x.top !== f[i - 1].top);
+    p.afterLastMove = last ? Math.round(p.t0 - last.t) : null;
+  }
+  check('wash: a far trip to the last answer\'s last block, with the chat at its bottom, washes within about 0.5 s of the page\'s last move',
+    p.washed && Math.abs(bottom) <= 1 && p.afterLastMove !== null && p.afterLastMove <= 600,
+    { afterLastMove: p.afterLastMove, startedAfterClick: p.startedAfterClick, bottom });
+  page$.css = '';
 
   // (h) Earlier history: a bookmark in unloaded history is washed once its messages have loaded
   // and the page has landed.
