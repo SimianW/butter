@@ -1843,22 +1843,20 @@ async function washSection() {
     await page.mouse.click(at.x, at.y);
     await page.mouse.move(5, 300);
   };
-  // Opens the earlier-history card and clicks the row (or the single text) that holds `b`'s
-  // excerpt. Only this helper knows how that card opens: from the segment on the dots until #72,
-  // from the dots themselves after it.
+  // Opens the earlier-history card from its dots and clicks the row that holds `b`'s excerpt.
   const earlierRowJump = async (b) => {
     await page.mouse.move(700, 300);
     await page.waitForTimeout(200);
     const at = await page.evaluate(() => {
       const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
-        q = (root.querySelector('.mark:not(.gone)') ?? root.querySelector('.more')).getBoundingClientRect();
+        q = root.querySelector('.more').getBoundingClientRect();
       return { x: q.right - 4, y: q.top + q.height / 2 };
     });
     await page.mouse.move(at.x, at.y, { steps: 4 });
     await page.waitForTimeout(350);
     const row = await page.evaluate((text) => {
       const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
-        e = [...root.querySelectorAll('.card.show .bmc :is(.one, .go)')].find((x) => x.textContent.includes(text)),
+        e = [...root.querySelectorAll('.card.show .bmc .go')].find((x) => x.textContent.includes(text)),
         q = e?.getBoundingClientRect();
       return q && { x: q.left + Math.min(q.width / 2, 60), y: q.top + q.height / 2 };
     }, b.excerpt.slice(0, 40));
@@ -2255,6 +2253,38 @@ async function washSection() {
   page$.said.delete(BT);
   page$.css = '';
 
+  // (g2) A trip that has nowhere to go (review of #75): the same row clicked again after its wash
+  // has faded, and a bookmark in the last answer with the chat at its bottom, where the page can't
+  // scroll to it. The wash starts at once, not after the wait for a scroll's end.
+  const LAST = wseed(TURNS - 1, 6, 0, null, 'Fixture list item one'); // its first list item
+  await seedStore([SEL, LAST], { clear: true });
+  await openChat('light', 2);
+  const startsAtOnce = async (turn, b) => {
+    await record();
+    await rowJump(turn, b);
+    await waitWash();
+    await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+    const R = await recorded();
+    const tops = R.frames.map((x) => x.top);
+    return { ...phases(R), still: Math.max(...tops) - Math.min(...tops) };
+  };
+  await rowJump(T, SEL);
+  await waitWash();
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  await page.waitForTimeout(300);
+  p = await startsAtOnce(T, SEL);
+  check('wash: the same row clicked again after its wash has faded washes within about 300 ms',
+    p.washed && p.still <= 1 && p.startedAfterClick <= 300, { startedAfterClick: p.startedAfterClick, still: p.still });
+  // A wheel, as a reader scrolls: it ends the follow that holds the page on the last landing.
+  await page.mouse.move(700, 500);
+  await page.mouse.wheel(0, 20000);
+  await page.waitForTimeout(800);
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 1e6), sc);
+  await page.waitForTimeout(300);
+  p = await startsAtOnce(TURNS - 1, LAST);
+  check('wash: a bookmark in the last answer, with the chat at its bottom, washes within about 300 ms',
+    p.washed && p.still <= 1 && p.startedAfterClick <= 300, { startedAfterClick: p.startedAfterClick, still: p.still });
+
   // (h) Earlier history: a bookmark in unloaded history is washed once its messages have loaded
   // and the page has landed.
   page$.first = 7;
@@ -2263,7 +2293,7 @@ async function washSection() {
   const EARLY = wseed(2, 2);
   await seedStore([EARLY], { clear: true });
   await open('light');
-  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark:not(.gone), .bdot:not(.gone)').length === 1, null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot:not(.gone)').length === 1, null, { timeout: 5000 });
   await record();
   await earlierRowJump(EARLY);
   await waitWash().catch(() => {});

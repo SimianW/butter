@@ -1387,7 +1387,7 @@
     (landing && el.getAttribute('data-turn-key') === landing.id && landing.land(el)) || 0;
   // A bookmark trip from a card row that lands on live text gets the wash (#73) instead of the
   // bubble's flash: once the page has stopped, bookmarks/content.js washes the bookmarked text.
-  // A stale bookmark (or a code block's or a table's) lands with the flash, as a question jump does.
+  // A stale bookmark lands with the flash, as a question jump does.
   const washes = (el) =>
     !!landing?.wash &&
     el?.getAttribute('data-turn-key') === landing.id &&
@@ -1655,9 +1655,13 @@
   // The browser's smooth scrolling runs on the compositor: it keeps going if the page is busy.
   const glide = async (el, live) => {
     flash(el);
-    const done = scrollEnd();
-    sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
-    await done;
+    // Already there: smooth scrolling won't move, so no scrollend would come.
+    const top = targetTop(el);
+    if (Math.abs(top - sc.scrollTop) >= 1) {
+      const done = scrollEnd();
+      sc.scrollTo({ top, behavior: 'smooth' });
+      await done;
+    }
     if (live()) washAt(el);
     await settle(el, live);
   };
