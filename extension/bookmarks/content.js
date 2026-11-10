@@ -681,17 +681,19 @@
   // scroller's scroll and resize, listened to only while the wash shows. Light theme multiplies the
   // butter into the page and dark theme lightens it, so the text keeps its own colour in both. As
   // one highlight broken across lines, the range's start and end are rounded, the line ends between
-  // them are not (the mockup's section 5). A code block or a table keeps the bubble's flash.
+  // them are not (the mockup's section 5). A code block or a table (#74) gets one box over the
+  // whole block instead, 3 px beyond it with the block's own corners, fading in instead of sweeping.
   const W = ButterWash;
   const COMPOSER = '#thread-bottom-container, form:has(.ProseMirror[contenteditable="true"])';
   const WASH_CSS = `
     :host { all: initial; position: fixed; inset: 0; z-index: 19; display: block; pointer-events: none; mix-blend-mode: multiply; }
     :host([data-dark]) { mix-blend-mode: lighten; }
     div { position: fixed; overflow: hidden; }
-    i { position: absolute; background: rgb(251 224 122 / .62); }
+    i { --w: rgb(251 224 122 / .62); position: absolute; background: var(--w); }
     i:first-child { border-start-start-radius: 3px; border-end-start-radius: 3px; }
     i:last-child { border-start-end-radius: 3px; border-end-end-radius: 3px; }
-    :host([data-dark]) i { background: rgb(227 199 102 / .3); }`;
+    :host([data-dark]) i { --w: rgb(227 199 102 / .3); }
+    i.block { box-sizing: border-box; border: 3px solid var(--w); background-clip: content-box; }`;
   // The rectangles of a bookmark's text in its paragraph: its text runs only, so an element in the
   // range (a link, bold text) adds no box of its own.
   const rectsOf = (block, b) => {
@@ -727,14 +729,48 @@
     w.ro?.disconnect();
     w.host.remove();
   }
-  const BLOCK_WASH = 'pre, table'; // their whole-block wash is still to come
+  // A code block's or a table's drawn box (#74): ChatGPT's code widget surface, a <pre> (or the
+  // rounded panel inside it), or a <table>. A paragraph is such a block when all its text is in
+  // that box; a paragraph that holds one among its own text (a list item with code) gets the text
+  // wash. Null for any other paragraph.
+  const SURFACE = '[data-code-block], pre, table';
+  const surfaceOf = (block) => {
+    let el = block.matches(SURFACE) ? block : block.querySelector(SURFACE);
+    if (!el || textOf(el).trim().length < textOf(block).trim().length) return null;
+    // ChatGPT's <pre> holds the rounded panel it draws, as its only child, down a wrapper or two.
+    if (el.matches('pre'))
+      for (let k = el; k; k = k.children.length === 1 ? k.firstElementChild : null)
+        if (parseFloat(getComputedStyle(k).borderTopLeftRadius)) {
+          el = k;
+          break;
+        }
+    return el;
+  };
+  // A block's box as it shows: its rectangle cut to any box that scrolls it sideways inside the
+  // paragraph (a wide table's viewport), grown 3 px with the block's corners (bookmarks/wash.js).
+  const blockLine = (block, el) => {
+    const r = el.getBoundingClientRect();
+    let { left, right } = r;
+    for (let k = el.parentElement; k && block.contains(k); k = k.parentElement)
+      if (getComputedStyle(k).overflowX !== 'visible') {
+        const v = k.getBoundingClientRect();
+        left = Math.max(left, v.left);
+        right = Math.min(right, v.right);
+      }
+    if (!(right > left && r.bottom > r.top)) return [];
+    const q = { left, right, top: r.top, bottom: r.bottom },
+      cs = getComputedStyle(el),
+      border = ['Top', 'Right', 'Bottom', 'Left'].map(
+        (k) => parseFloat(cs[`border${k}Width`]) || 0,
+      );
+    return [W.blockBox(q, parseFloat(cs.borderTopLeftRadius) || 0, border)];
+  };
   // Washes bookmark `b` in its question's `turn`, or with `draw` false only says whether it would.
-  // False when it can't: stale, a code block or a table, or nothing to show.
+  // False when it can't: stale, or nothing to show.
   function washAt(turn, b, draw = true) {
     const block = blockIn(turn, b),
       sc = block && scrollerOf(block);
-    if (!sc || railOff() || seeking || block.matches(BLOCK_WASH) || block.querySelector(BLOCK_WASH))
-      return false;
+    if (!sc || railOff() || seeking) return false;
     if (!draw) return true;
     unwash();
     const host = document.createElement('chatgpt-butter-wash'),
@@ -756,10 +792,16 @@
         return a;
       };
     clip.dir = rtl ? 'rtl' : 'ltr'; // the rounded start and end follow the text's direction
+    const surface = surfaceOf(block);
     const w = { host, sc, conv: convOfPath(), boxes: [], plan: null, ro: null };
     w.draw = () => {
       if (wash !== w) return;
-      const lines = block.isConnected && convOfPath() === w.conv ? W.boxes(rectsOf(block, b)) : [];
+      const lines =
+        block.isConnected && convOfPath() === w.conv
+          ? surface
+            ? blockLine(block, surface)
+            : W.boxes(rectsOf(block, b))
+          : [];
       if (!lines.length) return unwash(); // its text left the page
       const c = clipOf(sc);
       Object.assign(clip.style, {
@@ -772,11 +814,17 @@
       if (lines.length !== w.boxes.length) {
         w.plan = W.plan(
           lines.map((l) => l.width),
-          { reduced },
+          { reduced, block: !!surface },
         );
         w.boxes = w.plan.sweep.map(({ from, to }) => {
           const el = document.createElement('i');
-          if (!reduced)
+          el.classList.toggle('block', !!surface);
+          if (w.plan.fadeIn)
+            play(el, [{ opacity: 0 }, { opacity: 1 }], {
+              duration: w.plan.in,
+              easing: w.plan.easing,
+            });
+          else if (!reduced)
             play(
               el,
               [
@@ -797,6 +845,9 @@
           top: `${l.top - c.top}px`,
           width: `${l.width}px`,
           height: `${l.height}px`,
+          borderRadius: l.radius === undefined ? '' : `${l.radius}px`,
+          // A block's own border shows between the ring outside it and the fill inside it.
+          padding: l.gap ? l.gap.map((g) => `${g}px`).join(' ') : '',
         }),
       );
     };

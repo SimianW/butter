@@ -1625,6 +1625,36 @@ async function earlierSection() {
 // column, text and type) and compares the held wash with the panels l-3-light and l-sel-dark, on
 // the chat column only: under 0.1% of pixels differing by more than 24 in a channel.
 const WASH = 'chatgpt-butter-wash';
+// Question 6's answer for the block wash (#74): paragraphs around a code block and a table, each in
+// the markup's own shape (see washSection's part g).
+const BT = 5;
+const CODE_LINES = ['EXPLAIN ANALYZE', "SELECT * FROM orders WHERE status = 'pending';"];
+const TABLE_HTML = `<table><tbody>${[
+  ['Status', 'Rows', 'Plan'],
+  ['pending', '1,204', 'Index scan'],
+  ['shipped', '912,330', 'Sequential scan'],
+].map((r, i) => `<tr>${r.map((c) => (i ? `<td>${c}</td>` : `<th>${c}</th>`)).join('')}</tr>`).join('')}</tbody></table>`;
+const BLOCKS = [
+  `<p>${PARAGRAPH(BT, 0)}</p>`,
+  LIVE
+    ? `<div data-client-defined-widget><div class="fx-codeblock"><div class="fx-surface" data-code-block><div class="fx-bar"><div>sql</div><div data-code-block-controls><button>Copy</button></div></div>` +
+      `<div class="cm-editor"><div class="cm-content">${CODE_LINES.map((l) => `<div class="cm-line">${l}</div>`).join('')}</div></div></div></div><div></div></div>`
+    : `<pre><div class="fx-panel"><div class="fx-bar">sql<button>Copy</button></div><div class="fx-code"><code>${CODE_LINES.join('\n')}</code></div></div></pre>`,
+  `<p>${PARAGRAPH(BT, 1)}</p>`,
+  LIVE
+    ? `<div class="fx-tableframe"><div class="fx-viewport" data-d-table-viewport>${TABLE_HTML}</div><div class="fx-edges"></div></div>`
+    : `<div class="fx-tablecontainer"><div class="fx-tablewrapper">${TABLE_HTML}</div></div>`,
+  `<p>${PARAGRAPH(BT, 2)}</p>`,
+];
+const BLOCK_CSS = `
+[data-markdown-text-style] pre { margin:0 0 16px }
+.fx-panel, .fx-surface { border-radius:16px; background:#f4f4f4; overflow:hidden }
+.dark .fx-panel, .dark .fx-surface { background:#171717 }
+.fx-bar { display:flex; justify-content:space-between; padding:4px 12px; font:12px/20px system-ui, sans-serif }
+.fx-code, .cm-content { padding:12px; font:14px/20px ui-monospace, monospace; white-space:pre }
+[data-client-defined-widget], .fx-tableframe, .fx-tablecontainer { margin:0 0 16px }
+.fx-viewport, .fx-tablewrapper { overflow-x:auto }
+table { border-collapse:collapse } th, td { border:1px solid rgb(0 0 0 / .15); padding:4px 12px; text-align:left }`;
 async function washSection() {
   const ACCOUNT = sha('user-fixture'),
     CONV_HASH = sha(CONV);
@@ -1670,6 +1700,29 @@ async function washSection() {
     await page.mouse.click(at.x, at.y);
     await page.mouse.move(5, 300);
   };
+  // Opens the earlier-history card and clicks the row (or the single text) that holds `b`'s
+  // excerpt. Only this helper knows how that card opens: from the segment on the dots until #72,
+  // from the dots themselves after it.
+  const earlierRowJump = async (b) => {
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(200);
+    const at = await page.evaluate(() => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        q = (root.querySelector('.mark:not(.gone)') ?? root.querySelector('.more')).getBoundingClientRect();
+      return { x: q.right - 4, y: q.top + q.height / 2 };
+    });
+    await page.mouse.move(at.x, at.y, { steps: 4 });
+    await page.waitForTimeout(350);
+    const row = await page.evaluate((text) => {
+      const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
+        e = [...root.querySelectorAll('.card.show .bmc :is(.one, .go)')].find((x) => x.textContent.includes(text)),
+        q = e?.getBoundingClientRect();
+      return q && { x: q.left + Math.min(q.width / 2, 60), y: q.top + q.height / 2 };
+    }, b.excerpt.slice(0, 40));
+    await page.mouse.move(row.x, row.y, { steps: 10 });
+    await page.waitForTimeout(200);
+    await page.mouse.click(row.x, row.y);
+  };
   // Records every frame from now: the wash's boxes and how far each is filled, the layer's opacity,
   // the scroller's position and any bubble flash; and nodes added inside the answers.
   const record = () =>
@@ -1696,6 +1749,8 @@ async function washSection() {
           host: !!host,
           op: div ? +getComputedStyle(div).opacity : 0,
           boxes: div ? [...div.querySelectorAll('i')].map((i) => fill(getComputedStyle(i).clipPath)) : [],
+          // Each box's own opacity: a block's box fades in (#74), a line's sweeps.
+          iop: div ? [...div.querySelectorAll('i')].map((i) => +getComputedStyle(i).opacity) : [],
           top: document.querySelector(sc).scrollTop,
           flash: !!document.querySelector('[data-butter-flash]'),
         });
@@ -1710,7 +1765,7 @@ async function washSection() {
       i0 = f.findIndex((x) => x.host && x.boxes.length);
     if (i0 < 0) return { washed: false, flash: f.some((x) => x.flash), added: R.added };
     const t0 = f[i0].t,
-      full = f.find((x, i) => i >= i0 && x.boxes.length && x.boxes.every((v) => v > 0.999)),
+      full = f.find((x, i) => i >= i0 && x.boxes.length && x.boxes.every((v) => v > 0.999) && x.iop.every((v) => v > 0.999)),
       fading = f.find((x, i) => i >= i0 && x.host && x.op < 0.999),
       end = f.find((x, i) => i > i0 && !x.host);
     // When each line starts and ends filling, in reading order.
@@ -1723,6 +1778,9 @@ async function washSection() {
       washed: true,
       lines: f[i0].boxes.length,
       first: f[i0].boxes,
+      firstOpacity: f[i0].iop,
+      // Never cut by a sweep: every box drawn whole on every frame.
+      swept: f.some((x, i) => i >= i0 && x.boxes.some((v) => v < 0.999)),
       sweep: full ? Math.round(full.t - t0) : null,
       hold: full && fading ? Math.round(fading.t - full.t) : null,
       fade: fading && end ? Math.round(end.t - fading.t) : null,
@@ -1797,6 +1855,30 @@ async function washSection() {
     };
     return { world: !!contextId, scroll: await of(`document.querySelector('${sc}')`, 'scroll'), resize: await of('window', 'resize') };
   };
+  // A code block's or a table's wash (#74): one box, 3 px beyond the block's drawn box (`sel` in
+  // its paragraph), its corners the block's own radius plus those 3 px.
+  const blockCoverage = (b, sel) =>
+    page.evaluate(([WASH, id, para, PARAS, sel]) => {
+      const block = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[para],
+        el = block.matches(sel) ? block : block.querySelector(sel),
+        q = el.getBoundingClientRect(),
+        radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+      const host = document.querySelector(WASH),
+        boxes = host ? [...host.shadowRoot.querySelectorAll('i')] : [],
+        box = boxes[0]?.getBoundingClientRect(),
+        want = { left: q.left - 3, top: q.top - 3, right: q.right + 3, bottom: q.bottom + 3 },
+        corners = boxes[0] && getComputedStyle(boxes[0]).borderRadius;
+      return {
+        ok: boxes.length === 1 && ['left', 'top', 'right', 'bottom'].every((k) => Math.abs(box[k] - want[k]) <= 1) && corners === `${radius + 3}px`,
+        boxes: boxes.length,
+        box: box && [box.left, box.top, box.width, box.height].map(Math.round),
+        want: [want.left, want.top, want.right - want.left, want.bottom - want.top].map(Math.round),
+        corners,
+        blockRadius: radius,
+        color: boxes[0] && getComputedStyle(boxes[0]).backgroundColor,
+        blend: host && getComputedStyle(host).mixBlendMode,
+      };
+    }, [WASH, answer(b.turn), b.para, PARAS, sel]);
   // The text's own colour under the wash: the darkest (light theme) or lightest (dark theme) pixel
   // inside the first box, from a screenshot.
   const textUnder = async (theme) => {
@@ -1962,20 +2044,99 @@ async function washSection() {
   await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
   page$.edited.delete(8);
 
-  if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) await washMockup({ rowJump, waitWash, coverage, sc, record, recorded, phases });
+  // (g) A code block and a table (#74): one box over the whole block, 3 px beyond it with its
+  // corners, fading in over about 160 ms with no sweep, then held and faded; no bubble flash. In
+  // each markup's own shape: MARKUP=old has ChatGPT's <pre> round its rounded panel and a table in
+  // its scrolling wrapper; MARKUP=live has the code widget's surface and the table's frame.
+  page$.said.set(BT, BLOCKS);
+  page$.css = BLOCK_CSS;
+  await openChat('light', 2);
+  const blockSeed = async (para) => {
+    const text = await page.evaluate(([id, para, PARAS]) => {
+      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[para],
+        w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let t = '';
+      for (let n = w.nextNode(); n; n = w.nextNode()) if (!n.parentElement.closest('button')) t += n.data;
+      return t;
+    }, [answer(BT), para, PARAS]);
+    return wseed(BT, para, 0, text.length, text);
+  };
+  const CODE = await blockSeed(1),
+    TABLE = await blockSeed(3);
+  await seedStore([PARA, SEL, CODE, TABLE], { clear: true });
+  await openChat('light', 2);
+  for (const [name, b, sel] of [['code block', CODE, LIVE ? '[data-code-block]' : '.fx-panel'], ['table', TABLE, 'table']]) {
+    await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+    await page.waitForTimeout(300);
+    await record();
+    await rowJump(BT, b);
+    await waitWash();
+    await page.waitForTimeout(700); // into the hold
+    const cover = await blockCoverage(b, sel);
+    await page.screenshot({ path: `${shots}/wash-${name.replace(' ', '-')}-light.png` });
+    await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+    p = phases(await recorded());
+    check(`wash: a bookmarked ${name} gets one box over the whole block, 3 px beyond it, with the block's corners`,
+      p.washed && cover.ok && cover.color === 'rgba(251, 224, 122, 0.62)' && cover.blend === 'multiply', cover);
+    check(`wash: the ${name}'s box fades in over about 160 ms, with no sweep, then holds 1.2 s and fades over 0.9 s`,
+      p.washed && !p.swept && p.firstOpacity[0] < 0.5 && Math.abs(p.sweep - 160) <= 50 && Math.abs(p.hold - 1200) <= 50 && Math.abs(p.fade - 900) <= 60,
+      { firstOpacity: p.firstOpacity, fadeIn: p.sweep, hold: p.hold, fade: p.fade, swept: p.swept });
+    check(`wash: no bubble flash on the ${name}'s trip, and it starts once the page has stopped`, p.washed && !p.flash && p.moved <= 2, { flash: p.flash, moved: p.moved });
+  }
+  // Under reduced motion the block's box appears at once.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await record();
+  await rowJump(BT, CODE);
+  await waitWash();
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  p = phases(await recorded());
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  check('wash: under reduced motion a code block\'s box appears at once, holds 1.2 s and fades over 0.9 s',
+    p.washed && p.firstOpacity.every((v) => v > 0.999) && p.sweep === 0 && Math.abs(p.hold - 1200) <= 50 && Math.abs(p.fade - 900) <= 60, p);
+  page$.said.delete(BT);
+  page$.css = '';
+
+  // (h) Earlier history: a bookmark in unloaded history is washed once its messages have loaded
+  // and the page has landed.
+  page$.first = 7;
+  page$.pageDelay = 300;
+  page$.pages = 0;
+  const EARLY = wseed(2, 2);
+  await seedStore([EARLY], { clear: true });
+  await open('light');
+  await page.waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.mark:not(.gone), .bdot:not(.gone)').length === 1, null, { timeout: 5000 });
+  await record();
+  await earlierRowJump(EARLY);
+  await waitWash().catch(() => {});
+  await page.waitForTimeout(700);
+  const earlyCover = await coverage(EARLY);
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 }).catch(() => {});
+  p = phases(await recorded());
+  check('wash: a bookmark in unloaded history is washed after its pages load and the page lands',
+    p.washed && page$.pages >= 2 && p.moved <= 2 && !p.flash && earlyCover.ok && Math.abs(p.hold - 1200) <= 50,
+    { washed: p.washed, pages: page$.pages, moved: p.moved, flash: p.flash, cover: earlyCover.ok, boxes: earlyCover.boxes, want: earlyCover.want, hold: p.hold });
+  page$.first = 0;
+  page$.pageDelay = 0;
+
+  if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) await washMockup({ rowJump, waitWash, coverage, blockCoverage, sc, record, recorded, phases });
   await seedStore([], { clear: true });
   await cdp.detach();
 }
 
 // The mockup's chat for the wash comparison: its question and answer (section 5's text, column,
-// type and colours) as question 7 of the fixture chat, the other turns short; with its header and
-// composer. Set by washMockup; `page$.scene` null is the usual fixture.
+// type and colours) as question 7 of the fixture chat, the other turns short; with its header,
+// the fade above its composer and the composer. Laid out as the panels' frame: in a 566 x 438
+// window the rail's right edge is 4 px from the frame's (558 px inside its border) and, with the
+// scroller 506 px tall, the rail is centred where the panels draw it (rail.js centres it between
+// its 52 px header and 140 px composer allowances). Below 374 px only the composer shows, as in
+// the panels. Set by washMockup; `page$.scene` null is the usual fixture.
 const MOCK_TURN = 6;
 const mockHtml = () => {
   const s = page$.scene;
   const turn = (i) =>
     i === MOCK_TURN
-      ? `<div><article data-turn-key="${question(i)}"><div class="user">${userOf(i).replace(QUESTION(i), s.q)}</div>` +
+      ? `<div><article class="mocked" data-turn-key="${question(i)}"><div class="user">${userOf(i).replace(QUESTION(i), s.q)}</div>` +
         `<div ${answerAttrs(answer(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${s.blocks.join('')}</div></div></article></div>`
       : `<div><article class="filler" data-turn-key="${question(i)}"><div class="user">${userOf(i)}</div>` +
         `<div ${answerAttrs(answer(i))}><div data-markdown-text-style="assistant-message" class="markdown prose"><p>Fixture answer ${i + 1}.</p></div></div></article></div>`;
@@ -1983,10 +2144,18 @@ const mockHtml = () => {
 body { margin:0; overflow:hidden; background:#fff; color:#0d0d0d; font:14.5px/1.6 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif }
 .dark body { background:#212121; color:#ececec }
 header { position:fixed; top:0; left:0; right:0; height:44px; background:inherit; z-index:5; display:flex; align-items:center; padding:0 16px; font-weight:600; font-size:15px }
-.thread-scroll-container { height:100vh; overflow-y:scroll; overflow-anchor:none; scrollbar-width:none }
+.thread-scroll-container { position:fixed; top:0; left:0; width:100%; height:506px; overflow-y:scroll; overflow-anchor:none; scrollbar-width:none }
 .content { padding:64px 0 600px }
 article { display:block; width:386px; margin:0 0 24px 70px }
+header span { color:#5d5d5d; font-weight:400; margin-left:4px }
+.dark header span { color:#b4b4b4 }
+.below { position:fixed; left:0; right:0; bottom:0; height:64px; background:#fff; z-index:2 }
+.fade { position:fixed; left:0; right:0; bottom:64px; height:24px; background:linear-gradient(transparent, #fff); z-index:2 }
+.dark .below { background:#212121 }
+.dark .fade { background:linear-gradient(transparent, #212121) }
 article.filler { height:300px; overflow:hidden }
+/* As in the panels, nothing follows the answer within the view: the next question's turn stays out of it. */
+article.mocked { margin-bottom:520px }
 .user { display:flex; justify-content:flex-end }
 [data-user-message-bubble] { margin:0 0 18px; max-width:300px; padding:8px 14px; background:#f4f4f4; border-radius:18px }
 .dark [data-user-message-bubble] { background:#303030 }
@@ -1994,13 +2163,16 @@ article.filler { height:300px; overflow:hidden }
 [data-markdown-text-style] h3 { margin:18px 0 8px; font-size:16px; font-weight:600 }
 [data-markdown-text-style] pre { margin:0 0 14px; background:#f9f9f9; border:1px solid rgb(0 0 0 / .08); border-radius:10px; padding:10px 12px; font:12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space:pre-wrap }
 .dark [data-markdown-text-style] pre { background:#171717; border-color:rgb(255 255 255 / .08) }
-#thread-bottom-container { position:fixed; left:60px; right:100px; bottom:12px; height:44px; box-sizing:border-box; border-radius:22px; background:#f4f4f4; color:#5d5d5d; display:flex; align-items:center; padding:0 18px; font-size:14px; z-index:3 }
+#thread-bottom-container { position:fixed; left:60px; right:108px; bottom:12px; height:44px; box-sizing:border-box; border-radius:22px; background:#f4f4f4; color:#5d5d5d; display:flex; align-items:center; padding:0 18px; font-size:14px; z-index:3 }
 .dark #thread-bottom-container { background:#303030; color:#b4b4b4 }
-</style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from({ length: TURNS }, (_, i) => turn(i)).join('')}</div></div>` +
-    `<div id="thread-bottom-container">Ask anything</div><script>fetch('/backend-api/me'); fetch('/backend-api/conversation/${CONV}');</script></body></html>`;
+</style></head><body><header>ChatGPT<span>5 ▾</span></header><div class="thread-scroll-container"><div class="content">${Array.from({ length: TURNS }, (_, i) => turn(i)).join('')}</div></div>` +
+    `<div class="fade"></div><div class="below"></div><div id="thread-bottom-container">Ask anything</div><script>fetch('/backend-api/me'); fetch('/backend-api/conversation/${CONV}');</script></body></html>`;
 };
-// Called by washSection, which defines the helpers it passes.
-async function washMockup({ rowJump, waitWash, coverage, sc, record, recorded, phases }) {
+// Called by washSection, which defines the helpers it passes. Builds each panel's state, rail
+// included: questions 3, 7 and 10 hold bookmarks (10's stale), question 7's is the one jumped to
+// and washed, and question 7 is the one being read. The whole frame is compared, inside its 1 px
+// border and its rounded corners.
+async function washMockup({ rowJump, waitWash, coverage, blockCoverage, sc, record, recorded, phases }) {
   const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
   await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
   // No scrollbar: the centred mockup stays on whole pixels (as for the notice above).
@@ -2024,39 +2196,56 @@ async function washMockup({ rowJump, waitWash, coverage, sc, record, recorded, p
     return { q: q.innerHTML, blocks: blocks.map((e) => e.outerHTML), goal: blocks.indexOf(goal), text: goal.textContent, sel };
   });
   const s = page$.scene;
-  // The chat column, below the header and above the composer's fade: x 60..470, y 44..350 of the
-  // frame's inside (the mockup's frame has a 1 px border; the built window is 560 px wide, the
-  // rail's minimum, and only its right edge differs).
-  const REGION = { x: 60, y: 44, width: 410, height: 306 };
-  await page.setViewportSize({ width: 560, height: 438 });
-  for (const [theme, panel, [start, end]] of [
-    ['light', 'l-3-light', [0, s.text.length]],
-    ['dark', 'l-sel-dark', s.sel],
+  // The bookmarked code block: the second one, as in l-code-light.
+  const code = s.blocks.findIndex((h) => h.startsWith('<pre') && h.includes('CREATE INDEX'));
+  // The frame's inside: 558 x 438.
+  const REGION = { x: 0, y: 0, width: 558, height: 438 };
+  await page.setViewportSize({ width: 566, height: 438 });
+  const ACCOUNT = sha('user-fixture'),
+    CONV_HASH = sha(CONV);
+  const seed = (turn, para, start, end, text) => ({
+    account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end,
+    excerpt: text.slice(start, Math.min(end, start + 120)).trim(), time: Date.now() + turn,
+  });
+  // The rail's other two dots: question 3's live bookmark and question 10's stale one.
+  const OTHERS = [
+    seed(2, 0, 0, 'Fixture answer 3.'.length, 'Fixture answer 3.'),
+    { ...seed(9, 4, 0, 40, 'A paragraph this answer no longer has.'), excerpt: 'A paragraph this answer no longer has.' },
+  ];
+  for (const [theme, panel, para, range] of [
+    ['light', 'l-3-light', s.goal, [0, s.text.length]],
+    ['dark', 'l-sel-dark', s.goal, s.sel],
+    ['light', 'l-code-light', code, null],
   ]) {
-    const b = {
-      account: sha('user-fixture'), conv: sha(CONV), msg: sha(answer(MOCK_TURN)), turn: MOCK_TURN, para: s.goal, start, end,
-      excerpt: s.text.slice(start, Math.min(end, start + 120)).trim(), time: Date.now(),
-    };
-    await seedStore([b], { clear: true });
     await page.bringToFront(); // a tab in the background draws no frames
     await open(theme);
-    await dotCount(1);
+    // The bookmark's text: the paragraph's, or the code block's whole text.
+    const text = await page.evaluate(([id, k, PARAS]) =>
+      document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k].textContent, [answer(MOCK_TURN), para, PARAS]);
+    const [start, end] = range ?? [0, text.length],
+      b = seed(MOCK_TURN, para, start, end, text);
+    await seedStore([b, ...OTHERS], { clear: true });
+    await open(theme);
+    await dotCount(3);
     await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
     await page.waitForTimeout(300);
+    await record();
     await rowJump(MOCK_TURN, b);
     await waitWash();
     await page.waitForTimeout(400);
-    // Where the panel has the chat: the question's turn 457 px above the window's top. A wheel
-    // turn first ends the pin the jump leaves on its landing.
+    // Where the panel has the chat: its column's top, below the frame's 44 px header. A wheel turn
+    // first ends the pin the jump leaves on its landing.
+    const colTop = await mock.evaluate((panel) => 44 + parseFloat(document.querySelector(`[data-panel="${panel}"] .col`).style.top), panel);
     await page.mouse.move(300, 200);
     await page.mouse.wheel(0, 1);
     await page.waitForTimeout(50);
-    await page.evaluate(([sc, id]) => {
+    await page.evaluate(([sc, id, colTop]) => {
       const el = document.querySelector(sc);
-      el.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top + 457;
-    }, [sc, question(MOCK_TURN)]);
-    await page.waitForTimeout(120);
-    const cover = await coverage(b),
+      el.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - colTop;
+    }, [sc, question(MOCK_TURN), colTop]);
+    await page.mouse.move(300, 420); // off the rail and the text: the rail at rest, no hover button
+    await page.waitForTimeout(150);
+    const cover = range ? await coverage(b) : await blockCoverage(b, 'pre'),
       composer = await page.evaluate((WASH) => ({
         clip: document.querySelector(WASH)?.shadowRoot.querySelector('div').getBoundingClientRect().bottom,
         composer: document.querySelector('#thread-bottom-container').getBoundingClientRect().top,
@@ -2065,15 +2254,18 @@ async function washMockup({ rowJump, waitWash, coverage, sc, record, recorded, p
       holding = () =>
         page.evaluate((WASH) => {
           const d = document.querySelector(WASH)?.shadowRoot.querySelector('div');
-          return !!d && +getComputedStyle(d).opacity === 1 && [...d.querySelectorAll('i')].every((i) => getComputedStyle(i).clipPath === 'none');
+          return !!d && +getComputedStyle(d).opacity === 1 &&
+            [...d.querySelectorAll('i')].every((i) => getComputedStyle(i).clipPath === 'none' && +getComputedStyle(i).opacity === 1);
         }, WASH);
     const before = await holding();
     await page.screenshot({ path: built, clip: REGION });
     const held = before && (await holding());
-    check(`wash mockup ${panel}: built at the hold, on the bookmarked text, clipped above the composer`,
-      held && cover.ok && composer.clip === composer.composer, { held, boxes: cover.boxes, ...composer });
+    check(`wash mockup ${panel}: built at the hold, on the bookmarked ${range ? 'text' : 'code block'}, clipped above the composer`,
+      held && cover.ok && composer.clip === composer.composer, { held, boxes: cover.boxes, ...(range ? {} : { box: cover.box, want: cover.want, corners: cover.corners }), ...composer });
     // The same chat once the wash has gone, for the mask below.
     await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+    const p = phases(await recorded());
+    if (!range) check('wash: in the mockup\'s chat a bookmarked code block is washed, with no bubble flash', p.washed && !p.flash && !p.swept, { washed: p.washed, flash: p.flash });
     const builtPlain = `${shots}/wash-${panel}-after.png`;
     await page.screenshot({ path: builtPlain, clip: REGION });
     await mock.bringToFront();
@@ -2085,37 +2277,20 @@ async function washMockup({ rowJump, waitWash, coverage, sc, record, recorded, p
       referencePlain = `${shots}/mockup-${panel}-plain.png`,
       at = { ...REGION, x: 1 + REGION.x, y: 1 + REGION.y };
     await mock.screenshot({ path: reference, clip: at });
-    await frame.evaluate((el) => el.querySelector('.land').style.setProperty('background', 'none'));
+    const unwashed = (el, off) =>
+      el.querySelectorAll('.land, .landb').forEach((e) => {
+        for (const k of ['background-image', 'box-shadow']) off ? e.style.setProperty(k, 'none') : e.style.removeProperty(k);
+      });
+    await frame.evaluate(unwashed, true);
     await mock.screenshot({ path: referencePlain, clip: at });
-    await frame.evaluate((el) => {
-      el.style.cssText = '';
-      el.querySelector('.land').style.removeProperty('background');
-    });
+    await frame.evaluate(unwashed, false);
+    await frame.evaluate((el) => (el.style.cssText = ''));
     // Masked where the two chats differ without any wash: the same text, a glyph drawn a pixel
     // apart (a code line, a letter) by the two pages. The mask stays small or the check fails.
-    const diff = await compare(mock, built, reference, { plain: [builtPlain, referencePlain] });
-    check(`wash: the held wash matches the mockup's ${panel} on the chat column`,
+    const diff = await compare(mock, built, reference, { radius: 13, plain: [builtPlain, referencePlain] });
+    check(`wash: the held wash matches the mockup's ${panel}, the whole frame with the rail`,
       diff.ratio !== undefined && diff.ratio < 0.001 && diff.masked < 0.005, diff);
   }
-  // A bookmarked code block keeps the bubble's flash for now (#74 washes the whole block).
-  const code = s.blocks.findIndex((h) => h.startsWith('<pre') && h.includes('CREATE INDEX')),
-    codeText = await page.evaluate(([id, k, PARAS]) =>
-      document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k].textContent, [answer(MOCK_TURN), code, PARAS]);
-  const cb = {
-    account: sha('user-fixture'), conv: sha(CONV), msg: sha(answer(MOCK_TURN)), turn: MOCK_TURN, para: code, start: 0, end: codeText.length,
-    excerpt: codeText.slice(0, 120).trim(), time: Date.now(),
-  };
-  await seedStore([cb], { clear: true });
-  await page.bringToFront();
-  await open('light');
-  await dotCount(1);
-  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
-  await page.waitForTimeout(300);
-  await record();
-  await rowJump(MOCK_TURN, cb);
-  await page.waitForTimeout(4000);
-  const cp = phases(await recorded());
-  check('wash: a bookmarked code block lands with the bubble flash and no wash (for now)', code >= 0 && !cp.washed && cp.flash, { code, ...cp });
   page$.scene = null;
   await mock.close();
   await page.bringToFront();

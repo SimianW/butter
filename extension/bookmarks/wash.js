@@ -2,6 +2,7 @@
 // or chrome.* here; bookmarks/content.js draws it, and node --test checks it.
 ((root) => {
   const SWEEP = 360, // ms for the whole range
+    BLOCK_IN = 160, // ms a code block's or a table's box takes to fade in (#74)
     HOLD = 1200,
     FADE = 900;
   const EASING = 'cubic-bezier(.3, .7, .3, 1)';
@@ -24,7 +25,22 @@
   // their joined length under one easing, so each line fills from its start to its end in turn:
   // `from`..`to` is its share of the progress, `at` and `ms` the time it takes. Under reduced
   // motion every line shows at once. Then the wash holds and fades.
-  function plan(widths, { reduced = false } = {}) {
+  // `block`: a code block or a table (#74), one box over the whole block that fades in (`fadeIn`)
+  // over BLOCK_IN ms instead of sweeping; under reduced motion it too shows at once.
+  function plan(widths, { reduced = false, block = false } = {}) {
+    if (block) {
+      const len = reduced ? 0 : BLOCK_IN;
+      return {
+        sweep: [{ from: 0, to: 1, at: 0, ms: len }],
+        fadeIn: !reduced,
+        easing: 'ease-out',
+        in: len,
+        hold: HOLD,
+        fade: FADE,
+        fadeEasing: 'ease-out',
+        total: len + HOLD + FADE,
+      };
+    }
     const total = widths.reduce((t, w) => t + w, 0) || 1;
     let sum = 0;
     const sweep = widths.map((w) => {
@@ -39,6 +55,7 @@
     const len = reduced ? 0 : SWEEP;
     return {
       sweep,
+      fadeIn: false,
       easing: EASING,
       in: len,
       hold: HOLD,
@@ -74,7 +91,22 @@
     }));
   }
 
-  const api = { plan, boxes };
+  // A code block's or a table's box (#74): its client rectangle grown by BLOCK_PAD px on every
+  // side. Grown outward, its corners keep the block's own curve: `radius` (px) plus the reach.
+  // `border`: the block's own border widths (top, right, bottom, left), left clear as `gap`
+  // between the ring outside the block and the fill inside it, so the border keeps its colour as
+  // the text does (the mockup's l-code-light).
+  const BLOCK_PAD = 3;
+  const blockBox = (r, radius, border = [0, 0, 0, 0]) => ({
+    left: r3(r.left - BLOCK_PAD),
+    top: r3(r.top - BLOCK_PAD),
+    width: r3(r.right - r.left + 2 * BLOCK_PAD),
+    height: r3(r.bottom - r.top + 2 * BLOCK_PAD),
+    radius: r3(radius + BLOCK_PAD),
+    gap: border.map(r3),
+  });
+
+  const api = { plan, boxes, blockBox };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ButterWash = api;
 })(globalThis);
