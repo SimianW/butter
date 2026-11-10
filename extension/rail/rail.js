@@ -1149,6 +1149,10 @@
     return [s, o, t];
   };
   const step = (now) => {
+    // The rail went off (the chat left for the home page, say) after this frame was queued: render
+    // has replaced the questions but not the bars, and the ticks have no geometry. render's kick()
+    // starts the wave again when the rail comes back.
+    if (!geo) return void (raf = 0);
     // A frame's timestamp is when Chrome began it, which can be earlier than the performance.now()
     // that kick() stored while the page was busy. A negative interval made k hugely negative and
     // threw the bars far past their targets: one tick swelled over the whole screen for a few frames.

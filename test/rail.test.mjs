@@ -154,6 +154,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     nextId = 1;
   const frames = new Map(),
     timers = new Map(),
+    intervals = [],
     resizeObservers = [];
   const document = new FakeElement();
   document.createElement = (tag) => new FakeElement(tag);
@@ -211,7 +212,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
       return id;
     },
     clearTimeout: (id) => timers.delete(id),
-    setInterval() {},
+    setInterval: (callback) => intervals.push(callback),
   });
   vm.runInContext(source, ctx, { filename: 'rail/rail.js' });
   const frame = (timestamp = now + 16) => {
@@ -367,6 +368,11 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     composer,
     sendButton,
     pendingFrames: () => frames.size,
+    // A new URL, as the rail's 700 ms poll sees it.
+    navigate: (pathname) => {
+      ctx.location.pathname = pathname;
+      for (const callback of intervals) callback();
+    },
     advanceClock: (ms) => {
       now += ms;
     },
@@ -426,6 +432,28 @@ test('hover wave stays within its targets when the frame timestamp predates kick
   assertBetween(nav.geometry(), swollen, resting);
   nav.flush();
   assert.deepEqual(nav.geometry(), resting);
+});
+
+test('hover wave frame pending when the chat is left for the home page does not throw, and the rail draws on Back', () => {
+  const nav = setup();
+  nav.pointer(2);
+  nav.flush();
+  nav.select('.rail').emit('pointerleave'); // the wave eases back to rest
+  nav.frame(); // still moving: the next frame is queued
+  assert.ok(nav.pendingFrames() > 0);
+  nav.navigate('/'); // the questions go before the bars do
+  assert.doesNotThrow(() => {
+    nav.frame();
+    nav.flush();
+  });
+  assert.ok(!nav.host.attributes.has('data-on'));
+  nav.navigate(`/c/${conversation}`);
+  nav.flush();
+  assert.ok(nav.host.attributes.has('data-on'));
+  assert.equal(nav.ticks().length, 5);
+  nav.pointer(2);
+  nav.flush();
+  assert.deepEqual(nav.geometry()[2], [2.6, 1, 1.6]);
 });
 
 test('hover wave converges monotonically, stays finite across long frames, and stops at rest', () => {
