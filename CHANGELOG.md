@@ -4,11 +4,9 @@
 
 ### Added
 
-- Added a butter highlight on the bookmarked text when you jump to a bookmark. It sweeps through
-  exactly the text you bookmarked, holds for a moment and fades, leaving nothing on the page. A
-  bookmarked code block or table gets one highlight over the whole block. It replaces the flash on
-  the question for that jump; a bookmark whose answer changed still lands on its question with the
-  flash.
+- Added a butter highlight that sweeps through the bookmarked text when you jump to a bookmark,
+  then fades, in place of the flash on the question.
+- Added one highlight over the whole block when the bookmark is a code block or a table.
 
 ### Changed
 
