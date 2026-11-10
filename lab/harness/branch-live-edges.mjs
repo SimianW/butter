@@ -92,10 +92,14 @@ const redactPath = (p) =>
   p.startsWith('/cdn-cgi/')
     ? '/cdn-cgi/<challenge>'
     : p.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, '<id>').replace(/local-chatgpt(%3A|:)<id>/gi, '<local>');
+const pageErrors = { butter: 0, other: 0 };
 const tag = new Map(),
   started = new WeakMap();
 const watch = (page, name) => {
   tag.set(page, name);
+  page.on('pageerror', (e) => {
+    pageErrors[/chrome-extension:|chatgpt-butter/.test(e.stack || '') ? 'butter' : 'other']++;
+  });
   const log = (r, failed) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(r.method())) return;
     const u = new URL(r.url());
@@ -129,7 +133,9 @@ const shot = async (page, file, masks = []) => {
     mask: masks.map((m) => page.locator(m)),
     maskColor: '#888',
     style: `body * { visibility: hidden !important; }
-      [data-butter-capture], [data-butter-capture] * { visibility: visible !important; }
+      [data-butter-capture], [data-butter-capture] *,
+      chatgpt-butter-pill, chatgpt-butter-pill *,
+      chatgpt-butter-branch, chatgpt-butter-branch * { visibility: visible !important; }
       chatgpt-butter-consent, chatgpt-butter-nav { display: none !important; }`,
   });
   return file;
@@ -206,6 +212,10 @@ const evidence = (page) =>
         sideChat: !!toolbar && [...toolbar.querySelectorAll('button')].some((b) => new RegExp(side).test(b.textContent.trim())),
         replies: replies.length,
         repliesWithMoreActions: more,
+        butterPill: (() => {
+          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
+          return !!pill && getComputedStyle(pill).display !== 'none';
+        })(),
         butterButton: (() => {
           const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
           return !!pill?.querySelector('[data-cell="branch"]') && getComputedStyle(pill).display !== 'none';
@@ -253,7 +263,7 @@ const openFixture = async (page) => {
   await settleScroll(page);
 };
 
-const results = { at: new Date().toISOString(), lab: lab.id, lang: LANG, streamMs: STREAM_MS };
+const results = { at: new Date().toISOString(), lab: lab.id, pageErrors, lang: LANG, streamMs: STREAM_MS };
 const sfx = LANG === 'zh' ? '-zh' : '';
 try {
   const page = context.pages().find((p) => p.url().startsWith('https://chatgpt.com')) || (await context.newPage());
@@ -416,6 +426,7 @@ try {
   results.workBranch.screenshot = await shot(work, `hidden-work-1280${sfx}.png`);
   assert.ok(results.workBranch.sideChat, 'Work mode toolbar offers side chat');
   assert.equal(results.workBranch.butterButton, false, 'no button in Work mode');
+  assert.equal(results.workBranch.butterPill, false, 'no pill in Work mode');
   await work.close();
 
   // ---- Temporary Chat: the page and its markers (no replies to select without sending).

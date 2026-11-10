@@ -46,10 +46,14 @@ const redactPath = (p) =>
   p.startsWith('/cdn-cgi/')
     ? '/cdn-cgi/<challenge>'
     : p.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, '<id>').replace(/local-chatgpt(%3A|:)<id>/gi, '<local>');
+const pageErrors = { butter: 0, other: 0 };
 const tag = new Map(),
   started = new WeakMap();
 const watch = (page, name) => {
   tag.set(page, name);
+  page.on('pageerror', (e) => {
+    pageErrors[/chrome-extension:|chatgpt-butter/.test(e.stack || '') ? 'butter' : 'other']++;
+  });
   const log = (r, failed) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(r.method())) return;
     const u = new URL(r.url());
@@ -71,7 +75,7 @@ const HOST = 'chatgpt-butter-branch';
 // Ask in branch's icon cell in the shared selection pill (selection/pill.js).
 const PILL = 'chatgpt-butter-pill';
 const CELL = `${PILL} button[data-cell="branch"]`;
-const results = { at: new Date().toISOString(), lab: lab.id, runs: [] };
+const results = { at: new Date().toISOString(), lab: lab.id, pageErrors, runs: [] };
 const shot = async (page, file, masks = []) => {
   await page.evaluate(() => {
     // Mark ChatGPT's own selection button so it stays visible; hide every other page content.
@@ -85,7 +89,9 @@ const shot = async (page, file, masks = []) => {
     mask: masks.map((m) => page.locator(m)),
     maskColor: '#888',
     style: `body * { visibility: hidden !important; }
-      [data-butter-capture], [data-butter-capture] * { visibility: visible !important; }
+      [data-butter-capture], [data-butter-capture] *,
+      chatgpt-butter-pill, chatgpt-butter-pill *,
+      chatgpt-butter-branch, chatgpt-butter-branch * { visibility: visible !important; }
       chatgpt-butter-consent, chatgpt-butter-nav { display: none !important; }`,
   });
   return file;
