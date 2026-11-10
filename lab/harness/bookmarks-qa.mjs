@@ -2044,6 +2044,21 @@ async function washSection() {
   await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
   page$.edited.delete(8);
 
+  // (f2) A chat whose scroller starts below ChatGPT's header, as a project chat's does (seen live
+  // on 2026-11-10): the wash reaches the scroller's own top, not a header's height below it, and
+  // paints nothing above it.
+  page$.css = '.thread-scroll-container { position:fixed; top:52px; left:0; right:0; bottom:0; height:auto }';
+  await openChat('light');
+  await page.evaluate((sc) => (document.querySelector(sc).scrollTop = 0), sc);
+  await page.waitForTimeout(300);
+  await rowJump(T, PARA);
+  await waitWash();
+  await page.waitForTimeout(500);
+  const below = await coverage(PARA);
+  check('wash: under a header that the scroller starts below, it reaches the scroller\'s top', below.ok && below.clipTop === 0, below);
+  await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH, { timeout: 5000 });
+  page$.css = '';
+
   // (g) A code block and a table (#74): one box over the whole block, 3 px beyond it with its
   // corners, fading in over about 160 ms with no sweep, then held and faded; no bubble flash. In
   // each markup's own shape: MARKUP=old has ChatGPT's <pre> round its rounded panel and a table in

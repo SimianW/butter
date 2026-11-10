@@ -709,10 +709,27 @@
     }
     return out;
   };
+  // The bottom of ChatGPT's header over the scroller's top edge: the fixed or sticky box drawn
+  // there. Some chats' scrollers start below the header (a project's chats, checked on
+  // 2026-11-10): their content shows from the scroller's own top. Found nothing to go by, the
+  // header is taken to overlap the scroller, as rail/rail.js takes it.
+  const headerBottom = (sc, r) => {
+    const top = Math.max(0, r.top);
+    for (
+      let h = document.elementFromPoint(r.left + sc.clientWidth / 2, top + 1);
+      h && h !== document.body;
+      h = h.parentElement
+    ) {
+      if (h === sc) return top;
+      if (/fixed|sticky/.test(getComputedStyle(h).position))
+        return Math.max(top, h.getBoundingClientRect().bottom);
+    }
+    return top + HEADER;
+  };
   // The part of the scroller the wash may paint: under the header, above the composer.
   const clipOf = (sc) => {
     const r = sc.getBoundingClientRect(),
-      top = Math.max(0, r.top) + HEADER,
+      top = headerBottom(sc, r),
       c = document.querySelector(COMPOSER)?.getBoundingClientRect();
     let bottom = Math.min(r.bottom, innerHeight);
     if (c?.height && c.top > top && c.top < bottom) bottom = c.top;

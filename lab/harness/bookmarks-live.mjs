@@ -905,7 +905,7 @@ const installKit = () =>
           const bs = [...a.querySelectorAll(blocks)];
           const ps = bs
             .map((b, i) => ({ b, i }))
-            .filter(({ b }) => b.tagName === 'P' && b.textContent.replace(/\s+/g, ' ').length > 160);
+            .filter(({ b }) => b.tagName === 'P' && b.textContent.replace(/\s+/g, ' ').length > 120);
           const table = bs.findIndex((b) => !!tableOf(b));
           if (ps.length < 2 || table < 0) continue;
           // The selection: about 110 characters of a plain run of text in the second paragraph,
@@ -1001,8 +1001,11 @@ const installKit = () =>
       now(WASH) {
         const host = document.querySelector(WASH),
           r = sc().getBoundingClientRect();
-        let h = document.elementFromPoint(r.left + r.width / 2, Math.max(0, r.top) + 8);
-        while (h && !['fixed', 'sticky'].includes(getComputedStyle(h).position)) h = h.parentElement;
+        // Null when the chat's own content shows at the scroller's top (no header over it).
+        let h = document.elementFromPoint(r.left + r.width / 2, Math.max(0, r.top) + 1);
+        while (h && h !== sc() && !['fixed', 'sticky'].includes(getComputedStyle(h).position))
+          h = h.parentElement;
+        if (h === sc()) h = null;
         const composer = document
           .querySelector('form:has([contenteditable="true"])')
           ?.getBoundingClientRect();
@@ -1021,6 +1024,7 @@ const installKit = () =>
           scrollerTop: r.top,
           composerTop: composer?.top ?? null,
           scrollTop: sc().scrollTop,
+          view: { width: innerWidth, height: innerHeight },
           flash: !!document.querySelector('[data-butter-flash]'),
         };
       },
@@ -1098,12 +1102,14 @@ async function comparePixels(a, b, dark) {
     ],
   );
 }
-const clipOfBox = (q, pad = 0) => ({
-  x: Math.max(0, Math.round(q.left) + pad),
-  y: Math.max(0, Math.round(q.top) + pad),
-  width: Math.max(1, Math.round(q.right - q.left) - 2 * pad),
-  height: Math.max(1, Math.round(q.bottom - q.top) - 2 * pad),
-});
+// A box as a screenshot clip, `pad` px inside it and cut to the window; null when nothing is left.
+const clipOfBox = (q, view, pad = 0) => {
+  const x = Math.max(0, Math.round(q.left) + pad),
+    y = Math.max(0, Math.round(q.top) + pad),
+    right = Math.min(view.width, Math.round(q.right) - pad),
+    bottom = Math.min(view.height, Math.round(q.bottom) - pad);
+  return right - x >= 2 && bottom - y >= 2 ? { x, y, width: right - x, height: bottom - y } : null;
+};
 // One jump: from about 2500 px below the target, through its question's card (its row `rank` in
 // answer order), then the checks above. `edge`: 'header' scrolls the washed text under the header
 // during the hold, 'composer' behind the composer, null just scrolls 80 px.
@@ -1171,12 +1177,14 @@ async function washJump(theme, kind, rank, edge) {
   const dark = theme === 'dark',
     first = held.boxes[0];
   // The text under the wash now, and the same pixels once it has gone (below).
-  const inkClip = first && clipOfBox(first, 3),
+  const inkClip = first && clipOfBox(first, held.view, 3),
     inkTop = held.scrollTop,
     inkDuring = inkClip && (await page.screenshot({ clip: inkClip }));
   // Scroll during the hold.
   let dy = 80;
-  if (edge === 'header' && first) dy = first.top - ((held.headerBottom ?? held.scrollerTop + 52) - 10);
+  // The top edge the wash may paint to: the header's bottom, or the scroller's top below it.
+  const edgeTop = (w) => Math.max(0, w.headerBottom ?? w.scrollerTop);
+  if (edge === 'header' && first) dy = first.top - (edgeTop(held) - 10);
   if (edge === 'composer' && held.boxes.length && held.composerTop)
     dy = held.boxes.at(-1).bottom - (held.composerTop + 10);
   await page.mouse.wheel(0, dy);
@@ -1190,13 +1198,14 @@ async function washJump(theme, kind, rank, edge) {
   };
   const band =
     edge === 'header'
-      ? span && { ...span, top: Math.max(0, (moved.headerBottom ?? 52) - 24), bottom: moved.headerBottom ?? 52 }
+      ? span && { ...span, top: Math.max(0, edgeTop(moved) - 24), bottom: edgeTop(moved) }
       : edge === 'composer'
         ? span && moved.composerTop && { ...span, top: moved.composerTop, bottom: moved.composerTop + 24 }
         : null;
-  const bandDuring = band && (await page.screenshot({ clip: clipOfBox(band) }));
+  const bandClip = band && clipOfBox(band, moved.view),
+    bandDuring = bandClip && (await page.screenshot({ clip: bandClip }));
   await page.waitForFunction((WASH) => !document.querySelector(WASH), WASH_HOST, { timeout: 6000 }).catch(() => {});
-  const bandAfter = band && (await page.screenshot({ clip: clipOfBox(band) }));
+  const bandAfter = bandClip && (await page.screenshot({ clip: bandClip }));
   const frames = await page.evaluate(() => ((window.__washRec.stop = true), window.__washRec.frames));
   const gone = !(await washNow()).shown;
   // Back where the ink was read, for the same pixels without the wash.
@@ -1204,7 +1213,7 @@ async function washJump(theme, kind, rank, edge) {
   await page.waitForTimeout(500);
   const inkAfter = inkClip && (await page.screenshot({ clip: inkClip }));
   const ink = inkDuring && (await comparePixels(inkDuring, inkAfter, dark)),
-    bandStat = band && (await comparePixels(bandDuring, bandAfter, dark));
+    bandStat = bandClip && (await comparePixels(bandDuring, bandAfter, dark));
   const name = kind === 'table' ? 'a table' : `a ${kind}`;
   const numbers = (q) => q.map((b) => [b.left, b.top, b.right - b.left, b.bottom - b.top].map(Math.round));
   await check(`wash ${theme}: ${name} is washed on its own lines${kind === 'table' ? ' (one box 3 px around the table)' : ''}`,
@@ -1220,14 +1229,44 @@ async function washJump(theme, kind, rank, edge) {
   await check(`wash ${theme}: ${name}: scrolled ${Math.round(dy)} px during the hold, the boxes follow the text`,
     moved.shown && Math.abs(moved.scrollTop - held.scrollTop) > 20 && within(moved.boxes, wantMoved),
     { scrolled: Math.round(moved.scrollTop - held.scrollTop), boxes: moved.boxes.length, expected: wantMoved.length });
-  if (band)
-    await check(`wash ${theme}: ${name}: with the washed text under ChatGPT's ${edge}, no butter shows on the ${edge}`,
-      bandStat.differ < 0.002 && moved.boxes.some((b) => (edge === 'header' ? b.top < band.bottom : b.bottom > band.top)),
-      { differ: bandStat.differ, clipTop: Math.round(moved.clip?.top ?? -1), clipBottom: Math.round(moved.clip?.bottom ?? -1),
+  if (edge) {
+    // The wash reaches the edge (no unwashed strip of visible text) and paints nothing past it.
+    const reach =
+      !!moved.clip &&
+      (edge === 'header'
+        ? Math.abs(moved.clip.top - edgeTop(moved)) <= 1
+        : Math.abs(moved.clip.bottom - moved.composerTop) <= 1);
+    const under = moved.boxes.some((b) => (edge === 'header' ? b.top < edgeTop(moved) : b.bottom > moved.composerTop));
+    await check(`wash ${theme}: ${name}: with the washed text under ChatGPT's ${edge}, the wash reaches the ${edge} and no butter shows on it`,
+      !!bandStat && bandStat.differ < 0.002 && reach && under,
+      { differ: bandStat?.differ ?? null, reach, under, clipTop: Math.round(moved.clip?.top ?? -1), clipBottom: Math.round(moved.clip?.bottom ?? -1),
         headerBottom: moved.headerBottom && Math.round(moved.headerBottom), composerTop: moved.composerTop && Math.round(moved.composerTop),
         scrollerTop: Math.round(moved.scrollerTop) });
+  }
   await check(`wash ${theme}: ${name}: gone after the hold and fade`, gone, {});
   summary.wash.push({ theme, kind, boxes: numbers(held.boxes).length, dy: Math.round(dy) });
+}
+// Clicks the earlier-history dots until the whole chat is loaded (a click may load one page).
+async function loadAll() {
+  for (let k = 0; k < 40; k++) {
+    const s = await railState();
+    if (!s.more) return true;
+    await page.evaluate(() =>
+      document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.more:not([hidden])')?.click(),
+    );
+    await page
+      .waitForFunction(
+        (n) => {
+          const r = document.querySelector('chatgpt-butter-nav').shadowRoot;
+          return r.querySelector('.more').hidden || r.querySelectorAll('.tick').length > n;
+        },
+        s.ticks,
+        { timeout: 60000 },
+      )
+      .catch(() => {});
+    await page.waitForTimeout(2000);
+  }
+  return !(await railState()).more;
 }
 async function washRun() {
   summary.wash = [];
@@ -1244,20 +1283,35 @@ async function washRun() {
       phase = `wash-theme-${theme}`;
       await page.evaluate((t) => localStorage.setItem('theme', t), theme);
       await open();
-      await installKit();
       const dark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
       await check(`wash ${theme}: ChatGPT shows its ${theme} theme`, dark === (theme === 'dark'));
+      // The whole chat loaded, so that every question has its tick.
+      await check(`wash ${theme}: the whole chat loads through the earlier-history dots`, await loadAll(), {
+        ticks: (await railState()).ticks,
+      });
+      await installKit();
       if (theme === 'light') {
         phase = 'wash-pick';
-        summary.washTarget = await pickWashTargets();
+        // Down the chat a screen at a time until a mounted answer has the targets.
+        await page.evaluate(() => (window.__wk.sc().scrollTop = 0));
+        await page.waitForTimeout(1500);
+        for (let k = 0; k < 150 && !(summary.washTarget = await pickWashTargets()); k++) {
+          const end = await page.evaluate(() => {
+            const s = window.__wk.sc(),
+              was = s.scrollTop;
+            s.scrollTop += s.clientHeight * 0.8;
+            return s.scrollTop === was;
+          });
+          if (end) break;
+          await page.waitForTimeout(900);
+        }
         await check('wash: a mounted answer holds two long paragraphs and a table', !!summary.washTarget, summary.washTarget ?? {});
         requireThat(summary.washTarget, 'no wash target');
         await worker.evaluate((v) => (globalThis.washTarget = v), await page.evaluate(() => window.__wash));
         phase = 'wash-bookmark';
         for (const kind of ['paragraph', 'selection', 'table'])
           await check(`wash: the hover button bookmarks the ${kind}`, await washBookmark(kind), { stored: await storedCount() });
-      } else
-        await page.evaluate((v) => (window.__wash = v), await worker.evaluate(() => globalThis.washTarget));
+      } else await page.evaluate((v) => (window.__wash = v), await worker.evaluate(() => globalThis.washTarget));
       await page.locator('chatgpt-butter-nav .bdot').first().waitFor({ state: 'attached', timeout: 20000 });
       // The card lists them in answer order.
       const t = summary.washTarget,
@@ -1265,7 +1319,9 @@ async function washRun() {
           ['paragraph', t.paragraph],
           ['selection', t.selectionParagraph],
           ['table', t.table],
-        ].sort((a, b) => a[1] - b[1]).map(([k]) => k);
+        ]
+          .sort((a, b) => a[1] - b[1])
+          .map(([k]) => k);
       await washJump(theme, 'paragraph', order.indexOf('paragraph'), 'header');
       await washJump(theme, 'selection', order.indexOf('selection'), 'composer');
       await washJump(theme, 'table', order.indexOf('table'), null);
