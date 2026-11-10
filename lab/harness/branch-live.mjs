@@ -320,7 +320,9 @@ try {
     assert.equal(run.originalSendRequests.length, 0, 'nothing sent from the original tab');
     // Checked after both widths, so one run's drift doesn't hide the other's result.
     if (!run.originalUnchanged) drift.push(width);
-    // Close the guarded, unsent branch without filling ChatGPT's composer.
+    // Discard the unsent branch: clear its composer, close the tab.
+    for (const editor of await dest.locator('.ProseMirror[contenteditable="true"]:visible').all())
+      await editor.fill('');
     await dest.close();
   }
   assert.deepEqual(drift, [], 'original tab unchanged');
