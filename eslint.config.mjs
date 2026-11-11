@@ -77,12 +77,12 @@ export default [
   },
   {
     files: ['extension/rail/rail.js'],
-    languageOptions: {
-      globals: {
-        ButterSeekMeta: 'readonly', // defined in seek/seek-meta.js
-        ButterBookmarks: 'readonly', // defined in bookmarks/model.js
-      },
-    },
+    languageOptions: { globals: { ButterRailModel: 'readonly' } }, // defined in rail/model.js
+  },
+  {
+    // The rail model and its thread and wave fall back to their dependencies under node.
+    files: ['extension/rail/model.js'],
+    languageOptions: { globals: { require: 'readonly' } },
   },
   {
     files: ['extension/bookmarks/content.js'],
@@ -190,6 +190,9 @@ export default [
       'extension/bookmarks/model.js',
       'extension/bookmarks/wash.js',
       'extension/bookmarks/session.js',
+      'extension/rail/thread.js',
+      'extension/rail/wave.js',
+      'extension/rail/model.js',
       'extension/page/reader.js',
       'extension/page/reader-main.js',
       'extension/dev/recorder.js',

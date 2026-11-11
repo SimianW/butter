@@ -5,7 +5,11 @@ import vm from 'node:vm';
 import seekMeta from '../extension/seek/seek-meta.js';
 import bookmarks from '../extension/bookmarks/model.js';
 
-const source = fs.readFileSync(new URL('../extension/rail/rail.js', import.meta.url), 'utf8');
+// The rail's scripts in manifest order: the model's thread and wave, the model, the adapter.
+const sources = ['thread', 'wave', 'model', 'rail'].map((name) => [
+  `rail/${name}.js`,
+  fs.readFileSync(new URL(`../extension/rail/${name}.js`, import.meta.url), 'utf8'),
+]);
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
 class FakeElement {
@@ -214,7 +218,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     clearTimeout: (id) => timers.delete(id),
     setInterval: (callback) => intervals.push(callback),
   });
-  vm.runInContext(source, ctx, { filename: 'rail/rail.js' });
+  for (const [filename, source] of sources) vm.runInContext(source, ctx, { filename });
   const frame = (timestamp = now + 16) => {
     // rAF's frame-start timestamp may lag the current performance.now() clock.
     now = Math.max(now, timestamp);
