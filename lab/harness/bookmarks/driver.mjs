@@ -1,8 +1,11 @@
 // The Butter driver for the bookmarks fixture: reading the rail, its dots and the tick's card, the
 // selection pill and the bookmark notification, and acting as a reader does (select, hover, click a
 // row, press the shortcut, jump). `driver({ page, worker, shots })` binds it to a scenario's page.
+// The pill and text selection come from the shared driver (../driver/butter.mjs), bound here to the
+// fixture's "Ask ChatGPT" and answer paragraphs.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { butterDriver } from '../driver/butter.mjs';
 import { headed, repo } from '../runner/chromium.mjs';
 import { answer, question, PARAS } from './fixture.mjs';
 
@@ -172,56 +175,14 @@ export function driver({ page, worker, shots }) {
       (id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top,
       question(turn),
     );
-  // The selection pill (#77): Butter's cells beside the fixture's "Ask ChatGPT", their names, key
-  // hints and boxes, the pill's look, and the label under it.
-  const pill = () =>
-    page.evaluate(() => {
-      const host = document.querySelector('chatgpt-butter-pill'),
-        root = host?.shadowRoot,
-        el = root?.querySelector('.pill'),
-        shown = !!el && getComputedStyle(el).display !== 'none';
-      const box = (e) => e && e.getBoundingClientRect().toJSON();
-      const tip = root?.querySelector('.tip');
-      const tipShown = !!tip && getComputedStyle(tip).display !== 'none';
-      const native = document.querySelector('.fx-native:not([hidden]) > div');
-      const s = el && getComputedStyle(el);
-      return {
-        shown,
-        inBody: host?.parentNode === document.body,
-        box: shown ? box(el) : null,
-        css: shown ? { bg: s.backgroundColor, radius: s.borderTopLeftRadius, shadow: s.boxShadow } : null,
-        native: box(native),
-        nativeCss: native && { bg: getComputedStyle(native).backgroundColor, radius: getComputedStyle(native).borderTopLeftRadius, shadow: getComputedStyle(native).boxShadow },
-        cells: shown
-          ? [...el.querySelectorAll('button')].map((b) => ({
-              id: b.dataset.cell,
-              name: b.getAttribute('aria-label'),
-              keys: b.getAttribute('aria-keyshortcuts'),
-              text: b.textContent.trim(),
-              divider: getComputedStyle(b).borderLeftWidth,
-              ...box(b),
-            }))
-          : [],
-        tip: tipShown
-          ? { text: tip.querySelector('span').textContent, kbd: tip.querySelector('kbd').textContent, kbdShown: getComputedStyle(tip.querySelector('kbd')).display !== 'none', ...box(tip) }
-          : null,
-        // The old hover button's layer must be gone (#77).
-        hoverButton: !!document.querySelector('chatgpt-butter-bookmark'),
-      };
-    });
+  // The selection pill (#77), its cells and label, and text selection: the shared Butter driver.
+  const butter = butterDriver({ page, native: '.fx-native:not([hidden]) > div' });
+  const { pill, hoverCell } = butter;
   // The Bookmark cell, or null when the pill doesn't show it.
   const button = async () => {
     const p = await pill(),
       c = p.cells.find((x) => x.id === 'bookmark');
     return c ? { ...c, shown: true, x: c.left, y: c.top, w: c.width, h: c.height, pill: p } : null;
-  };
-  // Hover cell `id` long enough for its label; returns the pill with the label.
-  const hoverCell = async (id, wait = 350) => {
-    const c = (await pill()).cells.find((x) => x.id === id);
-    if (!c) return null;
-    await page.mouse.move(c.left + c.width / 2, c.top + c.height / 2, { steps: 3 });
-    await page.waitForTimeout(wait);
-    return pill();
   };
   // The bookmark notification (#77): its form, text, buttons and box.
   const noteCard = () =>
@@ -297,19 +258,10 @@ export function driver({ page, worker, shots }) {
       const sc = document.querySelector('.thread-scroll-container');
       sc.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - 120;
     }, question(turn));
+  // Paragraph k of question `turn`'s answer, as the shared driver takes an element.
+  const para = (turn, k) => ({ within: `[data-fx-answer="${answer(turn)}"] [data-markdown-text-style]`, css: PARAS, index: k });
   // Select text in answer paragraphs: from `start` in paragraph k to `end` in paragraph k2.
-  const select = (turn, k, start, k2, end) =>
-    page.evaluate(
-      ([id, k, start, k2, end, PARAS]) => {
-        const blocks = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS);
-        const r = document.createRange();
-        r.setStart(blocks[k].firstChild, start);
-        r.setEnd(blocks[k2].firstChild, end);
-        getSelection().removeAllRanges();
-        getSelection().addRange(r);
-      },
-      [answer(turn), k, start, k2, end, PARAS],
-    );
+  const select = (turn, k, start, k2, end) => butter.selectText(para(turn, k), start, para(turn, k2), end);
   // Press the bookmark command's key as real input, with the X pointer parked on the header; without
   // a display, the worker relays the command to the tab as Chrome would.
   async function shortcut() {
@@ -382,17 +334,7 @@ export function driver({ page, worker, shots }) {
     };
   }
   // Select paragraph k of question `turn`'s answer, all of it.
-  const selectBlock = (turn, k) =>
-    page.evaluate(
-      ([id, k, PARAS]) => {
-        const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k];
-        const r = document.createRange();
-        r.selectNodeContents(el);
-        getSelection().removeAllRanges();
-        getSelection().addRange(r);
-      },
-      [answer(turn), k, PARAS],
-    );
+  const selectBlock = (turn, k) => butter.selectContents(para(turn, k));
   // Delete row k of question `turn`'s tick card with its ×, as the reader does.
   async function removeRow(turn, k = 0) {
     await toTop();

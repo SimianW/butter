@@ -1,4 +1,4 @@
-// Synthetic ChatGPT-like conversation for branch-qa.mjs. No ChatGPT requests: every
+// Synthetic ChatGPT-like conversation for the branch harness (harness.mjs). No ChatGPT requests: every
 // https://chatgpt.com/** request is answered with this page. The scene follows the approved
 // mockup (issue #26 artifact 1): 56 px header, 720 px column, composer 44 px above the bottom,
 // and a native "Ask ChatGPT" chip shaped like the live one (fixed container > button). As live, the
@@ -9,6 +9,9 @@
 // ChatGPT's disclaimer ("ChatGPT can make mistakes…") sits directly on the composer's top edge as
 // on the live page of 2026-11-07: a full-width data-markdown-copy="exclude" box, 12/16 px centred
 // text and 8 px padding below it, outside the composer's own subtree.
+// Query parameters select ChatGPT variants (theme, lang=zh, stream=<ms>, work, side, nobranch,
+// nodisclaimer, fail=<type>, …); each is described where fixtureHtml reads it. The harness serves a
+// scenario's `scene` parameters with every page.
 export const ORIGINAL = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 export const BRANCH = 'local-chatgpt:0f9e2c4a-1b2c-4d3e-8f4a-5b6c7d8e9f00';
 export const QUOTE = 'RAG (Retrieval-Augmented Generation) than traditional model training';

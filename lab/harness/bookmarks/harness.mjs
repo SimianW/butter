@@ -17,7 +17,7 @@
 // mid-scenario scene change, `pages()` (earlier-history pages served), the store and settings
 // helpers, the fixture's ids and text, and the Butter driver (driver.mjs).
 import fs from 'node:fs/promises';
-import { headed, launchButter, repo } from '../runner/chromium.mjs';
+import { freshPage, headed, launchButter, repo } from '../runner/chromium.mjs';
 import { compare, png } from './compare.mjs';
 import { driver, xkeys } from './driver.mjs';
 import * as fixture from './fixture.mjs';
@@ -138,10 +138,9 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
   if (headed) xkeys('Shift');
 
   async function start(scenario, check) {
-    // The new page first (a context left with no page may close its window), then every other page
-    // closed before anything is reset: the previous scenario's, mockups and tabs it left open.
-    const current = await context.newPage();
-    for (const p of context.pages()) if (p !== current) await p.close();
+    // Every other page closed before anything is reset: the previous scenario's, mockups and tabs
+    // it left open.
+    const current = await freshPage(context);
     await restoreKey();
     fx.reset(typeof scenario.scene === 'function' ? scenario.scene({ live: LIVE }) : scenario.scene);
     await settings(scenario.settings ?? {});

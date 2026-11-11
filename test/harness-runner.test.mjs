@@ -104,3 +104,49 @@ test('a scenario whose skip() gives a reason is reported and not started', async
   assert.deepEqual(results, [{ name: 'b works', pass: true }]);
   assert.ok(lines.includes('skip a: no mockup'));
 });
+
+test('a skipped scenario is named in the summary and on the last line', async () => {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-runner-'));
+  const file = path.join(dir, 'summary.json'),
+    lines = [],
+    log = console.log;
+  console.log = (...a) => lines.push(a.join(' '));
+  try {
+    const ok = await runScenarios({
+      scenarios: [
+        { name: 'a', skip: () => 'no mockup', run: ({ check }) => check('a works', true) },
+        { name: 'b', run: ({ check }) => check('b works', true) },
+        { name: 'c', skip: () => 'no display', run: ({ check }) => check('c works', true) },
+      ],
+      setup: harness,
+      summary: file,
+      verbose: false,
+    });
+    console.log = log;
+    assert.equal(ok, true);
+    assert.deepEqual(JSON.parse(await fs.readFile(file, 'utf8')).skipped, ['a', 'c']);
+    assert.equal(lines.at(-1), '1 checks passed; skipped: a, c');
+  } finally {
+    console.log = log;
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('a skip() that throws fails that scenario, and the next one still runs', async () => {
+  const { ok, results, lines } = await run([
+    {
+      name: 'a',
+      skip: () => {
+        throw new Error('no fixture');
+      },
+      run: ({ check }) => check('a works', true),
+    },
+    { name: 'b', run: ({ check }) => check('b works', true) },
+  ]);
+  assert.equal(ok, false);
+  assert.deepEqual(results, [
+    { name: 'a threw', pass: false, error: 'no fixture' },
+    { name: 'b works', pass: true },
+  ]);
+  assert.match(lines.at(-1), /^FAIL: 1 of 2 checks failed; threw: a$/);
+});
