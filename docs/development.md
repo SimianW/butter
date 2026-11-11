@@ -16,10 +16,11 @@
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
-| `extension/bookmarks/client.js` | The store client shared by `content.js` and `notice.js` (`ButterBookmarkStore.send`): one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
-| `extension/bookmarks/content.js` | Bookmarks on the page: the Bookmark cell of the selection pill, the shortcut, the marks handed to the rail (`ButterRail.setMarks`), the landing wash in its own layer, and the notification on every save and remove. Answers and their paragraphs come from the page reader. |
+| `extension/bookmarks/client.js` | The store client (`ButterBookmarkStore.send`), which `content.js` hands to the bookmark session: one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
+| `extension/bookmarks/session.js` | The bookmark session (`ButterBookmarkSession`), isolated world, no DOM or `chrome.*`: a factory over injected adapters (the store, the hash, page facts, the rail-off check, the account request, `publish` toward the rail and `outcome` toward the notification). It owns the account and conversation in view, the list read once per (account, conversation) and again only after it was unavailable, the raw ids behind hashed ones (kept across unmounts), staleness last seen in the tab, fresh dots and the earlier-to-loaded transfer, the supersession serial, seek deferral, the quiet re-check, and create, remove and their Undo. It publishes `{ revision, groups }` to `ButterRail.setMarks`. Loads after `client.js`. |
+| `extension/bookmarks/content.js` | Bookmarks on the page: the Bookmark cell of the selection pill, the shortcut, the landing wash in its own layer, and the DOM the bookmark session works from: text nodes, line measuring, the selection's anchor, the top paragraph and `locate`. It builds the session over the page reader and `ButterBookmarkStore`, and turns page events (`butter-account`, `butter-seek-state`, `butter-settings`, clicks, the pointer or focus reaching the rail) into session calls. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
-| `extension/bookmarks/notice.js` | The bookmark notification (#77), top right: "Bookmark saved", "Bookmark removed" or "Already bookmarked", the first words and Undo (Undo of a save deletes it, of a remove stores it again); 4 s, held by the pointer or focus; the first save ever expands it with the privacy text and Got it, which sets `bookmarkNotice: 'acknowledged'` in settings. |
+| `extension/bookmarks/notice.js` | The bookmark notification (#77), top right: "Bookmark saved", "Bookmark removed" or "Already bookmarked", the first words and Undo, which runs the action the bookmark session handed over (a save's deletes it, a remove's stores it again); it never writes the store itself; 4 s, held by the pointer or focus; the first save ever expands it with the privacy text and Got it, which sets `bookmarkNotice: 'acknowledged'` in settings. |
 | `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notification share: look, font, themes and motion; bottom-right cards stack, the `top` card (the notification) sits top right outside that stack. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
@@ -110,9 +111,15 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   than five, its group name and the tick's name, in English and Chinese), `test/bookmark-stale.test.js` (live and stale resolution: a
   regenerated answer, an edited one, a vanished message, a version switched back; the dot solid,
   hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
-  relay and the key query), `test/bookmark-notice.test.js` (the notification: the saved, removed and
+  relay and the key query), `test/bookmark-session.test.js` (the bookmark session through its
+  interface, over an async in-memory store with held replies and planted pages: an account or chat
+  switch mid-read, seek deferral, a streamed answer unmounted and its raw id and staleness kept, the
+  earlier-to-loaded transfer, a duplicate save, delete and Undo, Undo after navigation, the
+  published revision and the quiet check, an unavailable list read again, rail off),
+  `test/bookmark-notice.test.js` (the notification, driven by the real session: the saved, removed and
   already-bookmarked cards in English and Chinese, the expanded first-bookmark card until Got it,
-  Undo of a save and of a remove through the real worker store, replacement and a stale Undo, the
+  Undo of a save and of a remove through the real store client and worker store, one store write per
+  Undo, replacement and a stale Undo, the
   4 s lifetime held by the pointer or focus under fake timers, hiding when Butter or the rail goes
   off, its top-right place, independence from the layout switch and consent) and
   `test/selection-pill.test.js` (the selection pill: the cells shown for each switch combination,
@@ -294,10 +301,13 @@ no Option+Shift letter) nor ChatGPT's documented shortcuts, and is not the dev b
 which Chrome reserves on Windows and Linux for its bookmarks bar. `--dev` zips keep the `bookmark`
 command beside `save-bug`.
 
-On the page, `bookmarks/content.js` reads a conversation's bookmarks once when the rail first shows
-it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete)` whenever it renders
-(`complete`: no earlier page is left to load). The content script answers with
-`ButterRail.setMarks(conv, marks, items)` (`items`: the list it worked from): a `Map` from question id
+On the page, the bookmark session (`bookmarks/session.js`) reads a conversation's bookmarks once
+when the rail first shows it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete,
+revision)` whenever it renders (`complete`: no earlier page is left to load; `revision`: the items
+revision, which every new `items` array of a conversation takes from one rail-wide counter). The
+session answers with `ButterRail.setMarks(conv, { revision, groups })`, where `revision` is the
+items revision the groups were resolved against (null with no conversation or account, or the rail
+off), and `groups` is a `Map` from question id
 (or `ButterBookmarks.EARLIER`, -1, for the bookmarks in earlier history that isn't loaded) to
 `{ count, fresh, bookmarks, stale, land, wash, remove }`, where `fresh` grows the dot in, `bookmarks` are the question's bookmarks in answer order, each with its `stale` flag,
 `stale` is set when all of them are stale (the dot is hollow), `land(turnElement, bookmark = bookmarks[0])` returns that
@@ -305,7 +315,9 @@ bookmark's offset below the turn's top for the rail's jump (or null to land on t
 stale bookmark does), `wash(turnElement, bookmark)` washes that bookmark's text once a trip from a
 card row has landed on it (false when it is stale; the rail then flashes the bubble instead), and
 `remove(bookmark)` deletes it from the store and sends the marks again. The rail calls
-`ButterBookmarkPage.unwash()` as any jump starts.
+`ButterBookmarkPage.unwash()` as any jump starts. An earlier trip waits, up to 1.5 s per page, for
+marks whose revision has reached the items it now shows. A quiet re-check publishes when the groups
+or the revision changed, or a bookmark is fresh.
 
 Staleness (`ButterBookmarks.resolve`) is computed on the page and never stored. A bookmark is live
 when its answer is rendered, its paragraph exists and that paragraph still contains the excerpt's
@@ -315,7 +327,7 @@ mounted with another answer (regenerated, or another version shown), or when its
 longer in a fully loaded conversation or in its loaded question (`ask`), where it stays under that
 question; only a bookmark whose question isn't loaded (or, without `ask`, whose message isn't
 listed or rendered) waits on the earlier-history dots while earlier history is unloaded. A turn that isn't
-mounted keeps the state last seen in the tab. The content script resolves on every rail render, about
+mounted keeps the state last seen in the tab. The session resolves on every rail render, about
 0.6 s and 2.5 s after a click on the page (regenerate, edit and the version arrows are clicks), and
 when the pointer or focus reaches the rail; never while a scrollbar drag is seeking. The card shows a
 stale row grey with "answer changed", and a single stale bookmark with "Bookmark · answer changed",
@@ -367,10 +379,12 @@ dots. A dot whose last bookmark is deleted fades out over 160 ms (at once under 
 a row is the only way to remove a bookmark.
 
 Every save and every remove shows the notification (`bookmarks/notice.js`, #77), whatever the layout
-switch and `layoutConsent` say: `bookmarks/content.js`'s `create` is the only save path (the
+switch and `layoutConsent` say: the bookmark session's `create` is the only save path (the
 Bookmark cell and the shortcut) and its `remove` the rail's ×. "Bookmark saved" (create answered
-`created: true`) and "Bookmark removed" carry Undo: a save's Undo sends `butter-bookmark-delete` and
-drops the bookmark from the page's list; a remove's Undo sends the stored bookmark back to
+`created: true`) and "Bookmark removed" carry Undo, which the session hands the notification and
+which goes to the bookmark's own account and conversation even after the tab moved on: a save's Undo
+sends `butter-bookmark-delete` and drops the bookmark from the session's list; a remove's Undo sends
+the stored bookmark back to
 `butter-bookmark-create`, whose key comes from its anchor fields, so the same bookmark returns with
 its original time and dot. "Already bookmarked" (`created: false`) has none. While `bookmarkNotice`
 isn't `'acknowledged'` a save shows the expanded card with the privacy text and Got it, which

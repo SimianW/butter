@@ -169,16 +169,30 @@ holds, hollow when all are stale.
 _Avoid_: badge, indicator
 _Where_: `rail/rail.js`
 
+**Bookmark session**:
+A tab's bookmarks over time: the account and conversation in view, the list read from the store,
+raw ids behind hashed ones, staleness last seen, fresh dots, and create, remove and their Undo. It
+publishes marks to the rail and hands each save and remove to the notification with its Undo.
+_Avoid_: bookmark manager, bookmark state
+_Where_: `bookmarks/session.js`
+
+**Items revision**:
+The number the rail gives each new list of a conversation's items (`rev`), from one counter for the
+tab. Marks are published with the revision they were resolved against, so an earlier trip waits for
+marks of the items it now shows.
+_Avoid_: version (a ChatGPT answer's word), generation
+_Where_: `rail/rail.js`, `bookmarks/session.js`
+
 **Mark**:
 A question's bookmarks as the rail receives them: the group behind one dot, with its stale flag and
 its land, wash and remove actions.
 _Avoid_: bookmark (one saved passage)
-_Where_: `bookmarks/content.js`
+_Where_: `bookmarks/session.js`
 
 **Fresh**:
 A bookmark just made in this tab, or just moved from the three dots to its question's tick; its dot
 grows in.
-_Where_: `bookmarks/content.js`
+_Where_: `bookmarks/session.js`
 
 **Wash**:
 The butter-coloured highlight that sweeps over a bookmark's text after a jump lands on it, or one box
