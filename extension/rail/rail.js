@@ -69,13 +69,12 @@
 
   // ---- Messages per conversation, oldest first. `q` is set on visible questions only.
   const states = new Map(); // ChatGPT doesn't refetch a chat it has cached, so keep earlier ones
-  const stateOf = (c) => {
-    let s = states.get(c);
-    if (!s) states.set(c, (s = { items: [], hasPrev: false }));
-    return s;
-  };
+  let revs = 0; // every new `items` takes the next revision (`rev`); bookmark marks carry it back
+  const blank = () => ({ items: [], hasPrev: false, rev: ++revs });
+  const setItems = (s, items) => ((s.rev = ++revs), (s.items = items));
+  const stateOf = (c) => states.get(c) ?? states.set(c, blank()).get(c);
   let convId = null,
-    cur = { items: [], hasPrev: false };
+    cur = blank();
 
   const mergePage = (s, { before, hasPrev, items }) => {
     // An empty/overlapping final page can still tell us that history is complete.
@@ -91,22 +90,22 @@
         s.hasPrev = hasPrev;
         return;
       }
-      s.items = (k < 0 ? items : items.slice(0, k)).concat(s.items);
+      setItems(s, (k < 0 ? items : items.slice(0, k)).concat(s.items));
       s.hasPrev = hasPrev;
     } else {
       // the newest page, on load or refetch
       const a = s.items.findIndex((x) => x.id === items[0].id);
       if (a < 0) {
-        s.items = items;
+        setItems(s, items);
         s.hasPrev = hasPrev;
-      } else s.items = s.items.slice(0, a).concat(items);
+      } else setItems(s, s.items.slice(0, a).concat(items));
     }
   };
   const addSent = (s, { parent, item }) => {
     // A new question ends the thread. After an edit, what followed its parent was the old branch.
     const p = s.items.findIndex((x) => x.id === parent);
-    if (p >= 0) s.items = s.items.slice(0, p + 1);
-    s.items = s.items.filter((x) => x.id !== item.id).concat(item);
+    if (p >= 0) setItems(s, s.items.slice(0, p + 1));
+    setItems(s, s.items.filter((x) => x.id !== item.id).concat(item));
   };
 
   document.addEventListener('butter-nav', (e) => {
@@ -133,8 +132,9 @@
     if (c === convId) return;
     if (!convId && c && cur.items.length && !states.has(c)) states.set(c, cur); // a new chat got its id
     convId = c;
-    cur = c ? stateOf(c) : { items: [], hasPrev: false };
+    cur = c ? stateOf(c) : blank();
     marks = new Map();
+    marksRev = -1;
     clearTimeout(seekTimer);
     seek = null;
     pos.clear();
@@ -435,7 +435,7 @@
       prev = i;
     });
     if (list !== cur.items) {
-      cur.items = list;
+      setItems(cur, list);
       changed();
     }
   };
@@ -743,7 +743,7 @@
   // `marks` and its index are both EARLIER (-1, the three dots' index).
   const EARLIER = -1; // ButterBookmarks.EARLIER
   let marks = new Map(), // question id or EARLIER -> { count, fresh, bookmarks, stale, land(turn, b), remove(b) }
-    marksItems = null; // the conversation's items `marks` were worked out from
+    marksRev = -1; // the revision of the items `marks` were worked out from
   const dotEls = new Map(); // question id or EARLIER -> its dot
   // The three dots' span from the ticks' right end: their 2 px padding, three 3 px dots and two
   // 3 px gaps (see .more in CSS).
@@ -854,11 +854,11 @@
     WIDTH: RAIL_W,
     inset: () =>
       box ? Math.round(innerWidth - box.right + 4 + (box.gutter ? 0 : OVERLAY_SCROLLBAR_GAP)) : 0,
-    // `items`: the conversation's items the marks were worked out from (`cur.items` as synced).
-    setMarks(conv, next, items = null) {
+    // `revision`: the revision (`rev`) of the items `groups` were worked out from, or null.
+    setMarks(conv, { revision, groups }) {
       if (conv !== convId) return;
-      marks = next;
-      marksItems = items;
+      marks = groups;
+      marksRev = revision ?? -1;
       if (!host) return;
       drawMarks();
       refill();
@@ -986,10 +986,10 @@
       if (id !== EARLIER && idxOf.has(id) && m.bookmarks.some((b) => b.key === key)) return id;
     return null;
   };
-  // Waits for bookmarks/content.js to send the marks of the items as they are now.
+  // Waits for the bookmark session to send the marks of the items as they are now.
   const synced = async (live) => {
     for (const end = performance.now() + 1500; live() && performance.now() < end; ) {
-      if (marksItems === cur.items) return;
+      if (marksRev >= cur.rev) return;
       await frame();
     }
   };
@@ -1227,7 +1227,7 @@
     // Bookmarks follow the conversation in view whether or not the rail shows: a one-question chat's
     // filled button and its remove work, and leaving a chat (for the home page, say) clears what
     // bookmarks/content.js last sent, so coming Back sends its marks again.
-    globalThis.ButterBookmarkPage?.sync(convId, cur.items, !cur.hasPrev);
+    globalThis.ButterBookmarkPage?.sync(convId, cur.items, !cur.hasPrev, cur.rev);
     const on = !railOff() && !!box && box.width >= 560 && n >= 1 && n + (cur.hasPrev ? 1 : 0) >= 2;
     if (!on) {
       host?.removeAttribute('data-on');

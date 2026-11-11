@@ -293,12 +293,12 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   sendButton.setAttribute('data-testid', 'send-button');
   form.append(composer);
   form.append(sendButton);
-  // Bookmarks under questions, as bookmarks/content.js sends them: { id: [stale, …] }; id -1 is
-  // earlier history that isn't loaded yet (ButterBookmarks.EARLIER).
-  const setMarks = (byId) =>
-    ctx.ButterRail.setMarks(
-      conversation,
-      new Map(
+  // Bookmarks under questions, as the bookmark session publishes them: { id: [stale, …] }; id -1
+  // is earlier history that isn't loaded yet (ButterBookmarks.EARLIER).
+  const setMarks = (byId, revision = null) =>
+    ctx.ButterRail.setMarks(conversation, {
+      revision,
+      groups: new Map(
         Object.entries(byId).map(([key, flags]) => {
           const id = key === '-1' ? -1 : key;
           const bookmarks = flags.map((stale, k) => ({
@@ -319,7 +319,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
           ];
         }),
       ),
-    );
+    });
   // The rail's bookmark dots: per question index, where its right edge sits left of the ticks'
   // right end, its centre below the rail's top, its diameter, and its look.
   const dots = () =>

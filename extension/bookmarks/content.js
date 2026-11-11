@@ -1,8 +1,9 @@
 // Isolated world. Bookmarks on the page: the Bookmark cell of the selection pill (selection/pill.js),
-// the shortcut, the client of the worker's store (bookmarks/worker.js), the marks the history rail
-// draws (rail/rail.js) and the notification on every save and remove (bookmarks/notice.js). The
-// rules live in bookmarks/model.js. A conversation's bookmarks are read once when the rail shows it
-// and written on create and delete; nothing here runs while a scrollbar drag is seeking.
+// the shortcut, the landing wash, and the page facts and user intent the bookmark session
+// (bookmarks/session.js) works from: it owns the store client (bookmarks/client.js), the marks the
+// history rail draws (rail/rail.js) and the notification on every save and remove
+// (bookmarks/notice.js). The rules live in bookmarks/model.js. Nothing here runs while a scrollbar
+// drag is seeking.
 (() => {
   const B = ButterBookmarks,
     // Answer roots, message ids, turns and an answer's paragraphs (its top-level blocks, each item
@@ -17,157 +18,45 @@
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('rail');
   const convOfPath = () => /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1] ?? null;
 
-  // ---- Identity: the account hash from history/conversation-main.js, ids hashed as layouts hash them.
-  let account = null;
+  // ---- The session, over the store client, the page reader and the DOM below. Ids are hashed as
+  // layouts hash them.
+  const sha256 = (s) =>
+    crypto.subtle
+      .digest('SHA-256', new TextEncoder().encode(s))
+      .then((b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join(''));
+  const session = ButterBookmarkSession({
+    store: ButterBookmarkStore.send,
+    hash: sha256,
+    page: {
+      answers: () =>
+        R.answersIn(document).map(({ root, id }) => ({
+          id,
+          paragraphs: () => (root.isConnected ? paragraphs(root) : undefined),
+        })),
+      answered(ask) {
+        const turn = R.turnByKey(ask);
+        return !!turn && R.answersIn(turn).length > 0;
+      },
+      locate: (turn, raw, b) => locate(turn, raw, b),
+      wash: (turn, raw, b, draw) => washAt(turn, raw, b, draw),
+    },
+    off: railOff,
+    requestAccount: () => document.dispatchEvent(new CustomEvent('butter-account-request')),
+    publish: (conv, marks) => globalThis.ButterRail?.setMarks(conv, marks),
+    outcome: (kind, b, undo) => globalThis.ButterBookmarkNotice?.[kind](b, undo),
+  });
+  // The account hash from history/conversation-main.js.
   document.addEventListener('butter-account', (e) => {
-    const next = B.hash(e.detail) ? e.detail : null;
-    if (next === account) return;
-    account = next;
-    pill();
-    refresh();
+    if (session.setAccount(e.detail)) pill();
   });
   document.dispatchEvent(new CustomEvent('butter-account-request'));
-  const digests = new Map();
-  const digest = (s) => {
-    if (!digests.has(s))
-      digests.set(
-        s,
-        crypto.subtle
-          .digest('SHA-256', new TextEncoder().encode(s))
-          .then((b) => [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('')),
-      );
-    return digests.get(s);
-  };
 
-  // ---- Store client (bookmarks/client.js).
-  const { send } = ButterBookmarkStore;
-  const lists = new Map(); // `${account} ${conv}` -> Promise of that conversation's bookmarks
-  const listOf = (owner, conv) => {
-    const key = `${owner} ${conv}`;
-    if (!lists.has(key))
-      lists.set(
-        key,
-        digest(conv)
-          .then((hash) => send('butter-bookmark-list', { account: owner, conv: hash }))
-          .then((r) => {
-            if (Array.isArray(r.bookmarks)) return r.bookmarks;
-            lists.delete(key); // unavailable: try again the next time the rail asks
-            return [];
-          }),
-      );
-    return lists.get(key);
-  };
-
-  // ---- Marks for the rail: one per question that holds bookmarks.
-  let view = { conv: null, items: [] },
-    rawOf = new Map(), // hashed message id -> raw id, for every message seen in this tab
-    hashOf = new Map(), // and back
-    shownList = [], // the bookmarks of the conversation in view
-    serial = 0,
-    seeking = false,
-    deferred = false,
-    sent = ''; // what the rail was last sent: question, bookmarks and their stale flags
-  const fresh = new Set(); // keys of bookmarks just made in this tab: their dot grows in
-  let onDots = new Set(); // keys of the bookmarks last sent on the earlier-history dots
-  const seen = new Map(); // key -> stale, as last resolved in this tab; never stored (#55)
-  // `quiet`: only a re-check of staleness, so the rail hears nothing when nothing changed.
-  async function refresh(quiet = false) {
-    const token = ++serial,
-      { conv, items, complete } = view,
-      owner = account;
-    if (seeking) {
-      deferred = true;
-      return;
-    }
-    // Nothing is read while the rail is off, which includes Butter paused.
-    const off = railOff();
-    if (!conv || !owner || off) {
-      if (!owner && !off) document.dispatchEvent(new CustomEvent('butter-account-request'));
-      globalThis.ButterRail?.setMarks(conv, new Map());
-      return;
-    }
-    // The answers rendered now, by hashed id: a version the list doesn't hold can be on screen.
-    const rendered = R.answersIn(document),
-      ids = rendered.map((a) => a.id);
-    const [bookmarks, hashes, shown] = await Promise.all([
-      listOf(owner, conv),
-      Promise.all(items.map((x) => digest(x.id))),
-      Promise.all(ids.map(digest)),
-    ]);
-    if (token !== serial) return;
-    // Kept, not rebuilt: an answer that streamed in this tab is never listed, so once ChatGPT
-    // unmounts it its raw id is known only from when it was on the page. Message ids are unique.
-    hashes.forEach((h, i) => {
-      rawOf.set(h, items[i].id);
-      hashOf.set(items[i].id, h);
-    });
-    shown.forEach((h, i) => {
-      rawOf.set(h, ids[i]);
-      hashOf.set(ids[i], h);
-    });
-    shownList = bookmarks;
-    const questions = items.filter((x) => x.q != null);
-    const onPage = new Map(shown.map((h, i) => [h, rendered[i].root]));
-    const groups = B.resolve(
-      bookmarks,
-      items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
-      {
-        complete,
-        paragraphs: (msg) => {
-          const answer = onPage.get(msg);
-          return answer?.isConnected ? paragraphs(answer) : undefined;
-        },
-        // Its turn is mounted with an answer in it: an answer that isn't the bookmarked one replaced it.
-        mounted: (q) => {
-          const turn = R.turnByKey(questions[q].id);
-          return !!turn && R.answersIn(turn).length > 0;
-        },
-      },
-      seen,
-    );
-    // A question's id, or B.EARLIER for the bookmarks in earlier history the rail hasn't loaded.
-    const idOf = (g) => (g.question === B.EARLIER ? B.EARLIER : questions[g.question].id);
-    const sig = JSON.stringify(
-      groups.map((g) => [idOf(g), g.bookmarks.map((b) => [b.key, b.stale])]),
-    );
-    if (quiet && sig === sent && !fresh.size) return;
-    sent = sig;
-    const marks = new Map(),
-      dots = new Set(groups.find((g) => g.question === B.EARLIER)?.bookmarks.map((b) => b.key));
-    for (const g of groups) {
-      const first = g.bookmarks[0];
-      // `bookmarks` in answer order, each with its `stale` flag; `stale` when all of them are;
-      // `land(turn, b)` for the rail's jump, `remove(b)` for its ×. A bookmark that leaves the
-      // dots for its question's tick (its answer loaded) grows in there, as a new one does.
-      marks.set(idOf(g), {
-        count: g.bookmarks.length,
-        fresh: g.bookmarks.some(
-          (b) => fresh.has(b.key) || (g.question !== B.EARLIER && onDots.has(b.key)),
-        ),
-        bookmarks: g.bookmarks,
-        stale: g.stale,
-        land: (turn, b = first) => locate(turn, b),
-        wash: (turn, b = first, draw = true) => washAt(turn, b, draw),
-        remove: (b) => remove(owner, conv, [b]),
-      });
-    }
-    fresh.clear();
-    onDots = dots;
-    globalThis.ButterRail?.setMarks(conv, marks, items);
-  }
   // Staleness follows the page between renders: a regenerated answer or a switched version shows
   // after a click on the page, and the rail is checked again as the pointer or focus reaches it.
-  // Neither happens while scrolling.
-  let checks = [];
-  const recheck = () => {
-    if (seeking || !shownList.length) return;
-    checks.forEach(clearTimeout);
-    checks = [600, 2500].map((ms) => setTimeout(() => refresh(true), ms));
-  };
-  document.addEventListener('click', recheck, { capture: true, passive: true });
+  document.addEventListener('click', () => session.recheck(), { capture: true, passive: true });
   const toRail = (e) => {
     if (e.target?.localName === 'chatgpt-butter-nav' && e.relatedTarget !== e.target)
-      if (!seeking && shownList.length) refresh(true);
+      session.check();
   };
   document.addEventListener('pointerover', toRail, { capture: true, passive: true });
   document.addEventListener('focusin', toRail, { capture: true });
@@ -178,24 +67,21 @@
     } catch {
       return;
     }
-    const was = seeking;
-    seeking = m.state === 'dragging' || m.state === 'loading';
+    const was = session.seeking,
+      seeking = m.state === 'dragging' || m.state === 'loading';
+    session.seek(seeking); // a read asked for while seeking runs now that it ended
     if (seeking !== was) pill();
-    if (seeking) {
-      unwash(); // a scrollbar drag puts the wash away as it starts
-    } else if (deferred) {
-      deferred = false;
-      refresh();
-    }
+    if (seeking) unwash(); // a scrollbar drag puts the wash away as it starts
   });
   // Called by the rail whenever it renders a conversation's questions.
   // `complete`: `items` reach back to the conversation's start (no earlier page left to load).
+  // `revision`: the rail's revision of `items`, published back with their marks.
+  let inView = null; // the conversation the rail last rendered
   globalThis.ButterBookmarkPage = {
-    sync(conv, items, complete = false) {
-      if (conv === view.conv && items === view.items && complete === view.complete) return;
-      if (conv !== view.conv) unwash();
-      view = { conv, items, complete };
-      refresh();
+    sync(conv, items, complete = false, revision = null) {
+      if (conv !== inView) unwash();
+      inView = conv;
+      session.view(conv, items, complete, revision);
     },
     // Called by the rail as any jump starts.
     unwash: () => unwash(),
@@ -346,18 +232,17 @@
     const tops = blocks.map((b) => b.getBoundingClientRect().top);
     return blocks[B.topParagraph(tops, line)] ?? null;
   };
-  // A bookmark's paragraph in its question's turn; null when it is stale now: its answer,
-  // paragraph or text no longer there.
-  const blockIn = (turn, b) => {
-    const raw = rawOf.get(b.msg),
-      answer = raw && R.answersIn(turn).find((a) => a.id === raw)?.root,
+  // A bookmark's paragraph in its question's turn, given its answer's raw id (the session keeps
+  // them); null when it is stale now: its answer, paragraph or text no longer there.
+  const blockIn = (turn, raw, b) => {
+    const answer = raw && R.answersIn(turn).find((a) => a.id === raw)?.root,
       block = answer && R.paragraphsOf(answer)[b.para];
     return block && B.matches(b, paragraphs(answer)) ? block : null;
   };
   // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
   // the question's start) when it is stale now.
-  const locate = (turn, b) => {
-    const block = blockIn(turn, b);
+  const locate = (turn, raw, b) => {
+    const block = blockIn(turn, raw, b);
     if (!block) return null;
     let top = block.getBoundingClientRect().top;
     if (b.start > 0) {
@@ -373,85 +258,26 @@
   };
 
   // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt, line }`) within it.
-  async function create(block, range = null) {
+  // Every save, by the Bookmark cell or the shortcut, comes through here; the session stores it and
+  // shows the notification.
+  function create(block, range = null) {
     const answer = R.answerOf(block),
       id = answer?.id,
       ask = R.turnKeyOf(block), // the question's message id
-      conv = convOfPath(),
-      owner = account;
-    if (!id || !ask || !conv || !owner) return;
-    const para = R.paragraphsOf(answer.root).indexOf(block),
-      text = textOf(block),
-      ends = range ? null : measure([{ block, from: 0, to: text.length }]),
-      excerpt = range ? range.excerpt : B.excerpt(text, ends),
-      line = range ? range.line : B.firstLine(text, ends);
-    if (!excerpt) return;
-    const questions = view.conv === conv ? view.items.filter((x) => x.q != null) : [];
-    const [convHash, msg, askHash] = await Promise.all([digest(conv), digest(id), digest(ask)]);
-    const bookmark = {
-      account: owner,
-      conv: convHash,
-      msg,
-      ask: askHash,
-      turn: Math.max(
-        0,
-        questions.findIndex((x) => x.id === ask),
-      ),
-      para,
+      conv = convOfPath();
+    if (!id || !ask || !conv || !session.signedIn) return;
+    const text = textOf(block),
+      ends = range ? null : measure([{ block, from: 0, to: text.length }]);
+    session.create({
+      id,
+      ask,
+      conv,
+      para: R.paragraphsOf(answer.root).indexOf(block),
       start: range ? range.start : 0,
       end: range ? range.end : text.length,
-      excerpt,
-      line,
-      time: Date.now(),
-    };
-    const r = await send('butter-bookmark-create', { bookmark });
-    if (!r.bookmark) return;
-    const list = await listOf(owner, conv);
-    if (r.created) keep(list, r.bookmark);
-    hashOf.set(id, msg);
-    if (owner === account && conv === view.conv) refresh();
-    // Every save, by the Bookmark cell or the shortcut, comes through here and shows the
-    // notification (bookmarks/notice.js): "Bookmark saved" with Undo, which deletes the bookmark
-    // (then its dot goes), or "Already bookmarked".
-    const notice = globalThis.ButterBookmarkNotice;
-    if (!r.created) return notice?.already(r.bookmark);
-    notice?.saved(r.bookmark, () => {
-      drop(list, r.bookmark.key);
-      if (owner === account && conv === view.conv) refresh();
+      excerpt: range ? range.excerpt : B.excerpt(text, ends),
+      line: range ? range.line : B.firstLine(text, ends),
     });
-  }
-  // The page's copy of a conversation's list: a bookmark made or brought back (its dot grows in),
-  // or one deleted.
-  const keep = (list, b) => {
-    if (list.some((x) => x.key === b.key)) return;
-    list.push(b);
-    fresh.add(b.key);
-  };
-  const drop = (list, key) => {
-    const at = list.findIndex((b) => b.key === key);
-    if (at >= 0) list.splice(at, 1);
-  };
-  // Deletes bookmarks from the store and from the page's copy of the conversation's list.
-  async function remove(owner, conv, bookmarks) {
-    const hash = await digest(conv);
-    const done = await Promise.all(
-      bookmarks.map((b) =>
-        send('butter-bookmark-delete', { account: owner, conv: hash, key: b.key }).then(
-          (r) => r.deleted !== undefined && b.key,
-        ),
-      ),
-    );
-    const list = await listOf(owner, conv);
-    for (const key of done) if (key) drop(list, key);
-    if (owner === account && conv === view.conv) refresh();
-    // × on a rail card removes one: "Bookmark removed", whose Undo stores it again (the same key
-    // and time) and brings its dot back.
-    const gone = bookmarks.filter((b) => done.includes(b.key)).at(-1);
-    if (gone)
-      globalThis.ButterBookmarkNotice?.removed(gone, (back) => {
-        keep(list, back);
-        if (owner === account && conv === view.conv) refresh();
-      });
   }
   // ---- The Bookmark cell of the selection pill (selection/pill.js), beside Ask in branch: shown
   // for a selection the shortcut would bookmark (inside one answer) while the rail is on, Butter
@@ -489,7 +315,7 @@
     keys: () => B.keyHint(shortcut ?? ''),
     shortcut: () => B.ariaKeys(shortcut ?? ''),
     wants() {
-      if (!account || seeking || !convOfPath() || !selection(false)) return false;
+      if (!session.signedIn || session.seeking || !convOfPath() || !selection(false)) return false;
       readKey();
       return true;
     },
@@ -503,7 +329,7 @@
   document.addEventListener('butter-settings', () => {
     TXT = strings(zh());
     if (railOff()) unwash();
-    refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
+    session.refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
   });
 
   // ---- The landing wash (#73). When a bookmark trip from a card row lands on live text, the rail
@@ -614,12 +440,12 @@
       );
     return [W.blockBox(q, parseFloat(cs.borderTopLeftRadius) || 0, border)];
   };
-  // Washes bookmark `b` in its question's `turn`, or with `draw` false only says whether it would.
-  // False when it can't: stale, or nothing to show.
-  function washAt(turn, b, draw = true) {
-    const block = blockIn(turn, b),
+  // Washes bookmark `b` (its answer's raw id `raw`) in its question's `turn`, or with `draw` false
+  // only says whether it would. False when it can't: stale, or nothing to show.
+  function washAt(turn, raw, b, draw = true) {
+    const block = blockIn(turn, raw, b),
       sc = block && scrollerOf(block);
-    if (!sc || railOff() || seeking) return false;
+    if (!sc || railOff() || session.seeking) return false;
     if (!draw) return true;
     unwash();
     const host = document.createElement('chatgpt-butter-wash'),
@@ -727,7 +553,7 @@
   // A selection outside the answers creates nothing.
   chrome.runtime.onMessage.addListener((m) => {
     if (m?.type !== 'butter-bookmark-shortcut' || m.version !== 1) return;
-    if (railOff() || !account || seeking || !convOfPath()) return;
+    if (railOff() || !session.signedIn || session.seeking || !convOfPath()) return;
     const s = getSelection();
     if (s && !s.isCollapsed) {
       const range = selection();

@@ -24,6 +24,7 @@
         "bookmarks/model.js",
         "bookmarks/wash.js",
         "bookmarks/client.js",
+        "bookmarks/session.js",
         "rail/rail.js",
         "page/reader.js",
         "selection/pill.js",

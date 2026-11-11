@@ -1,12 +1,12 @@
-// The bookmark notification (#77), in the style of layout-consent.test.js: the real consent/card.js
-// and bookmarks/notice.js in a vm with a fake page, the real worker store behind chrome.runtime.
-// One top-right card on every save and remove: "Bookmark saved", "Bookmark removed" or "Already
-// bookmarked", the bookmark's first words and Undo; the first save ever expands it with the
-// privacy text and Got it (#56).
+// The bookmark notification (#77), in the style of layout-consent.test.js: the real consent/card.js,
+// bookmark session (it saves, removes and hands over each Undo) and notice.js in a vm, the real store
+// client and worker store behind chrome.runtime. One card on every save and remove, with the
+// bookmark's first words and Undo; the first save ever expands it with the privacy text and Got it.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
+const { createHash } = require('node:crypto');
 const status = require('../extension/shared/status.js');
 const { workerFixture } = require('./helpers/layout-fixture.cjs');
 const read = (file) => fs.readFileSync(require.resolve('../extension/' + file), 'utf8');
@@ -15,19 +15,13 @@ const settle = async () => {
   for (let i = 0; i < 20; i++) await tick();
 };
 
-const h = (c) => c.repeat(64);
-const mark = (o = {}) => ({
-  account: h('a'),
-  conv: h('c'),
-  msg: h('1'),
-  turn: 0,
-  para: 2,
-  start: 0,
-  end: 40,
-  excerpt: 'Postgres skips an index when it expects',
-  time: 1000,
-  ...o,
-});
+const sha = (s) => createHash('sha256').update(s).digest('hex');
+const ACCOUNT = 'a'.repeat(64),
+  CONV = '11111111-2222-4333-8444-555555555555';
+const EXCERPT = 'Postgres skips an index when it expects';
+// A passage of the answer on the page, as bookmarks/content.js hands it to the session.
+const at = { id: 'a1', ask: 'q1', conv: CONV, para: 2, start: 0, end: 40, excerpt: EXCERPT };
+const mark = (o = {}) => ({ ...at, ...o });
 const PRIVACY = {
   en: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.',
   zh: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。',
@@ -95,9 +89,11 @@ function element(name) {
 }
 
 // One ChatGPT tab: the notification's host, its card and its click handler, over the shared
-// settings and the worker store.
+// settings and the worker store; the session shows CONV with its answer rendered.
 function noticeTab(shared, store, { rail = null } = {}) {
-  const timers = [];
+  const timers = [],
+    messages = [], // every store request the tab sent
+    published = []; // what the session sent the rail
   let host, clicked;
   const card = element('section');
   const shadow = {
@@ -119,7 +115,7 @@ function noticeTab(shared, store, { rail = null } = {}) {
       storage: shared.storage,
       runtime: {
         getURL: (p) => 'chrome-extension://test/' + p,
-        sendMessage: (m) => store.message(m),
+        sendMessage: (m) => (messages.push(m), store.message(m)),
       },
     },
     document: {
@@ -159,11 +155,22 @@ function noticeTab(shared, store, { rail = null } = {}) {
   };
   vm.createContext(ctx);
   vm.runInContext(read('consent/card.js'), ctx);
-  vm.runInContext(read('bookmarks/client.js'), ctx);
+  for (const file of ['bookmarks/model.js', 'bookmarks/client.js', 'bookmarks/session.js'])
+    vm.runInContext(read(file), ctx);
   vm.runInContext(read('bookmarks/notice.js'), ctx);
-  const undone = [],
-    restored = [];
-  const N = () => ctx.ButterBookmarkNotice;
+  const session = ctx.ButterBookmarkSession({
+    store: ctx.ButterBookmarkStore.send,
+    hash: async (s) => sha(s),
+    page: { answers: () => [{ id: 'a1', paragraphs: () => ['', '', EXCERPT] }] },
+    off: () => false,
+    requestAccount() {},
+    publish: (conv, marks) => published.push(marks),
+    outcome: (kind, b, undo) => ctx.ButterBookmarkNotice[kind](b, undo),
+  });
+  session.setAccount(ACCOUNT);
+  session.view(CONV, [{ id: 'q1', q: 'Question' }, { id: 'a1' }], true, 1);
+  const marks = () => published.at(-1)?.groups.get('q1'),
+    row = (key) => marks().bookmarks.find((x) => x.key === key);
   const tab = {
     host: () => host,
     card,
@@ -177,23 +184,17 @@ function noticeTab(shared, store, { rail = null } = {}) {
       undo: card.innerHTML.includes('data-notice="undo"'),
       ok: card.innerHTML.includes('data-notice="ok"'),
     }),
-    undone,
-    restored,
-    // What bookmarks/content.js does after the store answers a create.
-    save: async (bookmark) => {
-      const r = await store.message({ type: 'butter-bookmark-create', bookmark });
-      if (r.created) N().saved(r.bookmark, () => undone.push(r.bookmark.key));
-      else N().already(r.bookmark);
+    // A save through the session (the Bookmark cell or the shortcut); the stored bookmark.
+    save: async (m) => {
+      await session.create(m);
       await settle();
-      return r.bookmark;
+      return (await list(store, m.conv)).find((b) => b.para === m.para);
     },
-    // And after × on a rail card deleted one.
-    remove: async (bookmark) => {
-      const { account, conv, key } = bookmark;
-      await store.message({ type: 'butter-bookmark-delete', account, conv, key });
-      N().removed(bookmark, (b) => restored.push(b));
-      await settle();
-    },
+    // × on the bookmark's rail card.
+    remove: (b) => marks().remove(row(b.key)).then(settle),
+    // The bookmarks the rail was last sent for the question, with their dot's `fresh`.
+    rail: () => Array.from(marks()?.bookmarks ?? [], (b) => [b.key, marks().fresh]),
+    deletes: () => messages.filter((m) => m.type === 'butter-bookmark-delete').length,
     // Runs the timers waiting `ms`, once.
     elapse: (ms) =>
       timers
@@ -218,8 +219,9 @@ function noticeTab(shared, store, { rail = null } = {}) {
   };
   return tab;
 }
-const list = async (store) =>
-  (await store.message({ type: 'butter-bookmark-list', account: h('a'), conv: h('c') })).bookmarks;
+const list = async (store, conv = CONV) =>
+  (await store.message({ type: 'butter-bookmark-list', account: ACCOUNT, conv: sha(conv) }))
+    .bookmarks;
 const stored = async (store) => (await list(store)).length;
 const acknowledged = (o = {}) =>
   sharedStorage({ lang: 'en', bookmarkNotice: 'acknowledged', ...o });
@@ -279,10 +281,10 @@ test('a save that finds the bookmark already stored says so, without Undo', asyn
   ]) {
     const shared = acknowledged({ lang }),
       store = workerFixture();
-    await store.message({ type: 'butter-bookmark-create', bookmark: mark() });
+    await noticeTab(acknowledged(), store).save(mark()); // saved in another tab
     const tab = noticeTab(shared, store);
     await settle();
-    await tab.save(mark({ time: 2000 }));
+    await tab.save(mark());
     assert.equal(tab.shown(), true);
     const v = tab.view();
     assert.ok(v.html.includes(title), title);
@@ -295,7 +297,7 @@ test('a save that finds the bookmark already stored says so, without Undo', asyn
 test('an unacknowledged save that finds the bookmark already stored shows the small card', async () => {
   const shared = sharedStorage({}),
     store = workerFixture();
-  await store.message({ type: 'butter-bookmark-create', bookmark: mark() });
+  await noticeTab(acknowledged(), store).save(mark()); // saved in another tab
   const tab = noticeTab(shared, store);
   await settle();
   await tab.save(mark());
@@ -324,12 +326,8 @@ test('a remove shows "Bookmark removed", and its Undo brings back the same bookm
     const back = await list(store);
     assert.equal(back.length, 1);
     assert.equal(back[0].key, b.key, 'the same key');
-    assert.equal(back[0].time, 1000, 'its original time');
-    assert.deepEqual(
-      tab.restored.map((x) => x.key),
-      [b.key],
-      'the page is told, so its dot comes back',
-    );
+    assert.equal(back[0].time, b.time, 'its original time');
+    assert.deepEqual(tab.rail(), [[b.key, true]], 'its dot comes back and grows in');
     assert.equal(tab.host().inert, true, 'the card goes');
   }
 });
@@ -339,12 +337,13 @@ test('Undo of a save deletes the bookmark just saved, and the next save expands 
     store = workerFixture();
   const tab = noticeTab(shared, store);
   await settle();
-  const first = await tab.save(mark());
+  await tab.save(mark());
   await tab.click('undo', { trusted: false });
   assert.equal(await stored(store), 1, 'page-script clicks are ignored');
   await tab.click('undo');
   assert.equal(await stored(store), 0);
-  assert.deepEqual(tab.undone, [first.key], 'the page is told, so the dot goes');
+  assert.equal(tab.deletes(), 1, 'one store write, by the session');
+  assert.deepEqual(tab.rail(), [], 'the dot goes');
   assert.equal(tab.host().inert, true);
   tab.elapse(160);
   assert.equal(tab.host().hidden, true);
@@ -359,14 +358,14 @@ test('Undo after a second save deletes only the latest bookmark', async () => {
     store = workerFixture();
   const tab = noticeTab(shared, store);
   await settle();
-  await tab.save(mark());
-  const second = await tab.save(mark({ para: 5 }));
+  const first = await tab.save(mark());
+  await tab.save(mark({ para: 5 }));
   await tab.click('undo');
   assert.deepEqual(
     (await list(store)).map((b) => b.para),
     [2],
   );
-  assert.deepEqual(tab.undone, [second.key]);
+  assert.deepEqual(tab.rail(), [[first.key, false]]);
 });
 
 test('a new card replaces the current one, and the replaced card’s Undo does nothing', async () => {
@@ -395,7 +394,7 @@ test('Got it is kept in settings: other tabs put the expanded card away, later s
     b = noticeTab(shared, store);
   await settle();
   await a.save(mark());
-  await b.save(mark({ conv: h('d') }));
+  await b.save(mark({ conv: 'another-chat' }));
   assert.equal(b.shown(), true);
   await a.click('ok');
   assert.equal(shared.value().bookmarkNotice, 'acknowledged');
