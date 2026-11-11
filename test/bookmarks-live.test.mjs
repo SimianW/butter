@@ -240,3 +240,37 @@ test('a scenario that throws releases the mouse before the next one runs, even w
     lines.join('\n'),
   );
 });
+
+// The held drags as drag.mjs records them: content.js and session.js each report coverage (the
+// seek listener calls the session during a drag), with zero bookmark work, mounts and storage.
+test('drag-bookmarked: drags covering both bookmark scripts with zero work pass the matched comparison', async () => {
+  const observation = (arm, repetition) => ({
+    arm,
+    repetition,
+    held: true,
+    updates: 4,
+    mounts: 0,
+    additions: 0,
+    p95FrameMs: 16.7,
+    bookmarkCoverageScripts: 2,
+    bookmarkWork: { refresh: 0, paragraphs: 0, locate: 0 },
+    storage: { reads: 0, messages: 0 },
+  });
+  const scenario = suites.matrix.find((s) => s.name === 'drag-bookmarked');
+  const { ok, lines, summary } = await live([scenario], async (defer, record) => {
+    // The empty arm, from drag-empty earlier in a full run.
+    for (let i = 1; i <= 3; i++) record.summary.drags.push(observation('empty', i));
+    return {
+      ...(await loadedEmpty(1)()),
+      storedCount: async () => 2,
+      drag: async (arm, n) => record.summary.drags.push(observation(arm, n)),
+    };
+  });
+  const checks = JSON.parse(summary).checks.map((c) => [c.name, c.pass]);
+  assert.deepEqual(
+    checks,
+    [['matched drag comparison with bookmarks versus empty', true]],
+    lines.join('\n'),
+  );
+  assert.equal(ok, true, lines.join('\n'));
+});

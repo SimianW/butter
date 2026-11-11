@@ -5,7 +5,7 @@
 // <n>` check. The jump probe records clicks, keys, seek states and the rail and bookmark functions
 // a jump calls, into `summary.jumpEvidence[label]`.
 // Butter's bookmark work runs in these two scripts: the page side and the bookmark session.
-const BOOKMARK_SCRIPTS = ['/bookmarks/content.js', '/bookmarks/session.js'];
+export const BOOKMARK_SCRIPTS = ['/bookmarks/content.js', '/bookmarks/session.js'];
 const isBookmarkScript = (url) => BOOKMARK_SCRIPTS.some((name) => url.endsWith(name));
 export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targetBox, waitLanding, waitSeekSettled }) {
   const { summary } = record;

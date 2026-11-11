@@ -37,8 +37,8 @@
         const turn = R.turnByKey(ask);
         return !!turn && R.answersIn(turn).length > 0;
       },
-      locate: (turn, raw, b) => locate(turn, raw, b),
-      wash: (turn, raw, b, draw) => washAt(turn, raw, b, draw),
+      locate,
+      wash: washAt,
     },
     off: railOff,
     requestAccount: () => document.dispatchEvent(new CustomEvent('butter-account-request')),
@@ -241,7 +241,7 @@
   };
   // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
   // the question's start) when it is stale now.
-  const locate = (turn, raw, b) => {
+  function locate(turn, raw, b) {
     const block = blockIn(turn, raw, b);
     if (!block) return null;
     let top = block.getBoundingClientRect().top;
@@ -255,7 +255,7 @@
       }
     }
     return top - turn.getBoundingClientRect().top;
-  };
+  }
 
   // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt, line }`) within it.
   // Every save, by the Bookmark cell or the shortcut, comes through here; the session stores it and
