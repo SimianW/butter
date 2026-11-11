@@ -183,7 +183,8 @@ have rendered (composer, a reply, and message wrappers whose
 button. When it can't be sure (unreadable identity, branch not rendered, no send button) it fills
 the composer without sending and says so; when the tab still shows the original conversation it
 types nothing. Nothing is ever typed into or sent in the original tab. The page adapter
-(`branch/page.js`) is the only part that touches ChatGPT's DOM; the run takes it as a parameter, so
+(`branch/page.js`, which reads replies through the page reader, `page/reader.js`) is the only part
+that touches ChatGPT's DOM; the run takes it as a parameter, so
 `test/branch-run.test.js` drives it with a fake page.
 
 The grey "Branched from …" line fades out once ChatGPT's reply to the sent question starts to
