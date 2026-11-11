@@ -10,9 +10,18 @@
     turn's key (turnKeyOf reads [data-turn-key] only), while its loose turn is the inner wrapper.
   - Turn 4, a bare article: ChatGPT's oldest turn wrapper, with neither a turn key nor a test id,
     is still a loose turn (looseTurnOf), and its answer is in no keyed turn.
-  The message ids in turns 1 to 3 agree with seek's turnMessageId (page/reader-main.js),
-  which takes the turn's first assistant role wrapper's data-message-id, else its first
-  data-chatgpt-selection-message-id.
+  - Turn 5, two assistant messages in one turn: two role wrappers, each with its own
+    data-message-id and answer; both answers are identified, and seek's turnMessageId is the
+    first wrapper's id (its first role wrapper, not its last).
+  - Turn 6, a role wrapper without an id: the assistant role wrapper has no data-message-id and
+    holds a data-chatgpt-selection-message-id element above the markdown root; both readers give
+    the selection id (turnMessageId falls back to it even though a role wrapper exists).
+  - Turn 7, no answer yet: a keyed turn with only the question bubble (no markdown column, no
+    assistant role wrapper): hasAnswer is false, firstColumn and turnMessageId are null, no
+    blocks, and its one preview item is the bubble.
+  The message ids in turns 1 to 3, 5 and 6 agree with seek's turnMessageId
+  (page/reader-main.js), which takes the turn's first assistant role wrapper's data-message-id,
+  else its first data-chatgpt-selection-message-id.
 -->
 <html>
   <head>
@@ -92,6 +101,56 @@
                 <p data-expect-para="0" data-expect-preview-item data-expect-block>Still a loose turn.</p>
               </div>
             </div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-rule-5" data-testid="conversation-turn-5" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>Two messages?</div></div>
+            <div data-message-author-role="assistant" data-message-id="a-rule-5a" data-expect-reply>
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-rule-5a"
+                data-expect-question="q-rule-5"
+                data-expect-reply
+              >
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>The first message.</p>
+              </div>
+            </div>
+            <div data-message-author-role="assistant" data-message-id="a-rule-5b" data-expect-reply>
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-rule-5b"
+                data-expect-question="q-rule-5"
+                data-expect-reply
+              >
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>The second message.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-rule-6" data-testid="conversation-turn-6" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>A role without an id?</div></div>
+            <div data-message-author-role="assistant" data-expect-reply>
+              <div data-chatgpt-selection-message-id="a-rule-6">
+                <div
+                  data-markdown-text-style="assistant-message"
+                  class="markdown prose"
+                  data-expect-answer="a-rule-6"
+                  data-expect-question="q-rule-6"
+                  data-expect-reply
+                >
+                  <p data-expect-para="0" data-expect-preview-item data-expect-block>The selection id.</p>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-rule-7" data-testid="conversation-turn-7" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>No answer yet?</div></div>
           </article>
         </div>
       </div>

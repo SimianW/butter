@@ -1,9 +1,10 @@
 // MAIN world. The page reader for seek's MAIN-world scripts (seek/layout-cache-main.js,
 // seek/anchor-main.js, seek/preview-main.js): the same contract as the isolated-world
 // page/reader.js (ButterPageReader), for the facts seek reads. Callers ask for facts; no selector
-// leaves this file. Each function runs one querySelector or querySelectorAll on the element it is
-// given, as seek did inline before, so seek's DOM reads keep their number and order; none reads
-// layout. List functions return the static NodeList itself, unspread.
+// leaves this file. Each function runs the same queries on the element it is given as seek ran
+// inline before (one querySelector or querySelectorAll; turnMessageId up to two), so seek's DOM
+// reads keep their number and order; none reads layout. List functions return the static
+// NodeList itself, unspread.
 // test/page-reader-contract.test.mjs checks it against test/fixtures/page/. Loads before
 // seek/core-main.js. Nothing is shared across worlds: the answer-root rule and the message-id
 // attributes are copied from page/reader.js, which holds the other copy.

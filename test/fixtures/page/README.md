@@ -39,8 +39,11 @@ need no mark: by rule they are the `[data-markdown-text-style="assistant-message
 `hasAnswer(turn)` tells whether the turn has one.
 
 Message identity, for each `[data-turn-key]` turn: the isolated `answersIn(turn)` ids are exactly
-its `data-expect-answer` ids, in order, and the MAIN `turnMessageId(turn)` is the first of them, or
-null when it has none.
+its `data-expect-answer` ids, in order. The MAIN `turnMessageId(turn)` is the turn's first assistant
+role wrapper's `data-message-id`, else the turn's first `data-chatgpt-selection-message-id`, or null
+when it has neither; in these pages that is the turn's first marked answer's id, which is what the
+suite checks. A turn whose first assistant message has no markdown column would differ (its id
+would name an unmarked message); no fixture has one.
 
 A `data-expect-para` outside every `data-expect-answer` marks a paragraph of an answer that has no
 message id yet: it is a paragraph, but its answer is not identified. Its `n` is not checked.
