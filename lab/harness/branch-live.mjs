@@ -14,6 +14,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { butterDriver } from './driver/butter.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const out = path.join(repo, 'notes/runs/2026-11-07-ask-in-branch-27');
@@ -74,9 +75,12 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
-// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
+// The selection pill (selection/pill.js) through the shared Butter driver: Ask in branch's cell,
+// and a selection made with a real mouse drag. `run.button` reads the pill's box beside ChatGPT's
+// own "Ask ChatGPT" box here: on the live page that box has no CSS of its own (it is found by its
+// text and its background), and its look is recorded as one string, its height included.
 const PILL = 'chatgpt-butter-pill';
-const CELL = `${PILL} button[data-cell="branch"]`;
+const butter = (page) => butterDriver({ page });
 const results = { at: new Date().toISOString(), lab: lab.id, pageErrors, runs: [] };
 const shot = async (page, file, masks = []) => {
   await page.evaluate(() => {
@@ -143,10 +147,7 @@ const dragSelect = async (page) => {
     return null;
   });
   assert.ok(box, 'a plain-text passage in an earlier reply is on screen');
-  await page.mouse.move(box.x1, box.y);
-  await page.mouse.down();
-  await page.mouse.move(box.x2, box.y, { steps: 10 });
-  await page.mouse.up();
+  await butter(page).dragAcross(box);
 };
 const pageState = (page) =>
   page.evaluate(() => {
@@ -211,7 +212,7 @@ try {
     await mark('before');
     await dragSelect(page);
     await mark('selected');
-    await page.locator(CELL).waitFor({ timeout: 5000 });
+    await butter(page).cell('branch').waitFor({ timeout: 5000 });
     await page.waitForTimeout(300);
     run.button = await page.evaluate((host) => {
       // The pill draws the look; Ask in branch is its first cell.
@@ -238,7 +239,7 @@ try {
     }, PILL);
     await mark('button shown');
     run.screenshots.push(await shot(page, `button-${width}.png`));
-    await page.locator(CELL).click();
+    await butter(page).cell('branch').click();
     await mark('box open');
     await page.locator(`${HOST} textarea`).fill(QUESTION);
     await page.waitForTimeout(200);

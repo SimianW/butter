@@ -21,6 +21,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { butterDriver } from './driver/butter.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const out = path.join(repo, 'notes/runs/2026-11-07-ask-in-branch-29');
@@ -120,8 +121,9 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
-// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
-const CELL = 'chatgpt-butter-pill button[data-cell="branch"]';
+// The selection pill (selection/pill.js) through the shared Butter driver: Ask in branch's cell,
+// whether the pill and that cell show, and a selection made with a real mouse drag.
+const butter = (page) => butterDriver({ page });
 // Screenshots show only Butter's UI and ChatGPT's selection toolbar; all page content is hidden.
 const shot = async (page, file, masks = []) => {
   await page.evaluate((ask) => {
@@ -167,10 +169,7 @@ const dragSelect = async (page) => {
     return null;
   }, visibleFn);
   if (!box) return false;
-  await page.mouse.move(box.x1, box.y);
-  await page.mouse.down();
-  await page.mouse.move(box.x2, box.y, { steps: 10 });
-  await page.mouse.up();
+  await butter(page).dragAcross(box);
   return true;
 };
 const selectText = async (page) => {
@@ -180,9 +179,10 @@ const selectText = async (page) => {
   }
   throw new Error('no plain-text passage on screen');
 };
-// What Butter's rules read on this page (the same signals page.js uses), redacted.
-const evidence = (page) =>
-  page.evaluate(
+// What Butter's rules read on this page (the same signals page.js uses), redacted; whether Butter's
+// pill shows, and with Ask in branch's cell, from the driver.
+const evidence = async (page) => ({
+  ...(await page.evaluate(
     ({ src, ask, side }) => {
       const vis = (el) => el.getClientRects().length && el.getBoundingClientRect().width > 0;
       const editor = [...document.querySelectorAll('.ProseMirror[contenteditable="true"]')].find(vis);
@@ -214,21 +214,17 @@ const evidence = (page) =>
         sideChat: !!toolbar && [...toolbar.querySelectorAll('button')].some((b) => new RegExp(side).test(b.textContent.trim())),
         replies: replies.length,
         repliesWithMoreActions: more,
-        butterPill: (() => {
-          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
-          return !!pill && getComputedStyle(pill).display !== 'none';
-        })(),
-        butterButton: (() => {
-          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
-          return !!pill?.querySelector('[data-cell="branch"]') && getComputedStyle(pill).display !== 'none';
-        })(),
       };
     },
     { src: visibleFn, ask: ASK.source, side: SIDE.source },
-  );
+  )),
+  ...(await butter(page)
+    .pill()
+    .then((p) => ({ butterPill: p.shown, butterButton: p.shown && p.cells.some((c) => c.id === 'branch') }))),
+});
 const butterChip = async (page, timeout) =>
-  page
-    .locator(CELL)
+  butter(page)
+    .cell('branch')
     .waitFor({ timeout })
     .then(() => true, () => false);
 const pageState = (page) =>
@@ -285,7 +281,7 @@ try {
   const before = await pageState(page);
   const latestPrint = await fingerprint(page);
   await page.waitForTimeout(300);
-  await page.locator(CELL).click();
+  await butter(page).cell('branch').click();
   await page.locator(`${HOST} textarea`).fill(QUESTION);
   const opened = context.waitForEvent('page');
   const enterAt = Date.now();

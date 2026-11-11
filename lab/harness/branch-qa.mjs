@@ -12,17 +12,16 @@
 // on fresh pages in the run's one browser, so a scenario alone runs as it does in a full run.
 // The output is a FAIL line per failing check and one line per scenario; VERBOSE=1 prints every
 // check and the INFO measurements. Every result goes to `<SHOTS>/summary.json`.
-// SHOTS=<dir> sets the screenshot directory (default
-// notes/runs/2026-11-07-ask-in-branch-29/screenshots; set it to keep that run's committed shots).
+// SHOTS=<dir> sets the screenshot directory (default /tmp/butter-branch-qa); set
+// SHOTS=notes/runs/2026-11-07-ask-in-branch-29/screenshots to refresh that run's committed shots.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { launchBranch } from './branch/harness.mjs';
 import { scenarios } from './branch/scenarios.mjs';
 import { runScenarios, select } from './runner/index.mjs';
-import { repo } from './runner/chromium.mjs';
 
 const selected = select(scenarios);
-const shots = process.env.SHOTS || path.join(repo, 'notes/runs/2026-11-07-ask-in-branch-29/screenshots');
+const shots = process.env.SHOTS || '/tmp/butter-branch-qa';
 await fs.mkdir(shots, { recursive: true });
 const ok = await runScenarios({
   scenarios: selected,

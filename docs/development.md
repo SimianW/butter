@@ -69,8 +69,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   - The run prints only failing checks and one line per scenario; `VERBOSE=1` prints every check
     and the measurements.
   - `SHOTS=<dir>` sets where the mockup-state screenshots and `summary.json` go; the default is
-    `notes/runs/2026-11-07-ask-in-branch-29/screenshots/`, so set it to keep that run's committed
-    screenshots.
+    `/tmp/butter-branch-qa/`. Set `SHOTS=notes/runs/2026-11-07-ask-in-branch-29/screenshots` to
+    refresh that run's committed screenshots.
 
   `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
   snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and
@@ -148,18 +148,33 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
     `BUTTER_BOOKMARKS_MOCKUP=<#51 mockup>` (`gh issue artifact download 51 1 -R SimianW/butter`)
     shoots its stale cards next to `stale`'s.
 
-  The live check, `lab/harness/bookmarks-live.mjs` with `MODE=wash` (the lab lock, the send guard
-  and a fresh unpacked install, as its header says; `LAB_FIXTURE=demo-en12`, the fixture whose
-  answers hold long paragraphs and tables): on real ChatGPT markup in light and dark theme (the dark
-  pass switches ChatGPT's `<html data-theme>` on the page), it bookmarks a paragraph, a selection and
-  a table with the selection pill's Bookmark cell (the paragraph and the table selected whole),
-  jumps to each from its tick's card, and checks that the wash's boxes
-  sit on the bookmarked lines (the table's box 3 px around it), that the text keeps its colour under
-  it, that there is no bubble flash, and that when the chat scrolls during the hold the boxes follow
-  their text while the header and composer show no butter and the wash reaches their edges. Only
-  numbers and booleans go to `summary.json`; the report goes to `notes/runs/` (the first one is
-  `notes/runs/2026-11-10-bookmarks-wash-live/`). No fixture answer holds a code block yet, so code
-  blocks are checked in the fixture only.
+  The live check, `lab/harness/bookmarks-live.mjs`, runs in the live lab and never sends a prompt:
+  it takes the lab lock, keeps the send guard on and installs a fresh unpacked copy of `EXT`, as its
+  header says. Its scenarios live in `lab/harness/bookmarks-live/`, in two suites listed in run
+  order in `bookmarks-live/scenarios.mjs`:
+  - the matrix (default; the perf lock, `LAB_FIXTURE=math12`, and the Bookmark shortcut set to
+    Alt+Shift+M in the lab profile, restored after): held native scrollbar drags with and without
+    bookmarks, a paragraph and a selection bookmarked, jumps after and during a drag and into
+    unloaded earlier history, live resolution after a reload, delete, and a list item;
+  - `MODE=wash` (no perf lock or shortcut; run it with `LAB_FIXTURE=demo-en12`, whose answers hold
+    long paragraphs and tables): the landing wash on real ChatGPT markup in light and dark theme
+    for a paragraph, a selection and a table bookmarked with the pill's Bookmark cell. No fixture
+    answer holds a code block yet, so code blocks are checked in the fixture only.
+
+  Run it with `EXT=<checkout>/extension node lab/harness/bookmarks-live.mjs` on the lab host:
+  - `--list` prints both suites' scenarios with each one's mode; `ONLY=<name>[,<name>…]` runs only
+    those of the current mode (an unknown name exits 2). Neither needs the lab.
+  - A live scenario can't reset or seed: it runs on what the ones before it left, declares what it
+    needs (the fixture loaded, two stored test bookmarks, a top-level list in the fixture) and is
+    skipped with the reason when that is missing, so `ONLY=<a later scenario>` alone prints
+    `skip <name>: <reason>`.
+  - The run prints only failing checks, one line per scenario and the cleanup's results;
+    `VERBOSE=1` prints every check and the measurements.
+  - `OUT=<dir>` sets where `summary.json` goes (default `notes/runs/<today>-bookmarks-live/`). It
+    holds only numbers, booleans and public Butter labels; a throw's stack goes to
+    `/tmp/butter-bookmarks-live-error.txt` (mode 0600) and the summary keeps only its phase and
+    error class. The reports are in `notes/runs/` (the wash's first is
+    `notes/runs/2026-11-10-bookmarks-wash-live/`).
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the Review section's `- **Tier:** N` item, its `- **Verdict:** approved at <sha>` item for tiers 1 and 2, and no tier 1 or 2 change after the reviewed commit.
