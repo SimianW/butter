@@ -1,0 +1,230 @@
+{
+  "set1": {
+    "main": {
+      "loafBlockMs": {
+        "median": 65971,
+        "min": 65003,
+        "max": 67841,
+        "n": 5
+      },
+      "loafMaxMs": {
+        "median": 1539,
+        "min": 1522,
+        "max": 1727,
+        "n": 5
+      },
+      "p95": {
+        "median": 250,
+        "min": 249.9,
+        "max": 266.6,
+        "n": 5
+      },
+      "keyMax": {
+        "median": 693.1,
+        "min": 612.9,
+        "max": 1023.5,
+        "n": 5
+      },
+      "keyP95": {
+        "median": 632,
+        "min": 601.2,
+        "max": 686.6,
+        "n": 5
+      },
+      "inputDelayP95": {
+        "median": 10.900000095367432,
+        "min": 10.5,
+        "max": 195,
+        "n": 5
+      },
+      "idle.keyMax": {
+        "median": 578.7,
+        "min": 537.4,
+        "max": 1196,
+        "n": 5
+      },
+      "idle.keyP95": {
+        "median": 28.6,
+        "min": 25.1,
+        "max": 493.2,
+        "n": 5
+      },
+      "idle.inputDelayP95": {
+        "median": 2.4000000953674316,
+        "min": 2.3000001907348633,
+        "max": 4.900000095367432,
+        "n": 5
+      }
+    },
+    "pr": {
+      "loafBlockMs": {
+        "median": 66487,
+        "min": 65656,
+        "max": 67363,
+        "n": 5
+      },
+      "loafMaxMs": {
+        "median": 1557,
+        "min": 1507,
+        "max": 1809,
+        "n": 5
+      },
+      "p95": {
+        "median": 250,
+        "min": 250,
+        "max": 250.1,
+        "n": 5
+      },
+      "keyMax": {
+        "median": 644.5,
+        "min": 614.2,
+        "max": 754,
+        "n": 5
+      },
+      "keyP95": {
+        "median": 607.8,
+        "min": 600.5,
+        "max": 682.5,
+        "n": 5
+      },
+      "inputDelayP95": {
+        "median": 11.600000381469727,
+        "min": 9.5,
+        "max": 234.89999961853027,
+        "n": 5
+      },
+      "idle.keyMax": {
+        "median": 570.8,
+        "min": 552.3,
+        "max": 584.1,
+        "n": 5
+      },
+      "idle.keyP95": {
+        "median": 25,
+        "min": 23.1,
+        "max": 26.6,
+        "n": 5
+      },
+      "idle.inputDelayP95": {
+        "median": 2.1999998092651367,
+        "min": 2.0999999046325684,
+        "max": 2.4000000953674316,
+        "n": 5
+      }
+    }
+  },
+  "combined": {
+    "main": {
+      "loafBlockMs": {
+        "median": 65971,
+        "min": 65003,
+        "max": 67841,
+        "n": 5
+      },
+      "loafMaxMs": {
+        "median": 1539,
+        "min": 1522,
+        "max": 1727,
+        "n": 5
+      },
+      "p95": {
+        "median": 250,
+        "min": 249.9,
+        "max": 266.6,
+        "n": 5
+      },
+      "keyMax": {
+        "median": 693.1,
+        "min": 612.9,
+        "max": 1023.5,
+        "n": 5
+      },
+      "keyP95": {
+        "median": 632,
+        "min": 601.2,
+        "max": 686.6,
+        "n": 5
+      },
+      "inputDelayP95": {
+        "median": 10.900000095367432,
+        "min": 10.5,
+        "max": 195,
+        "n": 5
+      },
+      "idle.keyMax": {
+        "median": 578.7,
+        "min": 537.4,
+        "max": 1196,
+        "n": 5
+      },
+      "idle.keyP95": {
+        "median": 28.6,
+        "min": 25.1,
+        "max": 493.2,
+        "n": 5
+      },
+      "idle.inputDelayP95": {
+        "median": 2.4000000953674316,
+        "min": 2.3000001907348633,
+        "max": 4.900000095367432,
+        "n": 5
+      }
+    },
+    "pr": {
+      "loafBlockMs": {
+        "median": 66487,
+        "min": 65656,
+        "max": 67363,
+        "n": 5
+      },
+      "loafMaxMs": {
+        "median": 1557,
+        "min": 1507,
+        "max": 1809,
+        "n": 5
+      },
+      "p95": {
+        "median": 250,
+        "min": 250,
+        "max": 250.1,
+        "n": 5
+      },
+      "keyMax": {
+        "median": 644.5,
+        "min": 614.2,
+        "max": 754,
+        "n": 5
+      },
+      "keyP95": {
+        "median": 607.8,
+        "min": 600.5,
+        "max": 682.5,
+        "n": 5
+      },
+      "inputDelayP95": {
+        "median": 11.600000381469727,
+        "min": 9.5,
+        "max": 234.89999961853027,
+        "n": 5
+      },
+      "idle.keyMax": {
+        "median": 570.8,
+        "min": 552.3,
+        "max": 584.1,
+        "n": 5
+      },
+      "idle.keyP95": {
+        "median": 25,
+        "min": 23.1,
+        "max": 26.6,
+        "n": 5
+      },
+      "idle.inputDelayP95": {
+        "median": 2.1999998092651367,
+        "min": 2.0999999046325684,
+        "max": 2.4000000953674316,
+        "n": 5
+      }
+    }
+  }
+}

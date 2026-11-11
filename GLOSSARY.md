@@ -11,7 +11,7 @@ describes the behaviour behind each term.
 One ChatGPT chat, identified by its `/c/<id>`; its messages, bookmarks and layout records are kept
 per conversation.
 _Avoid_: chat thread, session
-_Where_: `rail/rail.js`, `branch/logic.js`
+_Where_: `rail/conversations.js`, `branch/logic.js`
 
 **Message**:
 One user or assistant record with its own id. A question is one kind of message; a turn holds
@@ -84,29 +84,44 @@ The column of ticks at the chat's right edge, one per question, drawn in Butter'
 _Avoid_: minimap, scrollbar
 _Where_: `rail/rail.js`, `docs/history-rail.md`
 
+**Rail presentation model**:
+What the rail shows, worked out with no DOM, timers or frames: the conversation's questions and each
+tick's identity, the rail's geometry, the hover wave, which ticks are lit, the card and the dots.
+`rail/rail.js` is its DOM adapter: it feeds the model events, measured boxes and frame times, patches
+the shadow DOM from what the model returns, and schedules frames only while the model says something
+moves.
+_Avoid_: rail state, view model
+_Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`
+
 **Tick**:
 One question's line on the rail; it lengthens for the question being read and swells in a wave
 under the pointer.
 _Avoid_: bar, mark
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
+
+**Hover wave**:
+The ticks around the pointer swelling and easing back, each tick's progress kept with its question
+and stepped frame by frame; frames run only while some tick still moves.
+_Avoid_: animation
+_Where_: `rail/wave.js`, `rail/model.js`
 
 **Three dots**:
 The rail's control above the first tick that stands for earlier history; clicking it loads earlier
 pages.
 _Avoid_: ellipsis, load-more
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Card**:
 The panel a tick or the three dots shows on hover or focus: the question's meta line and text, plus
 a row per bookmark when it holds any.
 _Avoid_: tooltip, popover
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Lit band**:
 The reading region between the header and the composer; the questions showing in it get lit
 ticks, excluding small tails behind the header or composer.
 _Avoid_: viewport, visible range
-_Where_: `rail/rail.js`
+_Where_: `rail/rail.js`, `rail/model.js`
 
 **Jump**:
 Moving the chat to a question or bookmark from the rail; it plays as a glide or a trip.
@@ -131,7 +146,13 @@ _Where_: `rail/rail.js`
 **Pinned**:
 The clicked question staying current and aligned after a jump until you scroll yourself.
 _Avoid_: locked, sticky
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
+
+**Journey status**:
+What a jump tells the rail presentation model while it runs: whether it is travelling (only its
+target lit) or pinned, the question it opens, the busy tick and the bookmark an earlier trip loads
+pages for. The model decides what is lit from it.
+_Where_: `rail/rail.js`, `rail/model.js`
 
 ## Bookmarks
 
@@ -167,7 +188,7 @@ _Where_: `bookmarks/model.js`
 The mark beside a tick (or the three dots) that holds bookmarks: one per question however many it
 holds, hollow when all are stale.
 _Avoid_: badge, indicator
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Bookmark session**:
 A tab's bookmarks over time: the account and conversation in view, the list read from the store,
@@ -181,7 +202,7 @@ The number the rail gives each new list of a conversation's items (`rev`), from 
 tab. Marks are published with the revision they were resolved against, so an earlier trip waits for
 marks of the items it now shows.
 _Avoid_: version (a ChatGPT answer's word), generation
-_Where_: `rail/rail.js`, `bookmarks/session.js`
+_Where_: `rail/conversations.js`, `rail/model.js`, `bookmarks/session.js`
 
 **Mark**:
 A question's bookmarks as the rail receives them: the group behind one dot, with its stale flag and

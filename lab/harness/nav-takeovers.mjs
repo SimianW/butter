@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
+import { railDeps } from './rail-scripts.mjs';
 const repo = new URL('../../', import.meta.url), out = new URL('./scratch/faster-jumps/', import.meta.url);
 fs.mkdirSync(out, {recursive:true});
 const b = await chromium.connectOverCDP('http://127.0.0.1:9222');
@@ -14,6 +15,7 @@ body{margin:0}.thread-scroll-container{height:100vh;overflow:auto;overflow-ancho
 </style><div class="thread-scroll-container"><div class="content"><div class="window"></div></div></div>`}));
 const cv = fs.readFileSync(new URL('extension/stream/offscreen.js',repo),'utf8');
 const css = fs.readFileSync(new URL('extension/stream/containment.css',repo),'utf8');
+const deps = railDeps(); // the rail's dependencies, injected before it in manifest order (#89)
 // Historical baselines use the stem recorded in their tree; expose the current protocol.
 const baselineFile = execFileSync('git',['ls-tree','-r','--name-only','75a9387','extension'],{cwd:repo,encoding:'utf8'}).trim().split('\n').find(f=>f.endsWith('-nav.js'));
 const baselineStem = baselineFile.slice('extension/'.length,-'-nav.js'.length);
@@ -29,6 +31,7 @@ async function setup(source, pending=true) {
     document.addEventListener('click',e=>{if(e.composedPath().some(x=>x?.classList?.contains('tick')))fixture.clicks.push(performance.now());},true);
     sc.scrollTop=2400;
   },pending);
+  for(const dep of deps) await p.addScriptTag({content:dep});
   await p.addScriptTag({content:source}); await p.addScriptTag({content:cv});
   await p.evaluate(()=>document.dispatchEvent(new CustomEvent('butter-nav',{detail:JSON.stringify({type:'page',conv:'00000000-0000-0000-0000-000000000001',hasPrev:false,items:Array.from({length:10},(_,i)=>({id:`t${i}`,q:`question ${i}`}))})})));
   await p.locator('chatgpt-butter-nav[data-on]').waitFor({state:'attached'});await p.waitForTimeout(200);

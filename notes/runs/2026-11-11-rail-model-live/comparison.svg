@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="663" viewBox="0 0 1000 663" role="img" aria-label="Main and PR medians and observed ranges for all nine timing metrics">
+<rect width="100%" height="100%" fill="white"/>
+<g font-family="sans-serif" font-size="15" fill="#222">
+<text x="14" y="25" font-size="20">Median and observed range, milliseconds</text>
+<text x="14" y="48">Main: circle · PR: diamond · 5 runs each · independent scale per row</text>
+<text x="14" y="79">Total LoAF blocking</text>
+<line x1="390" x2="870" y1="104" y2="104" stroke="#ddd"/>
+<text x="390" y="121" font-size="11">0</text>
+<text x="870" y="121" text-anchor="end" font-size="11">73,268.3 ms</text>
+<line x1="815.8519512127212" x2="834.4444444444445" y1="65" y2="65" stroke="#667085" stroke-width="3"/>
+<circle cx="822.1935768111384" cy="65" r="4" fill="#667085"/>
+<text x="990" y="70" text-anchor="end" fill="#667085">65,971 ms</text>
+<line x1="820.1299279852072" x2="831.3129392419203" y1="85" y2="85" stroke="#2563eb" stroke-width="3"/>
+<path d="M825.5740301259973,80 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="90" text-anchor="end" fill="#2563eb">66,487 ms</text>
+<text x="14" y="141">Longest LoAF</text>
+<line x1="390" x2="870" y1="166" y2="166" stroke="#ddd"/>
+<text x="390" y="183" font-size="11">0</text>
+<text x="870" y="183" text-anchor="end" font-size="11">1,953.7 ms</text>
+<line x1="763.9328051102511" x2="814.2982617775322" y1="127" y2="127" stroke="#667085" stroke-width="3"/>
+<circle cx="768.1094527363184" cy="127" r="4" fill="#667085"/>
+<text x="990" y="132" text-anchor="end" fill="#667085">1,539 ms</text>
+<line x1="760.247527793133" x2="834.4444444444445" y1="147" y2="147" stroke="#2563eb" stroke-width="3"/>
+<path d="M772.53178551686,142 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="152" text-anchor="end" fill="#2563eb">1,557 ms</text>
+<text x="14" y="203">Replay frame p95</text>
+<line x1="390" x2="870" y1="228" y2="228" stroke="#ddd"/>
+<text x="390" y="245" font-size="11">0</text>
+<text x="870" y="245" text-anchor="end" font-size="11">287.9 ms</text>
+<line x1="806.6041510377594" x2="834.4444444444443" y1="189" y2="189" stroke="#667085" stroke-width="3"/>
+<circle cx="806.770859381512" cy="189" r="4" fill="#667085"/>
+<text x="990" y="194" text-anchor="end" fill="#667085">250 ms</text>
+<line x1="806.770859381512" x2="806.9375677252646" y1="209" y2="209" stroke="#2563eb" stroke-width="3"/>
+<path d="M806.770859381512,204 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="214" text-anchor="end" fill="#2563eb">250 ms</text>
+<text x="14" y="265">Streaming: slowest key</text>
+<line x1="390" x2="870" y1="290" y2="290" stroke="#ddd"/>
+<text x="390" y="307" font-size="11">0</text>
+<text x="870" y="307" text-anchor="end" font-size="11">1,105.4 ms</text>
+<line x1="656.1455788959453" x2="834.4444444444443" y1="251" y2="251" stroke="#667085" stroke-width="3"/>
+<circle cx="690.9716115724909" cy="251" r="4" fill="#667085"/>
+<text x="990" y="256" text-anchor="end" fill="#667085">693.1 ms</text>
+<line x1="656.71009064756" x2="717.416815936601" y1="271" y2="271" stroke="#2563eb" stroke-width="3"/>
+<path d="M669.867556858275,266 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="276" text-anchor="end" fill="#2563eb">644.5 ms</text>
+<text x="14" y="327">Streaming: key p95</text>
+<line x1="390" x2="870" y1="352" y2="352" stroke="#ddd"/>
+<text x="390" y="369" font-size="11">0</text>
+<text x="870" y="369" text-anchor="end" font-size="11">741.5 ms</text>
+<line x1="779.163996504515" x2="834.4444444444445" y1="313" y2="313" stroke="#667085" stroke-width="3"/>
+<circle cx="799.1012072369485" cy="313" r="4" fill="#667085"/>
+<text x="990" y="318" text-anchor="end" fill="#667085">632 ms</text>
+<line x1="778.7108780787778" x2="831.7904650936985" y1="333" y2="333" stroke="#2563eb" stroke-width="3"/>
+<path d="M783.4362559471793,328 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="338" text-anchor="end" fill="#2563eb">607.8 ms</text>
+<text x="14" y="389">Streaming: dispatch p95</text>
+<line x1="390" x2="870" y1="414" y2="414" stroke="#ddd"/>
+<text x="390" y="431" font-size="11">0</text>
+<text x="870" y="431" text-anchor="end" font-size="11">253.7 ms</text>
+<line x1="409.8666099371868" x2="758.9513274048975" y1="375" y2="375" stroke="#667085" stroke-width="3"/>
+<circle cx="410.62343335332986" cy="375" r="4" fill="#667085"/>
+<text x="990" y="380" text-anchor="end" fill="#667085">10.9 ms</text>
+<line x1="407.9745518479309" x2="834.4444444444443" y1="395" y2="395" stroke="#2563eb" stroke-width="3"/>
+<path d="M411.9478745571312,390 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="400" text-anchor="end" fill="#2563eb">11.6 ms</text>
+<text x="14" y="451">Idle: slowest key</text>
+<line x1="390" x2="870" y1="476" y2="476" stroke="#ddd"/>
+<text x="390" y="493" font-size="11">0</text>
+<text x="870" y="493" text-anchor="end" font-size="11">1,291.7 ms</text>
+<line x1="589.702712746191" x2="834.4444444444443" y1="437" y2="437" stroke="#667085" stroke-width="3"/>
+<circle cx="605.0501672240803" cy="437" r="4" fill="#667085"/>
+<text x="990" y="442" text-anchor="end" fill="#667085">578.7 ms</text>
+<line x1="595.2396878483835" x2="607.0568561872909" y1="457" y2="457" stroke="#2563eb" stroke-width="3"/>
+<path d="M602.1144555927165,452 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="462" text-anchor="end" fill="#2563eb">570.8 ms</text>
+<text x="14" y="513">Idle: key p95</text>
+<line x1="390" x2="870" y1="538" y2="538" stroke="#ddd"/>
+<text x="390" y="555" font-size="11">0</text>
+<text x="870" y="555" text-anchor="end" font-size="11">532.7 ms</text>
+<line x1="412.6187257817428" x2="834.4444444444443" y1="499" y2="499" stroke="#667085" stroke-width="3"/>
+<circle cx="415.77273136883844" cy="499" r="4" fill="#667085"/>
+<text x="990" y="504" text-anchor="end" fill="#667085">28.6 ms</text>
+<line x1="410.816436874831" x2="413.97044246192667" y1="519" y2="519" stroke="#2563eb" stroke-width="3"/>
+<path d="M412.5286113363972,514 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="524" text-anchor="end" fill="#2563eb">25 ms</text>
+<text x="14" y="575">Idle: dispatch p95</text>
+<line x1="390" x2="870" y1="600" y2="600" stroke="#ddd"/>
+<text x="390" y="617" font-size="11">0</text>
+<text x="870" y="617" text-anchor="end" font-size="11">5.3 ms</text>
+<line x1="598.6167932853111" x2="834.4444444444443" y1="561" y2="561" stroke="#667085" stroke-width="3"/>
+<circle cx="607.6870792432519" cy="561" r="4" fill="#667085"/>
+<text x="990" y="566" text-anchor="end" fill="#667085">2.4 ms</text>
+<line x1="580.4761781188947" x2="607.6870792432519" y1="581" y2="581" stroke="#2563eb" stroke-width="3"/>
+<path d="M589.5464640768354,576 l5,5 -5,5 -5,-5 Z" fill="#2563eb"/>
+<text x="990" y="586" text-anchor="end" fill="#2563eb">2.2 ms</text>
+</g></svg>

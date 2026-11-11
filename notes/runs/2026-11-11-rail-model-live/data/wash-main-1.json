@@ -1,0 +1,325 @@
+{
+  "checks": [
+    {
+      "pass": 1,
+      "background": [
+        252,
+        252,
+        252
+      ],
+      "darkClass": 0
+    },
+    {
+      "pass": 1,
+      "ticks": 12
+    },
+    {
+      "pass": 1,
+      "paragraph": 1,
+      "selectionParagraph": 75,
+      "selectionCharacters": 110,
+      "table": 188,
+      "tableNested": 1
+    },
+    {
+      "pass": 1,
+      "stored": 1
+    },
+    {
+      "pass": 1,
+      "stored": 2
+    },
+    {
+      "pass": 1,
+      "stored": 3
+    },
+    {
+      "pass": 1,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": 74,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "pass": 1,
+      "differ": 0,
+      "reach": 1,
+      "under": 1,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": -680,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "pass": 1,
+      "differ": 0,
+      "reach": 1,
+      "under": 1,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "boxes": 1,
+      "expected": 1,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": 80,
+      "boxes": 1,
+      "expected": 1
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "background": [
+        0,
+        0,
+        0
+      ],
+      "darkClass": 0
+    },
+    {
+      "pass": 1,
+      "ticks": 12
+    },
+    {
+      "pass": 1,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": 74,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "pass": 1,
+      "differ": 0,
+      "reach": 1,
+      "under": 1,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": -680,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "pass": 1,
+      "differ": 0,
+      "reach": 1,
+      "under": 1,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "boxes": 1,
+      "expected": 1,
+      "maxOffPx": 0
+    },
+    {
+      "pass": 1,
+      "flash": 0
+    },
+    {
+      "pass": 1,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "pass": 1,
+      "scrolled": 80,
+      "boxes": 1,
+      "expected": 1
+    },
+    {
+      "pass": 1
+    }
+  ],
+  "drags": [],
+  "cleanup": {
+    "remainingBeforeFallback": 3,
+    "remainingAfterFallback": 0,
+    "restored": 1,
+    "composerEmpty": 1,
+    "oneHomeTab": 1,
+    "defaultExtensions": 1,
+    "labLockReleased": 1,
+    "perfLockReleased": 1
+  },
+  "sendGuard": {
+    "enabled": 1,
+    "sendAttempts": 0,
+    "blockedMutations": 111
+  },
+  "jumpEvidence": {},
+  "wash": [
+    {
+      "boxes": 2,
+      "dy": 74
+    },
+    {
+      "boxes": 2,
+      "dy": -680
+    },
+    {
+      "boxes": 1,
+      "dy": 80
+    },
+    {
+      "boxes": 2,
+      "dy": 74
+    },
+    {
+      "boxes": 2,
+      "dy": -680
+    },
+    {
+      "boxes": 1,
+      "dy": 80
+    }
+  ]
+}

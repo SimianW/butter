@@ -1,0 +1,11 @@
+{
+  "files": 19,
+  "uuidMatches": 0,
+  "emailMatches": 0,
+  "chatUrlMatches": 0,
+  "knownPrivateTokenMatches": 0,
+  "nonNumericJsonLeaves": 0,
+  "unexpectedBinaryFiles": 0,
+  "privateTokensChecked": 118,
+  "pass": 1
+}

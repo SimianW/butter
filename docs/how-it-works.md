@@ -12,11 +12,19 @@ the whole conversation. Butter cuts that work in six places:
 | `history/conversation-main.js` + `shared/config-main.js` (page world) | ChatGPT's requests for earlier messages ask for 2 turns per page instead of 10 (`olderPageTurns`). While you hold the thread's scrollbar, those requests wait until you let go. Both follow the `older` switch. | ChatGPT inserts and lays out each page in one long task, during which you can't type. In the latest lab benchmark, the longest frame while earlier messages loaded was 2.3 s instead of 8.4 s. Waiting during a scrollbar drag keeps new pages from changing the thumb's position under your mouse. Wheel, keyboard and history-rail loads start normally. |
 | `seek/preview-main.js` + `seek/layout-cache-main.js` (page world) | Holds virtualizer scroll notifications during a native thumb drag and draws cached text instead. | ChatGPT mounts the destination after release, so dragging past many turns does not mount each one. |
 
-The [history rail](history-rail.md) lives in `rail/rail.js` and `history/conversation-main.js`.
-`history/conversation-main.js` reads the questions out of the conversation responses ChatGPT fetches;
-`rail/rail.js` draws the rail in a shadow root and animates only `transform` and `opacity`, so
-hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
-the jumped-to question; scrolling yourself releases that alignment.
+The [history rail](history-rail.md) lives in `rail/` and `history/conversation-main.js`.
+`history/conversation-main.js` reads the questions out of the conversation responses ChatGPT fetches.
+What the rail shows is decided by its presentation model, `rail/model.js`, which has no DOM, timers
+or frames of its own: the conversation's questions and their items revisions (`rail/conversations.js`), each
+tick's identity and the rail's geometry, the hover wave's progress per question (`rail/wave.js`),
+which ticks are lit, the card and the bookmark dots. `rail/rail.js` is its DOM adapter: it draws the
+rail in a shadow root from what the model returns and animates only `transform` and `opacity`, so
+hovering never restyles ChatGPT's page. It schedules animation frames only while the model says
+something moves, so an idle rail runs no loop. It reads layout during a jump and when size changes
+move the jumped-to question; scrolling yourself releases that alignment. The jump stays in
+`rail/rail.js`: it reads the questions and marks from the model and tells it what it is doing
+(travelling, pinned, the question it opens, the busy tick, an earlier wait), which decides what is
+lit.
 
 Bookmarks (`bookmarks/content.js`, `bookmarks/session.js`, `bookmarks/model.js`) show on the rail as one dot beside the tick
 of each question that holds them, however many it holds: a 4 px circle on the tick's row, its right

@@ -4,9 +4,12 @@
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
+import { railDeps } from './rail-scripts.mjs';
 const source = fs.readFileSync(process.env.NAV_SOURCE ?? new URL('../../extension/rail/rail.js', import.meta.url), 'utf8');
 const cv = fs.readFileSync(new URL('../../extension/stream/offscreen.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../../extension/stream/containment.css', import.meta.url), 'utf8');
+// The rail's dependencies, injected before it in manifest order (#89).
+const deps = railDeps();
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
 const context = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
 const p = await context.newPage(), errors = [], results = [];
@@ -68,6 +71,7 @@ async function setup(earlier, slow = false) {
       requestAnimationFrame(watch);
     };
   }, { earlier, slow });
+  for (const dep of deps) await p.addScriptTag({ content: dep });
   await p.addScriptTag({ content: source }); await p.addScriptTag({ content: cv });
   await p.evaluate(() => fixture.emit());
   await p.locator('chatgpt-butter-nav[data-on]').waitFor({ state: 'attached' });

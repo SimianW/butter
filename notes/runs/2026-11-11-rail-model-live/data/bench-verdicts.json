@@ -1,0 +1,24 @@
+{
+  "set1": {
+    "loafBlockMs": 1,
+    "loafMaxMs": 1,
+    "p95": 1,
+    "keyMax": 1,
+    "keyP95": 1,
+    "inputDelayP95": 1,
+    "idle.keyMax": 1,
+    "idle.keyP95": 1,
+    "idle.inputDelayP95": 1
+  },
+  "combined": {
+    "loafBlockMs": 1,
+    "loafMaxMs": 1,
+    "p95": 1,
+    "keyMax": 1,
+    "keyP95": 1,
+    "inputDelayP95": 1,
+    "idle.keyMax": 1,
+    "idle.keyP95": 1,
+    "idle.inputDelayP95": 1
+  }
+}

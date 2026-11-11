@@ -1,0 +1,235 @@
+{
+  "exit": 0,
+  "records": [
+    {
+      "run": 1,
+      "ms": 3259,
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "run": 2,
+      "ms": 3246,
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "run": 3,
+      "ms": 3240,
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "run": 4,
+      "ms": 3239,
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "run": 5,
+      "ms": 3242,
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 0,
+      "firstTop": -15836,
+      "latestTop": 64,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 0,
+      "firstTop": -15336,
+      "latestTop": 1064,
+      "growth": 1,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "ms": 5038,
+      "first": 0,
+      "firstTop": 64,
+      "latestTop": 14464,
+      "growth": 0,
+      "pages": [
+        {
+          "first": 4,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 2,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 0,
+          "opacity": 1,
+          "content": 0
+        }
+      ],
+      "more": 0,
+      "busy": 0,
+      "uncoveredPages": 0,
+      "pass": 1
+    },
+    {
+      "ms": 5010,
+      "first": 0,
+      "firstTop": 64,
+      "latestTop": 14464,
+      "growth": 0,
+      "pages": [
+        {
+          "first": 4,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 2,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 0,
+          "opacity": 1,
+          "content": 0
+        }
+      ],
+      "more": 0,
+      "busy": 0,
+      "uncoveredPages": 0,
+      "pass": 1
+    },
+    {
+      "first": 0,
+      "firstTop": 64,
+      "latestTop": 14464,
+      "growth": 0,
+      "pages": [
+        {
+          "first": 4,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 2,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 0,
+          "opacity": 1,
+          "content": 0
+        }
+      ],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 0,
+      "firstTop": 64,
+      "latestTop": 14464,
+      "growth": 0,
+      "pages": [
+        {
+          "first": 4,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 2,
+          "opacity": 1,
+          "content": 0
+        },
+        {
+          "first": 0,
+          "opacity": 1,
+          "content": 0
+        }
+      ],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 6,
+      "firstTop": -5400,
+      "latestTop": -1800,
+      "growth": 0,
+      "pages": [],
+      "more": 0,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 6,
+      "firstTop": -3536,
+      "latestTop": 64,
+      "growth": 0,
+      "pages": [],
+      "more": 1,
+      "busy": 0,
+      "pass": 1
+    },
+    {
+      "first": 4,
+      "firstTop": -3936,
+      "latestTop": 3264,
+      "growth": 0,
+      "pages": [
+        {
+          "first": 4,
+          "opacity": 0.51395,
+          "content": 0.648054
+        }
+      ],
+      "more": 1,
+      "busy": 0,
+      "pass": 1
+    }
+  ],
+  "timeout": 0,
+  "counts": {
+    "alpha6": 0,
+    "current": 0,
+    "passed": 14
+  }
+}

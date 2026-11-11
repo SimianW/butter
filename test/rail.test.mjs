@@ -1,3 +1,6 @@
+// The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: the send pre-jump, jump
+// cancellation, and wiring that needs elements (seek, the dots' fade-out, keyboard focus). What the
+// rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
@@ -5,7 +8,11 @@ import vm from 'node:vm';
 import seekMeta from '../extension/seek/seek-meta.js';
 import bookmarks from '../extension/bookmarks/model.js';
 
-const source = fs.readFileSync(new URL('../extension/rail/rail.js', import.meta.url), 'utf8');
+// The rail's scripts in manifest order: the model's conversations and wave, the model, the adapter.
+const sources = ['conversations', 'wave', 'model', 'rail'].map((name) => [
+  `rail/${name}.js`,
+  fs.readFileSync(new URL(`../extension/rail/${name}.js`, import.meta.url), 'utf8'),
+]);
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
 class FakeElement {
@@ -214,7 +221,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     clearTimeout: (id) => timers.delete(id),
     setInterval: (callback) => intervals.push(callback),
   });
-  vm.runInContext(source, ctx, { filename: 'rail/rail.js' });
+  for (const [filename, source] of sources) vm.runInContext(source, ctx, { filename });
   const frame = (timestamp = now + 16) => {
     // rAF's frame-start timestamp may lag the current performance.now() clock.
     now = Math.max(now, timestamp);
@@ -270,12 +277,6 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
   const host = document.body.children[0];
   const select = (selector) => host.shadowRoot.querySelector(selector);
   const ticks = () => select('.ticks').children;
-  const pointer = (index) => {
-    const y = parseFloat(host.style['--y']) + 10 + (select('.more').hidden ? 0 : 16);
-    select('.rail').emit('pointermove', {
-      clientY: y + (index + 0.5) * parseFloat(host.style['--pitch']),
-    });
-  };
   const geometry = () =>
     ticks().map((tick) => {
       const bar = tick.firstChild;
@@ -358,7 +359,6 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     send,
     select,
     ticks,
-    pointer,
     geometry,
     host,
     scroller,
@@ -378,140 +378,6 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
     },
   };
 }
-
-function assertBetween(actual, start, target) {
-  actual.forEach((values, i) =>
-    values.forEach((value, axis) => {
-      // The production styles round to three decimals.
-      const lo = Math.min(start[i][axis], target[i][axis]) - 0.001;
-      const hi = Math.max(start[i][axis], target[i][axis]) + 0.001;
-      assert.ok(
-        value >= lo && value <= hi,
-        `bar ${i}, axis ${axis}: ${value} outside [${lo}, ${hi}]`,
-      );
-    }),
-  );
-}
-
-test('overlay rail reserves the scrollbar strip; classic gutters keep their original position', () => {
-  for (const gutter of [0, 15, 20]) {
-    const nav = setup({ gutter });
-    assert.ok(nav.host.attributes.has('data-on'));
-    const right = 1200 - parseFloat(nav.host.style['--r']);
-    assert.equal(1000 - right, gutter ? gutter + 4 : 12);
-    nav.pointer(2);
-    nav.flush();
-    assert.equal(1200 - parseFloat(nav.host.style['--r']), right, 'hover keeps the rail position');
-    nav.seek({ state: 'dragging', id: 'q1', n: 2, total: 5 });
-    nav.flush();
-    assert.equal(1200 - parseFloat(nav.host.style['--r']), right, 'seek keeps the rail position');
-    // Switching scrollbar mode must replace the offset rather than accumulate it.
-    nav.scroller.clientWidth = 985;
-    nav.resize(nav.scroller);
-    nav.flush();
-    assert.equal(parseFloat(nav.host.style['--r']), 219);
-    nav.scroller.clientWidth = 1000;
-    nav.resize(nav.scroller);
-    nav.flush();
-    assert.equal(parseFloat(nav.host.style['--r']), 212);
-  }
-});
-
-test('hover wave stays within its targets when the frame timestamp predates kick()', () => {
-  const nav = setup();
-  nav.pointer(2);
-  nav.flush();
-  const swollen = nav.geometry();
-  assert.deepEqual(swollen[2], [2.6, 1, 1.6]);
-  nav.advanceClock(1000); // page was busy after the frame started
-  nav.select('.rail').emit('pointerleave'); // kick() stores the newer performance.now()
-  const resting = swollen.map(() => [1, 0.28, 1]);
-  nav.frame(10_000); // earlier than kick(), deliberately by much more than one frame
-  assertBetween(nav.geometry(), swollen, resting);
-  nav.frame(10_001); // still older: last must remain monotonic
-  assertBetween(nav.geometry(), swollen, resting);
-  nav.flush();
-  assert.deepEqual(nav.geometry(), resting);
-});
-
-test('hover wave frame pending when the chat is left for the home page does not throw, and the rail draws on Back', () => {
-  const nav = setup();
-  nav.pointer(2);
-  nav.flush();
-  nav.select('.rail').emit('pointerleave'); // the wave eases back to rest
-  nav.frame(); // still moving: the next frame is queued
-  assert.ok(nav.pendingFrames() > 0);
-  nav.navigate('/'); // the questions go before the bars do
-  assert.doesNotThrow(() => {
-    nav.frame();
-    nav.flush();
-  });
-  assert.ok(!nav.host.attributes.has('data-on'));
-  nav.navigate(`/c/${conversation}`);
-  nav.flush();
-  assert.ok(nav.host.attributes.has('data-on'));
-  assert.equal(nav.ticks().length, 5);
-  nav.pointer(2);
-  nav.flush();
-  assert.deepEqual(nav.geometry()[2], [2.6, 1, 1.6]);
-});
-
-test('hover wave converges monotonically, stays finite across long frames, and stops at rest', () => {
-  const nav = setup({ count: 60, hasPrev: true });
-  nav.pointer(30);
-  const target = nav.geometry().map((_, i) => {
-    const distance = ((i - 30) * parseFloat(nav.host.style['--pitch'])) / 20;
-    const gaussian = Math.exp((-distance * distance) / 2);
-    return [1 + 1.6 * gaussian, 0.28 + 0.72 * gaussian, 1 + 0.6 * gaussian];
-  });
-  let previous = nav.geometry();
-  for (let i = 0; i < 100 && nav.pendingFrames(); i++) {
-    nav.advanceClock(i === 0 ? 60_000 : 16);
-    nav.frame();
-    const current = nav.geometry();
-    assertBetween(current, previous, target);
-    previous = current;
-  }
-  assert.equal(nav.pendingFrames(), 0);
-  previous.forEach((values, i) =>
-    values.forEach((value, axis) => {
-      assert.ok(Math.abs(value - target[i][axis]) <= 0.001);
-    }),
-  );
-  nav.select('.rail').emit('pointerleave');
-  nav.flush();
-  assert.deepEqual(
-    nav.geometry(),
-    target.map(() => [1, 0.28, 1]),
-  );
-});
-
-test('overlapping older pages deduplicate questions, and an empty final page hides the earlier button', () => {
-  const nav = setup({ count: 3, hasPrev: true });
-  const page = {
-    type: 'page',
-    conv: conversation,
-    before: 'q0',
-    hasPrev: true,
-    items: [
-      { id: 'older', q: 'Older question' },
-      { id: 'q0', q: 'Question 0' },
-    ],
-  };
-  nav.send(page);
-  nav.flush();
-  nav.send(page);
-  nav.flush();
-  assert.deepEqual(
-    nav.ticks().map((tick) => tick.getAttribute('aria-label')),
-    ['Older question', 'Question 0', 'Question 1', 'Question 2'],
-  );
-  assert.equal(nav.select('.more').hidden, false);
-  nav.send({ ...page, items: [], hasPrev: false });
-  nav.flush();
-  assert.equal(nav.select('.more').hidden, true);
-  assert.equal(nav.ticks().length, 4);
-});
 
 for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
   test(`${cancel} invalidates a pending jump before it can settle or pin its old target`, async () => {
@@ -702,105 +568,40 @@ test('seek card follows live language changes and ignores state from a different
   assert.equal(nav.select('.meta').textContent, '第 3 / 5 个问题');
 });
 
-test('seek lights every turn intersecting the preview band', () => {
-  const nav = setup();
-  nav.seek({ state: 'dragging', id: 'q1', lit: ['q1', 'q2'], n: 2, total: 5 });
-  nav.flush();
-  assert.deepEqual(
-    nav.geometry().map((x) => x[1]),
-    [0.28, 1, 1, 0.28, 0.28],
-  );
-});
-
-test('a bookmark dot keeps 4 px from its tick through the hover wave and stays inside the rail', () => {
-  const nav = setup({ count: 8 });
-  nav.setMarks({ q1: [false], q3: [false, false], q6: [true] });
-  nav.flush();
-  const pitch = parseFloat(nav.host.style['--pitch']);
-  // The dot's right edge is 4 px left of the tick (12 px x its scale); the tick's right end is 6 px
-  // in from the rail's right edge, which is 52 px wide.
-  const assertBeside = () => {
-    const bars = nav.geometry(),
-      ds = nav.dots();
-    assert.deepEqual(
-      ds.map((d) => d.q),
-      [1, 3, 6],
-    );
-    for (const d of ds) {
-      // Both are drawn rounded: the bar's scale to 3 decimals, the dot to 0.01 px.
-      assert.ok(
-        Math.abs(d.right - (12 * bars[d.q][0] + 4)) <= 0.02,
-        `q${d.q}: ${d.right} vs scale ${bars[d.q][0]}`,
-      );
-      assert.ok(
-        Math.abs(d.center - (10 + (d.q + 0.5) * pitch)) <= 0.01,
-        `q${d.q} on its tick's row`,
-      );
-      assert.ok(6 + d.right + d.d <= 52, `q${d.q} inside the rail`);
-      assert.equal(d.d, 4);
-      assert.equal(d.hidden, 'true');
-    }
-  };
-  // At rest: 16 px from the ticks' end (12 + 4).
-  assertBeside();
-  assert.equal(nav.dots()[0].right, 16);
-  nav.pointer(3);
-  let widest = 0;
-  for (let i = 0; i < 100 && nav.pendingFrames(); i++) {
-    nav.frame();
-    assertBeside();
-    widest = Math.max(widest, ...nav.dots().map((d) => d.right));
-  }
-  assert.ok(
-    Math.abs(widest - (12 * 2.6 + 4)) <= 0.01,
-    `the dot under the pointer follows a 31 px tick: ${widest}`,
-  );
-  nav.select('.rail').emit('pointerleave');
-  for (let i = 0; i < 100 && nav.pendingFrames(); i++) {
-    nav.frame();
-    assertBeside();
-  }
-  assert.equal(nav.pendingFrames(), 0, 'no frame runs at rest');
-  // Only q6's bookmarks are all stale: its dot is hollow.
+// The adapter applies what the model returns: CSS values, names, the three dots, the card's
+// looks, the dots' looks, and each wave frame's tick styles.
+test('the rail draws the model: host CSS, tick names, the three dots hidden, card and dot looks, wave frames', () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [true], q2: [false] });
+  const rail = nav.select('.rail'),
+    card = nav.select('.card'),
+    st = nav.host.style;
+  assert.deepEqual([st['--y'], st['--pitch'], st['--r']], ['368px', '14px', '212px']);
+  const label = nav.ticks()[1].getAttribute('aria-label');
+  assert.equal(label, 'Question 1 · Bookmark: Bookmark 0 (answer changed)');
+  assert.equal(nav.select('.more').hidden, true);
   assert.deepEqual(
     nav.dots().map((d) => d.stale),
-    [false, false, true],
-  );
+    [true, false],
+  ); // q1 all stale: hollow
+  rail.emit('pointerenter');
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 1.5 * 14 }); // tick 1's centre
+  nav.frame();
+  const bar = nav.ticks()[1].firstChild;
+  assert.deepEqual([bar.style.transform, bar.style.opacity], ['scale(1.375, 1.140)', '0.449']);
+  assert.deepEqual([card.inert, card.classList.contains('qb')], [false, true]);
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 0.5 * 14 }); // tick 0: no bookmarks
+  assert.deepEqual([card.inert, card.classList.contains('qb')], [true, false]);
 });
 
-test('close ticks shrink the dot; an all-stale dot too small for a ring is faint', () => {
-  // 120 questions in 900 px: a pitch under 6 px.
-  const nav = setup({ count: 120 });
-  nav.setMarks({ q2: [false], q5: [true] });
-  nav.flush();
-  const pitch = parseFloat(nav.host.style['--pitch']);
-  assert.ok(pitch < 6, `pitch ${pitch}`);
-  const [live, stale] = nav.dots();
-  assert.ok(Math.abs(live.d - Math.max(2, pitch - 2)) < 1e-9, `d ${live.d}`);
-  assert.ok(!live.stale && !live.faint);
-  assert.ok(stale.faint && !stale.stale, 'solid at 45 % instead of a ring');
-});
-
-test("the rail's arrow stops are the ticks: a question's bookmarks add no stop", () => {
-  const nav = setup({ count: 4 });
-  nav.setMarks({ q1: [false], q2: [false, true] });
-  nav.flush();
-  const ticks = nav.ticks(),
-    down = (target) =>
-      nav.select('.rail').emit('keydown', { key: 'ArrowDown', target, preventDefault() {} });
-  down(ticks[0]);
-  assert.equal(FakeElement.focused, ticks[1]);
-  down(ticks[1]);
-  assert.equal(FakeElement.focused, ticks[2], 'from a tick that holds bookmarks to the next tick');
-  down(ticks[2]);
-  assert.equal(FakeElement.focused, ticks[3]);
-});
-
+// Adapter wiring: the model's dots drawn, the fade-out's timer, the host hidden with the rail off.
 test("a question's last bookmark deleted: its dot fades out over 160 ms; with the rail off, none", () => {
   const nav = setup({ count: 4 });
   nav.setMarks({ q1: [false] });
   nav.flush();
-  assert.equal(nav.dots().length, 1);
+  assert.deepEqual(nav.dots(), [
+    { q: 1, right: 16, center: 10 + 1.5 * 14, d: 4, hidden: 'true', stale: false, faint: false },
+  ]);
   nav.setMarks({});
   const [gone] = nav.select('.marks').children;
   assert.ok(gone.classList.contains('gone'), 'fading');
@@ -818,84 +619,6 @@ test("a question's last bookmark deleted: its dot fades out over 160 ms; with th
   nav.flush();
   assert.equal(nav.dots().length, 0);
   assert.equal(nav.host.style.display, 'none');
-});
-
-// Earlier history (#72): its bookmarks show as a dot beside the three dots, and the three dots
-// show their card. The dot is no arrow stop of its own.
-const EARLIER_HINT = 'Earlier questions are not loaded yet. Click to load them.';
-test("earlier history's bookmarks: one 4 px dot on the three dots' row, 4 px left of the leftmost, always solid", () => {
-  const nav = setup({ count: 4, hasPrev: true });
-  nav.setMarks({ '-1': [true, false], q1: [false] });
-  nav.flush();
-  const [earlier, q1] = nav.dots();
-  // The three dots end 8 px in from the rail's right edge (6 px padding, 2 px of their own) and
-  // span 15 px: the dot's right edge is 21 px left of the ticks' right end. Their row is the
-  // rail's first 16 px under its 10 px padding.
-  assert.equal(earlier.q, -1);
-  assert.equal(earlier.right, 21);
-  assert.equal(earlier.center, 18);
-  assert.equal(earlier.d, 4);
-  assert.equal(earlier.hidden, 'true');
-  assert.ok(!earlier.stale && !earlier.faint, 'solid: bookmarks in unloaded history count as live');
-  assert.equal(q1.q, 1);
-  // Only dots are drawn, nothing focusable.
-  assert.deepEqual(
-    nav.select('.marks').children.map((el) => [el.tagName, el.className]),
-    [
-      ['i', 'bdot'],
-      ['i', 'bdot'],
-    ],
-  );
-  // Under the pointer the three dots don't move: neither does their dot.
-  nav.pointer(-1);
-  for (let i = 0; i < 100 && nav.pendingFrames(); i++) nav.frame();
-  assert.equal(nav.dots()[0].right, 21);
-});
-
-test("the three dots' name appends the earlier-history label; without bookmarks, their hint alone", () => {
-  const nav = setup({ count: 3, hasPrev: true });
-  const more = nav.select('.more');
-  nav.setMarks({ '-1': [false, false] });
-  assert.equal(
-    more.getAttribute('aria-label'),
-    `${EARLIER_HINT} · Earlier questions · 2 bookmarks: Bookmark 0; Bookmark 1`,
-  );
-  nav.setMarks({});
-  assert.equal(more.getAttribute('aria-label'), EARLIER_HINT);
-});
-
-test("the three dots holding bookmarks show the earlier card; without, today's hint card", () => {
-  const nav = setup({ count: 3, hasPrev: true });
-  const card = nav.select('.card'),
-    more = nav.select('.more');
-  nav.select('.rail').emit('pointerenter');
-  nav.pointer(-1);
-  assert.ok(card.classList.contains('show'));
-  assert.ok(card.inert, 'the hint card takes no pointer');
-  assert.equal(card.getAttribute('role'), 'tooltip');
-  nav.select('.rail').emit('pointerleave');
-  nav.advanceClock(250);
-  nav.runTimers();
-  nav.setMarks({ '-1': [false, false] });
-  nav.select('.rail').emit('pointerenter');
-  nav.pointer(-1);
-  assert.ok(card.classList.contains('show'));
-  assert.ok(!card.inert, 'the bookmark card takes the pointer');
-  assert.equal(card.getAttribute('role'), 'group');
-  assert.equal(card.getAttribute('aria-label'), 'Earlier questions · 2 bookmarks');
-  assert.equal(nav.select('.meta').textContent, 'Earlier questions · 2 bookmarks');
-  // Each row starts with the rail's dot, not a flag.
-  const rows = nav.select('.bmc').querySelectorAll('.it');
-  assert.equal(rows.length, 2);
-  for (const it of rows) assert.equal(it.children[0].children[0].className, 'dot');
-  // Focus on the three dots shows it too.
-  nav.select('.rail').emit('pointerleave');
-  nav.advanceClock(250);
-  nav.runTimers();
-  assert.ok(!card.classList.contains('show'));
-  nav.select('.rail').emit('focusin', { target: more });
-  assert.ok(card.classList.contains('show'));
-  assert.equal(card.getAttribute('aria-label'), 'Earlier questions · 2 bookmarks');
 });
 
 test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Escape return; ArrowDown goes to the first tick', () => {

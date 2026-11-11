@@ -8,7 +8,7 @@ export const maxLines = 500;
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 566,
   'extension/dev/recorder.js': 574,
-  'extension/rail/rail.js': 1831,
+  'extension/rail/rail.js': 1520,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
@@ -19,7 +19,7 @@ export const maxLinesCaps = {
   'test/dev-sources.test.js': 519,
   'test/height-cache-dom.test.js': 1463,
   'test/layout-storage.test.js': 565,
-  'test/rail.test.mjs': 924,
+  'test/rail.test.mjs': 647,
   'test/seek-landing.test.js': 917,
 };
 
@@ -77,12 +77,12 @@ export default [
   },
   {
     files: ['extension/rail/rail.js'],
-    languageOptions: {
-      globals: {
-        ButterSeekMeta: 'readonly', // defined in seek/seek-meta.js
-        ButterBookmarks: 'readonly', // defined in bookmarks/model.js
-      },
-    },
+    languageOptions: { globals: { ButterRailModel: 'readonly' } }, // defined in rail/model.js
+  },
+  {
+    // The rail model falls back to their dependencies under node.
+    files: ['extension/rail/model.js'],
+    languageOptions: { globals: { require: 'readonly' } },
   },
   {
     files: ['extension/bookmarks/content.js'],
@@ -190,6 +190,9 @@ export default [
       'extension/bookmarks/model.js',
       'extension/bookmarks/wash.js',
       'extension/bookmarks/session.js',
+      'extension/rail/conversations.js',
+      'extension/rail/wave.js',
+      'extension/rail/model.js',
       'extension/page/reader.js',
       'extension/page/reader-main.js',
       'extension/dev/recorder.js',

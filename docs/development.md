@@ -14,6 +14,10 @@
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (question box, overlay, line) and the glue for both tabs; the original tab's Ask in branch cell in the selection pill. |
 | `extension/selection/pill.js` | The selection pill (`ButterPill`, #77): follows ChatGPT's "Ask ChatGPT" every frame (4 px right of it, flipped left without room, hidden with it and in Work mode, its resting look copied) and draws the registered cells in one pill, Ask in branch then Bookmark, with each cell's label 8 px below after 300 ms of hover. `register({ id, feature, icon, label, keys, shortcut, wants, activate, reset })`, `update()`, `hold(range, { place, lost })` (Ask in branch's question box anchors where ChatGPT's button last was), `release()`, `hide()`. Loads before both features' scripts. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
+| `extension/rail/conversations.js` | The rail's conversations (`ButterRailConversations`), pure: each conversation's messages oldest first, pages merged (`page`), sends (`send`), the list policy against the mounted turns (`reconcile`), and the items revision every new list takes. Loads before `rail/model.js`. |
+| `extension/rail/wave.js` | The hover wave's progress (`ButterRailWave`), pure: each tick's scale and opacity kept with its question, one frame's easing toward the model's targets (the interval clamped to 0–64 ms), and whether a frame is still due. Loads before `rail/model.js`. |
+| `extension/rail/model.js` | The rail presentation model (`ButterRailModel`), no DOM, timers or frames: it holds the conversations and the wave, and owns the questions as of the last render, the rail's geometry, what lights a tick (seek, opening, the jump's status, the lit band, pinned), the card (its kind, contents, place, held) and its key intents, the seek card, the bookmark dots and names, and the earlier wait (`synced`, `placed`). It returns plain data: the tick lines' styles, CSS values, dots to create, update, drop and place, the card to show. Loads before `rail/rail.js`. |
+| `extension/rail/rail.js` | The rail's DOM adapter: the shadow DOM built and patched from the model, the scroller's observers and box, frames only while the model says something moves, focus, the send pre-jump and the jump (glide, trip, journey), which reads the model's questions and marks and publishes its status to it. `ButterRail` (`WIDTH`, `inset()`, `setMarks`) and `butterNavTurn` are its interface. |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
 | `extension/bookmarks/client.js` | The store client (`ButterBookmarkStore.send`), which `content.js` hands to the bookmark session: one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
@@ -126,12 +130,11 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   Work mode and no "Ask ChatGPT", their order and place, names and `aria-keyshortcuts`, activation on
   a primary pointerdown or a keyboard click, the label's 300 ms and switching, a held selection's
   anchor, and its host inside `<body>`) run under `node --test`, and
-  `test/rail.test.mjs` checks that each dot keeps its 4 px gap through every frame of the hover wave
-  and stays inside the rail, shrinks and turns faint for close ticks, fades out when its last
-  bookmark goes, and that the arrow stops are the ticks only; and, for earlier history (#72), the
-  solid 4 px dot 4 px left of the three dots on their row, the three dots' name, their card on hover
-  and focus (their hint card without bookmarks), and ArrowLeft into it with ArrowRight and Escape
-  back. `test/bookmark-card.test.js` also covers the earlier card for one and several bookmarks and
+  the rail model's tests (below) check that each dot keeps its 4 px gap through every frame of the
+  hover wave and stays inside the rail, shrinks and turns faint for close ticks, fades out when its
+  last bookmark goes, and that the arrow stops are the ticks only; and, for earlier history (#72), the
+  solid 4 px dot 4 px left of the three dots on their row, the three dots' name, their card (their
+  hint card without bookmarks), and ArrowLeft into it with ArrowRight and Escape back. `test/bookmark-card.test.js` also covers the earlier card for one and several bookmarks and
   the three dots' name, in English and Chinese.
   The fixture QA, `lab/harness/bookmarks-qa.mjs`, loads the real extension in its own Chromium over
   a synthetic chat (every chatgpt.com request answered locally, with stand-ins for ChatGPT's "Ask
@@ -193,6 +196,30 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the Review section's `- **Tier:** N` item, its `- **Verdict:** approved at <sha>` item for tiers 1 and 2, and no tier 1 or 2 change after the reviewed commit.
+- History rail: the rail presentation model runs under `node --test` with no DOM, through its
+  interface: `test/rail-model.test.mjs` (the inset and when the rail shows, history prepended during
+  a wave keeping each tick with its question, what lights a tick — seek over opening over a flying jump
+  over the lit band and pinned —, the opening snap, the rail turned off between frames, a frame older
+  than the last kick, convergence and quiet at rest, the dots through every wave frame, dense and
+  earlier-history dots, names, the fade-out, the tick under a y and the three dots' zone, the busy
+  tick, the rail turning on at a 560 px chat, dense geometry, opening another chat forgetting the seek
+  preview and the active question), `test/rail-card.test.mjs` (the card's kinds, contents
+  and place, holding and leaving, the seek card, keys into and in a card, the card following a
+  deletion, the earlier wait on the marks' items revision and `placed`, the 400-character cuts,
+  `unshow`), both over
+  `test/helpers/rail-model.mjs`, which drives the model as `rail.js` does;
+  `test/rail-conversations.test.mjs` (pages, sends, reconciliation, revisions) and
+  `test/rail-wave.test.mjs` (ticks keyed by question, the interval clamp, convergence).
+  `test/rail.test.mjs` runs the real `rail.js` and its model in a fake DOM for what needs elements:
+  the rail drawing what the model returns (CSS values, names, the three dots, dots, a tick's line,
+  the card's `inert`), the send pre-jump, jump cancellation, the seek card's wiring, the dots' fade-out timer and keyboard
+  focus. bookmarks-qa's `rail-idle` scenario checks the performance floor in a browser: the rail
+  schedules no animation frame for 2 s after the chat opens and settles, after a hover wave and after
+  a jump lands (a DevTools session wraps `requestAnimationFrame` in Butter's isolated world and counts
+  calls from `/rail/` scripts only, so `rail.js` must look it up at call time). Fixtures that inject
+  the rail into a page of their own load its scripts in manifest order from
+  `lab/harness/rail-scripts.mjs` (`test/rail-scripts.test.mjs`: every `rail/` script in the
+  manifest, `rail.js` last).
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
