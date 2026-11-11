@@ -22,7 +22,7 @@
 // is the browser's "focus bookmarks bar" key, so the profile is seeded with the binding that
 // chrome://extensions/shortcuts would save.
 //
-// Run: npm ci --prefix lab/harness && xvfb-run -a node lab/harness/dev-capture-qa.mjs
+// Run: npm ci && xvfb-run -a node lab/harness/dev-capture-qa.mjs
 // OUT=<dir> overrides where the saved files, toast screenshots and summary go
 // (default notes/runs/2026-11-08-full-snapshot-44/).
 import { chromium } from 'playwright';

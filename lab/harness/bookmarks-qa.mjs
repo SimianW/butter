@@ -54,7 +54,7 @@
 // The shortcut must be real keyboard input (chrome.commands ignores DevTools key events): with an X
 // display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
 // below. Without a display the run asks the worker to relay the command instead and says so.
-// Run: npm ci --prefix lab/harness && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
+// Run: npm ci && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
 // The run covers both answer markups, each in its own browser: MARKUP=old has the earlier wrapper,
 // [data-message-author-role="assistant"][data-message-id]; MARKUP=live renders answers as live chats
 // do (notes/runs/2026-11-08-bookmarks-live), with no role or message id on any message and the

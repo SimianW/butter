@@ -35,7 +35,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 
 ## Tests
 
-- Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; no npm install needed).
+- Unit tests: `node --test` (runs `*.test.js` and `*.test.mjs`; run `npm ci` first for `test/max-lines-caps.test.mjs`).
 - Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 22 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
   `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
   (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
@@ -276,10 +276,11 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 
 ## Formatting
 
-Run `npm ci` to install the pinned development formatter, then `npm run format` to format
+Run `npm ci` to install the pinned development tools (Prettier, ESLint, and Playwright for
+`lab/harness/`), then `npm run format` to format
 `extension/**/*.{js,css,html,json}` and `test/**`. Use `npm run format:check` to check them.
-`npm run lint` checks `extension/` and `test/` for undefined and unused names (ESLint; config in `eslint.config.mjs`).
-`node --test` uses only Node built-ins and still runs without installing npm dependencies.
+`npm run lint` checks `extension/` and `test/` for undefined and unused names, and those plus `lab/harness/` for file length: at most 500 lines (blank lines and comments count), except the files capped at their current length in `eslint.config.mjs`, which may only shrink (ESLint; config in `eslint.config.mjs`).
+`node --test` uses only Node built-ins, except `test/max-lines-caps.test.mjs`, which imports the ESLint config and so needs `npm ci`; it fails when a capped file has shrunk below its cap or to 500 lines or fewer, so the cap is lowered or dropped.
 
 ## Release
 
