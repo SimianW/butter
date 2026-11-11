@@ -1,0 +1,82 @@
+<!doctype html>
+<!--
+  Edge cases.
+  - Turn 1: the answer's role wrapper holds content outside its markdown root (a "Thought for"
+    row above it, sources below it). That content is in the reply (the role wrapper is one) but in
+    no answer and no paragraph.
+  - Turn 2: an answer that has no message id yet (still streaming; its role wrapper has no
+    data-message-id). It is a reply, its blocks are paragraphs, but it is no identified answer:
+    answersIn leaves it out and answerOf gives null. Its paragraphs carry data-expect-para outside
+    every data-expect-answer (see README.md).
+  - Turn 3: an older turn wrapper with only a conversation-turn test id and no data-turn-key: its
+    answer is in no keyed turn, so it has no data-expect-question.
+  - Text outside every turn: the header and a bottom disclaimer.
+-->
+<html>
+  <head>
+    <title>Edge cases</title>
+  </head>
+  <body>
+    <header><span>Header text outside every turn</span></header>
+    <main>
+      <div class="thread-scroll-container">
+        <div>
+          <article data-turn-key="q-edge-1" data-testid="conversation-turn-1">
+            <div class="user">
+              <div data-message-author-role="user" data-message-id="q-edge-1">
+                <div data-user-message-bubble>Why is my query slow?</div>
+              </div>
+            </div>
+            <div data-message-author-role="assistant" data-message-id="a-edge-1" data-expect-reply>
+              <div class="thoughts"><button>Thought for 4s</button></div>
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-edge-1"
+                data-expect-question="q-edge-1"
+                data-expect-reply
+              >
+                <p data-expect-para="0">It scans the whole table.</p>
+                <p data-expect-para="1">Add an index on <code>status</code>.</p>
+              </div>
+              <div class="sources">Sources: <a href="https://example.com/">example.com</a></div>
+            </div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-edge-2" data-testid="conversation-turn-2">
+            <div class="user">
+              <div data-message-author-role="user" data-message-id="q-edge-2">
+                <div data-user-message-bubble>Show the plan.</div>
+              </div>
+            </div>
+            <div data-message-author-role="assistant" data-expect-reply>
+              <div data-markdown-text-style="assistant-message" class="markdown prose" data-expect-reply>
+                <p data-expect-para="0">Streaming the first paragraph</p>
+                <ul>
+                  <li data-expect-para="1">and a first item</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div data-testid="conversation-turn-3">
+          <div data-message-author-role="user" data-message-id="q-edge-3">
+            <div data-user-message-bubble>An older turn wrapper.</div>
+          </div>
+          <div data-message-author-role="assistant" data-message-id="a-edge-3" data-expect-reply>
+            <div
+              data-markdown-text-style="assistant-message"
+              class="markdown prose"
+              data-expect-answer="a-edge-3"
+              data-expect-reply
+            >
+              <p data-expect-para="0">Its answer is in no keyed turn.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div class="disclaimer"><span>ChatGPT can make mistakes. Check important info.</span></div>
+  </body>
+</html>
