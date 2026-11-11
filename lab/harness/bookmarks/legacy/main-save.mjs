@@ -31,7 +31,7 @@
 // Steps 1 to 8: a save with the pill, its card and dot, jumps, reload, history,
 // dark theme, selection and shortcut (#54), list items (#51), the rail off and Butter paused.
 export async function mainSave(qa) {
-  const { settings, rail, check, PARAGRAPH, page, question, button, bookmark, hoverCell, worker, pill, shots, noteCard, dotBeside, TURNS, stored, answer, PARAS, CONV, sha, selectBlock, shortcut, waitNote, toTop, tickCard, questionTop, jumpByRow, block, requests, dotCount, select, textTop, headed, context } = qa;
+  const { open, scrollTo, settings, rail, check, PARAGRAPH, page, question, button, bookmark, hoverCell, worker, pill, shots, noteCard, dotBeside, TURNS, stored, answer, PARAS, CONV, sha, selectBlock, shortcut, waitNote, toTop, tickCard, questionTop, jumpByRow, block, requests, dotCount, select, textTop, headed, context } = qa;
   await settings({});
   await open();
   const before = await rail();

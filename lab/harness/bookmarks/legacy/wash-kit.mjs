@@ -5,7 +5,7 @@
 // Builds the wash section's start (settings, store, the edited answer) and hands back its helpers.
 export const WASH = 'chatgpt-butter-wash';
 export async function washKit(qa) {
-  const { PARAGRAPH, LIVE, sha, CONV, answer, settings, seedStore, page$, context, page, dotCount, rail, PARAS, shots, png } = qa;
+  const { open, PARAGRAPH, LIVE, sha, CONV, answer, settings, seedStore, page$, context, page, dotCount, rail, PARAS, shots, png } = qa;
   // Question 6's answer for the block wash (#74): paragraphs around a code block and a table, each in
   // the markup's own shape (see washSection's part g).
   const BT = 5;

@@ -17,7 +17,7 @@ import { washMockup } from './wash-mockup.mjs';
 // panels l-3-light, l-sel-dark and l-code-light as whole frames, rail included: under 0.1% of
 // pixels differing by more than 24 in a channel.
 export async function washSection(qa) {
-  const { log, page, shots, check, rail, CONV, question, settings, page$, answer, PARAS, seedStore, LIVE, TURNS } = qa;
+  const { open, log, page, shots, check, rail, CONV, question, settings, page$, answer, PARAS, seedStore, LIVE, TURNS } = qa;
   const { BT, BLOCKS, BLOCK_CSS, wseed, T, sc, cdp, openChat, rowJump, earlierRowJump, record, recorded, phases, washHost, waitWash, coverage, listeners, blockCoverage, textUnder, PARA, SEL, STALE } = await washKit(qa);
   // (a) A paragraph, from the top of the chat: a far trip.
   await openChat('light');

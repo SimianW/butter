@@ -3,7 +3,7 @@
 
 // The default path's steps 9 and 10: the rail's hover card (#53) and the first bookmark ever (#56, #77).
 export async function mainCards(qa, { TURN, saved, PARA }) {
-  const { stored, PARAGRAPH, sha, answer, seedStore, tickCard, rail, page, shots, dotCount, toTop, hoverTick, ontoRow, check, jumpByRow, block, waitNote, noteCard, pressNote, worker, removeRow, QUESTION, settings, bookmark } = qa;
+  const { open, stored, PARAGRAPH, sha, answer, seedStore, tickCard, rail, page, shots, dotCount, toTop, hoverTick, ontoRow, check, jumpByRow, block, waitNote, noteCard, pressNote, worker, removeRow, QUESTION, settings, bookmark } = qa;
   // 9. The rail's hover card (#53). Seed bookmarks straight into the store, as an earlier session
   // would have left them, then reload so the page reads them once.
   const [{ account: ACCOUNT, conv: CONV_HASH }] = await stored();

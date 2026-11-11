@@ -16,7 +16,7 @@ import path from 'node:path';
 // dot's gap through every frame of the hover wave, its motion under reduced motion, and no dot with
 // the rail off or Butter paused, back after a reload. ONLY=dot runs this part alone.
 export async function dotSection(qa) {
-  const { settings, sha, CONV, PARAGRAPH, answer, page$, page, hoverTick, shots, context, seedStore, dotCount, rail, dotBeside, check, bookmark, toTop, removeRow, TURNS, compare } = qa;
+  const { open, settings, sha, CONV, PARAGRAPH, answer, page$, page, hoverTick, shots, context, seedStore, dotCount, rail, dotBeside, check, bookmark, toTop, removeRow, TURNS, compare } = qa;
   await settings({ bookmarkNotice: 'acknowledged' });
   const ACCOUNT = sha('user-fixture'),
     CONV_HASH = sha(CONV);

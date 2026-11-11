@@ -6,7 +6,7 @@ import path from 'node:path';
 // bookmark whose question is earlier sits on the rail's earlier-history dots until its answer is
 // loaded. The fixture opens with questions 8 to 12; each earlier page brings two more.
 export async function earlierSection(qa) {
-  const { sha, CONV, answer, PARAGRAPH, seedStore, page, TURNS, page$, settings, check, requests, stored, QUESTION, regen, question, shots, context } = qa;
+  const { open, sha, CONV, answer, PARAGRAPH, seedStore, page, TURNS, page$, settings, check, requests, stored, QUESTION, regen, question, shots, context } = qa;
   const ACCOUNT = sha('user-fixture'),
     CONV_HASH = sha(CONV);
   // A whole-paragraph bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, li, li).

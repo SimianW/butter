@@ -10,7 +10,7 @@ import fs from 'node:fs/promises';
 // (the first bookmark ever, expanded), E′ (dark, pointer on Ask in branch, a saved card), and,
 // outside the mockup, "Already bookmarked", the pill with Ask in branch off, and Chinese.
 export async function pillSection(qa) {
-  const { shots, page, select, bookmark, seedStore, settings, waitNote, noteCard, check, pressNote, hoverCell, stored, removeRow, dotBeside, rail, block, button, PARAGRAPH, pill } = qa;
+  const { open, scrollTo, shots, page, select, bookmark, seedStore, settings, waitNote, noteCard, check, pressNote, hoverCell, stored, removeRow, dotBeside, rail, block, button, PARAGRAPH, pill } = qa;
   const out = path.join(shots, 'states');
   await fs.mkdir(out, { recursive: true });
   const TURN = 6;

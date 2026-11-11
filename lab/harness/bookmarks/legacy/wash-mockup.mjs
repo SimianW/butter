@@ -8,7 +8,7 @@ import { WASH } from './wash-kit.mjs';
 // and washed, and question 7 is the one being read. The whole frame is compared, inside its 1 px
 // border and its rounded corners.
 export async function washMockup(qa, { rowJump, waitWash, coverage, blockCoverage, sc, record, recorded, phases }) {
-  const { context, page$, page, sha, CONV, answer, MOCK_TURN, PARAS, seedStore, dotCount, question, shots, check, compare } = qa;
+  const { open, context, page$, page, sha, CONV, answer, MOCK_TURN, PARAS, seedStore, dotCount, question, shots, check, compare } = qa;
   const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
   await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
   // No scrollbar: the centred mockup stays on whole pixels (as for the notice above).

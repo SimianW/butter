@@ -4,7 +4,7 @@
 // 11b. A one-question chat: the rail stays hidden, as before, but the Bookmark cell still saves
 // there, and saving again says "Already bookmarked"; with a second question its dot shows.
 export async function oneQuestionSection(qa) {
-  const { settings, seedStore, page$, page, CONV, answer, bookmark, stored, check, requests, waitNote, noteCard, dotCount, rail, dotBeside, TURNS } = qa;
+  const { open, settings, seedStore, page$, page, CONV, answer, bookmark, stored, check, requests, waitNote, noteCard, dotCount, rail, dotBeside, TURNS } = qa;
   await settings({ bookmarkNotice: 'acknowledged' });
   await seedStore([], { clear: true });
   page$.turns = 1;
