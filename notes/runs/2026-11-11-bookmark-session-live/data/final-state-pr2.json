@@ -1,0 +1,24 @@
+{
+  "sharedCheckoutStatusUnchanged": true,
+  "sharedCheckoutTrackedDiffExit": 0,
+  "locks": [
+    {
+      "lab": 1,
+      "held": false,
+      "owner": null
+    },
+    {
+      "lab": 2,
+      "held": false,
+      "owner": null
+    },
+    {
+      "lab": "perf",
+      "held": false,
+      "owner": null
+    }
+  ],
+  "branchExtensionCopyRemoved": true,
+  "branchExtensionByteIdentical": true,
+  "files": 59
+}
