@@ -7,5 +7,8 @@
   "reportUpdatedEpoch": 1794433895.441915,
   "matrixRuns": 18,
   "interruptedAttempts": 1,
-  "rerunLockWindows": 2
+  "rerunLockWindows": 2,
+  "bisectReportUpdatedEpoch": 1794440234.5786505,
+  "bisectReplays": 9,
+  "bisectControls": 4
 }

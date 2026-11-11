@@ -1,6 +1,6 @@
 # Streaming replay blocking control
 
-**The completed control supports H3: Butter regressed after released alpha.11.** On today's same page and host, alpha.11 has about 13–14 seconds of LoAF blocking while current main has about 66–67 seconds, under both methods. The expected fast-old/slow-main separation holds with matching selectors and active Butter counters. The exact responsible change is not isolated; no bisection or extension code change was performed.
+**The completed control supports H3: Butter regressed after released alpha.11.** On today's same page and host, alpha.11 has about 13–14 seconds of LoAF blocking while current main has about 66–67 seconds, under both methods. The expected fast-old/slow-main separation holds with matching selectors and active Butter counters. The control itself did not isolate the responsible change; the follow-up [Bisect](#bisect) identifies commit `4780e17`. No extension code was changed.
 
 | Ranked hypothesis | Prediction | Observed test and verdict |
 |---|---|---|
@@ -12,7 +12,7 @@
 A code/page interaction can still contribute to the regression; this control rejects the specific missing-selector mechanism, not every possible interaction with ChatGPT's current page. The earlier #92 acceptance comparison already found its two heads equal; this run does not attribute the regression to #92.
 
 
-Both methods and all three builds completed $n=3$ each, in rotating interleaved orders. The old aborted run and its no-extension observation remain excluded. No extension code changes or bisection. Raw captures stay local; this publication contains sanitized reports and numeric JSON.
+Both methods and all three builds completed $n=3$ each, in rotating interleaved orders. The old aborted run and its no-extension observation remain excluded. The control stage changed no extension code and performed no bisection; the authorized follow-up is below. Raw captures stay local; this publication contains sanitized reports and numeric JSON.
 
 ## Builds and method
 
@@ -163,6 +163,108 @@ The rerun also excluded one unfinished M1-main-3 attempt terminated by the user/
 
 The initial task's CDP startup failure, write-guard preflight stop, and completed no-extension observation remain excluded. The excluded observation had 76890 ms total blocking, 2916 ms longest LoAF, 333.3 ms frame p95, 189 chunks and the expected hash, with zero completed writes but 46 fetch denials and three route denials. Under the original mistaken rule this was excluded; it is not reinstated or pooled into the rerun. Alpha.11's old attempt stopped before replay. Both old lock windows restored/released successfully. The corrected rule treats denial as expected and stops on completed writes, replay escapes, send-guard failure, expired auth or fixture mismatch.
 
-## Publication and privacy
+## Control publication and privacy
 
-Parent is `origin/t3/replay-blocking` at `a86d2905952a4a6b9ff7f92a038c89da459cda3f`; one new commit, fast-forward push to `t3/replay-blocking`, no PR. Only run report files and the README index row change. [Commands and redacted actual output](commands.md). Public [bundle inventory](app-assets.md). Numeric exports contain no strings/null leaves. Sanitized denial templates are published only after privacy scans; challenge path suffixes and IDs are replaced with `<id>`. Private identifiers, chat URLs, emails, tokens, private endpoints and captured prompt/answer text are excluded. Raw captures are never published.
+The control publication parent was `a86d2905952a4a6b9ff7f92a038c89da459cda3f`; that stage made one new commit, fast-forward push to `t3/replay-blocking`, no PR. Only run report files and the README index row change. [Commands and redacted actual output](commands.md). Public [bundle inventory](app-assets.md). Numeric exports contain no strings/null leaves. Sanitized denial templates are published only after privacy scans; challenge path suffixes and IDs are replaced with `<id>`. Private identifiers, chat URLs, emails, tokens, private endpoints and captured prompt/answer text are excluded. Raw captures are never published.
+
+## Bisect
+
+**First bad commit: `4780e17d5f043f9b6a8006f91c244426e7336476` (PR #24), “record real Dil response blocks and display math geometry”; actual parent `fec083e7c71a13a3d6fbd99142e3025e1da2aef0`.** The parent controls are 16341 and 12666 ms blocking; first-bad controls are 66616 and 67457 ms. Nine bisect replays isolated the commit; four interleaved controls confirm the separation. There were no intermediate results or skipped builds.
+
+The leading mechanism is the new Dil-aware relational selector structure in `stream/containment.css`, especially the classic-answer fallback `[data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"]))`. The previous rules selected direct answer children. This commit adds `:is(...:not(:has(...)), ...)` to intrinsic-size, seen-block, streaming-block and unrendered-block rules, and introduces the same root expression in `stream/offscreen.js` and seek queries. On this fixture every probe reports zero Dil roots, so the negative `:has` fallback is exercised. Its descendant/class dependency can invalidate style on a large classic answer as streamed descendants change.
+
+The evidence favors style invalidation cost over a missing selector or a disabled stream path: both builds match the original container selector, compute normal containment on the thread wrapper, retain one in_progress turn, have empty off markers, and skip comparable answer blocks with increasing Butter counters. The paired-control median render style/layout grows from 24297.4 to 68502.8 ms, compared with forced style/layout 2167.8 to 6383.3 ms and script time excluding forced layout 2290.0 to 4028.4 ms. The rendering increase is far larger than the script increase. These attribution components are measured over the recorder window and are not added together as a causal decomposition of blocking.
+
+Commit-level attribution is confirmed. Attribution to the specific `:has` rules is the strongest reading, not a separately isolated rule-level result: the commit also changes offscreen target queries, seek/math geometry and settings probes. No selector ablation or extension-code edit was performed in this pass. Empty source URLs in LoAF records remain unavailable/anonymous; they cannot honestly be assigned to an extension function. The public ChatGPT manifest stayed `manifest-42f0cd0e.js` across the bisect captures.
+
+
+The control was first published as `07584a1a2befee5f57f50ee09b0e69d336234ebd`. This follow-up uses that commit as parent. Good endpoint `37a2b45` matches the released alpha.11 ZIP byte for byte; known bad endpoint is `a100fd6` from the #92 control. Current main `2f24127` is also bad. First-parent extension-touching points matched the supplied list exactly. The bisect M2 driver, selector probes and guards are byte-identical to the control after output-path substitution; no scenario or extension code changes.
+
+Classification: under 25000 ms good; over 50000 ms bad; any in-between point gets two additional replays and median classification, with an intermediate median treated as below the search target when locating the first point over 50000 ms. Budget used: 9 of 12 bisect slots plus 4 of 4 control slots. Skips: 0. No samples outside the budget are pooled.
+
+### Bisect table
+
+Internal branch commits have indices starting at 1000; control-only actual parents use 2000/2001 as needed. Index → SHA/PR mapping is explicit below; numeric leaves are in `data/bisect.json`.
+
+| Index | SHA | PR | loafBlockMs per bisect rep | Verdict |
+|---|---|---|---|---|
+| 12 | `9f72525cf723715218b446f834177fef7360021e` | #60 | 65356 | bad |
+| 6 | `0560ae56b3f0d469c12aff3ae1a9ea7fd18774d4` | #24 | 66358 | bad |
+| 3 | `e4a4eb5b60db1d4a6f153ef2726e2bc564df2d2a` | #16 | 11829 | good |
+| 4 | `cc12fe22d1f609ac739f6df240a92b02d74b8504` | #19 | 12783 | good |
+| 5 | `482a427482720bb012e1bcb31eae6af1a8274c1d` | #22 | 12877 | good |
+| 1005 | `c315410e80bcac8adf11a6572fd72b7e6991c443` | #24 | 63913 | bad |
+| 1002 | `f5d6b9686bcdba1acf741ffe3ae0aaef21b0ee39` | #24 | 12882 | good |
+| 1003 | `b5229ee18de3952777e659255bf67c23ae512e96` | #24 | 12947 | good |
+| 1004 | `4780e17d5f043f9b6a8006f91c244426e7336476` | #24 | 65930 | bad |
+| 2001 | `fec083e7c71a13a3d6fbd99142e3025e1da2aef0` | — | control only | good (controls) |
+
+First bad merge: `0560ae56b3f0d469c12aff3ae1a9ea7fd18774d4` (#24). Final first bad commit: `4780e17d5f043f9b6a8006f91c244426e7336476`; actual parent: `fec083e7c71a13a3d6fbd99142e3025e1da2aef0`.
+
+Extension diffstat:
+
+```text
+extension/seek/anchor-main.js       |  2 +-
+ extension/seek/core-main.js         | 27 +++++++++++++++++++++++----
+ extension/seek/layout-cache-main.js | 33 +++++++++++++++++++++++++++------
+ extension/seek/layout-codec.js      |  4 ++--
+ extension/seek/preview-main.js      |  4 ++--
+ extension/shared/settings.js        |  5 ++++-
+ extension/stream/containment.css    | 11 +++++++----
+ extension/stream/offscreen.js       |  6 ++++--
+ 8 files changed, 70 insertions(+), 22 deletions(-)
+```
+
+### Interleaved controls
+
+Order: parent → first bad → first bad → parent, within the same lock as all bisect points. Each row has 189 chunks, the expected answer SHA-256, zero completed network writes and zero escaped replay POSTs.
+
+| Run | Build | loafBlockMs | Frame p95 ms | Key p95 ms |
+|---|---|---:|---:|---:|
+| control-i2001-r1 | parent | 16341 | 66.7 | 293.2 |
+| control-i1004-r2 | first bad | 66616 | 266.7 | 695.7 |
+| control-i1004-r3 | first bad | 67457 | 266.7 | 1220.3 |
+| control-i2001-r4 | parent | 12666 | 50.1 | 252.5 |
+
+### Paired-control Butter probes
+
+Ranges across the two control runs per build; counts scoped to the visible scroller unless marked global.
+
+| Build | Probe | Original selector globally | Turns / roots | Dil roots | in_progress | Seen | Unrendered | Auto blocks | Published |
+|---|---|---:|---|---:|---:|---:|---:|---:|---:|
+| parent | before | 2 | 5 / 5 | 0 | 0 | 2932 | 0 | 2927 | 0 |
+| parent | mid | 2 | 4 / 4 | 0 | 1 | 1864 | 172 | 2041 | 147 |
+| bad | before | 2 | 5 / 5 | 0 | 0 | 2932 | 0 | 2927 | 0 |
+| bad | mid | 2 | 4 / 4 | 0 | 1 | 1861–1862 | 174–175 | 2041 | 141 |
+
+### Attribution comparison
+
+Medians [min–max] across the two control replays per build. Values are milliseconds. Render style/layout and script attribution cover the original recorder window; primary blocking is replay-bounded M2. Script time below excludes forced style/layout. Probe costs remain included as in the control and do not change the scenario.
+
+| Metric | Parent | First bad |
+|---|---:|---:|
+| loafBlockMs | 14503.5 [12666.0–16341.0] | 67036.5 [66616.0–67457.0] |
+| renderSLMs | 24297.4 [22416.4–26178.5] | 68502.8 [68230.4–68775.2] |
+| forcedSLMs | 2167.8 [2023.1–2312.4] | 6383.3 [6164.8–6601.8] |
+| scriptMs | 2290.0 [2239.4–2340.6] | 4028.4 [3820.3–4236.6] |
+
+Top LoAF script attributions, median ms per run. Total is script plus forced layout. Source basenames are resolved against public page resources or the archived extension; anonymous sources remain explicit. Curly-braced extension paths mark ambiguous duplicate basenames rather than guessed attribution. Numeric row indices map to `data/bisect-attribution.json`.
+
+| Row | Source path | Function / invoker | Parent total | Bad total | Parent forced SL | Bad forced SL |
+|---|---|---|---:|---:|---:|---:|
+| 0 | `unavailable/anonymous` | `?` / `TimerHandler:setTimeout` | 2802.6 | 5391.9 | 1259.6 | 3458.3 |
+| 1 | `/cdn/assets/200429.82d37d45f2.js` | `r` / `TimerHandler:setTimeout` | 326.3 | 1580.5 | 0.0 | 0.4 |
+| 2 | `/cdn/assets/767086.e730a8ccb4.js` | `callback` / `ResizeObserverCallback` | 315.9 | 1311.2 | 300.6 | 1284.4 |
+| 3 | `/cdn/assets/447351.496da706c3.js` | `?` / `DIV.onkeydown` | 674.2 | 1068.9 | 383.6 | 714.9 |
+| 4 | `/cdn/assets/698524.1d78dbab32.js` | `r` / `DOMWindow.oninput` | 289.6 | 938.3 | 204.8 | 849.8 |
+| 5 | `/cdn/assets/979380.94a5c47756.js` | `flushUserScrollDecay` / `FrameRequestCallback` | 0.0 | 75.8 | 0.0 | 75.6 |
+| 6 | `/cdn/assets/646436.30c2553f0b.js` | `?` / `IDBRequest.onsuccess` | 21.8 | 35.5 | 0.0 | 0.0 |
+| 7 | `/cdn/assets/299268.dcf716ef7a.js` | `?` / `FrameRequestCallback` | 19.9 | 0.0 | 19.1 | 0.0 |
+| 8 | `/cdn/assets/767086.e730a8ccb4.js` | `?` / `DIV.onscroll` | 7.7 | 5.2 | 0.0 | 0.0 |
+| 9 | `/cdn/assets/7078.5cd07a5c9b.js` | `?` / `EventTargetImpl.onclose` | 0.0 | 4.5 | 0.0 | 0.0 |
+
+Before/half-stream counts, off markers, Butter counters, remounts, DOM counts and all denial counts are in each run's numeric record. Full local raw attr maps remain private. Storage normalization accepted the exact control seed at every tested point; `data/bisect.json` records per-build checks. Every build was archived into a new directory and compared byte-for-byte before staging, with a final pristine check after cleanup.
+
+### Bisect lock, cleanup and publication
+
+Fresh lab/perf lock owner replay-blocking, fixture math12: acquire completed 2026-11-11T22:55:52.644565+00:00; restore completed 2026-11-11T23:34:07.443005+00:00; release completed 2026-11-11T23:34:07.557087+00:00. Restore/release exit codes 0/0. The detached coordinator survived a conversation interruption without stopping the browser or changing this lock window. Raw captures remain local under `/tmp/replay-blocking-work/bisect/`. No shared branch, index or working-tree changes, no extension code changes, no PR. The follow-up privacy scan covers every published file and all JSON numeric leaves.
