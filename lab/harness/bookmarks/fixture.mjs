@@ -18,6 +18,8 @@
 // - `regen` (question numbers): those answers are regenerated, a new message id and other text;
 //   `edited`: those answers keep their id, but their third paragraph (block 2) says something else.
 // - `scene`: the wash mockup's chat (see `mockHtml`) instead of the fixture chat, when set.
+// A scenario declares a scene as an object, or as a function of `{ live }` when it depends on the
+// markup (as `washBlocks` does).
 import { createHash } from 'node:crypto';
 
 export const sha = (s) => createHash('sha256').update(s).digest('hex');
@@ -48,6 +50,62 @@ export const ACCOUNT = sha('user-fixture'),
 export const PARAS = ':scope > :not(ul, ol), :scope > :is(ul, ol) > li';
 export const MOCK_TURN = 6;
 
+// A stored bookmark, as an earlier session would have left it: on block `para` of question `turn`'s
+// answer (blocks: p, h3, p, p, p, p, li, li), from `start` to `end` (the whole block by default) of
+// `text` (that block's text by default); its excerpt, unless given, at most 120 characters from
+// `start`. `more` adds fields (`ask`, say).
+export const row = (
+  turn,
+  para,
+  {
+    start = 0,
+    text = PARAGRAPH(turn, para === 0 ? 0 : para - 1),
+    end = text.length,
+    excerpt = text.slice(start, Math.min(end, start + 120)).trim(),
+    time = Date.now(),
+    msg = answer(turn),
+    ...more
+  } = {},
+) => ({ account: ACCOUNT, conv: CONV_HASH, msg: sha(msg), turn, para, start, end, excerpt, time, ...more });
+// A bookmark on paragraph 2 of question `turn`'s answer whose text that paragraph no longer holds:
+// stale once the answer is mounted.
+export const goneRow = (turn, opts) => row(turn, 2, { ...opts, excerpt: 'A paragraph this answer no longer has.' });
+
+// Question 6's answer for the block wash (#74): paragraphs around a code block (block 1) and a table
+// (block 3), each in the markup's own shape. MARKUP=old has ChatGPT's <pre> round its rounded panel
+// and a table in its scrolling wrapper; MARKUP=live has the code widget's surface and the table's
+// frame. With `BLOCK_CSS` added to the page.
+export const BLOCK_TURN = 5;
+export const washBlocks = (live) => {
+  const lines = ['EXPLAIN ANALYZE', "SELECT * FROM orders WHERE status = 'pending';"];
+  const table = `<table><tbody>${[
+    ['Status', 'Rows', 'Plan'],
+    ['pending', '1,204', 'Index scan'],
+    ['shipped', '912,330', 'Sequential scan'],
+  ].map((r, i) => `<tr>${r.map((c) => (i ? `<td>${c}</td>` : `<th>${c}</th>`)).join('')}</tr>`).join('')}</tbody></table>`;
+  return [
+    `<p>${PARAGRAPH(BLOCK_TURN, 0)}</p>`,
+    live
+      ? `<div data-client-defined-widget><div class="fx-codeblock"><div class="fx-surface" data-code-block><div class="fx-bar"><div>sql</div><div data-code-block-controls><button>Copy</button></div></div>` +
+        `<div class="cm-editor"><div class="cm-content">${lines.map((l) => `<div class="cm-line">${l}</div>`).join('')}</div></div></div></div><div></div></div>`
+      : `<pre><div class="fx-panel"><div class="fx-bar">sql<button>Copy</button></div><div class="fx-code"><code>${lines.join('\n')}</code></div></div></pre>`,
+    `<p>${PARAGRAPH(BLOCK_TURN, 1)}</p>`,
+    live
+      ? `<div class="fx-tableframe"><div class="fx-viewport" data-d-table-viewport>${table}</div><div class="fx-edges"></div></div>`
+      : `<div class="fx-tablecontainer"><div class="fx-tablewrapper">${table}</div></div>`,
+    `<p>${PARAGRAPH(BLOCK_TURN, 2)}</p>`,
+  ];
+};
+export const BLOCK_CSS = `
+  [data-markdown-text-style] pre { margin:0 0 16px }
+  .fx-panel, .fx-surface { border-radius:16px; background:#f4f4f4; overflow:hidden }
+  .dark .fx-panel, .dark .fx-surface { background:#171717 }
+  .fx-bar { display:flex; justify-content:space-between; padding:4px 12px; font:12px/20px system-ui, sans-serif }
+  .fx-code, .cm-content { padding:12px; font:14px/20px ui-monospace, monospace; white-space:pre }
+  [data-client-defined-widget], .fx-tableframe, .fx-tablecontainer { margin:0 0 16px }
+  .fx-viewport, .fx-tablewrapper { overflow-x:auto }
+  table { border-collapse:collapse } th, td { border:1px solid rgb(0 0 0 / .15); padding:4px 12px; text-align:left }`;
+
 const defaults = () => ({ theme: 'light', regen: new Set(), edited: new Set(), asked: new Map(), said: new Map(), first: 0, turns: TURNS, pageDelay: 0, pages: 0, scene: null, tail: 0, css: '' });
 // A declared scene's collections as the fixture keeps them.
 const normalize = (decl = {}) => {
@@ -60,7 +118,7 @@ const normalize = (decl = {}) => {
 // `live`: the answer markup live chats have (MARKUP=live), rather than the earlier wrapper.
 export function createFixture({ live }) {
   const LIVE = live;
-  // The scene. Legacy scenarios still change its fields directly; new ones declare it.
+  // The scene: scenarios declare it, and change it only through `serve`.
   const page$ = defaults();
   const reset = (decl) => Object.assign(page$, defaults(), normalize(decl));
   const serve = (changes) => Object.assign(page$, normalize(changes));
@@ -179,7 +237,7 @@ export function createFixture({ live }) {
   // window the rail's right edge is 4 px from the frame's (558 px inside its border) and, with the
   // scroller 506 px tall, the rail is centred where the panels draw it (rail.js centres it between
   // its 52 px header and 140 px composer allowances). Below 374 px only the composer shows, as in
-  // the panels. Set by washMockup; `page$.scene` null is the usual fixture.
+  // the panels. Served by the wash-mockup scenario; `page$.scene` null is the usual fixture.
   const mockHtml = () => {
     const s = page$.scene;
     const turn = (i) =>

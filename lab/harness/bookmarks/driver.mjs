@@ -1,6 +1,6 @@
 // The Butter driver for the bookmarks fixture: reading the rail, its dots and the tick's card, the
 // selection pill and the bookmark notification, and acting as a reader does (select, hover, click a
-// row, press the shortcut, jump). `driver({ page, worker })` binds it to a scenario's page.
+// row, press the shortcut, jump). `driver({ page, worker, shots })` binds it to a scenario's page.
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { headed, repo } from '../runner/chromium.mjs';
@@ -12,7 +12,7 @@ import { answer, question, PARAS } from './fixture.mjs';
 export const xkeys = (chord) =>
   execFileSync('python3', [path.join(repo, 'lab/harness/xtest-keys.py'), chord, '700', '20']);
 
-export function driver({ page, worker }) {
+export function driver({ page, worker, shots }) {
   // The rail: its ticks (each bar's box and its tick's name) and the bookmark dots beside them (#71),
   // also the one beside the earlier-history dots (#72).
   const rail = () =>
@@ -136,6 +136,37 @@ export function driver({ page, worker }) {
     await page.evaluate(() => (document.querySelector('.thread-scroll-container').scrollTop = 0));
     await page.waitForTimeout(300);
   };
+  // The rail's element that has focus: its class, name and text.
+  const focused = () =>
+    page.evaluate(() => {
+      const a = document.querySelector('chatgpt-butter-nav')?.shadowRoot.activeElement;
+      return a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null;
+    });
+  // Every bookmark dot in the rail's layer, fading ones too.
+  const allDots = () => page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot').length);
+  // The tick's card and the rail beside it, shot as `<shots>/<name>.png`.
+  const shootCard = async (name) => {
+    const c = await tickCard(),
+      r = await rail();
+    const y = Math.max(0, Math.min(c.rect.y, r.ticks[0].y) - 30);
+    await page.screenshot({ path: `${shots}/${name}.png`, clip: { x: 1400 - 420, y, width: 420, height: Math.max(c.rect.y + c.rect.h, r.ticks.at(-1).y) - y + 30 } });
+  };
+  const railBox = () =>
+    page.evaluate(() => {
+      const r = document.querySelector('chatgpt-butter-nav').shadowRoot.querySelector('.rail').getBoundingClientRect();
+      return { x: r.left, y: r.top, w: r.width, h: r.height };
+    });
+  // Jump to question `turn` with its tick, then the pointer leaves: that question alone is lit (when
+  // each answer runs past the view, as the dot scenarios' `tail` makes it).
+  const readAt = async (turn) => {
+    const t = await hoverTick(turn);
+    await page.mouse.click(t.x, t.y);
+    await page.waitForTimeout(3500);
+    await page.mouse.move(700, 300);
+    await page.waitForTimeout(1200);
+  };
+  // The lit ticks of rail `r`: [question, width] for each tick not at rest (12 px).
+  const lit = (r) => r.ticks.map((t, i) => [i, Math.round(t.w * 10) / 10]).filter(([, w]) => w !== 12);
   const questionTop = (turn) =>
     page.evaluate(
       (id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top,
@@ -374,6 +405,6 @@ export function driver({ page, worker }) {
     return true;
   }
   return {
-    rail, dotBeside, dotCount, tickCard, staleCard, hoverTick, ontoRow, toTop, questionTop, pill, button, hoverCell, noteCard, waitNote, pressNote, block, scrollTo, select, shortcut, textTop, jumpByRow, bookmark, selectBlock, removeRow,
+    rail, dotBeside, dotCount, tickCard, staleCard, hoverTick, ontoRow, toTop, focused, allDots, shootCard, railBox, readAt, lit, questionTop, pill, button, hoverCell, noteCard, waitNote, pressNote, block, scrollTo, select, shortcut, textTop, jumpByRow, bookmark, selectBlock, removeRow,
   };
 }

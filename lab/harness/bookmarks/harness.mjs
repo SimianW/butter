@@ -4,14 +4,18 @@
 // request is aborted and reported as foreign, which fails the run.
 //
 // A scenario declares its start (all optional):
-// - `scene`: the fixture's scene over its defaults (see fixture.mjs);
+// - `scene`: the fixture's scene over its defaults (see fixture.mjs), or a function of `{ live }`
+//   that returns it;
 // - `settings`: Butter's settings over the harness's defaults (on, English, layout consent
 //   declined, the first-bookmark notice acknowledged; `bookmarkNotice: undefined` leaves it
 //   unacknowledged);
 // - `store`: the bookmark rows an earlier session would have left (both stores start empty).
-// `start` builds that on a new page (the previous scenario's is closed) and hands the scenario `t`:
-// the page, context and worker, `check`, `open(theme)`, the store and settings helpers, the
-// fixture's ids and text, and the Butter driver (driver.mjs).
+// `start` opens a new page and closes every other one (the previous scenario's, and any it left
+// open), then builds that start, with the Bookmark command's key back on Alt+Shift+M (a scenario
+// may clear it in chrome://extensions/shortcuts) and the store's request counts at zero. It hands
+// the scenario `t`: the page, context and worker, `check`, `open(theme)`, `serve(changes)` for a
+// mid-scenario scene change, `pages()` (earlier-history pages served), the store and settings
+// helpers, the fixture's ids and text, and the Butter driver (driver.mjs).
 import fs from 'node:fs/promises';
 import { headed, launchButter, repo } from '../runner/chromium.mjs';
 import { compare, png } from './compare.mjs';
@@ -113,20 +117,36 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       tx.objectStore('geometry').clear();
       await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
     });
+  // The Bookmark command's key, as Chrome assigns it at install from the manifest's suggestion. A
+  // scenario that clears it leaves it cleared in the profile; `start` sets it back through the
+  // shortcuts page's own API, so that no scenario runs without it because of another.
+  const KEY = 'Alt+Shift+M';
+  const bookmarkKey = () => worker.evaluate(() => chrome.commands.getAll()).then((cs) => cs.find((c) => c.name === 'bookmark')?.shortcut);
+  async function restoreKey() {
+    if ((await bookmarkKey()) === KEY) return;
+    const shortcuts = await context.newPage();
+    await shortcuts.goto('chrome://extensions/shortcuts');
+    await shortcuts.evaluate(
+      ([extensionId, keybinding]) => chrome.developerPrivate.updateExtensionCommand({ extensionId, commandName: 'bookmark', keybinding }),
+      [new URL(worker.url()).host, KEY],
+    );
+    await shortcuts.close();
+    const now = await bookmarkKey();
+    if (now !== KEY) throw new Error(`the Bookmark command's key is "${now}", not ${KEY}, after restoring it`);
+  }
   if (headed) xkeys('Shift');
 
-  let page = null;
   async function start(scenario, check) {
-    fx.reset(scenario.scene);
+    // The new page first (a context left with no page may close its window), then every other page
+    // closed before anything is reset: the previous scenario's, mockups and tabs it left open.
+    const current = await context.newPage();
+    for (const p of context.pages()) if (p !== current) await p.close();
+    await restoreKey();
+    fx.reset(typeof scenario.scene === 'function' ? scenario.scene({ live: LIVE }) : scenario.scene);
     await settings(scenario.settings ?? {});
     await clearLayouts();
     await seedStore(scenario.store ?? [], { clear: true });
     await worker.evaluate(() => (globalThis.bookmarkRequests = {}));
-    // The new page first: a context left with no page may close its window.
-    const last = page;
-    page = await context.newPage();
-    await last?.close();
-    const current = page;
     async function open(theme = 'light') {
       page$.theme = theme;
       await current.goto(`https://chatgpt.com/c/${CONV}`);
@@ -138,10 +158,13 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       await current.waitForTimeout(400);
     }
     const { createFixture: _, ...ids } = fixture;
+    // The scene is the fixture's: a scenario changes it only through `serve`.
+    const { page$: _scene, reset: _reset, ...served } = fx;
     return {
       ...ids,
-      ...fx,
-      ...driver({ page: current, worker }),
+      ...served,
+      pages: () => page$.pages,
+      ...driver({ page: current, worker, shots }),
       page: current,
       context,
       worker,
