@@ -3,7 +3,7 @@
 // Renders the pending "remember layouts" card in light/English and dark/Chinese, compares each
 // with the approved mockup panel (#35: consent-light-en-after, consent-dark-zh-after), and checks
 // the dark shadow, the secondary button's hover and the 3 px deep-butter focus ring.
-// Run: npm ci --prefix lab/harness && BUTTER_CONSENT_MOCKUP=<1-Mockup.html> node lab/harness/consent-qa.mjs
+// Run: npm ci && BUTTER_CONSENT_MOCKUP=<1-Mockup.html> node lab/harness/consent-qa.mjs
 // SHOTS=<dir> sets the screenshot directory (default /tmp/butter-consent-qa).
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
