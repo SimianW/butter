@@ -1,0 +1,40 @@
+{
+  "playwright": "1.65.0",
+  "harnessSourcesIdentical": true,
+  "runs": {
+    "bookmarks-matrix-main": {
+      "lab": 1,
+      "fixture": "math12",
+      "perfLock": true
+    },
+    "bookmarks-matrix-pr": {
+      "lab": 1,
+      "fixture": "math12",
+      "perfLock": true
+    },
+    "bookmarks-wash-main": {
+      "lab": 2,
+      "fixture": "demo-en12",
+      "perfLock": false
+    },
+    "bookmarks-wash-pr": {
+      "lab": 2,
+      "fixture": "demo-en12",
+      "perfLock": false
+    },
+    "branch-live-main": {
+      "lab": 1,
+      "fixture": "math12",
+      "perfLock": true
+    },
+    "branch-live-pr": {
+      "lab": 1,
+      "fixture": "math12",
+      "perfLock": true
+    }
+  },
+  "matrixRepetitionsPerArm": 3,
+  "sendGuardEnabled": true,
+  "chatgptSettingsChanged": false,
+  "languageChanged": false
+}

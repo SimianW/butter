@@ -1,0 +1,14 @@
+[
+  {
+    "mode": "matrix",
+    "exit": 0,
+    "seconds": 300.216,
+    "command": "EXT=\"$BUILD/extension\" OUT=\"$RAW/bookmarks-matrix-main-rerun\" TESTED_HEAD=\"86f95e52ebb00fc3edd70856bcbba66e72222ca7\" LAB_FIXTURE=math12 MODE=matrix LAB_PLAYWRIGHT=\"$DEPS/playwright\" node lab/harness/bookmarks-live.mjs"
+  },
+  {
+    "mode": "wash",
+    "exit": 0,
+    "seconds": 133.954,
+    "command": "EXT=\"$BUILD/extension\" OUT=\"$RAW/bookmarks-wash-main-rerun\" TESTED_HEAD=\"86f95e52ebb00fc3edd70856bcbba66e72222ca7\" LAB_FIXTURE=demo-en12 MODE=wash LAB_PLAYWRIGHT=\"$DEPS/playwright\" node lab/harness/bookmarks-live.mjs"
+  }
+]

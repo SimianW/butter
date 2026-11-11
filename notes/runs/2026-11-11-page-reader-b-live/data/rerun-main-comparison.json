@@ -1,0 +1,212 @@
+{
+  "matrix": {
+    "counts": {
+      "mainRerun": {
+        "passed": 35,
+        "total": 35
+      },
+      "pr": {
+        "passed": 35,
+        "total": 35
+      }
+    },
+    "orderedChecksIdentical": true,
+    "cleanupIdentical": true,
+    "differences": [],
+    "cleanup": {
+      "mainRerun": {
+        "remainingBeforeFallback": 0,
+        "remainingAfterFallback": 0,
+        "shortcutsRestored": true,
+        "restored": true,
+        "composerEmpty": true,
+        "oneHomeTab": true,
+        "defaultExtensions": true,
+        "labLockReleased": true,
+        "perfLockReleased": true
+      },
+      "pr": {
+        "remainingBeforeFallback": 0,
+        "remainingAfterFallback": 0,
+        "shortcutsRestored": true,
+        "restored": true,
+        "composerEmpty": true,
+        "oneHomeTab": true,
+        "defaultExtensions": true,
+        "labLockReleased": true,
+        "perfLockReleased": true
+      }
+    },
+    "drags": {
+      "mainRerun": [
+        {
+          "arm": "empty",
+          "repetition": 1,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 2,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 84,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 3,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 1,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 83,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 2,
+          "held": true,
+          "updates": 33,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 3,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        }
+      ],
+      "pr": [
+        {
+          "arm": "empty",
+          "repetition": 1,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 90,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 2,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 3,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 1,
+          "held": true,
+          "updates": 33,
+          "mounts": 0,
+          "frames": 84,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 2,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 3,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        }
+      ]
+    },
+    "failure": null,
+    "skipped": []
+  },
+  "wash": {
+    "counts": {
+      "mainRerun": {
+        "passed": 42,
+        "total": 42
+      },
+      "pr": {
+        "passed": 42,
+        "total": 42
+      }
+    },
+    "orderedChecksIdentical": true,
+    "cleanupIdentical": true,
+    "differences": [],
+    "cleanup": {
+      "mainRerun": {
+        "remainingBeforeFallback": 3,
+        "remainingAfterFallback": 0,
+        "restored": true,
+        "composerEmpty": true,
+        "oneHomeTab": true,
+        "defaultExtensions": true,
+        "labLockReleased": true,
+        "perfLockReleased": false
+      },
+      "pr": {
+        "remainingBeforeFallback": 3,
+        "remainingAfterFallback": 0,
+        "restored": true,
+        "composerEmpty": true,
+        "oneHomeTab": true,
+        "defaultExtensions": true,
+        "labLockReleased": true,
+        "perfLockReleased": false
+      }
+    },
+    "drags": {
+      "mainRerun": [],
+      "pr": []
+    },
+    "failure": null,
+    "skipped": []
+  }
+}

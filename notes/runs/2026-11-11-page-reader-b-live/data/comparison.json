@@ -1,0 +1,505 @@
+{
+  "matrix": {
+    "orderedChecksIdentical": false,
+    "cleanupIdentical": true,
+    "counts": {
+      "main": {
+        "passed": 34,
+        "total": 35
+      },
+      "pr": {
+        "passed": 35,
+        "total": 35
+      }
+    },
+    "differences": [
+      {
+        "index": 33,
+        "main": [
+          "list item resolves live and lands on the same item after reload",
+          false
+        ],
+        "pr": [
+          "list item resolves live and lands on the same item after reload",
+          true
+        ]
+      }
+    ],
+    "drags": {
+      "main": [
+        {
+          "arm": "empty",
+          "repetition": 1,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 2,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 3,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 89,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 49.9
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 1,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 84,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 2,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 84,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 3,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 33.4
+        }
+      ],
+      "pr": [
+        {
+          "arm": "empty",
+          "repetition": 1,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 90,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 2,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "empty",
+          "repetition": 3,
+          "held": true,
+          "updates": 32,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 1,
+          "held": true,
+          "updates": 33,
+          "mounts": 0,
+          "frames": 84,
+          "p95FrameMs": 16.8,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 2,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 86,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        },
+        {
+          "arm": "bookmarked",
+          "repetition": 3,
+          "held": true,
+          "updates": 31,
+          "mounts": 0,
+          "frames": 85,
+          "p95FrameMs": 16.7,
+          "maxFrameMs": 16.8
+        }
+      ]
+    }
+  },
+  "wash": {
+    "orderedChecksIdentical": false,
+    "cleanupIdentical": false,
+    "counts": {
+      "main": {
+        "passed": 5,
+        "total": 5
+      },
+      "pr": {
+        "passed": 42,
+        "total": 42
+      }
+    },
+    "differences": [
+      {
+        "index": 3,
+        "main": [
+          "wash dark: ChatGPT shows its dark theme",
+          true
+        ],
+        "pr": [
+          "wash: the Bookmark cell bookmarks the paragraph",
+          true
+        ]
+      },
+      {
+        "index": 4,
+        "main": [
+          "wash dark: the whole chat loads through the earlier-history dots",
+          true
+        ],
+        "pr": [
+          "wash: the Bookmark cell bookmarks the selection",
+          true
+        ]
+      },
+      {
+        "index": 5,
+        "main": null,
+        "pr": [
+          "wash: the Bookmark cell bookmarks the table",
+          true
+        ]
+      },
+      {
+        "index": 6,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph is washed on its own lines",
+          true
+        ]
+      },
+      {
+        "index": 7,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 8,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 9,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph: scrolled 74 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 10,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph: with the washed text under ChatGPT's header, the wash reaches the header and no butter shows on it",
+          true
+        ]
+      },
+      {
+        "index": 11,
+        "main": null,
+        "pr": [
+          "wash light: a paragraph: gone after the hold and fade",
+          true
+        ]
+      },
+      {
+        "index": 12,
+        "main": null,
+        "pr": [
+          "wash light: a selection is washed on its own lines",
+          true
+        ]
+      },
+      {
+        "index": 13,
+        "main": null,
+        "pr": [
+          "wash light: a selection: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 14,
+        "main": null,
+        "pr": [
+          "wash light: a selection: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 15,
+        "main": null,
+        "pr": [
+          "wash light: a selection: scrolled -680 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 16,
+        "main": null,
+        "pr": [
+          "wash light: a selection: with the washed text under ChatGPT's composer, the wash reaches the composer and no butter shows on it",
+          true
+        ]
+      },
+      {
+        "index": 17,
+        "main": null,
+        "pr": [
+          "wash light: a selection: gone after the hold and fade",
+          true
+        ]
+      },
+      {
+        "index": 18,
+        "main": null,
+        "pr": [
+          "wash light: a table is washed on its own lines (one box 3 px around the table)",
+          true
+        ]
+      },
+      {
+        "index": 19,
+        "main": null,
+        "pr": [
+          "wash light: a table: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 20,
+        "main": null,
+        "pr": [
+          "wash light: a table: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 21,
+        "main": null,
+        "pr": [
+          "wash light: a table: scrolled 80 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 22,
+        "main": null,
+        "pr": [
+          "wash light: a table: gone after the hold and fade",
+          true
+        ]
+      },
+      {
+        "index": 23,
+        "main": null,
+        "pr": [
+          "wash dark: ChatGPT shows its dark theme",
+          true
+        ]
+      },
+      {
+        "index": 24,
+        "main": null,
+        "pr": [
+          "wash dark: the whole chat loads through the earlier-history dots",
+          true
+        ]
+      },
+      {
+        "index": 25,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph is washed on its own lines",
+          true
+        ]
+      },
+      {
+        "index": 26,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 27,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 28,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph: scrolled 74 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 29,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph: with the washed text under ChatGPT's header, the wash reaches the header and no butter shows on it",
+          true
+        ]
+      },
+      {
+        "index": 30,
+        "main": null,
+        "pr": [
+          "wash dark: a paragraph: gone after the hold and fade",
+          true
+        ]
+      },
+      {
+        "index": 31,
+        "main": null,
+        "pr": [
+          "wash dark: a selection is washed on its own lines",
+          true
+        ]
+      },
+      {
+        "index": 32,
+        "main": null,
+        "pr": [
+          "wash dark: a selection: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 33,
+        "main": null,
+        "pr": [
+          "wash dark: a selection: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 34,
+        "main": null,
+        "pr": [
+          "wash dark: a selection: scrolled -680 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 35,
+        "main": null,
+        "pr": [
+          "wash dark: a selection: with the washed text under ChatGPT's composer, the wash reaches the composer and no butter shows on it",
+          true
+        ]
+      },
+      {
+        "index": 36,
+        "main": null,
+        "pr": [
+          "wash dark: a selection: gone after the hold and fade",
+          true
+        ]
+      },
+      {
+        "index": 37,
+        "main": null,
+        "pr": [
+          "wash dark: a table is washed on its own lines (one box 3 px around the table)",
+          true
+        ]
+      },
+      {
+        "index": 38,
+        "main": null,
+        "pr": [
+          "wash dark: a table: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+          true
+        ]
+      },
+      {
+        "index": 39,
+        "main": null,
+        "pr": [
+          "wash dark: a table: the text keeps its colour under the wash",
+          true
+        ]
+      },
+      {
+        "index": 40,
+        "main": null,
+        "pr": [
+          "wash dark: a table: scrolled 80 px during the hold, the boxes follow the text",
+          true
+        ]
+      },
+      {
+        "index": 41,
+        "main": null,
+        "pr": [
+          "wash dark: a table: gone after the hold and fade",
+          true
+        ]
+      }
+    ],
+    "drags": {
+      "main": [],
+      "pr": []
+    }
+  },
+  "branch": {
+    "allAttemptsPillMeasurementsIdentical": true,
+    "allAttemptsReadyBothWidths": true,
+    "finalAttemptPasses": {
+      "main": true,
+      "pr": true
+    },
+    "attemptCounts": {
+      "main": 1,
+      "pr": 1
+    }
+  }
+}

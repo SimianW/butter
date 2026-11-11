@@ -1,0 +1,7 @@
+{
+  "bookmarks-wash-main": {
+    "phase": "wash-bookmark",
+    "kind": "Error",
+    "publicHarnessLabel": "paragraph target unmounted"
+  }
+}

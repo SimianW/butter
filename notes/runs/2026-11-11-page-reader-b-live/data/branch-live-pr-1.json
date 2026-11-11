@@ -1,0 +1,135 @@
+{
+  "lab": 1,
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  },
+  "attempt": 1,
+  "exit": 0,
+  "runs": [
+    {
+      "width": 1280,
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "originalUnchanged": true,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          498,
+          498
+        ]
+      },
+      "originalScroll": [
+        [
+          "before",
+          498
+        ],
+        [
+          "selected",
+          498
+        ],
+        [
+          "button shown",
+          498
+        ],
+        [
+          "box open",
+          498
+        ],
+        [
+          "typed",
+          498
+        ],
+        [
+          "enter",
+          498
+        ],
+        [
+          "end",
+          498
+        ]
+      ],
+      "branchIdentityDifferent": true,
+      "sameLatestReply": true,
+      "sendClickCount": 1,
+      "sendClickedInBranch": true,
+      "afterSendClickRequestCount": 6,
+      "allRequestsAfterSendClickBlocked": true,
+      "originalSendRequestCount": 0,
+      "mutationRequestCount": 35,
+      "blockedMutationCount": 34,
+      "onlyBranchMutationAllowed": true
+    },
+    {
+      "width": 800,
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "originalUnchanged": true,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          511,
+          511
+        ]
+      },
+      "originalScroll": [
+        [
+          "before",
+          511
+        ],
+        [
+          "selected",
+          511
+        ],
+        [
+          "button shown",
+          511
+        ],
+        [
+          "box open",
+          511
+        ],
+        [
+          "typed",
+          511
+        ],
+        [
+          "enter",
+          511
+        ],
+        [
+          "end",
+          511
+        ]
+      ],
+      "branchIdentityDifferent": true,
+      "sameLatestReply": true,
+      "sendClickCount": 1,
+      "sendClickedInBranch": true,
+      "afterSendClickRequestCount": 6,
+      "allRequestsAfterSendClickBlocked": true,
+      "originalSendRequestCount": 0,
+      "mutationRequestCount": 35,
+      "blockedMutationCount": 34,
+      "onlyBranchMutationAllowed": true
+    }
+  ]
+}

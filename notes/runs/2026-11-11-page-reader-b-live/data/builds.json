@@ -1,0 +1,12 @@
+{
+  "main": {
+    "sha": "86f95e52ebb00fc3edd70856bcbba66e72222ca7",
+    "extensionTreeSha256": "6165863f314ee6b6f449ad47907a9a2c7169296c0e08cf7422199587cf6be221",
+    "snapCopyIdentical": true
+  },
+  "pr": {
+    "sha": "3b5a6916b8b364c5ced20ed91e1c08689192ea6d",
+    "extensionTreeSha256": "7eadeaa8e6eafda1e2d73ca9b2df9b500f384e48650fc5756c93369e2358163e",
+    "snapCopyIdentical": true
+  }
+}
