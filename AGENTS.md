@@ -84,14 +84,19 @@ build, CI).
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
-  final diff, at the round budget the tier sets. Every review in this repo, including when the
-  user asks to review a PR or branch, runs `review-loop`.
+  final diff, at the round budget the tier sets. Every gate review before merge, including when
+  the user asks to review a PR or branch, runs `review-loop`; only `implement` and
+  `implement-spec` work adds a `code-review` pass before it (see Features).
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
   into tickets and `implement-spec <spec>` builds them. In Butter their test seams are
-  the ones in docs/bugfix.md step 2, their review step is `review-loop`, and the work ends in a
-  PR whose body carries `Closes #<issue>` and the `Review tier` line. These four skills are
+  the ones in docs/bugfix.md step 2. Their review runs `code-review` against the spec issue;
+  the user then triages its findings into fix now / follow-up issue / drop, as the global
+  Reviews section describes, and each follow-up becomes a `ready-for-agent` issue in
+  `SimianW/butter`. After the fixes, `review-loop` gates the final diff, with the approved
+  refactors listed in its Intent. The work ends in a PR whose body carries `Closes #<issue>`
+  and the `Review tier` line. These four skills are
   user-only, so the user starts each one: when the work reaches a step, tell the user it is time
   and give the command to type, such as `/to-spec`.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
