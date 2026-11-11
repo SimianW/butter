@@ -16,10 +16,10 @@
     <main>
       <div class="thread-scroll-container">
         <div>
-          <article data-turn-key="q-dil-1" data-testid="conversation-turn-1">
+          <article data-turn-key="q-dil-1" data-testid="conversation-turn-1" data-expect-loose-turn>
             <div class="user">
               <div data-message-author-role="user" data-message-id="q-dil-1">
-                <div data-user-message-bubble>Show me the quadratic formula.</div>
+                <div data-user-message-bubble data-expect-preview-item>Show me the quadratic formula.</div>
               </div>
             </div>
             <div data-message-author-role="assistant" data-message-id="a-dil-1" data-expect-reply>
@@ -35,10 +35,10 @@
                         data-expect-answer="a-dil-1"
                         data-expect-question="q-dil-1"
                       >
-                        <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-expect-para="0">
+                        <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-expect-para="0" data-expect-preview-item data-expect-block>
                           The roots of a quadratic are:
                         </p>
-                        <div class="Math-C48SKy" data-d-block data-expect-para="1">
+                        <div class="Math-C48SKy" data-d-block data-expect-para="1" data-expect-preview-item data-expect-block>
                           <span class="katex-display"
                             ><span class="katex"
                               ><span class="katex-mathml"
@@ -51,12 +51,13 @@
                             ></span
                           >
                         </div>
-                        <h2 data-expect-para="2">Cases</h2>
+                        <h2 data-expect-para="2" data-expect-preview-item data-expect-block>Cases</h2>
                         <div
                           class="TableFrame-YxtDrz"
                           data-d-column-sizing
                           data-d-component
                           data-expect-para="3"
+                          data-expect-preview-item
                         >
                           <div class="TableViewport-RD3I2I" data-d-table-viewport>
                             <table class="Table-QT1UX2" data-d-column-sizing data-d-dividers>
@@ -82,7 +83,7 @@
                           </div>
                           <div class="Edges-UXy4Ue"></div>
                         </div>
-                        <ul>
+                        <ul data-expect-preview-item data-expect-block>
                           <li data-expect-para="4">Positive: two real roots.</li>
                           <li data-expect-para="5">
                             Zero: one root.
@@ -91,9 +92,9 @@
                             </ul>
                           </li>
                         </ul>
-                        <blockquote data-expect-para="6"><p>Negative: complex roots.</p></blockquote>
-                        <hr data-expect-para="7" />
-                        <p data-expect-para="8">That is all.</p>
+                        <blockquote data-expect-para="6" data-expect-preview-item data-expect-block><p>Negative: complex roots.</p></blockquote>
+                        <hr data-expect-para="7" data-expect-preview-item />
+                        <p data-expect-para="8" data-expect-preview-item data-expect-block>That is all.</p>
                       </div>
                     </div>
                   </div>
@@ -103,8 +104,8 @@
           </article>
         </div>
         <div>
-          <article data-turn-key="q-dil-2" data-testid="conversation-turn-2">
-            <div class="user"><div data-user-message-bubble>And in Python?</div></div>
+          <article data-turn-key="q-dil-2" data-testid="conversation-turn-2" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>And in Python?</div></div>
             <div
               data-chatgpt-selection-conversation-id="c-dil"
               data-chatgpt-selection-message-id="a-dil-2"
@@ -119,8 +120,8 @@
                         data-expect-answer="a-dil-2"
                         data-expect-question="q-dil-2"
                       >
-                        <p data-expect-para="0">Use the cmath module:</p>
-                        <div data-client-defined-widget data-expect-para="1">
+                        <p data-expect-para="0" data-expect-preview-item data-expect-block>Use the cmath module:</p>
+                        <div data-client-defined-widget data-expect-para="1" data-expect-preview-item data-expect-block>
                           <div class="CodeBlock-zu1QM3">
                             <div class="Root-iW7ipz CodeSurface-UAMd1A Surface-BCuIs1" data-code-block>
                               <div class="flex ActionBar-KWWAct">
@@ -135,7 +136,7 @@
                             </div>
                           </div>
                         </div>
-                        <p data-expect-para="2">Then call <code>cmath.sqrt</code>.</p>
+                        <p data-expect-para="2" data-expect-preview-item data-expect-block>Then call <code>cmath.sqrt</code>.</p>
                       </div>
                     </div>
                   </div>

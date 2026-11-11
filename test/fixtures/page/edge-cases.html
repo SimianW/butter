@@ -21,10 +21,10 @@
     <main>
       <div class="thread-scroll-container">
         <div>
-          <article data-turn-key="q-edge-1" data-testid="conversation-turn-1">
+          <article data-turn-key="q-edge-1" data-testid="conversation-turn-1" data-expect-loose-turn>
             <div class="user">
               <div data-message-author-role="user" data-message-id="q-edge-1">
-                <div data-user-message-bubble>Why is my query slow?</div>
+                <div data-user-message-bubble data-expect-preview-item>Why is my query slow?</div>
               </div>
             </div>
             <div data-message-author-role="assistant" data-message-id="a-edge-1" data-expect-reply>
@@ -36,33 +36,33 @@
                 data-expect-question="q-edge-1"
                 data-expect-reply
               >
-                <p data-expect-para="0">It scans the whole table.</p>
-                <p data-expect-para="1">Add an index on <code>status</code>.</p>
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>It scans the whole table.</p>
+                <p data-expect-para="1" data-expect-preview-item data-expect-block>Add an index on <code>status</code>.</p>
               </div>
               <div class="sources">Sources: <a href="https://example.com/">example.com</a></div>
             </div>
           </article>
         </div>
         <div>
-          <article data-turn-key="q-edge-2" data-testid="conversation-turn-2">
+          <article data-turn-key="q-edge-2" data-testid="conversation-turn-2" data-expect-loose-turn>
             <div class="user">
               <div data-message-author-role="user" data-message-id="q-edge-2">
-                <div data-user-message-bubble>Show the plan.</div>
+                <div data-user-message-bubble data-expect-preview-item>Show the plan.</div>
               </div>
             </div>
             <div data-message-author-role="assistant" data-expect-reply>
               <div data-markdown-text-style="assistant-message" class="markdown prose" data-expect-reply>
-                <p data-expect-para="0">Streaming the first paragraph</p>
-                <ul>
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>Streaming the first paragraph</p>
+                <ul data-expect-preview-item data-expect-block>
                   <li data-expect-para="1">and a first item</li>
                 </ul>
               </div>
             </div>
           </article>
         </div>
-        <div data-testid="conversation-turn-3">
+        <div data-testid="conversation-turn-3" data-expect-loose-turn>
           <div data-message-author-role="user" data-message-id="q-edge-3">
-            <div data-user-message-bubble>An older turn wrapper.</div>
+            <div data-user-message-bubble data-expect-preview-item>An older turn wrapper.</div>
           </div>
           <div data-message-author-role="assistant" data-message-id="a-edge-3" data-expect-reply>
             <div
@@ -71,7 +71,7 @@
               data-expect-answer="a-edge-3"
               data-expect-reply
             >
-              <p data-expect-para="0">Its answer is in no keyed turn.</p>
+              <p data-expect-para="0" data-expect-preview-item data-expect-block>Its answer is in no keyed turn.</p>
             </div>
           </div>
         </div>

@@ -18,8 +18,8 @@
     <main>
       <div class="thread-scroll-container">
         <div>
-          <article data-turn-key="q-live-1" data-testid="conversation-turn-1">
-            <div class="user"><div data-user-message-bubble>Explain VACUUM in one breath.</div></div>
+          <article data-turn-key="q-live-1" data-testid="conversation-turn-1" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>Explain VACUUM in one breath.</div></div>
             <div
               data-chatgpt-selection-conversation-id="c-live"
               data-chatgpt-selection-message-id="a-live-1"
@@ -31,9 +31,9 @@
                 data-expect-question="q-live-1"
                 data-expect-reply
               >
-                <p data-expect-para="0">VACUUM reclaims space held by dead rows.</p>
-                <h3 data-expect-para="1">When it runs</h3>
-                <div data-client-defined-widget data-expect-para="2">
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>VACUUM reclaims space held by dead rows.</p>
+                <h3 data-expect-para="1" data-expect-preview-item data-expect-block>When it runs</h3>
+                <div data-client-defined-widget data-expect-para="2" data-expect-preview-item data-expect-block>
                   <div class="code-block">
                     <div class="surface" data-code-block>
                       <div class="bar"><div>sql</div><div data-code-block-controls><button>Copy</button></div></div>
@@ -44,7 +44,7 @@
                   </div>
                   <div></div>
                 </div>
-                <div class="table-frame" data-expect-para="3">
+                <div class="table-frame" data-expect-para="3" data-expect-preview-item data-expect-block>
                   <div class="table-viewport" data-d-table-viewport>
                     <table>
                       <tbody>
@@ -55,19 +55,19 @@
                   </div>
                   <div class="edges"></div>
                 </div>
-                <ul>
+                <ul data-expect-preview-item data-expect-block>
                   <li data-expect-para="4">Autovacuum runs it for you.</li>
                   <li data-expect-para="5">Manual runs help after bulk deletes.</li>
                 </ul>
-                <blockquote data-expect-para="6"><p>Dead rows are not free.</p></blockquote>
+                <blockquote data-expect-para="6" data-expect-preview-item data-expect-block><p>Dead rows are not free.</p></blockquote>
               </div>
             </div>
             <div class="actions"><button aria-label="More actions">⋯</button></div>
           </article>
         </div>
         <div>
-          <article data-turn-key="q-live-2" data-testid="conversation-turn-2">
-            <div class="user"><div data-user-message-bubble>Thanks!</div></div>
+          <article data-turn-key="q-live-2" data-testid="conversation-turn-2" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>Thanks!</div></div>
             <div
               data-chatgpt-selection-conversation-id="c-live"
               data-chatgpt-selection-message-id="a-live-2"
@@ -79,7 +79,7 @@
                 data-expect-question="q-live-2"
                 data-expect-reply
               >
-                <p data-expect-para="0">You're welcome.</p>
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>You're welcome.</p>
               </div>
             </div>
           </article>
