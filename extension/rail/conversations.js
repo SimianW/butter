@@ -1,11 +1,11 @@
-// Isolated world, no DOM. The rail's conversations (`ButterRailThread`): each conversation's
-// messages, oldest first, as ChatGPT's own API responses report them (history/conversation-main.js),
-// with `q` set on visible questions only. ChatGPT doesn't refetch a chat it has cached, so earlier
-// conversations stay. Every new list of a conversation's items takes the next items revision
-// (`rev`) from one counter for the tab; the bookmark session's marks carry it back.
-// rail/model.js holds one; test/rail-thread.test.js drives it directly.
+// Isolated world, no DOM. The rail's conversations (`ButterRailConversations`): each
+// conversation's messages, oldest first, as ChatGPT's own API responses report them
+// (history/conversation-main.js), with `q` set on visible questions only. ChatGPT doesn't refetch a
+// chat it has cached, so earlier conversations stay. Every new list of a conversation's items takes
+// the next items revision (`rev`) from one counter for the tab; the bookmark session's marks carry
+// it back. rail/model.js holds one; test/rail-conversations.test.mjs drives it directly.
 (() => {
-  function ButterRailThread() {
+  function ButterRailConversations() {
     const states = new Map();
     let revs = 0;
     const blank = () => ({ items: Object.freeze([]), hasPrev: false, rev: ++revs });
@@ -117,6 +117,6 @@
       },
     };
   }
-  globalThis.ButterRailThread = ButterRailThread;
-  if (typeof module !== 'undefined') module.exports = ButterRailThread;
+  globalThis.ButterRailConversations = ButterRailConversations;
+  if (typeof module !== 'undefined') module.exports = ButterRailConversations;
 })();

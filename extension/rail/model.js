@@ -1,5 +1,5 @@
 // Isolated world, no DOM, no timers, no frames: the rail presentation model (`ButterRailModel`).
-// It privately owns what the rail shows: the conversation's questions (a rail/thread.js thread) and
+// It privately owns what the rail shows: the conversation's questions (rail/conversations.js) and
 // each tick's identity, the rail's geometry, the hover wave's progress per question, which ticks
 // are lit (seek, opening, a jump's target, the lit band, pinned), the card (which tick or the three
 // dots it shows, its contents and place, held or not) and the bookmark dots. rail/rail.js, its DOM
@@ -7,7 +7,7 @@
 // what only layout knows (the card's height), schedules frames while it says something moves, and
 // runs focus and scroll. The jump in rail.js reads the questions and marks from here and publishes
 // its status (flying, pinned, the active question, the busy tick, the earlier wait) back.
-// test/rail-model.test.mjs drives it through this interface.
+// test/rail-model.test.mjs and test/rail-card.test.mjs drive it through this interface.
 (() => {
   const B = () => globalThis.ButterBookmarks || require('../bookmarks/model.js');
   const seekMeta = (...a) => (globalThis.ButterSeekMeta || require('../seek/seek-meta.js'))(...a);
@@ -48,7 +48,7 @@
   const DOTS_W = 17;
 
   function ButterRailModel() {
-    const thread = (globalThis.ButterRailThread || require('./thread.js'))(),
+    const convs = (globalThis.ButterRailConversations || require('./conversations.js'))(),
       wave = (globalThis.ButterRailWave || require('./wave.js'))();
     let TXT = strings(false),
       box = null; // the scroller's measured box: { top, bottom, left, right, gutter, width }
@@ -88,13 +88,13 @@
     const indexAt = (y) => {
       if (!geo) return -2;
       const r = (y - geo.top) / geo.pitch;
-      if (r < 0 && thread.hasPrev && y >= geo.top - MORE_H) return -1;
+      if (r < 0 && convs.hasPrev && y >= geo.top - MORE_H) return -1;
       return Math.max(0, Math.min(qs.length - 1, Math.floor(r)));
     };
     const idAt = (i) => (i === EARLIER ? EARLIER : qs[i]?.id);
     // A mark's index, or null while it has no place: the three dots show only while earlier
     // history isn't loaded.
-    const markAt = (id) => (id === EARLIER ? (thread.hasPrev ? EARLIER : null) : idxOf.get(id));
+    const markAt = (id) => (id === EARLIER ? (convs.hasPrev ? EARLIER : null) : idxOf.get(id));
     // Whether index `i` (a tick, or EARLIER for the three dots) holds bookmarks.
     const holds = (i) => (i === EARLIER ? markAt(EARLIER) != null : i >= 0) && marks.has(idAt(i));
 
@@ -155,7 +155,7 @@
         c = B().questionCard(
           qs[i].q,
           marks.get(id).bookmarks,
-          thread.hasPrev ? { back: qs.length - i } : { n: i + 1, total: qs.length },
+          convs.hasPrev ? { back: qs.length - i } : { n: i + 1, total: qs.length },
           TXT.zh,
         );
       return { id, card: c, text: c.text, group: c.group, wait };
@@ -186,11 +186,7 @@
       const q = i === -1 ? TXT.more : qs[i].q;
       return Object.assign(out, {
         meta:
-          i === -1
-            ? ''
-            : thread.hasPrev
-              ? TXT.fromLatest(qs.length - i)
-              : `${i + 1} / ${qs.length}`,
+          i === -1 ? '' : convs.hasPrev ? TXT.fromLatest(qs.length - i) : `${i + 1} / ${qs.length}`,
         metaHidden: i === -1,
         text: q.length > 400 ? q.slice(0, 400) + '…' : q,
         question: bm ? fillQuestion(i) : null,
@@ -205,11 +201,11 @@
         TXT = strings(zh);
       },
 
-      // ---- The conversation (rail/thread.js).
+      // ---- The conversation (rail/conversations.js).
       // Shows conversation `c`; on a change, forgets its marks, the seek preview and the active
       // question. False when it is already in view.
       open(c) {
-        if (!thread.open(c)) return false;
+        if (!convs.open(c)) return false;
         marks = new Map();
         marksRev = -1;
         seek = null;
@@ -217,9 +213,9 @@
         active = -1;
         return true;
       },
-      page: (m) => thread.page(m),
-      send: (m) => thread.send(m),
-      reconcile: (keys, text) => thread.reconcile(keys, text),
+      page: (m) => convs.page(m),
+      send: (m) => convs.send(m),
+      reconcile: (keys, text) => convs.reconcile(keys, text),
       // A question's index in the last render's questions, the tick under a y, a tick's centre.
       index: (id) => idxOf.get(id),
       indexAt,
@@ -235,13 +231,13 @@
       // ---- Render, in the adapter's order: `questions()`, then whether it `shows(off)`; then
       // `hide()`, or `layout(innerWidth)` once the DOM is built.
       questions() {
-        qs = Object.freeze(thread.items.filter((x) => x.q != null));
+        qs = Object.freeze(convs.items.filter((x) => x.q != null));
         idxOf = new Map(qs.map((x, i) => [x.id, i]));
         return qs.length;
       },
       shows(off) {
         const n = qs.length;
-        return !off && !!box && box.width >= 560 && n >= 1 && n + (thread.hasPrev ? 1 : 0) >= 2;
+        return !off && !!box && box.width >= 560 && n >= 1 && n + (convs.hasPrev ? 1 : 0) >= 2;
       },
       hide() {
         geo = null;
@@ -263,7 +259,7 @@
         // Centered in the part of the chat that isn't under the header or the composer.
         const top = box.top + HEADER,
           bottom = box.bottom - COMPOSER,
-          moreH = thread.hasPrev ? MORE_H : 0;
+          moreH = convs.hasPrev ? MORE_H : 0;
         const pitch = Math.min(PITCH_MAX, ((bottom - top - 2 * PAD - moreH) * 0.85) / n);
         const h = 2 * PAD + moreH + n * pitch;
         const y = Math.round((top + bottom) / 2 - h / 2);
@@ -272,7 +268,7 @@
         return {
           bars,
           busy: qs.map((x) => x.id === busyId),
-          moreHidden: !thread.hasPrev,
+          moreHidden: !convs.hasPrev,
           css: [
             ['--r', `${inset(innerWidth)}px`],
             ['--y', `${y}px`],
@@ -470,15 +466,15 @@
         return null;
       },
       // Whether the marks are those of the items as they are now (an earlier trip waits for it).
-      synced: () => marksRev >= thread.rev,
+      synced: () => marksRev >= convs.rev,
     };
     // What the model publishes, read only.
     const published = {
       text: () => TXT, // the strings in the page's language
-      conv: () => thread.conv, // the conversation in view (rail/thread.js)
-      items: () => thread.items, // its items, frozen
-      hasPrev: () => thread.hasPrev, // earlier history is still unloaded
-      rev: () => thread.rev, // its items revision
+      conv: () => convs.conv, // the conversation in view (rail/conversations.js)
+      items: () => convs.items, // its items, frozen
+      hasPrev: () => convs.hasPrev, // earlier history is still unloaded
+      rev: () => convs.rev, // its items revision
       qs: () => qs, // the questions as of the last render, frozen
       box: () => box, // the scroller's measured box
       moving: () => wave.moving, // a frame is scheduled

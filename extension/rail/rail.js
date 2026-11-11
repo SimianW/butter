@@ -42,7 +42,7 @@
   const frame = () => new Promise((r) => requestAnimationFrame(r));
   const convOfPath = () => /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1] ?? null;
 
-  // ---- Messages per conversation: rail/thread.js, inside the model.
+  // ---- Messages per conversation: rail/conversations.js, inside the model.
   document.addEventListener('butter-nav', (e) => {
     let m;
     try {
@@ -329,8 +329,8 @@
     { capture: true, passive: true },
   );
 
-  // Mounted turns are consecutive in the thread: rail/thread.js adds any the responses didn't cover
-  // and drops questions that sit between two of them (old branch).
+  // Mounted turns are consecutive in the thread: rail/conversations.js adds any the responses
+  // didn't cover and drops questions that sit between two of them (old branch).
   const reconcile = () => {
     reconcileQueued = false;
     if (!sc?.isConnected || !model.box?.width) return; // a hidden copy holds another chat's turns

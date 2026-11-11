@@ -19,6 +19,7 @@ import listItems from './scenarios/list-items.mjs';
 import notice from './scenarios/notice.mjs';
 import one from './scenarios/one.mjs';
 import pillStates from './scenarios/pill-states.mjs';
+import railIdle from './scenarios/rail-idle.mjs';
 import railOff from './scenarios/rail-off.mjs';
 import save from './scenarios/save.mjs';
 import selection from './scenarios/selection.mjs';
@@ -65,4 +66,5 @@ export const scenarios = [
   washAtOnce,
   washEarlier,
   washMockup,
+  railIdle,
 ];

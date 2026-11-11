@@ -1,7 +1,7 @@
 // Isolated world, no DOM, no frames: the hover wave's progress (`ButterRailWave`), which
 // rail/model.js holds. Per tick, keyed by its question: the bar's current scaleX, opacity and
 // scaleY, eased each frame toward the targets the model gives (the lit policy and the pointer's
-// swell), and whether a frame is still due. test/rail-model.test.mjs covers it through the model.
+// swell), and whether a frame is still due. test/rail-wave.test.mjs drives it directly.
 (() => {
   function ButterRailWave() {
     let ids = [],

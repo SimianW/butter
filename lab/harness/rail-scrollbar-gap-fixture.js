@@ -1,6 +1,8 @@
-// Synthetic browser fixture. Run in a blank page, then call installRailFixture({source, meta, width}).
-// Each install gets a fresh iframe so old rail observers/listeners cannot affect the next case.
-globalThis.installRailFixture = async ({ source, meta, width = 1280, gutter = false }) => {
+// Synthetic browser fixture. Run in a blank page, then call installRailFixture({source, meta, deps, width}):
+// `meta` is seek/seek-meta.js, `deps` the rail's other scripts before rail/rail.js in manifest order
+// (bookmarks/model.js, rail/conversations.js, rail/wave.js, rail/model.js; rail-scripts.mjs lists them) and
+// `source` rail/rail.js. Each install gets a fresh iframe so old rail observers/listeners cannot affect the next case.
+globalThis.installRailFixture = async ({ source, meta, deps = [], width = 1280, gutter = false }) => {
   document.body.style.margin = '0';
   document.querySelector('iframe')?.remove();
   const frame = document.createElement('iframe');
@@ -20,7 +22,7 @@ globalThis.installRailFixture = async ({ source, meta, width = 1280, gutter = fa
   </article>`).join('')}
   </main></body></html>`);
   doc.close();
-  for (const content of [meta, source]) {
+  for (const content of [meta, ...deps, source]) {
     const script = doc.createElement('script');
     script.textContent = content;
     doc.body.append(script);

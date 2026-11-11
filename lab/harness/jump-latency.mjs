@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { railDeps } from './rail-scripts.mjs';
 const here = path.dirname(new URL(import.meta.url).pathname), repo = path.resolve(here, '../..');
 const out = path.resolve(here, process.env.OUT ?? 'scratch/faster-jumps'); fs.mkdirSync(out, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -118,7 +119,8 @@ for (const version of (process.env.VERSION ? [process.env.VERSION] : ['alpha6','
   };
   const original=ref ? historicalNav(ref) : fs.readFileSync(path.join(repo,'extension/rail/rail.js'),'utf8');
   fs.writeFileSync(path.join(out,`${version}-original.js`),original);
-  const source=instrument(original); fs.writeFileSync(path.join(stage,'butter-nav.js'),source);
+  // The working tree's rail needs its dependencies (rail-scripts.mjs) ahead of it in the one staged script.
+  const source=(ref ? '' : railDeps().join('\n')+'\n')+instrument(original); fs.writeFileSync(path.join(stage,'butter-nav.js'),source);
   fs.writeFileSync(path.join(out,`${version}-instrumented.js`),source);
   execFileSync('node',['--check',path.join(stage,'butter-nav.js')]);
   log({version,ref,originalSha256:createHash('sha256').update(original).digest('hex'),stage});

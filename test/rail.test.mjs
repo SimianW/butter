@@ -8,8 +8,8 @@ import vm from 'node:vm';
 import seekMeta from '../extension/seek/seek-meta.js';
 import bookmarks from '../extension/bookmarks/model.js';
 
-// The rail's scripts in manifest order: the model's thread and wave, the model, the adapter.
-const sources = ['thread', 'wave', 'model', 'rail'].map((name) => [
+// The rail's scripts in manifest order: the model's conversations and wave, the model, the adapter.
+const sources = ['conversations', 'wave', 'model', 'rail'].map((name) => [
   `rail/${name}.js`,
   fs.readFileSync(new URL(`../extension/rail/${name}.js`, import.meta.url), 'utf8'),
 ]);

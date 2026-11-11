@@ -80,7 +80,7 @@ export default [
     languageOptions: { globals: { ButterRailModel: 'readonly' } }, // defined in rail/model.js
   },
   {
-    // The rail model and its thread and wave fall back to their dependencies under node.
+    // The rail model falls back to their dependencies under node.
     files: ['extension/rail/model.js'],
     languageOptions: { globals: { require: 'readonly' } },
   },
@@ -190,7 +190,7 @@ export default [
       'extension/bookmarks/model.js',
       'extension/bookmarks/wash.js',
       'extension/bookmarks/session.js',
-      'extension/rail/thread.js',
+      'extension/rail/conversations.js',
       'extension/rail/wave.js',
       'extension/rail/model.js',
       'extension/page/reader.js',

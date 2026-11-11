@@ -1,10 +1,10 @@
-// The rail's conversations (extension/rail/thread.js) through their interface: pages, sends and
+// The rail's conversations (extension/rail/conversations.js) through their interface: pages, sends and
 // reconciliation against the mounted turns, and the items revision every new list takes.
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
-const Thread = createRequire(import.meta.url)('../extension/rail/thread.js');
+const Conversations = createRequire(import.meta.url)('../extension/rail/conversations.js');
 const A = 'aaaaaaaa-0000-0000-0000-000000000001',
   C = 'cccccccc-0000-0000-0000-000000000003';
 const q = (id) => ({ id, q: `Question ${id}` });
@@ -12,7 +12,7 @@ const a = (id) => ({ id }); // an answer: no `q`
 const ids = (t) => t.items.map((x) => x.id);
 
 function opened(items = [q('q1'), a('a1'), q('q2'), a('a2')], hasPrev = true) {
-  const t = Thread();
+  const t = Conversations();
   t.open(A);
   t.page({ conv: A, before: null, hasPrev, items });
   return t;
@@ -86,7 +86,7 @@ test('reconcile adds a mounted turn the responses missed and drops an old branch
   );
   assert.equal(ids(t)[0], 'q0');
   // An empty list takes the mounted turns.
-  const empty = Thread();
+  const empty = Conversations();
   empty.open(A);
   assert.equal(
     empty.reconcile(['m1', 'm2'], (id) => id),
@@ -110,7 +110,7 @@ test('one revision counter for the tab: every new list takes the next, per conve
 });
 
 test('a new chat that got its id keeps the questions it had before', () => {
-  const t = Thread();
+  const t = Conversations();
   t.open(null);
   t.send({ parent: null, item: q('n1') });
   t.open(A);
