@@ -3,6 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const branch = require('../extension/branch/logic.js');
+const reader = require('../extension/page/reader.js');
 
 const SAVED = '6ae40607-3240-83ea-8f5b-c8c6b15f1e78';
 const LOCAL = 'local-chatgpt:0f9e2c4a-1b2c-4d3e-8f4a-5b6c7d8e9f00';
@@ -80,11 +81,11 @@ test('Work mode is recognised by the composer form first, then by labels', () =>
 });
 
 test('the side-chat button of Work mode is recognised in English and Simplified Chinese', () => {
-  assert.equal(branch.labels.sideChat.test('Ask in side chat'), true);
-  assert.equal(branch.labels.sideChat.test('在侧边聊天中提问'), true);
-  assert.equal(branch.labels.sideChat.test('Ask ChatGPT'), false);
+  assert.equal(reader.labels.sideChat.test('Ask in side chat'), true);
+  assert.equal(reader.labels.sideChat.test('在侧边聊天中提问'), true);
+  assert.equal(reader.labels.sideChat.test('Ask ChatGPT'), false);
   for (const ask of ['Ask ChatGPT', '向 ChatGPT 提问'])
-    assert.equal(branch.labels.nativeAsk.test(ask), true, ask);
+    assert.equal(reader.labels.nativeAsk.test(ask), true, ask);
 });
 
 // Menus, as page.js describes them: { popup, icons, label, testid }.

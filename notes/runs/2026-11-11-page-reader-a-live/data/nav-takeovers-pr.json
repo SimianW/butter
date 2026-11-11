@@ -1,0 +1,60 @@
+{
+  "build": "pr",
+  "harness": "nav-takeovers",
+  "exitCode": 1,
+  "failure": "TimeoutError",
+  "phase": "current rail activation",
+  "completedCases": 3,
+  "currentCasesCompleted": 0,
+  "expectedCases": 15,
+  "results": [
+    {
+      "version": "alpha6",
+      "kind": "repeat",
+      "clicks": [
+        0,
+        998,
+        1999
+      ],
+      "revealMs": 6178,
+      "top": 64,
+      "busy": false,
+      "warp": "hidden"
+    },
+    {
+      "version": "alpha6",
+      "kind": "same-final",
+      "clicks": [
+        0,
+        999,
+        1999
+      ],
+      "revealMs": 6185,
+      "top": 64,
+      "busy": false,
+      "warp": "hidden"
+    },
+    {
+      "version": "alpha6",
+      "kind": "deadline",
+      "clicks": [
+        0,
+        999,
+        1998,
+        3000,
+        3999,
+        4999,
+        5999,
+        6999,
+        8000,
+        8999,
+        9998,
+        10999
+      ],
+      "revealMs": 15186,
+      "top": 64,
+      "busy": false,
+      "warp": "hidden"
+    }
+  ]
+}

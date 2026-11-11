@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  Live chats' answer markup (checked on 2026-11-08, notes/runs/2026-11-08-bookmarks-live): no
+  message carries a role or data-message-id; the answer's ancestor carries
+  data-chatgpt-selection-message-id and data-chatgpt-selection-conversation-id, and the markdown
+  root inside it is the answer root. One <article data-turn-key> holds a question and its answer.
+  Code blocks are ChatGPT's code widget (a [data-code-block] surface); tables sit in a frame with a
+  scrolling viewport and an empty edges layer. Sources: extension/bookmarks/content.js,
+  lab/harness/bookmarks/fixture.mjs (MARKUP=live), lab/harness/dil-tables-widgets.mjs.
+  Only the markdown root is a reply here: there is no role wrapper.
+-->
+<html>
+  <head>
+    <title>Live markup</title>
+  </head>
+  <body>
+    <nav><a href="/c/new">New chat</a></nav>
+    <main>
+      <div class="thread-scroll-container">
+        <div>
+          <article data-turn-key="q-live-1" data-testid="conversation-turn-1">
+            <div class="user"><div data-user-message-bubble>Explain VACUUM in one breath.</div></div>
+            <div
+              data-chatgpt-selection-conversation-id="c-live"
+              data-chatgpt-selection-message-id="a-live-1"
+            >
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-live-1"
+                data-expect-question="q-live-1"
+                data-expect-reply
+              >
+                <p data-expect-para="0">VACUUM reclaims space held by dead rows.</p>
+                <h3 data-expect-para="1">When it runs</h3>
+                <div data-client-defined-widget data-expect-para="2">
+                  <div class="code-block">
+                    <div class="surface" data-code-block>
+                      <div class="bar"><div>sql</div><div data-code-block-controls><button>Copy</button></div></div>
+                      <div class="cm-editor">
+                        <div class="cm-content"><div class="cm-line">VACUUM (VERBOSE) orders;</div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div></div>
+                </div>
+                <div class="table-frame" data-expect-para="3">
+                  <div class="table-viewport" data-d-table-viewport>
+                    <table>
+                      <tbody>
+                        <tr><th>Setting</th><th>Default</th></tr>
+                        <tr><td>autovacuum</td><td>on</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="edges"></div>
+                </div>
+                <ul>
+                  <li data-expect-para="4">Autovacuum runs it for you.</li>
+                  <li data-expect-para="5">Manual runs help after bulk deletes.</li>
+                </ul>
+                <blockquote data-expect-para="6"><p>Dead rows are not free.</p></blockquote>
+              </div>
+            </div>
+            <div class="actions"><button aria-label="More actions">⋯</button></div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-live-2" data-testid="conversation-turn-2">
+            <div class="user"><div data-user-message-bubble>Thanks!</div></div>
+            <div
+              data-chatgpt-selection-conversation-id="c-live"
+              data-chatgpt-selection-message-id="a-live-2"
+            >
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-live-2"
+                data-expect-question="q-live-2"
+                data-expect-reply
+              >
+                <p data-expect-para="0">You're welcome.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

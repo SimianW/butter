@@ -1,0 +1,60 @@
+<!doctype html>
+<!--
+  Lists in live markup. Each item of a top-level list is a paragraph of its own (#51); a nested
+  list's items belong to their top-level item, however deep, and so does a loose item's own <p>
+  children. Source: extension/bookmarks/content.js (#51), lab/harness/bookmarks/fixture.mjs.
+-->
+<html>
+  <head>
+    <title>Lists</title>
+  </head>
+  <body>
+    <main>
+      <div class="thread-scroll-container">
+        <div>
+          <article data-turn-key="q-list-1" data-testid="conversation-turn-1">
+            <div class="user"><div data-user-message-bubble>List the steps.</div></div>
+            <div
+              data-chatgpt-selection-conversation-id="c-list"
+              data-chatgpt-selection-message-id="a-list-1"
+            >
+              <div
+                data-markdown-text-style="assistant-message"
+                class="markdown prose"
+                data-expect-answer="a-list-1"
+                data-expect-question="q-list-1"
+                data-expect-reply
+              >
+                <p data-expect-para="0">Three steps:</p>
+                <ul>
+                  <li data-expect-para="1">
+                    Plan the query
+                    <ul>
+                      <li>
+                        Read the statistics
+                        <ol>
+                          <li>Row counts</li>
+                          <li>Histograms</li>
+                        </ol>
+                      </li>
+                      <li>Pick an index</li>
+                    </ul>
+                  </li>
+                  <li data-expect-para="2">
+                    <p>Run it.</p>
+                    <p>Watch the timing.</p>
+                  </li>
+                </ul>
+                <ol start="3">
+                  <li data-expect-para="3">Check the result.</li>
+                  <li data-expect-para="4"><strong>Repeat</strong> if needed.</li>
+                </ol>
+                <p data-expect-para="5">Done.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

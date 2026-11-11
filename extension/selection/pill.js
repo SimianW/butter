@@ -17,8 +17,8 @@
 // box, until `release()`; `lost()` runs if the range leaves the page or Work mode shows.
 // Geometry follows the approved mockup: 30 px high, 32 px per cell with a 1 px divider (one cell
 // alone 30 × 30), the label 8 px below after 300 ms of hover, switching at once between cells.
-// This script loads before both features' scripts; ChatGPT's button is found through
-// branch/page.js (ButterBranchPage), which is read only once a selection exists.
+// This script loads before both features' scripts, after page/reader.js; ChatGPT's button is found
+// through the page reader (ButterPageReader), which is read only once a selection exists.
 (() => {
   const ORDER = ['branch', 'bookmark'];
   const GAP = 4, // px between ChatGPT's button and the pill
@@ -245,7 +245,7 @@ svg { display: block; width: 16px; height: 16px; }
       if (!live.length) return hide();
       if (live.length !== ids.length) render(live);
     }
-    const P = globalThis.ButterBranchPage;
+    const P = globalThis.ButterPageReader;
     if (!P) return lost();
     const now = performance.now();
     if (!native || !P.visible(native.box) || now - nativeAt > 250) {

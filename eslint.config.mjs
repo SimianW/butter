@@ -6,7 +6,7 @@ export const maxLines = 500;
 
 // Raising a cap needs the reason in the PR body; prefer splitting the file along a seam.
 export const maxLinesCaps = {
-  'extension/bookmarks/content.js': 772,
+  'extension/bookmarks/content.js': 740,
   'extension/dev/recorder.js': 574,
   'extension/rail/rail.js': 1831,
   'extension/seek/core-main.js': 581,
@@ -102,6 +102,10 @@ export default [
     languageOptions: { globals: { ButterPill: 'readonly' } }, // defined in selection/pill.js
   },
   {
+    files: ['extension/bookmarks/content.js', 'extension/branch/*.js'],
+    languageOptions: { globals: { ButterPageReader: 'readonly' } }, // defined in page/reader.js
+  },
+  {
     // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
     files: ['extension/bookmarks/worker.js'],
     languageOptions: {
@@ -176,6 +180,7 @@ export default [
       'extension/branch/run.js',
       'extension/bookmarks/model.js',
       'extension/bookmarks/wash.js',
+      'extension/page/reader.js',
       'extension/dev/recorder.js',
       'extension/dev/sources.js',
     ],

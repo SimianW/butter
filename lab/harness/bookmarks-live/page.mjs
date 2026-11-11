@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { butterDriver } from '../driver/butter.mjs';
 
 const harnessDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// Match bookmarks/content.js blocksOf: list items count individually, in document order.
+// Match page/reader.js paragraphsOf: list items count individually, in document order.
 export const BLOCKS = ':scope > :not(ul, ol), :scope > :is(ul, ol) > li';
 export const ANSWER =
   ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';

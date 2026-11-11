@@ -1,0 +1,150 @@
+<!doctype html>
+<!--
+  ChatGPT's Dil renderer: the markdown root holds wrapper layers (one of which also holds an empty
+  sibling), and the answer root is the DilResponseRoot-xxxx element nested inside them; the
+  wrappers are not blocks. Wrapper nesting as captured in lab/harness/dil-renderer.mjs and
+  lab/harness/dil-tables-widgets.mjs (Math block, TableFrame/TableViewport/Edges, the code
+  widget's CodeBlock > [data-code-block] surface). Comments in seek/core-main.js lines 8-16.
+  Turn 1 has the older role wrapper around the Dil answer (as dil-renderer.mjs builds it); turn 2
+  has live chats' selection-id ancestor.
+-->
+<html>
+  <head>
+    <title>Dil</title>
+  </head>
+  <body>
+    <main>
+      <div class="thread-scroll-container">
+        <div>
+          <article data-turn-key="q-dil-1" data-testid="conversation-turn-1">
+            <div class="user">
+              <div data-message-author-role="user" data-message-id="q-dil-1">
+                <div data-user-message-bubble>Show me the quadratic formula.</div>
+              </div>
+            </div>
+            <div data-message-author-role="assistant" data-message-id="a-dil-1" data-expect-reply>
+              <div class="MarkdownRoot-rZKhxa" data-markdown-text-style="assistant-message" data-expect-reply>
+                <div class="my-4" data-dil-source-message-id="a-dil-1" data-markdown-copy>
+                  <div class="[--entity-prose-inset:0px]">
+                    <div></div>
+                    <div class="relative PortalBoundary-TFj9W2 Renderer-ojZscX" data-theme="light">
+                      <div
+                        class="DilRenderer-tB76Jj DilResponseRoot-HfQrEh Reveal-k2IWvM"
+                        data-d-direction
+                        data-dil-message-id="a-dil-1"
+                        data-expect-answer="a-dil-1"
+                        data-expect-question="q-dil-1"
+                      >
+                        <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-expect-para="0">
+                          The roots of a quadratic are:
+                        </p>
+                        <div class="Math-C48SKy" data-d-block data-expect-para="1">
+                          <span class="katex-display"
+                            ><span class="katex"
+                              ><span class="katex-mathml"
+                                ><math display="block"
+                                  ><semantics><mrow><mi>x</mi></mrow
+                                  ><annotation encoding="application/x-tex">x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}</annotation></semantics
+                                ></math
+                              ></span
+                              ><span class="katex-html" aria-hidden="true">x = …</span></span
+                            ></span
+                          >
+                        </div>
+                        <h2 data-expect-para="2">Cases</h2>
+                        <div
+                          class="TableFrame-YxtDrz"
+                          data-d-column-sizing
+                          data-d-component
+                          data-expect-para="3"
+                        >
+                          <div class="TableViewport-RD3I2I" data-d-table-viewport>
+                            <table class="Table-QT1UX2" data-d-column-sizing data-d-dividers>
+                              <tbody>
+                                <tr data-d-component>
+                                  <th data-d-component data-d-valign>
+                                    <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-d-component>Discriminant</p>
+                                  </th>
+                                  <th data-d-component data-d-valign>
+                                    <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-d-component>Roots</p>
+                                  </th>
+                                </tr>
+                                <tr data-d-component>
+                                  <td data-d-component data-d-valign>
+                                    <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-d-component>Positive</p>
+                                  </td>
+                                  <td data-d-component data-d-valign>
+                                    <p class="TextBase-hXhSqg Text-lIMP0_" data-d-text-flow data-d-component>Two</p>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div class="Edges-UXy4Ue"></div>
+                        </div>
+                        <ul>
+                          <li data-expect-para="4">Positive: two real roots.</li>
+                          <li data-expect-para="5">
+                            Zero: one root.
+                            <ul>
+                              <li>It touches the axis.</li>
+                            </ul>
+                          </li>
+                        </ul>
+                        <blockquote data-expect-para="6"><p>Negative: complex roots.</p></blockquote>
+                        <hr data-expect-para="7" />
+                        <p data-expect-para="8">That is all.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div>
+          <article data-turn-key="q-dil-2" data-testid="conversation-turn-2">
+            <div class="user"><div data-user-message-bubble>And in Python?</div></div>
+            <div
+              data-chatgpt-selection-conversation-id="c-dil"
+              data-chatgpt-selection-message-id="a-dil-2"
+            >
+              <div class="MarkdownRoot-rZKhxa" data-markdown-text-style="assistant-message" data-expect-reply>
+                <div class="my-4" data-dil-source-message-id data-markdown-copy>
+                  <div class="[--entity-prose-inset:0px]">
+                    <div></div>
+                    <div class="relative PortalBoundary-TFj9W2 Renderer-ojZscX">
+                      <div
+                        class="DilRenderer-tB76Jj DilResponseRoot-HfQrEh Reveal-k2IWvM"
+                        data-expect-answer="a-dil-2"
+                        data-expect-question="q-dil-2"
+                      >
+                        <p data-expect-para="0">Use the cmath module:</p>
+                        <div data-client-defined-widget data-expect-para="1">
+                          <div class="CodeBlock-zu1QM3">
+                            <div class="Root-iW7ipz CodeSurface-UAMd1A Surface-BCuIs1" data-code-block>
+                              <div class="flex ActionBar-KWWAct">
+                                <div>Python</div>
+                                <div data-code-block-controls><button>Copy</button></div>
+                              </div>
+                              <div class="grid">
+                                <div class="cm-editor">
+                                  <div class="cm-content"><div class="cm-line">import cmath</div></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <p data-expect-para="2">Then call <code>cmath.sqrt</code>.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

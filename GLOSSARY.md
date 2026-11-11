@@ -47,7 +47,14 @@ _Where_: `history/conversation-main.js`, `bookmarks/model.js`
 **Answer root**:
 The element whose children are an answer's blocks: the markdown root, or the nested Dil response
 root in ChatGPT's Dil renderer; the wrappers around it are not blocks.
-_Where_: `seek/core-main.js`, `bookmarks/content.js`
+_Where_: `seek/core-main.js`, `page/reader.js`
+
+**Page reader**:
+The isolated-world module that reads ChatGPT's answer structure for bookmarks, Ask in branch and
+the pill: answer roots and their message ids, turns, paragraphs, replies, and ChatGPT's own "Ask
+ChatGPT" button. Where two features read a fact differently, each reading is its own function.
+_Avoid_: page adapter (Ask in branch's run's page, `branch/page.js`)
+_Where_: `page/reader.js`, `test/fixtures/page/`
 
 **Paused**:
 Butter's main switch off: every feature stops, though the fetch wrapper stays installed.
@@ -134,7 +141,7 @@ _Where_: `bookmarks/model.js`
 A bookmark's unit of position (`para`): a top-level block of the answer, with each item of a
 top-level list counted as its own paragraph.
 _Avoid_: block (the seek preview's unit)
-_Where_: `bookmarks/content.js`
+_Where_: `page/reader.js`
 
 **Anchor**:
 Where a bookmark points: its message, paragraph and UTF-16 start and end within that paragraph. The

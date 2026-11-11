@@ -10,3 +10,5 @@ mockups/
 **/recordings/
 **/logs/
 **/*.log
+# Page reader contract fixtures: hand-written or captured pages, kept byte for byte.
+test/fixtures/page/*.html

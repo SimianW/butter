@@ -1,0 +1,411 @@
+{
+  "testedHead": "ec42e57dc139352874c30d10336d0077592875b3",
+  "mode": "wash",
+  "platform": "Linux",
+  "startedUtc": "2026-11-11T11:29:10.748Z",
+  "checks": [
+    {
+      "name": "wash light: ChatGPT shows its light theme",
+      "pass": true,
+      "background": [
+        252,
+        252,
+        252
+      ],
+      "colorScheme": "light",
+      "darkClass": false
+    },
+    {
+      "name": "wash light: the whole chat loads through the earlier-history dots",
+      "pass": true,
+      "ticks": 12
+    },
+    {
+      "name": "wash: a mounted answer holds two long paragraphs and a table",
+      "pass": true,
+      "paragraph": 1,
+      "selectionParagraph": 75,
+      "selectionCharacters": 110,
+      "table": 188,
+      "tableNested": true
+    },
+    {
+      "name": "wash: the Bookmark cell bookmarks the paragraph",
+      "pass": true,
+      "stored": 1
+    },
+    {
+      "name": "wash: the Bookmark cell bookmarks the selection",
+      "pass": true,
+      "stored": 2
+    },
+    {
+      "name": "wash: the Bookmark cell bookmarks the table",
+      "pass": true,
+      "stored": 3
+    },
+    {
+      "name": "wash light: a paragraph is washed on its own lines",
+      "pass": true,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash light: a paragraph: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "multiply",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash light: a paragraph: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "wash light: a paragraph: scrolled 74 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": 74,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "name": "wash light: a paragraph: with the washed text under ChatGPT's header, the wash reaches the header and no butter shows on it",
+      "pass": true,
+      "differ": 0,
+      "reach": true,
+      "under": true,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "headerBottom": null,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "name": "wash light: a paragraph: gone after the hold and fade",
+      "pass": true
+    },
+    {
+      "name": "wash light: a selection is washed on its own lines",
+      "pass": true,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash light: a selection: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "multiply",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash light: a selection: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "wash light: a selection: scrolled -680 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": -680,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "name": "wash light: a selection: with the washed text under ChatGPT's composer, the wash reaches the composer and no butter shows on it",
+      "pass": true,
+      "differ": 0,
+      "reach": true,
+      "under": true,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "headerBottom": null,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "name": "wash light: a selection: gone after the hold and fade",
+      "pass": true
+    },
+    {
+      "name": "wash light: a table is washed on its own lines (one box 3 px around the table)",
+      "pass": true,
+      "boxes": 1,
+      "expected": 1,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash light: a table: Butter's layer, multiplied, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "multiply",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash light: a table: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        13,
+        12,
+        9
+      ],
+      "inkAfter": [
+        13,
+        13,
+        13
+      ]
+    },
+    {
+      "name": "wash light: a table: scrolled 80 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": 80,
+      "boxes": 1,
+      "expected": 1
+    },
+    {
+      "name": "wash light: a table: gone after the hold and fade",
+      "pass": true
+    },
+    {
+      "name": "wash dark: ChatGPT shows its dark theme",
+      "pass": true,
+      "background": [
+        0,
+        0,
+        0
+      ],
+      "colorScheme": "dark",
+      "darkClass": false
+    },
+    {
+      "name": "wash dark: the whole chat loads through the earlier-history dots",
+      "pass": true,
+      "ticks": 12
+    },
+    {
+      "name": "wash dark: a paragraph is washed on its own lines",
+      "pass": true,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash dark: a paragraph: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "lighten",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash dark: a paragraph: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "name": "wash dark: a paragraph: scrolled 74 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": 74,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "name": "wash dark: a paragraph: with the washed text under ChatGPT's header, the wash reaches the header and no butter shows on it",
+      "pass": true,
+      "differ": 0,
+      "reach": true,
+      "under": true,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "headerBottom": null,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "name": "wash dark: a paragraph: gone after the hold and fade",
+      "pass": true
+    },
+    {
+      "name": "wash dark: a selection is washed on its own lines",
+      "pass": true,
+      "boxes": 2,
+      "expected": 2,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash dark: a selection: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "lighten",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash dark: a selection: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "name": "wash dark: a selection: scrolled -680 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": -680,
+      "boxes": 2,
+      "expected": 2
+    },
+    {
+      "name": "wash dark: a selection: with the washed text under ChatGPT's composer, the wash reaches the composer and no butter shows on it",
+      "pass": true,
+      "differ": 0,
+      "reach": true,
+      "under": true,
+      "clipTop": 52,
+      "clipBottom": 836,
+      "headerBottom": null,
+      "composerTop": 836,
+      "scrollerTop": 52
+    },
+    {
+      "name": "wash dark: a selection: gone after the hold and fade",
+      "pass": true
+    },
+    {
+      "name": "wash dark: a table is washed on its own lines (one box 3 px around the table)",
+      "pass": true,
+      "boxes": 1,
+      "expected": 1,
+      "maxOffPx": 0
+    },
+    {
+      "name": "wash dark: a table: Butter's layer, lightened, in the wash colour, no pointer events, no bubble flash",
+      "pass": true,
+      "blend": "lighten",
+      "pointer": "none",
+      "flash": false
+    },
+    {
+      "name": "wash dark: a table: the text keeps its colour under the wash",
+      "pass": true,
+      "inkDuring": [
+        237,
+        237,
+        237
+      ],
+      "inkAfter": [
+        237,
+        237,
+        237
+      ]
+    },
+    {
+      "name": "wash dark: a table: scrolled 80 px during the hold, the boxes follow the text",
+      "pass": true,
+      "scrolled": 80,
+      "boxes": 1,
+      "expected": 1
+    },
+    {
+      "name": "wash dark: a table: gone after the hold and fade",
+      "pass": true
+    }
+  ],
+  "drags": [],
+  "cleanup": {
+    "remainingBeforeFallback": 3,
+    "remainingAfterFallback": 0,
+    "restored": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensions": true,
+    "labLockReleased": true,
+    "perfLockReleased": false
+  },
+  "wash": [
+    {
+      "theme": "light",
+      "kind": "paragraph",
+      "boxes": 2,
+      "dy": 74
+    },
+    {
+      "theme": "light",
+      "kind": "selection",
+      "boxes": 2,
+      "dy": -680
+    },
+    {
+      "theme": "light",
+      "kind": "table",
+      "boxes": 1,
+      "dy": 80
+    },
+    {
+      "theme": "dark",
+      "kind": "paragraph",
+      "boxes": 2,
+      "dy": 74
+    },
+    {
+      "theme": "dark",
+      "kind": "selection",
+      "boxes": 2,
+      "dy": -680
+    },
+    {
+      "theme": "dark",
+      "kind": "table",
+      "boxes": 1,
+      "dy": 80
+    }
+  ],
+  "extensionTreeSha256": "6165863f314ee6b6f449ad47907a9a2c7169296c0e08cf7422199587cf6be221",
+  "chromium": "156.0.8078.47",
+  "sendGuard": {
+    "enabled": true,
+    "sendAttempts": 0,
+    "blockedMutations": 112
+  },
+  "shortcut": "",
+  "washTarget": {
+    "paragraph": 1,
+    "selectionParagraph": 75,
+    "selectionCharacters": 110,
+    "table": 188,
+    "tableNested": true
+  },
+  "finishedUtc": "2026-11-11T11:31:24.657Z"
+}

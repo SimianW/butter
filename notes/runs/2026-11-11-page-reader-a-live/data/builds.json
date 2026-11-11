@@ -1,0 +1,10 @@
+{
+  "main": "88161e3eeaef8778064bbcebe5afd861c0e6be28",
+  "pr": "ec42e57dc139352874c30d10336d0077592875b3",
+  "playwright": "1.65.0",
+  "chromium": "156.0.8078.47",
+  "extensionTreeSha256": {
+    "main": "c6e09447159630fab94b5b322d7954b8bae725c8a5d161d681c382ac21483f96",
+    "pr": "6165863f314ee6b6f449ad47907a9a2c7169296c0e08cf7422199587cf6be221"
+  }
+}
