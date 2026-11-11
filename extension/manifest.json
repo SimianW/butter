@@ -25,6 +25,7 @@
         "bookmarks/wash.js",
         "bookmarks/client.js",
         "rail/rail.js",
+        "page/reader.js",
         "selection/pill.js",
         "bookmarks/content.js",
         "bookmarks/notice.js",

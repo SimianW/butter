@@ -42,15 +42,8 @@
   // ChatGPT's labels, English and Simplified Chinese, as seen on the live page (2026-11-07).
   // Structural cues (roles, icons, attributes) are tried first; labels are the fallback.
   const exact = (...names) => new RegExp(`^(?:${names.join('|')})$`);
+  // ChatGPT's own selection toolbar ("Ask ChatGPT", "Ask in side chat") is read in page/reader.js.
   const labels = {
-    nativeAsk: exact(
-      'Ask ChatGPT',
-      '询问 ChatGPT',
-      '询问ChatGPT',
-      '问问 ChatGPT',
-      '向 ChatGPT 提问',
-    ),
-    sideChat: exact('Ask in side chat', '在侧边聊天中提问'),
     workComposer: exact('Work with ChatGPT', '使用 ChatGPT Work'),
     more: exact('More actions', '更多操作'),
     branch: exact('Branch conversation', '创建对话分支'),

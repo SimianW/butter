@@ -4,37 +4,10 @@
 // rules live in bookmarks/model.js. A conversation's bookmarks are read once when the rail shows it
 // and written on create and delete; nothing here runs while a scrollbar drag is seeking.
 (() => {
-  const B = ButterBookmarks;
-  // An answer's rendered content, as stream/offscreen.js finds it. Its paragraphs are its top-level
-  // blocks (paragraph, heading, code block, table, blockquote), except that each item of a
-  // top-level list is a paragraph of its own (#51).
-  const STYLE = '[data-markdown-text-style="assistant-message"]';
-  const ANSWER = `:is(${STYLE}:not(:has([class*="DilResponseRoot"])), ${STYLE} [class*="DilResponseRoot"])`;
-  const KIDS = [':not(ul, ol)', ':is(ul, ol) > li'], // a paragraph, below its answer
-    BLOCK = KIDS.map((k) => `${ANSWER} > ${k}`).join(', '),
-    OWN = KIDS.map((k) => `:scope > ${k}`).join(', ');
-  // An answer's paragraphs, in document order: their index is a bookmark's `para`.
-  const blocksOf = (answer) => [...answer.querySelectorAll(OWN)];
-  // The element that carries an answer's message id. Older chats wrap the answer in
-  // [data-message-author-role="assistant"][data-message-id]; live chats (checked on 2026-11-08,
-  // notes/runs/2026-11-08-bookmarks-live) have neither, and the answer's ancestor carries
-  // data-chatgpt-selection-message-id instead (as seek/layout-cache-main.js reads it).
-  const MESSAGE =
-    '[data-message-author-role="assistant"][data-message-id], [data-chatgpt-selection-message-id]';
-  const idOf = (message) =>
-    message?.getAttribute('data-message-id') ||
-    message?.getAttribute('data-chatgpt-selection-message-id') ||
-    null;
-  // An answer as bookmarks see it: `answer`, the element that holds its paragraphs, and `id`, its
-  // message id. Null without an id (an answer that has none yet).
-  const answerAt = (answer) => {
-    const id = idOf(answer.closest(MESSAGE));
-    return id ? { answer, id } : null;
-  };
-  // A paragraph's answer; null for a paragraph outside one.
-  const answerOf = (block) => (block?.matches(BLOCK) ? answerAt(block.closest(ANSWER)) : null);
-  // The answers rendered in `root` (a turn or the document).
-  const answersIn = (root) => [...root.querySelectorAll(ANSWER)].map(answerAt).filter(Boolean);
+  const B = ButterBookmarks,
+    // Answer roots, message ids, turns and an answer's paragraphs (its top-level blocks, each item
+    // of a top-level list on its own, #51): page/reader.js.
+    R = ButterPageReader;
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
   const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
   const strings = (zh) => (zh ? { sel: '为选中内容加书签' } : { sel: 'Bookmark selection' });
@@ -114,7 +87,7 @@
       return;
     }
     // The answers rendered now, by hashed id: a version the list doesn't hold can be on screen.
-    const rendered = answersIn(document),
+    const rendered = R.answersIn(document),
       ids = rendered.map((a) => a.id);
     const [bookmarks, hashes, shown] = await Promise.all([
       listOf(owner, conv),
@@ -134,7 +107,7 @@
     });
     shownList = bookmarks;
     const questions = items.filter((x) => x.q != null);
-    const onPage = new Map(shown.map((h, i) => [h, rendered[i].answer]));
+    const onPage = new Map(shown.map((h, i) => [h, rendered[i].root]));
     const groups = B.resolve(
       bookmarks,
       items.map((x, i) => ({ msg: hashes[i], q: x.q != null })),
@@ -146,10 +119,8 @@
         },
         // Its turn is mounted with an answer in it: an answer that isn't the bookmarked one replaced it.
         mounted: (q) => {
-          const turn = [...document.querySelectorAll('[data-turn-key]')].find(
-            (t) => t.getAttribute('data-turn-key') === questions[q].id,
-          );
-          return !!turn && answersIn(turn).length > 0;
+          const turn = R.turnByKey(questions[q].id);
+          return !!turn && R.answersIn(turn).length > 0;
         },
       },
       seen,
@@ -247,7 +218,7 @@
       .map((x) => x.n.data)
       .join('');
   // A rendered answer's paragraphs, as text.
-  const paragraphs = (answer) => blocksOf(answer).map(textOf);
+  const paragraphs = (answer) => R.paragraphsOf(answer).map(textOf);
   // Where the first rendered lines of a run of text end, measured character by character. `parts`
   // are `{ block, from, to }` ranges in paragraph offsets, in order; the run's text joins them with
   // one separator each, as ButterBookmarks.anchor does, and `ends` are offsets into that text.
@@ -302,14 +273,12 @@
       common = r.commonAncestorContainer,
       el = common.nodeType === Node.ELEMENT_NODE ? common : common.parentElement;
     if (!el) return null;
-    const inside = el.closest(BLOCK);
-    let blocks = inside
-      ? [inside]
-      : [...el.querySelectorAll(BLOCK)].filter((b) => r.intersectsNode(b));
-    const home = answerOf(blocks[0])?.answer;
-    blocks = blocks.filter((b) => home && answerOf(b)?.answer === home);
+    const inside = R.paragraphOf(el);
+    let blocks = inside ? [inside] : R.paragraphsIn(el).filter((b) => r.intersectsNode(b));
+    const home = R.answerOf(blocks[0])?.root;
+    blocks = blocks.filter((b) => home && R.answerOf(b)?.root === home);
     if (!blocks.length) return null;
-    const siblings = blocksOf(home),
+    const siblings = R.paragraphsOf(home),
       first = blocks[0],
       last = blocks.at(-1),
       paras = [];
@@ -364,7 +333,7 @@
   // Turns off screen skip layout (stream/containment.css), so their blocks' boxes are stale: only
   // the turns showing below the header are read, and only their answers' blocks measured.
   const topBlock = () => {
-    const turns = [...document.querySelectorAll('[data-turn-key]')],
+    const turns = R.turns(),
       boxes = turns.map((t) => t.getBoundingClientRect()),
       seen = boxes.findIndex((b) => b.height && b.bottom > HEADER);
     if (seen < 0) return null;
@@ -373,7 +342,7 @@
       bottom = box?.bottom ?? innerHeight;
     const blocks = turns
       .filter((t, i) => boxes[i].height && boxes[i].bottom > line && boxes[i].top < bottom)
-      .flatMap((t) => answersIn(t).flatMap((a) => blocksOf(a.answer)));
+      .flatMap((t) => R.answersIn(t).flatMap((a) => R.paragraphsOf(a.root)));
     const tops = blocks.map((b) => b.getBoundingClientRect().top);
     return blocks[B.topParagraph(tops, line)] ?? null;
   };
@@ -381,8 +350,8 @@
   // paragraph or text no longer there.
   const blockIn = (turn, b) => {
     const raw = rawOf.get(b.msg),
-      answer = raw && answersIn(turn).find((a) => a.id === raw)?.answer,
-      block = answer && blocksOf(answer)[b.para];
+      answer = raw && R.answersIn(turn).find((a) => a.id === raw)?.root,
+      block = answer && R.paragraphsOf(answer)[b.para];
     return block && B.matches(b, paragraphs(answer)) ? block : null;
   };
   // Where a bookmark's text is, in px below the top of its question's turn; null (the rail lands at
@@ -405,14 +374,13 @@
 
   // Bookmark a paragraph: the whole of it, or `range` (`{ start, end, excerpt, line }`) within it.
   async function create(block, range = null) {
-    const answer = answerOf(block),
+    const answer = R.answerOf(block),
       id = answer?.id,
-      turn = block.closest('[data-turn-key]'),
-      ask = turn?.getAttribute('data-turn-key'), // the question's message id
+      ask = R.turnKeyOf(block), // the question's message id
       conv = convOfPath(),
       owner = account;
     if (!id || !ask || !conv || !owner) return;
-    const para = blocksOf(answer.answer).indexOf(block),
+    const para = R.paragraphsOf(answer.root).indexOf(block),
       text = textOf(block),
       ends = range ? null : measure([{ block, from: 0, to: text.length }]),
       excerpt = range ? range.excerpt : B.excerpt(text, ends),

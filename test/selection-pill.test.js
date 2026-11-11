@@ -134,7 +134,7 @@ function page({ width = 1400 } = {}) {
     },
     requestAnimationFrame: (fn) => frames.push(fn),
     cancelAnimationFrame: () => frames.splice(0),
-    ButterBranchPage: {
+    ButterPageReader: {
       nativeAsk: () => (fake.nativeShown ? native : null),
       visible: () => fake.nativeShown,
       nativeBusy: () => false,

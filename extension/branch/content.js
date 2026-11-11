@@ -7,7 +7,8 @@
 // Nothing here types into or sends in the original tab.
 (() => {
   const B = ButterBranch,
-    P = ButterBranchPage;
+    P = ButterBranchPage,
+    R = ButterPageReader;
   // Read before ChatGPT's router can touch the URL.
   const incoming = B.jobId(location.hash);
   let ui;
@@ -38,8 +39,8 @@
     const s = document.getSelection();
     if (!s || s.rangeCount !== 1 || s.isCollapsed) return null;
     const range = s.getRangeAt(0);
-    const start = P.replyOf(range.startContainer),
-      end = P.replyOf(range.endContainer);
+    const start = R.replyOf(range.startContainer),
+      end = R.replyOf(range.endContainer);
     // Formulas are fine (quoted as LaTeX); editable controls, images and other non-text regions
     // are not.
     const inside = (node, selector) => {
