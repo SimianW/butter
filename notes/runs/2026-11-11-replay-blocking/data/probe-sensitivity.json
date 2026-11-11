@@ -1,0 +1,128 @@
+{
+  "M1-none-1": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 167,
+    "maxOutsideProbeDurationMs": 2737,
+    "blockingOutsideProbeMs": 72444
+  },
+  "M1-a11-1": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 6621,
+    "maxOutsideProbeDurationMs": 727,
+    "blockingOutsideProbeMs": 13966
+  },
+  "M1-main-1": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 9028,
+    "maxOutsideProbeDurationMs": 1538,
+    "blockingOutsideProbeMs": 66955
+  },
+  "M1-a11-2": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 6660,
+    "maxOutsideProbeDurationMs": 853,
+    "blockingOutsideProbeMs": 12982
+  },
+  "M1-main-2": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 9110,
+    "maxOutsideProbeDurationMs": 1560,
+    "blockingOutsideProbeMs": 66707
+  },
+  "M1-none-2": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 471,
+    "maxOutsideProbeDurationMs": 2744,
+    "blockingOutsideProbeMs": 73140
+  },
+  "M1-main-3": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 9052,
+    "maxOutsideProbeDurationMs": 1564,
+    "blockingOutsideProbeMs": 66149
+  },
+  "M1-none-3": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 217,
+    "maxOutsideProbeDurationMs": 2697,
+    "blockingOutsideProbeMs": 71781
+  },
+  "M1-a11-3": {
+    "overlapFrames": 2,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 6703,
+    "maxOutsideProbeDurationMs": 805,
+    "blockingOutsideProbeMs": 17146
+  },
+  "M2-none-1": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 117,
+    "maxOutsideProbeDurationMs": 1410,
+    "blockingOutsideProbeMs": 70628
+  },
+  "M2-a11-1": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 2438,
+    "maxOutsideProbeDurationMs": 709,
+    "blockingOutsideProbeMs": 12990
+  },
+  "M2-main-1": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 4072,
+    "maxOutsideProbeDurationMs": 1536,
+    "blockingOutsideProbeMs": 66272
+  },
+  "M2-a11-2": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 2381,
+    "maxOutsideProbeDurationMs": 723,
+    "blockingOutsideProbeMs": 12772
+  },
+  "M2-main-2": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 4017,
+    "maxOutsideProbeDurationMs": 1530,
+    "blockingOutsideProbeMs": 67236
+  },
+  "M2-none-2": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 125,
+    "maxOutsideProbeDurationMs": 1355,
+    "blockingOutsideProbeMs": 71169
+  },
+  "M2-main-3": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 3956,
+    "maxOutsideProbeDurationMs": 1556,
+    "blockingOutsideProbeMs": 66408
+  },
+  "M2-none-3": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 124,
+    "maxOutsideProbeDurationMs": 1362,
+    "blockingOutsideProbeMs": 69877
+  },
+  "M2-a11-3": {
+    "overlapFrames": 1,
+    "overlapBlockingMs": 0,
+    "maxOverlapDurationMs": 2311,
+    "maxOutsideProbeDurationMs": 689,
+    "blockingOutsideProbeMs": 12428
+  }
+}

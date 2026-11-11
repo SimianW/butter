@@ -1,6 +1,6 @@
 # Observed public ChatGPT bundles
 
-Captured during alpha.11 preflight, before replay. No explicit `__NEXT_DATA__.buildId` was available. Resource entries include dynamically imported scripts.
+Rerun public asset inventory; query strings omitted.
 
 - <https://chatgpt.com/cdn/assets/101842.08b52df478.js>
 - <https://chatgpt.com/cdn/assets/109308.e66696cd0d.js>
@@ -74,7 +74,9 @@ Captured during alpha.11 preflight, before replay. No explicit `__NEXT_DATA__.bu
 - <https://chatgpt.com/cdn/assets/955979.d659318431.js>
 - <https://chatgpt.com/cdn/assets/956483.4fffedad3f.js>
 - <https://chatgpt.com/cdn/assets/971634.bd916c815b.js>
+- <https://chatgpt.com/cdn/assets/97305.e3d2394f41.js>
 - <https://chatgpt.com/cdn/assets/979380.94a5c47756.js>
+- <https://chatgpt.com/cdn/assets/986445.aafb6894f1.js>
 - <https://chatgpt.com/cdn/assets/async/110808.505113fbf9.js>
 - <https://chatgpt.com/cdn/assets/async/112060.608fe9a25b.js>
 - <https://chatgpt.com/cdn/assets/async/145049.ec8f83c3b7.js>
@@ -122,6 +124,7 @@ Captured during alpha.11 preflight, before replay. No explicit `__NEXT_DATA__.bu
 - <https://chatgpt.com/cdn/assets/async/586788.642e75036f.js>
 - <https://chatgpt.com/cdn/assets/async/607864.5319c671d4.js>
 - <https://chatgpt.com/cdn/assets/async/649440.2b5ca88fc5.js>
+- <https://chatgpt.com/cdn/assets/async/658686.6645bc7629.js>
 - <https://chatgpt.com/cdn/assets/async/672620.9c6ad41b32.js>
 - <https://chatgpt.com/cdn/assets/async/673131.951357fe8c.js>
 - <https://chatgpt.com/cdn/assets/async/674991.6ae8ffef99.js>

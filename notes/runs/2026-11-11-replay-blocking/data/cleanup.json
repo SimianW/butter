@@ -1,9 +1,10 @@
 {
   "restoreExit": 0,
   "releaseExit": 0,
-  "lab1Held": 0,
-  "lab2Held": 0,
-  "perfHeld": 0,
-  "startupFailureRestoreExit": 0,
-  "startupFailureReleaseExit": 0
+  "interruptionRestoreExit": 0,
+  "interruptionReleaseExit": 0,
+  "lockWindows": 2,
+  "1Held": 0,
+  "2Held": 0,
+  "perfHeld": 0
 }
