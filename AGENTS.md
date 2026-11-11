@@ -79,8 +79,10 @@ build, CI).
 ## Workflow
 
 - Every change reaches `main` through a PR. Before merging, run
-  `python3 scripts/review-tier.py origin/main` and put its `Review tier: N` line in the PR
-  body (the `pr` skill); CI's `pr-body` check enforces the tier and review lines, and
+  `python3 scripts/review-tier.py origin/main` and put the tier it prints in the PR body's
+  `## Review` section as `- **Tier:** N` (the `pr` skill); after an APPROVE, `review-loop` adds
+  the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items. CI's `pr-body` check
+  enforces the Tier and Verdict items, and
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
@@ -97,8 +99,8 @@ build, CI).
   findings into fix now / follow-up issue / drop, one line of reason each, and stop for the user
   to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`. After the
   fixes, `review-loop` gates the final diff at its tier, with the approved refactors listed in
-  its Intent. The work ends in a PR whose body carries `Closes #<issue>` and the `Review tier`
-  line. These four skills are user-only, so the user starts each one: when the work reaches a
+  its Intent. The work ends in a PR whose body carries `Closes #<issue>` and the Review section's
+  `- **Tier:** N` item. These four skills are user-only, so the user starts each one: when the work reaches a
   step, tell the user it is time and give the command to type, such as `/to-spec`.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.

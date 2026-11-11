@@ -6,7 +6,7 @@ on:
 
 jobs:
   pr-body:
-    # A draft PR has no review line yet, so its run is renamed instead of failing. It is not
+    # A draft PR has no Verdict item yet, so its run is renamed instead of failing. It is not
     # skipped under the required name: branch protection counts a skipped `pr-body` as passed.
     # With no `pr-body` run on the head, the required check waits until ready_for_review runs it.
     name: ${{ github.event.pull_request.draft && 'pr-body (draft, runs when ready)' || 'pr-body' }}
@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Check review tier and review lines
+      - name: Check the Review section
         if: ${{ !github.event.pull_request.draft }}
         env:
           PR_BODY: ${{ github.event.pull_request.body }}

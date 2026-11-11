@@ -14,133 +14,172 @@ check_pr_body = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(check_pr_body)
 check_body = check_pr_body.check_body
 
-REVIEWED = "Reviewed with review-loop: 1 round with gpt-6.1-sol on high at abc1234. Verdict: approved"
+REVIEWED = "- **Verdict:** approved at `abc1234`"
+REVIEWERS = "- **Reviewers:** gpt-6.1-sol ×3 → claude-fable-5-2 ×1"
 
 
-class TierLineTest(unittest.TestCase):
-    def test_missing_tier_line_fails(self):
+def tier(n):
+    return f"- **Tier:** {n}"
+
+
+class TierItemTest(unittest.TestCase):
+    def test_missing_tier_item_fails(self):
         failures, _ = check_body("Summary\n\nNo tier here.", 0, ["README.md (Markdown)"])
         self.assertEqual(len(failures), 1)
-        self.assertIn("no `Review tier: N` line", failures[0])
+        self.assertIn("no `- **Tier:** N` item", failures[0])
 
     def test_empty_body_fails(self):
         failures, _ = check_body("", 0, ["README.md (Markdown)"])
         self.assertEqual(len(failures), 1)
-        self.assertIn("no `Review tier: N` line", failures[0])
+        self.assertIn("no `- **Tier:** N` item", failures[0])
 
     def test_none_body_fails(self):
         failures, _ = check_body(None, 1, ["scripts/x.py"])
         self.assertEqual(len(failures), 2)
 
     def test_tier_out_of_range_fails(self):
-        failures, _ = check_body("Review tier: 3", 0, ["README.md (Markdown)"])
-        self.assertIn("no `Review tier: N` line", failures[0])
+        failures, _ = check_body(tier(3), 0, ["README.md (Markdown)"])
+        self.assertIn("no `- **Tier:** N` item", failures[0])
 
     def test_tier_inside_sentence_does_not_count(self):
-        failures, _ = check_body("The Review tier: 0 line is missing", 0, ["README.md (Markdown)"])
+        failures, _ = check_body("The - **Tier:** 0 item is missing", 0, ["README.md (Markdown)"])
         self.assertEqual(len(failures), 1)
 
     def test_tier_zero_matching_passes(self):
-        failures, passes = check_body("Summary\n\nReview tier: 0\n", 0, ["README.md (Markdown)"])
+        failures, passes = check_body(f"Summary\n\n## Review\n\n{tier(0)}\n", 0, ["README.md (Markdown)"])
         self.assertEqual(failures, [])
-        self.assertIn("Review tier: 0 is at least the computed tier 0", passes)
-        self.assertIn("tier 0 needs no review-loop line", passes)
+        self.assertIn("Tier: 0 is at least the computed tier 0", passes)
+        self.assertIn("tier 0 needs no Verdict item", passes)
+
+    def test_star_bullet_passes(self):
+        failures, _ = check_body("* **Tier:** 0", 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_first_tier_item_counts(self):
+        failures, _ = check_body(f"{tier(0)}\n{tier(1)}\n{REVIEWED}", 1, ["scripts/a.py"])
+        self.assertEqual(len(failures), 1)
+        self.assertIn("claims Tier: 0", failures[0])
+
+    def test_old_tier_line_fails(self):
+        failures, _ = check_body("Review tier: 0", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+        self.assertIn("no `- **Tier:** N` item", failures[0])
 
 
 class TierFloorTest(unittest.TestCase):
     def test_claim_below_computed_fails_with_reasons(self):
-        failures, _ = check_body("Review tier: 0", 1, ["scripts/a.py", "scripts/b.py"])
+        failures, _ = check_body(tier(0), 1, ["scripts/a.py", "scripts/b.py"])
         self.assertEqual(len(failures), 2)
-        self.assertIn("claims Review tier: 0", failures[0])
+        self.assertIn("claims Tier: 0", failures[0])
         self.assertIn("computes tier 1", failures[0])
         self.assertIn("scripts/a.py; scripts/b.py", failures[0])
 
     def test_claim_above_computed_passes(self):
-        failures, passes = check_body(f"Review tier: 2\n{REVIEWED}", 1, ["scripts/a.py"])
+        failures, passes = check_body(f"{tier(2)}\n{REVIEWED}", 1, ["scripts/a.py"])
         self.assertEqual(failures, [])
-        self.assertIn("Review tier: 2 is at least the computed tier 1", passes)
+        self.assertIn("Tier: 2 is at least the computed tier 1", passes)
 
     def test_claim_one_below_two_fails(self):
-        failures, _ = check_body(f"Review tier: 1\n{REVIEWED}", 2, ["extension/storage/x.js"])
+        failures, _ = check_body(f"{tier(1)}\n{REVIEWED}", 2, ["extension/storage/x.js"])
         self.assertEqual(len(failures), 1)
         self.assertIn("computes tier 2", failures[0])
 
 
-class ReviewLineTest(unittest.TestCase):
-    def test_tier_one_without_review_line_fails(self):
-        failures, _ = check_body("Review tier: 1", 1, ["scripts/a.py"])
+class VerdictItemTest(unittest.TestCase):
+    def test_tier_one_without_verdict_item_fails(self):
+        failures, _ = check_body(tier(1), 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
-        self.assertIn("starting `Reviewed with review-loop:`", failures[0])
+        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[0])
 
-    def test_tier_two_with_review_line_passes(self):
-        failures, passes = check_body(f"Review tier: 2\n\n{REVIEWED}\n", 2, ["extension/stream/x.js"])
+    def test_full_review_section_passes(self):
+        body = f"Summary\n\n## Review\n\n{tier(2)}\n{REVIEWED}\n{REVIEWERS}\n"
+        failures, passes = check_body(body, 2, ["extension/stream/x.js"])
         self.assertEqual(failures, [])
-        self.assertTrue(any("review-loop" in message for message in passes))
+        self.assertIn("tier 2 has a `- **Verdict:** approved at abc1234` item", passes)
+
+    def test_reviewers_item_is_not_required(self):
+        failures, _ = check_body(f"{tier(1)}\n{REVIEWED}", 1, ["scripts/a.py"])
+        self.assertEqual(failures, [])
 
     def test_unapproved_verdict_fails(self):
-        body = "Review tier: 1\nReviewed with review-loop: 2 rounds. Verdict: changes requested"
+        body = f"{tier(1)}\n- **Verdict:** changes requested at `abc1234`"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
+        self.assertIn("**Verdict:** approved", failures[0])
 
     def test_verdict_is_case_sensitive(self):
-        body = "Review tier: 1\nReviewed with review-loop: 1 round. Verdict: Approved"
+        body = f"{tier(1)}\n- **Verdict:** Approved at `abc1234`"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
-    def test_review_line_must_start_the_line(self):
-        body = "Review tier: 1\nNot Reviewed with review-loop: 1 round. Verdict: approved"
+    def test_verdict_item_must_start_the_line(self):
+        body = f"{tier(1)}\nNot - **Verdict:** approved at `abc1234`"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
-    def test_missing_review_line_prints_the_line_to_add(self):
-        failures, _ = check_body("Review tier: 1", 1, ["scripts/a.py"], head="1234abc")
-        self.assertIn(
-            "add `Reviewed with review-loop: <N> rounds with <model> at 1234abc. Verdict: approved`",
-            failures[0],
-        )
-
-    def test_missing_tier_line_prints_the_line_to_add(self):
-        failures, _ = check_body(REVIEWED, 2, ["extension/stream/x.js"])
-        self.assertIn("add `Review tier: 2`", failures[0])
-
-    def test_review_line_without_sha_fails(self):
-        body = "Review tier: 1\nReviewed with review-loop: 1 round with gpt-6.1-sol on high. Verdict: approved"
-        failures, _ = check_body(body, 1, ["scripts/a.py"])
-        self.assertEqual(len(failures), 1)
-        self.assertIn("`at <sha>`", failures[0])
-        self.assertIn("rounds with <model> at <sha>. Verdict: approved", failures[0])
-
-    def test_sha_is_read_from_the_last_review_line(self):
+    def test_star_bullet_verdict_passes(self):
         seen = []
-        body = (
-            "Review tier: 1\n"
-            "Reviewed with review-loop: 1 round with m at 1111111. Verdict: approved\n"
-            "Reviewed with review-loop: 2 rounds with m at 2222222. Verdict: approved"
-        )
-        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
-        self.assertEqual(failures, [])
-        self.assertEqual(seen, ["2222222"])
-
-    def test_effort_is_optional(self):
-        seen = []
-        body = "Review tier: 1\nReviewed with review-loop: 2 rounds with gpt-6.1-sol at fd81ae1. Verdict: approved"
+        body = "* **Tier:** 1\n* **Verdict:** approved at `fd81ae1`"
         failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(seen, ["fd81ae1"])
 
+    def test_sha_without_backticks_passes(self):
+        seen = []
+        body = f"{tier(1)}\n- **Verdict:** approved at fd81ae1"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, ["fd81ae1"])
+
+    def test_unbalanced_backticks_fail(self):
+        body = f"{tier(1)}\n- **Verdict:** approved at `fd81ae1"
+        failures, _ = check_body(body, 1, ["scripts/a.py"])
+        self.assertEqual(len(failures), 1)
+
+    def test_old_review_line_fails(self):
+        body = (
+            "Review tier: 1\n\n"
+            "Reviewed with review-loop: 3 rounds with gpt-6.1-sol on high at 060d43c. Verdict: approved"
+        )
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
+        self.assertEqual(len(failures), 2)
+        self.assertIn("no `- **Tier:** N` item", failures[0])
+        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[1])
+
+    def test_missing_verdict_item_prints_the_item_to_add(self):
+        failures, _ = check_body(tier(1), 1, ["scripts/a.py"], head="1234abc")
+        self.assertIn("add `- **Verdict:** approved at 1234abc`", failures[0])
+
+    def test_missing_tier_item_prints_the_item_to_add(self):
+        failures, _ = check_body(REVIEWED, 2, ["extension/stream/x.js"])
+        self.assertIn("add `- **Tier:** 2`", failures[0])
+
+    def test_verdict_without_sha_fails(self):
+        body = f"{tier(1)}\n- **Verdict:** approved"
+        failures, _ = check_body(body, 1, ["scripts/a.py"])
+        self.assertEqual(len(failures), 1)
+        self.assertIn("add `- **Verdict:** approved at <sha>`", failures[0])
+
+    def test_sha_is_read_from_the_last_verdict_item(self):
+        seen = []
+        body = f"{tier(1)}\n- **Verdict:** approved at `1111111`\n- **Verdict:** approved at `2222222`"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, ["2222222"])
+
     def test_gate_failures_fail_the_body(self):
-        body = f"Review tier: 1\n{REVIEWED}"
+        body = f"{tier(1)}\n{REVIEWED}"
         failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: ([f"bad {sha}"], []))
         self.assertEqual(failures, ["bad abc1234"])
 
     def test_tier_zero_skips_the_gate(self):
-        failures, _ = check_body("Review tier: 0", 0, ["README.md (Markdown)"], review_gate=self.fail)
+        failures, _ = check_body(tier(0), 0, ["README.md (Markdown)"], review_gate=self.fail)
         self.assertEqual(failures, [])
 
 
 class LineEndingTest(unittest.TestCase):
     def test_crlf_body_passes(self):
-        body = f"Summary\r\n\r\nReview tier: 1\r\n{REVIEWED}\r\n"
+        body = f"Summary\r\n\r\n## Review\r\n\r\n{tier(1)}\r\n{REVIEWED}\r\n{REVIEWERS}\r\n"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(failures, [])
 
@@ -193,8 +232,8 @@ class ReviewedCommitTest(unittest.TestCase):
         )
 
     def body(self, sha=None, tier=1):
-        at = f" at {sha}" if sha else ""
-        return f"Review tier: {tier}\nReviewed with review-loop: 2 rounds with gpt-6.1-sol on high{at}. Verdict: approved"
+        verdict = f"- **Verdict:** approved at `{sha}`" if sha else "- **Verdict:** approved"
+        return f"## Review\n\n- **Tier:** {tier}\n{verdict}\n{REVIEWERS}"
 
     def test_nothing_changed_after_the_sha_passes(self):
         result = self.run_check(self.body(self.reviewed))
@@ -205,11 +244,11 @@ class ReviewedCommitTest(unittest.TestCase):
         result = self.run_check(self.body(self.rev("HEAD")))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_review_line_without_sha_fails(self):
+    def test_verdict_without_sha_fails(self):
         result = self.run_check(self.body())
         self.assertEqual(result.returncode, 1)
         head = self.rev("HEAD")[:7]
-        self.assertIn(f"rounds with <model> at {head}. Verdict: approved", result.stdout)
+        self.assertIn(f"add `- **Verdict:** approved at {head}`", result.stdout)
 
     def test_unknown_sha_fails(self):
         result = self.run_check(self.body("deadbeef"))
@@ -224,7 +263,7 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn(f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
-        self.assertIn("update `at <sha>`", result.stdout)
+        self.assertIn("update the sha in the Verdict item", result.stdout)
 
     def test_tier_two_change_after_the_sha_fails(self):
         self.write("extension/storage/store.js", "export const s = 1;\n")
@@ -341,13 +380,13 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertIn("reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
 
-    def test_tier_zero_pr_needs_no_review_line(self):
+    def test_tier_zero_pr_needs_no_verdict_item(self):
         self.git("checkout", "-q", "-b", "docs", "main")
         self.write("docs/guide.md", "Guide\n")
         self.commit("docs")
-        result = self.run_check("Review tier: 0")
+        result = self.run_check("## Review\n\n- **Tier:** 0")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("PASS: tier 0 needs no review-loop line", result.stdout)
+        self.assertIn("PASS: tier 0 needs no Verdict item", result.stdout)
 
 
 class WorkflowTest(unittest.TestCase):
@@ -369,7 +408,7 @@ class WorkflowTest(unittest.TestCase):
         )
         job = workflow.split("  pr-body:\n", 1)[1].split("    steps:\n", 1)[0]
         self.assertNotIn("    if:", job)
-        check_step = workflow.split("- name: Check review tier and review lines\n", 1)[1]
+        check_step = workflow.split("- name: Check the Review section\n", 1)[1]
         self.assertIn("if: ${{ !github.event.pull_request.draft }}", check_step.splitlines()[0])
 
 
