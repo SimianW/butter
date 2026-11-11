@@ -163,7 +163,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 
   Run it with `EXT=<checkout>/extension node lab/harness/bookmarks-live.mjs` on the lab host:
   - `--list` prints both suites' scenarios with each one's mode; `ONLY=<name>[,<name>…]` runs only
-    those of the current mode (an unknown name exits 2). Neither needs the lab.
+    those of the current mode (an unknown name exits 2). `--list` and an unknown name need no lab;
+    a run of known names takes the lab lock and restarts its browser like a full run.
   - A live scenario can't reset or seed: it runs on what the ones before it left, declares what it
     needs (the fixture loaded, two stored test bookmarks, a top-level list in the fixture) and is
     skipped with the reason when that is missing, so `ONLY=<a later scenario>` alone prints
