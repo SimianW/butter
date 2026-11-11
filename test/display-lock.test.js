@@ -48,6 +48,7 @@ function fixture() {
     devicePixelRatio: 1,
     Element,
     performance: { now: () => 1 },
+    __butterPageReader: require('../extension/page/reader-main.js'),
     __butterSeekCore: require('../extension/seek/core-main.js'),
     __butterLayoutCheck: require('../extension/seek/layout-check-main.js'),
     ResizeObserver: class {

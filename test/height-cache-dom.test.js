@@ -84,6 +84,7 @@ function fixture({ mounted = false, setup = () => {} } = {}) {
     innerWidth: 1600,
     Element,
     performance: { now: () => 1 },
+    __butterPageReader: require('../extension/page/reader-main.js'),
     __butterSeekCore: core,
     __butterLayoutCheck: require('../extension/seek/layout-check-main.js'),
     ResizeObserver: class {
@@ -1141,7 +1142,7 @@ test('a single Dil turn mounted before recorder startup is recorded without leav
   // selector/wrapper structure is also exercised by the run's synthetic-dil.mjs browser fixture.
   const f = fixture({
     mounted: true,
-    setup({ turn, item, blocks, sc, Element }) {
+    setup({ context, turn, item, blocks, sc, Element }) {
       sc.clientLeft = 0;
       const paragraph = Object.assign(new Element(), { ...item, closest: () => turn });
       const code = Object.assign(new Element(), {
@@ -1169,8 +1170,9 @@ test('a single Dil turn mounted before recorder startup is recorded without leav
         getBoundingClientRect: () => ({ top: 420, left: 0, width: 768, height: 110.5 }),
       });
       blocks.push(paragraph, code, formula);
+      const [ITEMS] = context.__butterPageReader.previewItemsIn({ querySelectorAll: (s) => [s] });
       const original = turn.querySelectorAll;
-      turn.querySelectorAll = (s) => (s === core.PREVIEW_ITEMS ? [...blocks, table] : original(s));
+      turn.querySelectorAll = (s) => (s === ITEMS ? [...blocks, table] : original(s));
     },
   });
   assert.ok(f.observed.has(f.turn), 'startup must observe the already-mounted turn');

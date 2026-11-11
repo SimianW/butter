@@ -57,6 +57,7 @@ try {
       .grid{display:grid}.flex{display:flex}.card{height:186px}.card .flex>div{flex:1}
     </style><div class="thread-scroll-container"><div><div data-turn-key="synthetic"><div data-talvt-turn-state="complete"><div data-message-author-role="assistant" data-message-id="synthetic"><div data-user-message-bubble>Fixture question</div><div data-markdown-text-style="assistant-message">${answer}</div></div></div></div></div></div>`);
     for (const file of [
+      'page/reader-main.js',
       'seek/core-main.js',
       'seek/layout-check-main.js',
       'seek/layout-codec.js',

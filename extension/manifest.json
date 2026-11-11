@@ -44,6 +44,7 @@
         "shared/config-main.js",
         "stream/throttle-main.js",
         "history/conversation-main.js",
+        "page/reader-main.js",
         "seek/core-main.js",
         "seek/layout-check-main.js",
         "seek/anchor-main.js",

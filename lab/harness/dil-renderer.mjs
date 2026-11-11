@@ -36,6 +36,7 @@ try {
     </style><div class="thread-scroll-container"><div><div data-turn-key="synthetic"><div data-talvt-turn-state="complete"><div data-message-author-role="assistant" data-message-id="synthetic"><div data-user-message-bubble>Fixture question</div><div class="MarkdownRoot-rZKhxa" data-markdown-text-style="assistant-message">${answer}</div></div></div></div></div></div>`);
     // Scripts normally start before ChatGPT inserts the turns.
     for (const file of [
+      'page/reader-main.js',
       'seek/core-main.js',
       'seek/layout-check-main.js',
       'seek/layout-codec.js',
@@ -82,7 +83,7 @@ try {
     );
     const audit = await page.evaluate(() => {
       const sc = document.querySelector('.thread-scroll-container');
-      const els = [...sc.querySelectorAll(__butterSeekCore.PREVIEW_ITEMS)];
+      const els = [...__butterPageReader.previewItemsIn(sc)];
       const flat = els.map((el, index) => {
         const r = el.getBoundingClientRect();
         return { turn: 0, index, abs: r.top - sc.getBoundingClientRect().top, h: r.height };

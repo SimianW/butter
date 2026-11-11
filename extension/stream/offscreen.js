@@ -15,7 +15,7 @@
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
-  // Same block containers as seek/core-main.js and containment.css (separate script world).
+  // Same answer root as page/reader-main.js and containment.css (separate script world).
   const ANSWER_ROOT =
     ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
   const TARGETS =

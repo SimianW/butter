@@ -111,7 +111,7 @@ function fixture() {
       ),
       ctx,
     );
-  load('seek/layout-cache-main');
+  ['page/reader-main', 'seek/layout-cache-main'].forEach(load);
   storage.account();
   return {
     ctx,

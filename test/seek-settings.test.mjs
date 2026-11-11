@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import status from '../extension/shared/status.js';
+import pageReader from '../extension/page/reader-main.js';
 import statusCore from '../extension/seek/core-main.js';
 
 test('seek follows the master and seek switches independently of the rail and other feature options', async () => {
@@ -75,6 +76,7 @@ test('seek off marker prevents a trusted thumb press from preparing preview', ()
     closest: () => sc,
   });
   const ctx = vm.createContext({
+    __butterPageReader: pageReader,
     __butterSeekCore: { createActivation: () => ({ cancel() {} }) },
     __butterLayoutCheck: {},
     document: {
@@ -158,6 +160,7 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 700, height: 500 }),
   };
   const ctx = {
+    __butterPageReader: pageReader,
     __butterSeekCore: statusCore,
     document: {
       documentElement: {
