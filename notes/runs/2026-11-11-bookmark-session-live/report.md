@@ -1,3 +1,5 @@
+PR #91 was rerun on `e4aa4d8` after the F1/F2 fixes: matrix 35/35, wash 42/42, and branch ready at both widths, all on the first attempt. The ordered checks and cleanup match today’s saved main run; the doubled locate probe counts are gone. See [the fixed-head rerun](rerun-pr-e4aa4d8.md).
+
 # Butter main vs PR #91: live-lab smoke — 2026-11-11
 
 **Result: raw matrix results differ by expected harness finding F1; all other prescribed checks pass.**

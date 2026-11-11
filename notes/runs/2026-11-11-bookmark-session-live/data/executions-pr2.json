@@ -1,0 +1,111 @@
+[
+  {
+    "label": "bookmarks-matrix-pr2-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "env": {
+      "EXT": "$WORK/pr2/extension",
+      "OUT": "$RAW/bookmarks-matrix-pr2-1",
+      "TESTED_HEAD": "e4aa4d8e0627fbd310efb8bca2abd280132173c0",
+      "LAB_FIXTURE": "math12",
+      "LAB_PLAYWRIGHT": "$DEPS/playwright"
+    },
+    "exit": 0,
+    "seconds": 302.225
+  },
+  {
+    "label": "bookmarks-wash-pr2-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "env": {
+      "EXT": "$WORK/pr2/extension",
+      "OUT": "$RAW/bookmarks-wash-pr2-1",
+      "TESTED_HEAD": "e4aa4d8e0627fbd310efb8bca2abd280132173c0",
+      "LAB_FIXTURE": "demo-en12",
+      "LAB_PLAYWRIGHT": "$DEPS/playwright",
+      "MODE": "wash"
+    },
+    "exit": 0,
+    "seconds": 133.218
+  },
+  {
+    "label": "branch-live-pr2-1-acquire",
+    "args": [
+      "$B/lab-lock",
+      "acquire",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-rerun-pr2-1",
+      "--wait",
+      "1800",
+      "--perf"
+    ],
+    "env": {},
+    "exit": 0,
+    "seconds": 0.05
+  },
+  {
+    "label": "branch-live-pr2-1-restart",
+    "args": [
+      "$B/lab",
+      "restart-browser"
+    ],
+    "env": {
+      "LAB_ID": "1",
+      "LAB_OWNER": "butter-bookmark-session-rerun-pr2-1",
+      "LAB_PLAYWRIGHT": "$DEPS/playwright",
+      "LAB_EXTENSIONS": "$EXT_PR2",
+      "LAB_FLAGS": "--disable-extensions-except=$EXT_PR2"
+    },
+    "exit": 0,
+    "seconds": 2.024
+  },
+  {
+    "label": "branch-live-pr2-1",
+    "args": [
+      "node",
+      "lab/harness/branch-live.mjs"
+    ],
+    "env": {
+      "LAB_ID": "1",
+      "LAB_OWNER": "butter-bookmark-session-rerun-pr2-1",
+      "LAB_PLAYWRIGHT": "$DEPS/playwright",
+      "BRANCH_PATH": "^/backend-api/conversation/new_branch$",
+      "OUT_JSON": "branch-live-pr2-1.json"
+    },
+    "exit": 0,
+    "seconds": 44.073
+  },
+  {
+    "label": "branch-live-pr2-1-restore",
+    "args": [
+      "$B/lab-restore",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-rerun-pr2-1"
+    ],
+    "env": {},
+    "exit": 0,
+    "seconds": 10.16
+  },
+  {
+    "label": "branch-live-pr2-1-release",
+    "args": [
+      "$B/lab-lock",
+      "release",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-rerun-pr2-1"
+    ],
+    "env": {},
+    "exit": 0,
+    "seconds": 0.06
+  }
+]
