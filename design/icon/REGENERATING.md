@@ -10,8 +10,8 @@ The popup inlines the main drawing at 54 × 48 px.
 Regenerate the transparent PNGs from the repository root:
 
 ```sh
-npm ci --prefix lab/harness
-lab/harness/node_modules/.bin/playwright install chromium
+npm ci
+npx playwright install chromium
 node design/icon/regenerate.mjs
 ```
 

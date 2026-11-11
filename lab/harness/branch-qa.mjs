@@ -5,7 +5,7 @@
 // buttons, status reporting, pop-up blocked and a failed hand-over, and the ready and unsure lines
 // taking ChatGPT's disclaimer row (covering it until they go) and the ready line's hiding when the
 // reply appears.
-// Run: npm ci --prefix lab/harness && node lab/harness/branch-qa.mjs
+// Run: npm ci && node lab/harness/branch-qa.mjs
 // SHOTS=<dir> overrides the screenshot directory.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';

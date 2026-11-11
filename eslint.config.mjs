@@ -1,5 +1,29 @@
-// Only two rules: undefined names and unused names. Formatting is Prettier's job.
+// Undefined names, unused names and file length (max-lines, counting blank lines and comments).
+// Formatting is Prettier's job.
 import globals from 'globals';
+
+export const maxLines = 500;
+
+// Raising a cap needs the reason in the PR body; prefer splitting the file along a seam.
+export const maxLinesCaps = {
+  'extension/bookmarks/content.js': 772,
+  'extension/dev/recorder.js': 574,
+  'extension/rail/rail.js': 1831,
+  'extension/seek/core-main.js': 581,
+  'extension/seek/layout-cache-main.js': 1356,
+  'extension/seek/preview-main.js': 1546,
+  'lab/harness/bookmarks-live.mjs': 1916,
+  'lab/harness/branch-qa.mjs': 1166,
+  'lab/harness/dev-capture-qa.mjs': 802,
+  'lab/harness/popup-qa.mjs': 548,
+  'test/bookmark-notice.test.js': 538,
+  'test/branch-run.test.js': 509,
+  'test/dev-sources.test.js': 519,
+  'test/height-cache-dom.test.js': 1461,
+  'test/layout-storage.test.js': 565,
+  'test/rail.test.mjs': 924,
+  'test/seek-landing.test.js': 917,
+};
 
 const rules = {
   'no-undef': 'error',
@@ -7,7 +31,8 @@ const rules = {
 };
 
 export default [
-  { ignores: ['lab/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
+  // lab/harness/ is linted for file length only.
+  { ignores: ['lab/*', '!lab/harness/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
   {
     files: ['extension/**/*.js'],
     ignores: [
@@ -164,4 +189,10 @@ export default [
     languageOptions: { globals: { ...globals.node } },
     rules,
   },
+  // Every linted file stays at or under maxLines, except the capped files, which may only shrink.
+  { files: ['**/*.{js,mjs,cjs}'], rules: { 'max-lines': ['error', { max: maxLines }] } },
+  ...Object.entries(maxLinesCaps).map(([file, max]) => ({
+    files: [file],
+    rules: { 'max-lines': ['error', { max }] },
+  })),
 ];

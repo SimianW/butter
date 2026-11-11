@@ -28,7 +28,8 @@ run the harness scripts without `EXT=`.
 
 ## Harness (`harness/`)
 
-Run `npm ci --prefix lab/harness` from the repository root. Live-chat scripts generally need
+Run `npm ci` from the repository root: it installs Playwright, pinned in the root
+`package.json`, which the harness scripts import (no global install or symlink needed). Live-chat scripts generally need
 `CHAT=<url of a long ChatGPT chat>`; fixture-only and isolated popup scripts do not. `EXT=<dirs>` restarts
 the lab browser with exactly those unpacked extensions (`EXT=` empty = no extensions); without
 `EXT` the scripts use the browser as it is.

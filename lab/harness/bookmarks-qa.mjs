@@ -5,7 +5,7 @@
 // The fixture draws ChatGPT's own "Ask ChatGPT" below a selection in an answer, and a "More
 // actions" button per turn, so that Butter's selection pill (#77) shows Ask in branch and Bookmark.
 //
-// Run: npm ci --prefix lab/harness && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
+// Run: npm ci && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
 // `--list` prints the scenarios with what each checks (bookmarks/scenarios.mjs holds them, in run
 // order); ONLY=<name>[,<name>...] runs only those. Each scenario starts from its own declared
 // start on a fresh page in the run's one browser, so a scenario alone runs as it does in a full run.

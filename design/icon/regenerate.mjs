@@ -1,5 +1,5 @@
-// Run after `npm ci --prefix lab/harness`; uses its local, headless Chromium.
-import { chromium } from '../../lab/harness/node_modules/playwright/index.mjs';
+// Run after `npm ci` at the repository root; uses its local, headless Chromium.
+import { chromium } from 'playwright';
 import { readFile } from 'node:fs/promises';
 const browser = await chromium.launch({ headless: true });
 try {
