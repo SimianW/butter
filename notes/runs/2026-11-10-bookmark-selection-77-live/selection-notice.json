@@ -1,0 +1,53 @@
+{
+  "testedHead": "84941c0",
+  "checks": [
+    {
+      "name": "pill beside real Ask ChatGPT",
+      "pass": true,
+      "gap": 4,
+      "topDelta": 0,
+      "radiusMatches": true,
+      "backgroundMatches": true,
+      "shadowMatches": true
+    },
+    {
+      "name": "Bookmark cell saves and shows top-right card",
+      "pass": true,
+      "stored": 1,
+      "top": 64,
+      "right": 74.058349609375
+    },
+    {
+      "name": "Undo saved card deletes bookmark",
+      "pass": true,
+      "stored": 0
+    },
+    {
+      "name": "rail x removes and shows removed card",
+      "pass": true,
+      "stored": 0
+    },
+    {
+      "name": "Undo removed card restores bookmark",
+      "pass": true,
+      "stored": 1
+    },
+    {
+      "name": "pill absent for user question",
+      "pass": true,
+      "characters": 8,
+      "inUserQuestion": true,
+      "nativeAskVisible": true
+    },
+    {
+      "name": "no Butter page errors",
+      "pass": true,
+      "butter": 0,
+      "other": 0
+    }
+  ],
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  }
+}

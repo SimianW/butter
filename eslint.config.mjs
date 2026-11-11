@@ -75,6 +75,10 @@ export default [
     languageOptions: { globals: { ButterBookmarkStore: 'readonly' } }, // defined in bookmarks/client.js
   },
   {
+    files: ['extension/bookmarks/content.js', 'extension/branch/content.js'],
+    languageOptions: { globals: { ButterPill: 'readonly' } }, // defined in selection/pill.js
+  },
+  {
     // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
     files: ['extension/bookmarks/worker.js'],
     languageOptions: {

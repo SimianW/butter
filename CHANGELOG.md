@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.0-alpha.20] - 2026-11-10
+
+### Added
+
+- Added a Bookmark button next to ChatGPT's "Ask ChatGPT" when you select text in an answer; its
+  label shows the bookmark shortcut.
+- Added a notification at top right after every bookmark you save or remove, with its first words
+  and Undo. It also tells you when a passage is already bookmarked.
+
+### Changed
+
+- Changed Ask in branch to an icon that shares one small pill with the Bookmark button; hover it to
+  see its label.
+- Moved the first-bookmark notice from bottom right to top right, as the expanded form of the new
+  notification.
+
+### Removed
+
+- Removed the bookmark button that appeared in the left margin beside each paragraph under the
+  pointer. To bookmark a whole paragraph, triple-click it and click Bookmark, or press the shortcut
+  with nothing selected.
+
 ## [0.1.0-alpha.19] - 2026-11-10
 
 ### Added

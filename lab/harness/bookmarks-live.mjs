@@ -106,9 +106,9 @@ const railState = () =>
     const r = document.querySelector('chatgpt-butter-nav')?.shadowRoot;
     return {
       ticks: r?.querySelectorAll('.tick').length || 0,
-      marks: r?.querySelectorAll('.mark:not(.gone)').length || 0,
+      marks: r?.querySelectorAll('.bdot:not(.gone)').length || 0,
       more: r ? !r.querySelector('.more').hidden : false,
-      stale: r?.querySelectorAll('.mark.stale').length || 0,
+      stale: r?.querySelectorAll('.bdot.stale').length || 0,
       busy: r?.querySelectorAll('.busy').length || 0,
     };
   });
@@ -264,41 +264,33 @@ async function targetBox(which, scroll = false) {
     [which, scroll],
   );
 }
-async function bookmarkParagraph(tooltipCheck = 'hover button tooltip reads Bookmark') {
+// Selects the target paragraph whole, then clicks the selection pill's Bookmark cell beside
+// ChatGPT's "Ask ChatGPT" (#77; the hover button in the margin is gone).
+const BOOKMARK_CELL = 'chatgpt-butter-pill button[data-cell="bookmark"]';
+async function bookmarkParagraph(cellCheck = 'the Bookmark cell is named Bookmark selection') {
   await targetBox(0, true);
   await page.waitForTimeout(1800);
   const b = await targetBox(0);
-  requireThat(b, 'target virtualized before hover');
+  requireThat(b, 'target virtualized before selecting');
   await page.mouse.move(10, 300);
-  await page.mouse.move(b.x, b.y);
-  await page.waitForTimeout(800);
-  const shown = await page.locator('chatgpt-butter-bookmark button.show').count();
-  summary.paragraphAttempt = {
-    inView: b.inView,
-    hoverButtonShown: shown,
-    hitTarget: await page.evaluate(
-      ([x, y]) => !!document.elementFromPoint(x, y)?.closest('p'),
-      [b.x, b.y],
-    ),
-  };
+  await page.evaluate(() => {
+    const t = window.__bookmarkLive,
+      el = document
+        .querySelector(`[data-turn-key="${t.turn}"]`)
+        .querySelector(t.answer)
+        .querySelectorAll(t.blocks)[t.paras[0]];
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    getSelection().removeAllRanges();
+    getSelection().addRange(r);
+  });
+  const cell = page.locator(BOOKMARK_CELL);
+  await cell.waitFor({ timeout: 3000 }).catch(() => {});
+  const shown = await cell.count();
+  summary.paragraphAttempt = { inView: b.inView, bookmarkCellShown: shown };
   if (shown) {
-    await page.locator('chatgpt-butter-bookmark button.show').hover();
-    await page.waitForTimeout(200);
-    const tooltip = await page.evaluate(() => {
-      const r = document.querySelector('chatgpt-butter-bookmark').shadowRoot;
-      return {
-        labelStartsBookmark: r
-          .querySelector('button')
-          .getAttribute('aria-label')
-          .startsWith('Bookmark: '),
-        labelHasText:
-          r.querySelector('button').getAttribute('aria-label').length > 'Bookmark: '.length,
-        tooltipIsBookmark: r.querySelector('.tip span').textContent === 'Bookmark',
-        tooltipVisible: getComputedStyle(r.querySelector('.tip')).opacity === '1',
-      };
-    });
-    await check(tooltipCheck, Object.values(tooltip).every(Boolean), tooltip);
-    await page.locator('chatgpt-butter-bookmark button.show').click();
+    await check(cellCheck, (await cell.getAttribute('aria-label')) === 'Bookmark selection', {});
+    await cell.click();
   }
   await page.waitForTimeout(800);
   // Button text is public Butter UI, never report surrounding page content.
@@ -416,7 +408,7 @@ async function listItemMatrix() {
     await page.evaluate(() => window.__bookmarkLive),
   );
   phase = 'bookmark-list-item';
-  await bookmarkParagraph('list item tooltip and accessible name match');
+  await bookmarkParagraph('list item: the Bookmark cell is named Bookmark selection');
   const stored = await storedCount();
   const item = await listItemBox();
   const anchor = await worker.evaluate(async () => {
@@ -498,12 +490,12 @@ async function listItemMatrix() {
         hash === records[0].msg &&
         !!b &&
         flat(b.textContent).includes([...flat(records[0].excerpt)].slice(0, 40).join('')),
-      staleMarks: r.querySelectorAll('.mark.stale:not(.gone)').length,
+      staleMarks: r.querySelectorAll('.bdot.stale:not(.gone)').length,
     };
   }, records);
   await jump(0);
   await waitLanding();
-  await page.locator('chatgpt-butter-nav .mark:not(.gone)').first().focus();
+  await (await markedControl()).focus();
   await page.keyboard.press('ArrowLeft');
   await page.waitForTimeout(2800);
   const staleRows = await page
@@ -548,7 +540,7 @@ async function beginJumpProbe() {
       (e) => {
         const el = e.composedPath()[0];
         __jumpProbe.clicks.push({
-          control: el.closest('.go') ? 'go' : el.closest('.mark') ? 'mark' : 'other',
+          control: el.closest('.go') ? 'go' : el.closest('.tick, .more') ? 'mark' : 'other',
           trusted: e.isTrusted,
           detail: e.detail,
         });
@@ -561,7 +553,7 @@ async function beginJumpProbe() {
         if (['Enter', 'ArrowLeft'].includes(e.key))
           __jumpProbe.keys.push({
             key: e.key,
-            control: e.target.matches('.mark') ? 'mark' : 'other',
+            control: e.target.matches('.tick, .more') ? 'mark' : 'other',
             trusted: e.isTrusted,
           });
       },
@@ -599,11 +591,21 @@ async function endJumpProbe(label) {
   summary.jumpEvidence[label] = result;
   console.log(`INFO jump ${label} ${JSON.stringify(result)}`);
 }
+// Bookmark dots are decorative (#71); the tick / earlier-dots button owns focus.
+async function markedControl() {
+  const dot = page.locator('chatgpt-butter-nav .bdot:not(.gone)').first();
+  await dot.waitFor({ state: 'attached', timeout: 10000 });
+  const index = Number(await dot.getAttribute('data-q'));
+  return index < 0
+    ? page.locator('chatgpt-butter-nav .more')
+    : page.locator('chatgpt-butter-nav .tick').nth(index);
+}
 async function jump(which = 0, held = false) {
-  const mark = page.locator('chatgpt-butter-nav .mark:not(.gone)').first();
+  const mark = await markedControl();
   if (held) {
     // One pointer cannot both hold a native thumb and click a card: activate with the keyboard.
     await mark.evaluate((el) => el.focus());
+    await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Enter');
   } else {
     await mark.focus();
@@ -743,8 +745,8 @@ async function drag(arm, repetition) {
 async function deleteMarks() {
   // Exercise the card's real delete controls. Fallback cleanup only touches this fresh install.
   for (let i = 0; i < 4 && (await storedCount()); i++) {
-    const mark = page.locator('chatgpt-butter-nav .mark:not(.gone)').first();
-    if (!(await mark.count())) break;
+    if (!(await page.locator('chatgpt-butter-nav .bdot:not(.gone)').count())) break;
+    const mark = await markedControl();
     await mark.focus();
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(300);
@@ -761,9 +763,9 @@ async function earlierSegmentState() {
   return page.evaluate(() => {
     const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
       more = root.querySelector('.more'),
-      dots = more.getBoundingClientRect(),
-      marks = [...root.querySelectorAll('.mark:not(.gone)')],
-      earlier = marks.filter((m) => /earlier question/i.test(m.getAttribute('aria-label'))),
+      dots = more.querySelector('i').getBoundingClientRect(),
+      marks = [...root.querySelectorAll('.bdot:not(.gone)')],
+      earlier = marks.filter((m) => Number(m.getAttribute('data-q')) === -1),
       b = earlier[0]?.getBoundingClientRect(),
       color = earlier[0] && getComputedStyle(earlier[0]).backgroundColor,
       dark = root.host.hasAttribute('data-dark');
@@ -772,10 +774,11 @@ async function earlierSegmentState() {
       earlierMarks: earlier.length,
       loadedMarks: marks.length - earlier.length,
       moreVisible: !more.hidden,
+      gapLeftOfDotsPx: b ? +(dots.left - b.right).toFixed(2) : null,
       offsetBelowDotsPx: b ? +(b.top + b.height / 2 - dots.top - dots.height / 2).toFixed(2) : null,
       widthPx: b?.width ?? null,
       heightPx: b?.height ?? null,
-      butterColor: !!color && color === (dark ? 'rgb(227, 199, 102)' : 'rgb(251, 224, 122)'),
+      butterColor: !!color && color === (dark ? 'rgb(227, 199, 102)' : 'rgb(211, 158, 16)'),
     };
   });
 }
@@ -789,24 +792,25 @@ async function checkEarlierSegment(label) {
       s.earlierMarks === 1 &&
       s.loadedMarks === 0 &&
       s.moreVisible &&
-      Math.abs(s.offsetBelowDotsPx - 5) <= 0.1 &&
-      s.widthPx === 8 &&
-      s.heightPx === 2 &&
+      Math.abs(s.offsetBelowDotsPx) <= 0.1 &&
+      s.gapLeftOfDotsPx === 4 &&
+      s.widthPx === 4 &&
+      s.heightPx === 4 &&
       s.butterColor,
     s,
   );
 }
 async function hoverEarlierCard(count, label) {
-  const mark = page.locator('chatgpt-butter-nav .mark:not(.gone)').first();
+  const mark = page.locator('chatgpt-butter-nav .bdot:not(.gone)').first();
   const box = await mark.boundingBox();
   requireThat(box, 'earlier segment missing');
-  // The rail's pointer geometry handles the 2 px segment; move to its actual centre.
+  // The rail's pointer geometry handles the dot; move to its actual centre.
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.waitForTimeout(700);
   const card = await page.evaluate((count) => {
     const root = document.querySelector('chatgpt-butter-nav').shadowRoot,
       card = root.querySelector('.card'),
-      meta = root.querySelector('.bmc .meta span');
+      meta = root.querySelector('.card > .meta');
     const expected =
       count === 1 ? 'Bookmark · earlier question' : `Earlier questions · ${count} bookmarks`;
     return {
@@ -841,7 +845,7 @@ async function watchEarlierLoading() {
     });
     const observe = () => {
       s.sawLoadingMeta ||=
-        root.querySelector('.bmc .meta span')?.textContent === 'Loading earlier questions…';
+        root.querySelector('.card > .meta')?.textContent === 'Loading earlier questions…';
       s.sawSpinner ||= !!root.querySelector('.bmc .wspin');
       s.sawBusyDots ||= root.querySelector('.more').classList.contains('busy');
     };
@@ -856,7 +860,7 @@ async function watchEarlierLoading() {
 }
 // ---- MODE=wash (#69 "The landing wash", #74). On the real fixture chat, in light and in dark
 // theme: a paragraph, a selection inside another paragraph, and a table are bookmarked with the
-// hover button, then each is jumped to from its question's card, starting about 2500 px away. The
+// Bookmark cell, then each is jumped to from its question's card, starting about 2500 px away. The
 // fixtures hold no code block (none of their answers has one, checked on 2026-11-10), so the table
 // stands for the blocks the wash covers whole; the fixture harness covers code blocks. Checked on
 // ChatGPT's own markup: the boxes sit on the bookmarked text's lines (the table's one box 3 px
@@ -943,6 +947,13 @@ const installKit = () =>
       point(kind) {
         const r = block(kind)?.getBoundingClientRect();
         return r && { x: r.left + Math.min(150, r.width / 2), y: r.top + Math.min(12, r.height / 2) };
+      },
+      // The target whole, as a triple-click selects a paragraph.
+      selectWhole(kind) {
+        const r = document.createRange();
+        r.selectNodeContents(block(kind));
+        getSelection().removeAllRanges();
+        getSelection().addRange(r);
       },
       select() {
         const W = window.__wash,
@@ -1038,20 +1049,20 @@ const showTarget = (kind, y = 200) => page.evaluate(([k, y]) => window.__wk.show
 const targetPoint = (kind) => page.evaluate((k) => window.__wk.point(k), kind);
 const expectedBoxes = (kind) => page.evaluate((k) => window.__wk.expected(k), kind);
 const washNow = () => page.evaluate((WASH) => window.__wk.now(WASH), WASH_HOST);
-// Bookmarks target `kind` with the hover button: the paragraph or the table whole, or the
-// selection made in it.
+// Bookmarks target `kind` with the selection pill's Bookmark cell (#77): the paragraph or the
+// table selected whole, or the selection made in it.
 async function washBookmark(kind) {
   const before = await storedCount();
   await showTarget(kind);
   await page.waitForTimeout(1500);
-  if (kind === 'selection') await page.evaluate(() => window.__wk.select());
   const at = await targetPoint(kind);
   requireThat(at, `${kind} target unmounted`);
   await page.mouse.move(10, 300);
-  await page.mouse.move(at.x, at.y, { steps: 3 });
-  await page.waitForTimeout(900);
-  const button = page.locator('chatgpt-butter-bookmark button.show');
-  requireThat(await button.count(), `no hover button on the ${kind}`);
+  if (kind === 'selection') await page.evaluate(() => window.__wk.select());
+  else await page.evaluate((k) => window.__wk.selectWhole(k), kind);
+  const button = page.locator(BOOKMARK_CELL);
+  await button.waitFor({ timeout: 3000 }).catch(() => {});
+  requireThat(await button.count(), `no Bookmark cell for the ${kind}`);
   await button.click();
   await page.waitForTimeout(1200);
   await page.evaluate(() => getSelection().removeAllRanges());
@@ -1337,7 +1348,7 @@ async function washRun() {
         await worker.evaluate((v) => (globalThis.washTarget = v), await page.evaluate(() => window.__wash));
         phase = 'wash-bookmark';
         for (const kind of ['paragraph', 'selection', 'table'])
-          await check(`wash: the hover button bookmarks the ${kind}`, await washBookmark(kind), { stored: await storedCount() });
+          await check(`wash: the Bookmark cell bookmarks the ${kind}`, await washBookmark(kind), { stored: await storedCount() });
       } else await page.evaluate((v) => (window.__wash = v), await worker.evaluate(() => globalThis.washTarget));
       await page.locator('chatgpt-butter-nav .bdot').first().waitFor({ state: 'attached', timeout: 20000 });
       // The card lists them in answer order.
@@ -1666,7 +1677,7 @@ try {
       },
     );
     // Each click path starts from a fresh content-script/rail instance with only the tail loaded.
-    for (const route of ['row', 'segment']) {
+    for (const route of ['row', 'keyboard']) {
       phase = `reload-unloaded-${route}`;
       await open();
       await restoreTargets();
@@ -1687,15 +1698,14 @@ try {
       await beginJumpProbe();
       await watchEarlierLoading();
       if (route === 'row') {
-        // Choose the newer selection, not the oldest bookmark selected by a segment click.
+        // Choose the newer selection; the keyboard route below picks the first row.
         await page.locator('chatgpt-butter-nav .bmc .go').nth(1).click();
       } else {
-        // Segments inherit pointer-events:none from .marks. The rail deliberately routes the
-        // underlying tick/dots click by pointer geometry; a locator click waits for a hit target
-        // the segment never owns. Send the real pointer click at its visible centre instead.
-        const b = await page.locator('chatgpt-butter-nav .mark:not(.gone)').boundingBox();
-        requireThat(b, 'earlier segment missing before click');
-        await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+        // Dots are decorative (#71). Enter the earlier-history card from its real button,
+        // then activate its first bookmark with the keyboard (#70, #72).
+        await (await markedControl()).focus();
+        await page.keyboard.press('ArrowLeft');
+        await page.keyboard.press('Enter');
       }
       await waitLanding();
       await endJumpProbe(`unloaded-${route}`);
@@ -1792,14 +1802,14 @@ try {
         ).length,
       };
     }, records);
-    await page.locator('chatgpt-butter-nav .mark:not(.gone)').first().focus();
+    await (await markedControl()).focus();
     await page.keyboard.press('ArrowLeft');
     await page.waitForTimeout(2800);
     const live = await page.evaluate(() => {
       const r = document.querySelector('chatgpt-butter-nav').shadowRoot;
       return {
-        marks: r.querySelectorAll('.mark:not(.gone)').length,
-        staleMarks: r.querySelectorAll('.mark.stale:not(.gone)').length,
+        marks: r.querySelectorAll('.bdot:not(.gone)').length,
+        staleMarks: r.querySelectorAll('.bdot.stale:not(.gone)').length,
         cardRows: r.querySelectorAll('.bmc .go, .bmc .one').length,
         staleRows: r.querySelectorAll('.bmc .it.stale, .bmc.stale, .bmc .why, .bmc .warn').length,
       };
@@ -1818,6 +1828,12 @@ try {
       { ...live, ...resolution },
     );
     phase = 'delete';
+    // Reopen after the resolution probe: asynchronous rail updates may have dismissed the card.
+    await page.mouse.move(10, 300);
+    await (await markedControl()).focus();
+    await page.keyboard.press('ArrowLeft');
+    // The remove button is shown only on its hovered/focused row.
+    await page.locator('chatgpt-butter-nav .bmc .go').last().focus();
     // Delete one through its loaded card, then check the single-bookmark earlier card on reload.
     await page.locator('chatgpt-butter-nav .bmc .x').last().click();
     await page.waitForTimeout(700);

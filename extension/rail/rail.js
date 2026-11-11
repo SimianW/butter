@@ -849,6 +849,11 @@
     }
   };
   globalThis.ButterRail = {
+    // The rail's width and its right inset from the viewport's right edge, as drawn (`--r`): the
+    // bookmark notification (bookmarks/notice.js) sits 8 px left of it. 0 before a chat is seen.
+    WIDTH: RAIL_W,
+    inset: () =>
+      box ? Math.round(innerWidth - box.right + 4 + (box.gutter ? 0 : OVERLAY_SCROLLBAR_GAP)) : 0,
     // `items`: the conversation's items the marks were worked out from (`cur.items` as synced).
     setMarks(conv, next, items = null) {
       if (conv !== convId) return;

@@ -1,5 +1,8 @@
-// The first-use notice (#56), in the style of layout-consent.test.js: the real consent/card.js and
-// bookmarks/notice.js in a vm with a fake page, the real worker store behind chrome.runtime.
+// The bookmark notification (#77), in the style of layout-consent.test.js: the real consent/card.js
+// and bookmarks/notice.js in a vm with a fake page, the real worker store behind chrome.runtime.
+// One top-right card on every save and remove: "Bookmark saved", "Bookmark removed" or "Already
+// bookmarked", the bookmark's first words and Undo; the first save ever expands it with the
+// privacy text and Got it (#56).
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const vm = require('node:vm');
@@ -25,6 +28,10 @@ const mark = (o = {}) => ({
   time: 1000,
   ...o,
 });
+const PRIVACY = {
+  en: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.',
+  zh: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。',
+};
 
 function sharedStorage(initial) {
   let butter = initial;
@@ -44,12 +51,55 @@ function sharedStorage(initial) {
   };
 }
 
-// One ChatGPT tab: the notice's host, its card and its click handler, over the shared settings
-// and the worker store.
-function noticeTab(shared, store) {
+// An element with attributes and listeners; `parts` hands back one stand-in per selector, reset
+// whenever its markup is replaced.
+function element(name) {
+  const attrs = {},
+    listeners = {};
+  let html = '',
+    parts = {};
+  return {
+    name,
+    hidden: false,
+    style: {
+      props: {},
+      setProperty(k, v) {
+        this.props[k] = v;
+      },
+    },
+    get innerHTML() {
+      return html;
+    },
+    set innerHTML(v) {
+      html = v;
+      parts = {};
+    },
+    querySelector: (sel) => (parts[sel] ||= { textContent: '' }),
+    setAttribute: (k, v) => (attrs[k] = String(v)),
+    getAttribute: (k) => attrs[k] ?? null,
+    hasAttribute: (k) => k in attrs,
+    removeAttribute: (k) => delete attrs[k],
+    toggleAttribute(k, force = !(k in attrs)) {
+      if (force) attrs[k] = '';
+      else delete attrs[k];
+      return force;
+    },
+    addEventListener: (type, fn) => (listeners[type] ||= []).push(fn),
+    fire: (type, e = {}) => (listeners[type] || []).forEach((fn) => fn({ type, ...e })),
+    getBoundingClientRect: () => ({ left: 1050, right: 1350, top: 64, height: 66 }),
+    focusCalls: 0,
+    focus() {
+      this.focusCalls++;
+    },
+  };
+}
+
+// One ChatGPT tab: the notification's host, its card and its click handler, over the shared
+// settings and the worker store.
+function noticeTab(shared, store, { rail = null } = {}) {
   const timers = [];
   let host, clicked;
-  const card = { setAttribute() {} };
+  const card = element('section');
   const shadow = {
     append() {},
     querySelector: () => card,
@@ -57,12 +107,14 @@ function noticeTab(shared, store) {
   };
   const ctx = {
     ButterStatus: status,
+    ButterRail: rail,
     FontFace: class {
       load() {
         return Promise.resolve();
       }
     },
     innerHeight: 900,
+    innerWidth: 1400,
     chrome: {
       storage: shared.storage,
       runtime: {
@@ -76,17 +128,14 @@ function noticeTab(shared, store) {
       documentElement: { classList: { contains: () => false }, append() {} },
       querySelectorAll: () => [],
       createElement: (type) => {
-        if (type === 'chatgpt-butter-bookmark-notice')
-          return (host = {
-            hidden: true,
-            attachShadow: () => shadow,
-            toggleAttribute() {},
-            removeAttribute() {},
-            setAttribute() {},
-            style: { setProperty() {} },
-            getBoundingClientRect: () => ({ left: 1110, right: 1410, height: 160 }),
-          });
-        return { append() {}, setAttribute() {} };
+        if (type === 'chatgpt-butter-bookmark-notice') {
+          host = element(type);
+          host.hidden = true;
+          host.attachShadow = () => shadow;
+          return host;
+        }
+        if (type === 'section') return card;
+        return element(type);
       },
     },
     getComputedStyle: () => ({ colorScheme: 'light' }),
@@ -112,19 +161,40 @@ function noticeTab(shared, store) {
   vm.runInContext(read('consent/card.js'), ctx);
   vm.runInContext(read('bookmarks/client.js'), ctx);
   vm.runInContext(read('bookmarks/notice.js'), ctx);
-  const undone = [];
-  return {
+  const undone = [],
+    restored = [];
+  const N = () => ctx.ButterBookmarkNotice;
+  const tab = {
     host: () => host,
     card,
     shown: () => !!host && host.hidden === false && host.inert === false,
+    // What the card shows now.
+    view: () => ({
+      kind: card.className,
+      html: card.innerHTML,
+      excerpt: card.querySelector('.ex').textContent,
+      role: card.getAttribute('role'),
+      undo: card.innerHTML.includes('data-notice="undo"'),
+      ok: card.innerHTML.includes('data-notice="ok"'),
+    }),
     undone,
+    restored,
     // What bookmarks/content.js does after the store answers a create.
     save: async (bookmark) => {
       const r = await store.message({ type: 'butter-bookmark-create', bookmark });
-      if (r.created) ctx.ButterBookmarkNotice.saved(r.bookmark, () => undone.push(r.bookmark.key));
+      if (r.created) N().saved(r.bookmark, () => undone.push(r.bookmark.key));
+      else N().already(r.bookmark);
       await settle();
       return r.bookmark;
     },
+    // And after × on a rail card deleted one.
+    remove: async (bookmark) => {
+      const { account, conv, key } = bookmark;
+      await store.message({ type: 'butter-bookmark-delete', account, conv, key });
+      N().removed(bookmark, (b) => restored.push(b));
+      await settle();
+    },
+    // Runs the timers waiting `ms`, once.
     elapse: (ms) =>
       timers
         .filter((t) => t.ms === ms)
@@ -134,39 +204,30 @@ function noticeTab(shared, store) {
           t.fn = () => {};
           fn();
         }),
-    click: async (choice, trusted = true) => {
+    waiting: (ms) => timers.some((t) => t.ms === ms && !/^\(\) => \{\}$/.test(String(t.fn))),
+    // A click on the card's `choice` button; `stale` clicks a button of the card before this one.
+    click: async (choice, { trusted = true, card: id } = {}) => {
+      const now = /data-card="(\d+)"/.exec(card.innerHTML)?.[1];
       clicked({
         isTrusted: trusted,
-        target: { closest: () => ({ dataset: { notice: choice } }) },
+        target: { closest: () => ({ dataset: { notice: choice, card: String(id ?? now) } }) },
       });
       await settle();
     },
+    cardId: () => +/data-card="(\d+)"/.exec(card.innerHTML)?.[1],
   };
+  return tab;
 }
-const stored = async (store) =>
-  (await store.message({ type: 'butter-bookmark-list', account: h('a'), conv: h('c') })).bookmarks
-    .length;
+const list = async (store) =>
+  (await store.message({ type: 'butter-bookmark-list', account: h('a'), conv: h('c') })).bookmarks;
+const stored = async (store) => (await list(store)).length;
+const acknowledged = (o = {}) =>
+  sharedStorage({ lang: 'en', bookmarkNotice: 'acknowledged', ...o });
 
-test('the first saved bookmark shows the notice, in English and in Chinese', async () => {
-  for (const [lang, title, body, link, undo, ok, policy] of [
-    [
-      'en',
-      'Bookmark saved',
-      'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.',
-      'Privacy policy',
-      'Undo',
-      'Got it',
-      'PRIVACY.md',
-    ],
-    [
-      'zh',
-      '书签已保存',
-      'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。',
-      '隐私政策',
-      '撤销',
-      '知道了',
-      'PRIVACY.zh-CN.md',
-    ],
+test('the first saved bookmark shows the expanded card, in English and in Chinese', async () => {
+  for (const [lang, title, link, undo, ok, policy] of [
+    ['en', 'Bookmark saved', 'Privacy policy', 'Undo', 'Got it', 'PRIVACY.md'],
+    ['zh', '书签已保存', '隐私政策', '撤销', '知道了', 'PRIVACY.zh-CN.md'],
   ]) {
     const shared = sharedStorage({ lang }),
       store = workerFixture();
@@ -175,22 +236,111 @@ test('the first saved bookmark shows the notice, in English and in Chinese', asy
     assert.equal(tab.shown(), false, 'nothing before a save');
     await tab.save(mark());
     assert.equal(tab.shown(), true);
-    for (const text of [title, body, link, undo, ok, policy])
-      assert.ok(tab.card.innerHTML.includes(text), text);
+    const v = tab.view();
+    for (const text of [title, PRIVACY[lang], link, undo, ok, policy])
+      assert.ok(v.html.includes(text), text);
+    assert.equal(v.excerpt, 'Postgres skips an index when it expects');
+    assert.match(v.kind, /\bsaved\b/);
+    assert.match(v.kind, /\bfirst\b/);
+    assert.equal(v.role, 'status', 'announced politely');
     assert.match(
-      tab.card.innerHTML,
+      v.html,
       /data-notice="undo"[^>]*>[^<]+<\/button><button[^>]*class="yes"[^>]*data-notice="ok"/,
     );
   }
 });
 
-test('Undo deletes the bookmark just saved and the next save shows the notice again', async () => {
+test('after Got it, a save shows the small "Bookmark saved" card with its first words and Undo', async () => {
+  for (const [lang, title, undo] of [
+    ['en', 'Bookmark saved', 'Undo'],
+    ['zh', '书签已保存', '撤销'],
+  ]) {
+    const shared = acknowledged({ lang }),
+      store = workerFixture();
+    const tab = noticeTab(shared, store);
+    await settle();
+    await tab.save(mark({ excerpt: 'Postgres skips\n  an index   when it expects' }));
+    assert.equal(tab.shown(), true);
+    const v = tab.view();
+    assert.ok(v.html.includes(title), title);
+    assert.ok(v.html.includes(`>${undo}</button>`), undo);
+    assert.equal(v.excerpt, 'Postgres skips an index when it expects', 'one line');
+    assert.equal(v.undo, true);
+    assert.equal(v.ok, false, 'no Got it');
+    assert.ok(!v.html.includes(PRIVACY[lang]), 'no privacy text');
+    assert.doesNotMatch(v.kind, /\bfirst\b/);
+  }
+});
+
+test('a save that finds the bookmark already stored says so, without Undo', async () => {
+  for (const [lang, title] of [
+    ['en', 'Already bookmarked'],
+    ['zh', '已有此书签'],
+  ]) {
+    const shared = acknowledged({ lang }),
+      store = workerFixture();
+    await store.message({ type: 'butter-bookmark-create', bookmark: mark() });
+    const tab = noticeTab(shared, store);
+    await settle();
+    await tab.save(mark({ time: 2000 }));
+    assert.equal(tab.shown(), true);
+    const v = tab.view();
+    assert.ok(v.html.includes(title), title);
+    assert.equal(v.excerpt, 'Postgres skips an index when it expects');
+    assert.equal(v.undo, false, 'nothing to take back');
+    assert.match(v.kind, /\balready\b/);
+  }
+});
+
+test('an unacknowledged save that finds the bookmark already stored shows the small card', async () => {
+  const shared = sharedStorage({}),
+    store = workerFixture();
+  await store.message({ type: 'butter-bookmark-create', bookmark: mark() });
+  const tab = noticeTab(shared, store);
+  await settle();
+  await tab.save(mark());
+  assert.ok(tab.view().html.includes('Already bookmarked'));
+  assert.equal(tab.view().ok, false);
+});
+
+test('a remove shows "Bookmark removed", and its Undo brings back the same bookmark', async () => {
+  for (const [lang, title] of [
+    ['en', 'Bookmark removed'],
+    ['zh', '已移除书签'],
+  ]) {
+    const shared = acknowledged({ lang }),
+      store = workerFixture();
+    const tab = noticeTab(shared, store);
+    await settle();
+    const b = await tab.save(mark());
+    await tab.remove(b);
+    assert.equal(await stored(store), 0);
+    const v = tab.view();
+    assert.ok(v.html.includes(title), title);
+    assert.match(v.kind, /\bremoved\b/, 'its first words are struck through');
+    assert.equal(v.excerpt, 'Postgres skips an index when it expects');
+    assert.equal(v.undo, true);
+    await tab.click('undo');
+    const back = await list(store);
+    assert.equal(back.length, 1);
+    assert.equal(back[0].key, b.key, 'the same key');
+    assert.equal(back[0].time, 1000, 'its original time');
+    assert.deepEqual(
+      tab.restored.map((x) => x.key),
+      [b.key],
+      'the page is told, so its dot comes back',
+    );
+    assert.equal(tab.host().inert, true, 'the card goes');
+  }
+});
+
+test('Undo of a save deletes the bookmark just saved, and the next save expands again', async () => {
   const shared = sharedStorage({ lang: 'en' }),
     store = workerFixture();
   const tab = noticeTab(shared, store);
   await settle();
   const first = await tab.save(mark());
-  await tab.click('undo', false);
+  await tab.click('undo', { trusted: false });
   assert.equal(await stored(store), 1, 'page-script clicks are ignored');
   await tab.click('undo');
   assert.equal(await stored(store), 0);
@@ -201,27 +351,44 @@ test('Undo deletes the bookmark just saved and the next save shows the notice ag
   assert.equal(shared.value().bookmarkNotice, undefined, 'still unacknowledged');
   await tab.save(mark({ para: 3 }));
   assert.equal(tab.shown(), true);
+  assert.match(tab.view().kind, /\bfirst\b/);
 });
 
 test('Undo after a second save deletes only the latest bookmark', async () => {
-  const shared = sharedStorage({}),
+  const shared = acknowledged(),
     store = workerFixture();
   const tab = noticeTab(shared, store);
   await settle();
   await tab.save(mark());
   const second = await tab.save(mark({ para: 5 }));
   await tab.click('undo');
-  const left = (
-    await store.message({ type: 'butter-bookmark-list', account: h('a'), conv: h('c') })
-  ).bookmarks;
   assert.deepEqual(
-    left.map((b) => b.para),
+    (await list(store)).map((b) => b.para),
     [2],
   );
   assert.deepEqual(tab.undone, [second.key]);
 });
 
-test('Got it is kept in settings: no notice again in this tab, another tab or after a reload', async () => {
+test('a new card replaces the current one, and the replaced card’s Undo does nothing', async () => {
+  const shared = acknowledged(),
+    store = workerFixture();
+  const tab = noticeTab(shared, store);
+  await settle();
+  await tab.save(mark());
+  const stale = tab.cardId();
+  const second = await tab.save(mark({ para: 5, excerpt: 'The second bookmark' }));
+  assert.equal(tab.view().excerpt, 'The second bookmark', 'replaced at once');
+  assert.notEqual(tab.cardId(), stale);
+  await tab.click('undo', { card: stale });
+  assert.equal(await stored(store), 2, 'a stale Undo deletes nothing');
+  assert.equal(tab.shown(), true);
+  await tab.remove(second);
+  assert.ok(tab.view().html.includes('Bookmark removed'));
+  await tab.click('undo', { card: stale });
+  assert.equal(await stored(store), 1, 'nor does it bring anything back');
+});
+
+test('Got it is kept in settings: other tabs put the expanded card away, later saves show the small card', async () => {
   const shared = sharedStorage({ lang: 'en', opts: { rail: true } }),
     store = workerFixture();
   const a = noticeTab(shared, store),
@@ -236,23 +403,113 @@ test('Got it is kept in settings: no notice again in this tab, another tab or af
   assert.equal(shared.value().opts.rail, true);
   assert.equal(await stored(store), 1, 'Got it keeps the bookmark');
   assert.equal(a.host().inert, true);
-  assert.equal(b.host().inert, true, 'every open tab puts its notice away');
+  assert.equal(b.host().inert, true, 'every open tab puts its expanded card away');
   await a.save(mark({ para: 4 }));
-  assert.equal(a.shown(), false);
+  assert.equal(a.shown(), true);
+  assert.doesNotMatch(a.view().kind, /\bfirst\b/);
   const reload = noticeTab(shared, store);
   await settle();
   await reload.save(mark({ para: 6 }));
-  assert.equal(reload.shown(), false);
+  assert.doesNotMatch(reload.view().kind, /\bfirst\b/);
+  assert.equal(reload.view().ok, false);
 });
 
-test('a save that finds the same bookmark already stored shows no notice', async () => {
-  const shared = sharedStorage({}),
+test('the small card leaves 4 s after it shows; the expanded card stays until Got it', async () => {
+  const shared = sharedStorage({ lang: 'en' }),
     store = workerFixture();
-  await store.message({ type: 'butter-bookmark-create', bookmark: mark() });
   const tab = noticeTab(shared, store);
   await settle();
   await tab.save(mark());
-  assert.equal(tab.shown(), false);
+  assert.equal(tab.waiting(4000), false, 'the expanded card has no timer');
+  tab.elapse(4000);
+  assert.equal(tab.shown(), true);
+  await tab.click('ok');
+  tab.elapse(160);
+  await tab.save(mark({ para: 3 }));
+  assert.equal(tab.shown(), true);
+  tab.elapse(4000);
+  assert.equal(tab.host().inert, true, 'fading out');
+  tab.elapse(160);
+  assert.equal(tab.host().hidden, true);
+});
+
+test('the pointer on the card or focus inside it holds the card; it leaves 4 s after both are gone', async () => {
+  const shared = acknowledged(),
+    store = workerFixture();
+  const tab = noticeTab(shared, store);
+  await settle();
+  await tab.save(mark());
+  const host = tab.host();
+  host.fire('pointerenter');
+  tab.elapse(4000);
+  assert.equal(tab.shown(), true, 'held while the pointer is on it');
+  host.fire('focusin');
+  host.fire('pointerleave');
+  tab.elapse(4000);
+  assert.equal(tab.shown(), true, 'held while focus is inside');
+  host.fire('focusout', { relatedTarget: host });
+  tab.elapse(4000);
+  assert.equal(tab.shown(), true, 'focus moved within the card');
+  host.fire('focusout', { relatedTarget: null });
+  assert.equal(tab.waiting(4000), true, 'a fresh 4 s');
+  tab.elapse(4000);
+  assert.equal(tab.host().inert, true);
+  assert.equal(host.focusCalls, 0, 'the card never takes focus');
+});
+
+test('a new card while the pointer is on the card keeps it held', async () => {
+  const shared = acknowledged(),
+    store = workerFixture();
+  const tab = noticeTab(shared, store);
+  await settle();
+  await tab.save(mark());
+  tab.host().fire('pointerenter');
+  await tab.save(mark({ para: 4 }));
+  tab.elapse(4000);
+  assert.equal(tab.shown(), true);
+  tab.host().fire('pointerleave');
+  tab.elapse(4000);
+  assert.equal(tab.host().inert, true);
+});
+
+test('a remove that replaces the unacknowledged expanded card does not acknowledge it', async () => {
+  const shared = sharedStorage({ lang: 'en' }),
+    store = workerFixture();
+  const tab = noticeTab(shared, store);
+  await settle();
+  const b = await tab.save(mark());
+  await tab.remove(b);
+  assert.ok(tab.view().html.includes('Bookmark removed'));
+  assert.doesNotMatch(tab.view().kind, /\bfirst\b/);
+  assert.equal(shared.value().bookmarkNotice, undefined);
+  await tab.save(mark({ para: 7 }));
+  assert.match(tab.view().kind, /\bfirst\b/, 'the next save expands again');
+});
+
+test('pausing Butter or turning the rail off puts the card away without acknowledging it', async () => {
+  for (const off of [{ enabled: false }, { opts: { rail: false } }]) {
+    const shared = sharedStorage({}),
+      store = workerFixture();
+    const tab = noticeTab(shared, store);
+    await settle();
+    await tab.save(mark());
+    await shared.storage.local.set({ butter: off });
+    assert.equal(tab.host().inert, true);
+    assert.equal(shared.value().bookmarkNotice, undefined);
+    await tab.save(mark({ para: 9 }));
+    assert.equal(tab.host().inert, true, 'and none shows while off');
+  }
+});
+
+test('the card sits top right, 8 px left of the rail, outside the consent card’s stack', async () => {
+  const shared = acknowledged(),
+    store = workerFixture();
+  const tab = noticeTab(shared, store, { rail: { inset: () => 19 } });
+  await settle();
+  await tab.save(mark());
+  assert.equal(tab.host().hasAttribute('data-top'), true);
+  assert.equal(tab.host().style.props['--note-right'], `${19 + 52 + 8}px`);
+  assert.equal(tab.host().style.props['--consent-bottom'], undefined, 'not stacked');
 });
 
 for (const [name, butter] of [
@@ -261,7 +518,7 @@ for (const [name, butter] of [
   ['consent granted', { layoutConsent: 'granted', opts: { layout: true } }],
   ['layouts switched off', { layoutConsent: 'granted', opts: { layout: false } }],
 ])
-  test(`the notice works with ${name}`, async () => {
+  test(`the notification works with ${name}`, async () => {
     const shared = sharedStorage(butter),
       store = workerFixture({ initialSettings: butter });
     const tab = noticeTab(shared, store);
@@ -279,14 +536,3 @@ for (const [name, butter] of [
       status.normalize(butter).opts.layout,
     );
   });
-
-test('pausing Butter puts a shown notice away without acknowledging it', async () => {
-  const shared = sharedStorage({}),
-    store = workerFixture();
-  const tab = noticeTab(shared, store);
-  await settle();
-  await tab.save(mark());
-  await shared.storage.local.set({ butter: { enabled: false } });
-  assert.equal(tab.host().inert, true);
-  assert.equal(shared.value().bookmarkNotice, undefined);
-});

@@ -1,0 +1,1129 @@
+{
+  "testedHead": "84941c0",
+  "mode": "matrix",
+  "platform": "Linux",
+  "startedUtc": "2026-11-10T22:55:11.858Z",
+  "checks": [
+    {
+      "name": "real long fixture loaded",
+      "pass": true,
+      "initialTicks": 5,
+      "totalTicks": 16,
+      "earlierPages": 11
+    },
+    {
+      "name": "held drag empty 1",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 33,
+      "frames": 88,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 66,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "held drag empty 2",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 33,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 66,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "held drag empty 3",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 31,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 62,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "live selection message ids match conversation API by SHA-256",
+      "pass": true,
+      "checked": 10,
+      "matched": 10,
+      "targetMatched": true,
+      "apiPages": 13,
+      "assistantApiMessages": 41
+    },
+    {
+      "name": "the Bookmark cell is named Bookmark selection",
+      "pass": true
+    },
+    {
+      "name": "paragraph button saves one bookmark",
+      "pass": true,
+      "stored": 1,
+      "marks": 1
+    },
+    {
+      "name": "selection saved through real Alt+Shift+M",
+      "pass": true,
+      "stored": 2,
+      "selectionCharacters": 30,
+      "commands": 1,
+      "marks": 1
+    },
+    {
+      "name": "held drag bookmarked 1",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 87,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 33.3,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "held drag bookmarked 2",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "held drag bookmarked 3",
+      "pass": true,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "name": "matched drag comparison with bookmarks versus empty",
+      "pass": true,
+      "emptyRuns": 3,
+      "bookmarkedRuns": 3,
+      "emptyP95FrameMs": [
+        16.7,
+        16.7,
+        16.7
+      ],
+      "bookmarkedP95FrameMs": [
+        16.8,
+        16.7,
+        16.7
+      ]
+    },
+    {
+      "name": "selection card jump after drag lands on text",
+      "pass": true,
+      "top": 61.703125,
+      "bottom": 113.921875,
+      "x": 736,
+      "y": 125.703125,
+      "height": 52.21875,
+      "inView": true
+    },
+    {
+      "name": "paragraph jump requested during native drag lands on text",
+      "pass": true,
+      "heldBefore": true,
+      "heldAfterActivation": true,
+      "visibleWhileHeld": false,
+      "visibleAfterRelease": true,
+      "textTopAfterRelease": 669
+    },
+    {
+      "name": "reload before row click leaves earlier answer unloaded",
+      "pass": true,
+      "ticks": 5,
+      "marks": 1,
+      "more": true,
+      "stale": 0,
+      "busy": 0,
+      "stored": 2,
+      "targetMounted": false,
+      "earlierPagesBefore": 11
+    },
+    {
+      "name": "earlier bookmarks sit under dots and not a loaded tick (row)",
+      "pass": false,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": true,
+      "gapLeftOfDotsPx": -19,
+      "offsetBelowDotsPx": 0,
+      "widthPx": 4,
+      "heightPx": 4,
+      "butterColor": true
+    },
+    {
+      "name": "hover earlier segment shows 2-bookmark card (row)",
+      "pass": false,
+      "shown": true,
+      "correctMeta": false,
+      "correctAccessibleName": true,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": false
+    },
+    {
+      "name": "row click loads earlier pages and lands on requested text",
+      "pass": true,
+      "earlierPages": 5,
+      "targetMounted": true,
+      "inView": true,
+      "textTop": 61.703125,
+      "sawLoadingMeta": false,
+      "sawSpinner": true,
+      "sawBusyDots": true
+    },
+    {
+      "name": "segment moves from dots to loaded question after row click",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": true,
+      "gapLeftOfDotsPx": null,
+      "offsetBelowDotsPx": null,
+      "widthPx": null,
+      "heightPx": null,
+      "butterColor": false
+    },
+    {
+      "name": "reload before segment click leaves earlier answer unloaded",
+      "pass": true,
+      "ticks": 5,
+      "marks": 1,
+      "more": true,
+      "stale": 0,
+      "busy": 0,
+      "stored": 2,
+      "targetMounted": false,
+      "earlierPagesBefore": 16
+    },
+    {
+      "name": "earlier bookmarks sit under dots and not a loaded tick (segment)",
+      "pass": false,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": true,
+      "gapLeftOfDotsPx": -19,
+      "offsetBelowDotsPx": 0,
+      "widthPx": 4,
+      "heightPx": 4,
+      "butterColor": true
+    },
+    {
+      "name": "hover earlier segment shows 2-bookmark card (segment)",
+      "pass": false,
+      "shown": true,
+      "correctMeta": false,
+      "correctAccessibleName": true,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": false
+    },
+    {
+      "name": "segment click loads earlier pages and lands on requested text",
+      "pass": false,
+      "earlierPages": 11,
+      "targetMounted": false,
+      "inView": false,
+      "textTop": null,
+      "sawLoadingMeta": false,
+      "sawSpinner": false,
+      "sawBusyDots": false
+    },
+    {
+      "name": "segment moves from dots to loaded question after segment click",
+      "pass": true,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": false,
+      "gapLeftOfDotsPx": null,
+      "offsetBelowDotsPx": null,
+      "widthPx": null,
+      "heightPx": null,
+      "butterColor": false
+    },
+    {
+      "name": "reload resolves both bookmarks live without answer changed",
+      "pass": true,
+      "marks": 1,
+      "staleMarks": 0,
+      "cardRows": 2,
+      "staleRows": 0,
+      "targetMounted": true,
+      "records": 2,
+      "matchingMessagesAndExcerpts": 2,
+      "matchingQuestions": 2,
+      "validFirstLines": 2
+    }
+  ],
+  "drags": [
+    {
+      "arm": "empty",
+      "repetition": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 33,
+      "frames": 88,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 66,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "arm": "empty",
+      "repetition": 2,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 33,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 66,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "arm": "empty",
+      "repetition": 3,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 31,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 62,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "arm": "bookmarked",
+      "repetition": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 87,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 33.3,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "arm": "bookmarked",
+      "repetition": 2,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "arm": "bookmarked",
+      "repetition": 3,
+      "mounts": 0,
+      "additions": 0,
+      "held": true,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 1,
+      "bookmarkFunctionCalls": 64,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    }
+  ],
+  "cleanup": {
+    "remainingBeforeFallback": 2,
+    "remainingAfterFallback": 0,
+    "shortcutsRestored": true,
+    "restored": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensions": true,
+    "labLockReleased": true,
+    "perfLockReleased": true
+  },
+  "extensionTreeSha256": "c6e09447159630fab94b5b322d7954b8bae725c8a5d161d681c382ac21483f96",
+  "chromium": "156.0.8078.47",
+  "sendGuard": {
+    "enabled": true,
+    "sendAttempts": 0,
+    "blockedMutations": 125
+  },
+  "shortcut": "Alt+Shift+M",
+  "initial": {
+    "ticks": 5,
+    "marks": 0,
+    "more": true,
+    "stale": 0,
+    "busy": 0,
+    "x": 1589,
+    "top": 52,
+    "height": 860,
+    "scrollHeight": 1268,
+    "scrollTop": 408,
+    "gutter": 20,
+    "y": 620.3596214511041
+  },
+  "history": {
+    "before": {
+      "ticks": 5,
+      "marks": 0,
+      "more": true,
+      "stale": 0,
+      "busy": 0
+    },
+    "after": {
+      "ticks": 16,
+      "marks": 0,
+      "more": false,
+      "stale": 0,
+      "busy": 0
+    }
+  },
+  "structure": [
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 347,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 408,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 246,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 314,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 319,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 264,
+      "messageIds": 0
+    }
+  ],
+  "target": {
+    "turnOrdinalMounted": 7,
+    "paragraphs": [
+      11,
+      145
+    ]
+  },
+  "answerAncestors": [
+    {
+      "tag": "DIV",
+      "attributes": [
+        "data-selected-text-overlay-target",
+        "dir",
+        "data-markdown-text-style",
+        "class",
+        "style"
+      ]
+    },
+    {
+      "tag": "DIV",
+      "attributes": [
+        "class",
+        "data-chatgpt-selection-conversation-id",
+        "data-chatgpt-selection-message-id"
+      ]
+    },
+    {
+      "tag": "DIV",
+      "attributes": []
+    },
+    {
+      "tag": "DIV",
+      "attributes": [
+        "data-content-search-unit-key",
+        "data-chatgpt-search-unit-key",
+        "data-chatgpt-search-message-ids"
+      ]
+    },
+    {
+      "tag": "DIV",
+      "attributes": [
+        "class"
+      ]
+    }
+  ],
+  "paragraphAttempt": {
+    "inView": true,
+    "bookmarkCellShown": 1
+  },
+  "jumpEvidence": {
+    "after-drag": {
+      "clicks": [
+        {
+          "control": "go",
+          "trusted": true,
+          "detail": 1
+        }
+      ],
+      "keys": [
+        {
+          "key": "ArrowLeft",
+          "control": "mark",
+          "trusted": true
+        }
+      ],
+      "seekStates": [],
+      "calls": {
+        "rail.jumpTo": 1,
+        "rail.landOff": 25,
+        "rail.targetTop": 7,
+        "rail.jump": 6,
+        "bookmark.locate": 25
+      },
+      "paragraph": {
+        "top": -6878,
+        "bottom": -6826,
+        "x": 736,
+        "y": -6814,
+        "height": 52,
+        "inView": false
+      },
+      "selection": {
+        "top": 61.703125,
+        "bottom": 113.921875,
+        "x": 736,
+        "y": 125.703125,
+        "height": 52.21875,
+        "inView": true
+      }
+    },
+    "during-drag": {
+      "clicks": [
+        {
+          "control": "mark",
+          "trusted": true,
+          "detail": 0
+        }
+      ],
+      "keys": [
+        {
+          "key": "ArrowLeft",
+          "control": "mark",
+          "trusted": true
+        },
+        {
+          "key": "Enter",
+          "control": "mark",
+          "trusted": true
+        }
+      ],
+      "seekStates": [
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": true,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "dragging",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": true
+        },
+        {
+          "state": "loading",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": false
+        },
+        {
+          "state": "idle",
+          "targetEqualsBookmarkedQuestion": false,
+          "pointerHeld": false
+        }
+      ],
+      "calls": {
+        "rail.landOff": 45,
+        "rail.targetTop": 9,
+        "rail.jump": 6
+      },
+      "paragraph": {
+        "top": 669,
+        "bottom": 721,
+        "x": 736,
+        "y": 733,
+        "height": 52,
+        "inView": true
+      },
+      "selection": {
+        "top": 7608.703125,
+        "bottom": 7660.921875,
+        "x": 736,
+        "y": 7672.703125,
+        "height": 52.21875,
+        "inView": false
+      }
+    },
+    "unloaded-row": {
+      "clicks": [
+        {
+          "control": "go",
+          "trusted": true,
+          "detail": 1
+        }
+      ],
+      "keys": [],
+      "seekStates": [],
+      "calls": {
+        "rail.jumpTo": 1,
+        "rail.earlierJump": 1,
+        "rail.landOff": 23,
+        "rail.targetTop": 5,
+        "rail.jump": 1,
+        "bookmark.locate": 23
+      },
+      "paragraph": {
+        "top": -6878,
+        "bottom": -6826,
+        "x": 736,
+        "y": -6814,
+        "height": 52,
+        "inView": false
+      },
+      "selection": {
+        "top": 61.703125,
+        "bottom": 113.921875,
+        "x": 736,
+        "y": 125.703125,
+        "height": 52.21875,
+        "inView": true
+      }
+    },
+    "unloaded-segment": {
+      "clicks": [
+        {
+          "control": "mark",
+          "trusted": true,
+          "detail": 1
+        }
+      ],
+      "keys": [],
+      "seekStates": [],
+      "calls": {
+        "rail.landOff": 39,
+        "rail.targetTop": 5,
+        "rail.jump": 1
+      },
+      "paragraph": null,
+      "selection": null
+    }
+  },
+  "failure": {
+    "phase": "delete",
+    "kind": "TimeoutError"
+  },
+  "finishedUtc": "2026-11-10T22:59:33.119Z"
+}

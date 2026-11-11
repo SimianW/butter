@@ -60,6 +60,9 @@ const HOST = 'chatgpt-butter-branch';
 const TIMING_STEP = 4_000,
   TIMING_VERIFY = 15_000;
 const inShadow = (page, selector) => page.locator(`${HOST} ${selector}`);
+// Ask in branch's cell in the selection pill (selection/pill.js, #77).
+const PILL = 'chatgpt-butter-pill';
+const chipOf = (page) => page.locator(`${PILL} button[data-cell="branch"]`);
 const open = async (query = '', width = 1280, route = `/c/${ORIGINAL}`) => {
   const page = await context.newPage();
   await page.setViewportSize({ width, height: 800 });
@@ -74,25 +77,27 @@ const select = (page, selector = '#quote') =>
     getSelection().removeAllRanges();
     getSelection().addRange(r);
   });
-// The label's text style. Live (2026-11-07), ChatGPT's label is its button's own text.
-const FONT = ['fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight', 'webkitFontSmoothing', 'color'];
+// `chip`: the pill's box while it shows (null when hidden), `cell`: Ask in branch's cell in it.
 const rects = (page) =>
-  page.evaluate(({ host, FONT }) => {
+  page.evaluate((host) => {
     const box = (el) => el && el.getBoundingClientRect().toJSON();
     const nativeEl = document.querySelector('.native:not([hidden]) > div');
-    const chip = document.querySelector(host)?.shadowRoot?.querySelector('.chip');
-    const visible = chip && getComputedStyle(chip).display !== 'none';
+    const pill = document.querySelector(host)?.shadowRoot?.querySelector('.pill');
+    const cell = pill?.querySelector('[data-cell="branch"]');
+    const visible = !!cell && getComputedStyle(pill).display !== 'none';
     const css = (el, keys) => el && Object.fromEntries(keys.map((k) => [k, getComputedStyle(el)[k]]));
-    const keys = ['height', 'borderTopLeftRadius', 'backgroundColor', 'boxShadow'];
+    const keys = ['borderTopLeftRadius', 'backgroundColor', 'boxShadow'];
     return {
       native: box(nativeEl),
-      chip: visible ? box(chip) : null,
+      chip: visible ? box(pill) : null,
+      cell: visible ? box(cell) : null,
+      cellBg: visible ? getComputedStyle(cell).backgroundColor : null,
       nativeCss: css(nativeEl, keys),
-      chipCss: visible ? css(chip, keys) : null,
-      nativeFont: css(nativeEl?.querySelector('button'), FONT),
-      chipFont: visible ? css(chip.querySelector('span'), FONT) : null,
+      chipCss: visible ? css(pill, keys) : null,
+      name: cell?.getAttribute('aria-label') ?? null,
+      icon: !!cell?.querySelector('svg') && !cell.textContent.trim(),
     };
-  }, { host: HOST, FONT });
+  }, PILL);
 const settle = (page) => page.waitForTimeout(150);
 // The ready line, ChatGPT's disclaimer text (null when the fixture has none) and the composer.
 const lineGeometry = (page) =>
@@ -154,9 +159,9 @@ const pass = (msg) => console.log(`PASS ${msg}`);
 // the new tab's extra fixture parameters.
 const ask = async (page, { question = 'What does RAG mean here?', fixture = '', width } = {}) => {
   await select(page);
-  await inShadow(page, '.chip').waitFor();
+  await chipOf(page).waitFor();
   await settle(page);
-  await inShadow(page, '.chip').click();
+  await chipOf(page).click();
   await inShadow(page, 'textarea').fill(question);
   extra = fixture;
   const next = context.waitForEvent('page');
@@ -197,13 +202,16 @@ try {
   for (const theme of ['light', 'dark']) {
     const page = await open(`theme=${theme}`);
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settle(page);
     let r = await rects(page);
     assert.equal(Math.round(r.chip.left - r.native.right), 4, 'chip sits 4 px right of native');
     assert.equal(Math.round(r.chip.top), Math.round(r.native.top), 'top edges aligned');
-    assert.deepEqual(r.chipCss, r.nativeCss, 'same height, radius, background and shadow');
-    assert.deepEqual(r.chipFont, r.nativeFont, 'label: same font family, size, weight, spacing, line height, smoothing, color');
+    assert.equal(r.chip.height, 30, 'the pill is 30 px high');
+    assert.equal(r.cell.width, r.chip.width === 30 ? 30 : 32, 'an icon cell: 32 px, or 30 alone');
+    assert.deepEqual(r.chipCss, r.nativeCss, 'same radius, background and shadow as ChatGPT’s');
+    assert.equal(r.icon, true, 'icon only');
+    assert.equal(r.name, 'Ask in branch', 'the label is its accessible name');
     // ChatGPT's button hovered: it tints itself, square; Butter's keeps the resting look.
     const resting = r.chipCss;
     await page.hover('.native button');
@@ -211,18 +219,24 @@ try {
     const tinted = await page.$eval('.native button', (b) => getComputedStyle(b).backgroundColor);
     assert.equal(tinted, 'rgba(255, 255, 255, 0.1)', 'fixture: native button shows its hover tint');
     assert.deepEqual((await rects(page)).chipCss, resting, 'native hovered: chip keeps its resting look');
-    assert.deepEqual((await rects(page)).chipFont, r.chipFont, 'native hovered: label keeps its resting font');
     if (theme === 'light') await capture(page, 'button-native-hover', 1280, theme);
     // Butter's own hover: a lighter background, same shape and shadow (mockup state 1).
-    await inShadow(page, '.chip').hover();
+    await chipOf(page).hover();
     await settle(page);
-    const own = (await rects(page)).chipCss;
-    assert.notEqual(own.backgroundColor, resting.backgroundColor, 'chip hover changes its background');
-    assert.deepEqual(
-      { ...own, backgroundColor: null },
-      { ...resting, backgroundColor: null },
-      'chip hover keeps height, radius and shadow',
-    );
+    const own = await rects(page);
+    assert.notEqual(own.cellBg, r.cellBg, 'cell hover changes its background');
+    assert.deepEqual(own.chipCss, resting, 'cell hover keeps the pill’s radius, background and shadow');
+    // Its label shows 8 px below the pill after 300 ms of hover.
+    await page.waitForTimeout(350);
+    const label = await page.evaluate((host) => {
+      const root = document.querySelector(host).shadowRoot,
+        tip = root.querySelector('.tip');
+      return getComputedStyle(tip).display === 'none'
+        ? null
+        : { text: tip.textContent, top: tip.getBoundingClientRect().top, pill: root.querySelector('.pill').getBoundingClientRect().bottom };
+    }, PILL);
+    assert.equal(label?.text, 'Ask in branch', 'hover label');
+    assert.equal(Math.round(label.top - label.pill), 8, 'label 8 px below the pill');
     await page.mouse.move(5, 790);
     await settle(page);
     // ChatGPT's button moves: Butter's follows.
@@ -255,7 +269,7 @@ try {
     assert.equal((await rects(page)).chip, null, 'no chip without a selection');
     // Settings key off: a shown button leaves at once, with no reload; none appears; on again: back.
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settings({ opts: { branch: false } });
     await settle(page);
     assert.equal((await rects(page)).chip, null, 'shown chip leaves live when the setting turns off');
@@ -266,7 +280,7 @@ try {
     await settings({});
     await page.evaluate(() => getSelection().removeAllRanges());
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await page.close();
     pass(`button ${theme}: 4 px gap, top aligned, mirrored style, follows/hides, setting`);
   }
@@ -275,10 +289,10 @@ try {
   {
     const page = await open();
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settle(page);
     const { native: nativeBefore, chip: chipBefore } = await rects(page);
-    await inShadow(page, '.chip').click();
+    await chipOf(page).click();
     const box = inShadow(page, '.qpop');
     await box.waitFor();
     const boxAtOpen = await box.evaluate((el) => el.getBoundingClientRect().toJSON());
@@ -291,7 +305,9 @@ try {
         range.selectNodeContents(document.querySelector('#quote'));
         return {
           box: r(root.querySelector('.qpop')),
-          chipShown: getComputedStyle(root.querySelector('.chip')).display !== 'none',
+          chipShown:
+            getComputedStyle(document.querySelector('chatgpt-butter-pill').shadowRoot.querySelector('.pill')).display !==
+            'none',
           native: r(document.querySelector('.native > div')),
           sel: range.getBoundingClientRect().toJSON(),
           quoteLines: Math.round(
@@ -326,23 +342,36 @@ try {
     await input.press('Escape');
     assert.equal(await box.count(), 0, 'Esc closes');
     assert.equal(await page.evaluate(() => getSelection().toString()), QUOTE, 'Esc restores the selection');
-    await inShadow(page, '.chip').waitFor({ timeout: 3000 });
+    await chipOf(page).waitFor({ timeout: 3000 });
     await settle(page);
     assert.notEqual((await rects(page)).chip, null, 'button back after Esc, with the selection');
-    await inShadow(page, '.chip').click();
+    await chipOf(page).click();
     assert.equal(await input.inputValue(), 'What is RAG?\nBriefly.', 'draft kept after Esc');
     await settle(page);
     assert.equal((await rects(page)).chip, null, 'button hidden again with the box reopened');
     await page.mouse.click(1200, 400);
     assert.equal(await box.count(), 0, 'click outside closes');
     assert.equal(await page.evaluate(() => fixture.sent.length), 0, 'nothing sent here');
+    // Keyboard: the cell takes focus and Enter opens the box at the same place, as a pointer does.
+    await select(page);
+    await chipOf(page).waitFor();
+    await settle(page);
+    await chipOf(page).focus();
+    await page.keyboard.press('Enter');
+    await box.waitFor();
+    await settle(page);
+    const byKey = await geo();
+    assert.equal(Math.round(byKey.box.left), Math.round(nativeBefore.left), 'keyboard: left-aligned with buttons');
+    assert.equal(Math.round(byKey.box.top), Math.round(chipBefore.bottom + 8), 'keyboard: directly under buttons');
+    assert.equal(byKey.focused, 'TEXTAREA', 'keyboard: question field focused');
+    await inShadow(page, 'textarea').press('Escape');
     await page.close();
     // Not enough room below the selection: the box flips above it.
     const low = await open('pad=470');
     await select(low);
-    await inShadow(low, '.chip').waitFor();
+    await chipOf(low).waitFor();
     await settle(low);
-    await inShadow(low, '.chip').click();
+    await chipOf(low).click();
     await inShadow(low, '.qpop').waitFor();
     await settle(low);
     const flip = await low.evaluate((host) => {
@@ -357,7 +386,7 @@ try {
     assert.ok(flip.box.bottom <= flip.sel.top - 8 + 0.5, 'flipped above the selection');
     assert.ok(flip.box.top >= 16, 'inside the viewport');
     await low.close();
-    pass('question box: button hidden while open, aligned under the buttons, one-line quote, keys, draft kept, button back after Esc, flips above');
+    pass('question box: opened by pointer and by keyboard, button hidden while open, aligned under the buttons, one-line quote, keys, draft kept, button back after Esc, flips above');
   }
 
   // ---- Formulas: a selection across text and KaTeX formulas, ending partway into one, quotes
@@ -373,11 +402,11 @@ try {
       getSelection().removeAllRanges();
       getSelection().addRange(r);
     });
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settle(page);
     const quote = `descent with step $${MATH.inline}$:\n\n$$${MATH.display}$$\n\nconverges at rate $${MATH.rate}$`;
     await capture(page, 'formula-button', 1280, 'light');
-    await inShadow(page, '.chip').click();
+    await chipOf(page).click();
     await inShadow(page, '.qpop').waitFor();
     await settle(page);
     const shown = await page.evaluate((host) => {
@@ -411,9 +440,9 @@ try {
   {
     const page = await open('slow=600&land=600');
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settle(page);
-    await inShadow(page, '.chip').click();
+    await chipOf(page).click();
     await inShadow(page, 'textarea').fill('What does RAG mean here?');
     const before = await page.evaluate(() => ({
       url: location.href,
@@ -739,7 +768,7 @@ try {
     for (const query of ['lang=zh', 'stream=60000']) {
       const page = await open(query);
       await select(page);
-      await inShadow(page, '.chip').waitFor({ timeout: 3000 });
+      await chipOf(page).waitFor({ timeout: 3000 });
       await page.close();
     }
     pass(`hidden: ${cases.map(([n]) => n).join(', ')}; shown in the Chat-mode controls`);
@@ -908,9 +937,9 @@ try {
   {
     const page = await open();
     await select(page);
-    await inShadow(page, '.chip').waitFor();
+    await chipOf(page).waitFor();
     await settle(page);
-    await inShadow(page, '.chip').click();
+    await chipOf(page).click();
     await inShadow(page, 'textarea').fill('What does RAG mean here?');
     const pages = context.pages().length;
     // Chrome's pop-up blocker doesn't stop window.open from an extension's content script, even
@@ -994,11 +1023,11 @@ try {
     for (const width of [1280, 800]) {
       const page = await open(`theme=${theme}&slow=1500&hold=60000`, width);
       await select(page);
-      await inShadow(page, '.chip').waitFor();
+      await chipOf(page).waitFor();
       await page.locator('#quote').hover();
       await settle(page);
       await capture(page, 'button', width, theme);
-      await inShadow(page, '.chip').click();
+      await chipOf(page).click();
       await inShadow(page, 'textarea').fill('What does RAG mean here? How is it different from fine-tuning?');
       await settle(page);
       await capture(page, 'question', width, theme);
@@ -1051,9 +1080,9 @@ try {
     const page = await open('slow=1500&hold=60000');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await select(page);
-    await inShadow(page, '.chip').waitFor();
-    assert.equal(await inShadow(page, '.chip').innerText(), '在分支中问');
-    await inShadow(page, '.chip').click();
+    await chipOf(page).waitFor();
+    assert.equal(await chipOf(page).getAttribute('aria-label'), '在分支中问', 'Chinese accessible name');
+    await chipOf(page).click();
     await inShadow(page, 'textarea').fill('这里的 RAG 具体指什么？和微调有什么区别？');
     assert.match(await inShadow(page, '.foot').innerText(), /在新标签页打开，这个对话不受影响[\s\S]*Esc[\s\S]*关闭/);
     await settle(page);

@@ -28,6 +28,8 @@ const BRANCH_PATH = process.env.BRANCH_PATH ? new RegExp(process.env.BRANCH_PATH
 const SEND_PATH = /^\/backend-api\/(?:f\/)?conversation(?:\/prepare)?$|^\/backend-api\/sentinel\//;
 const QUESTION = 'Explain this passage briefly.';
 
+for (let i = 0; i < 60 && !(await L.cdpVersion(lab)); i++)
+  await new Promise((resolve) => setTimeout(resolve, 500));
 const { browser, context } = await L.connect(lab);
 await L.sendGuard(context, lab);
 if (BRANCH_PATH)
@@ -46,10 +48,14 @@ const redactPath = (p) =>
   p.startsWith('/cdn-cgi/')
     ? '/cdn-cgi/<challenge>'
     : p.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, '<id>').replace(/local-chatgpt(%3A|:)<id>/gi, '<local>');
+const pageErrors = { butter: 0, other: 0 };
 const tag = new Map(),
   started = new WeakMap();
 const watch = (page, name) => {
   tag.set(page, name);
+  page.on('pageerror', (e) => {
+    pageErrors[/chrome-extension:|chatgpt-butter/.test(e.stack || '') ? 'butter' : 'other']++;
+  });
   const log = (r, failed) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(r.method())) return;
     const u = new URL(r.url());
@@ -68,7 +74,10 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
-const results = { at: new Date().toISOString(), lab: lab.id, runs: [] };
+// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
+const PILL = 'chatgpt-butter-pill';
+const CELL = `${PILL} button[data-cell="branch"]`;
+const results = { at: new Date().toISOString(), lab: lab.id, pageErrors, runs: [] };
 const shot = async (page, file, masks = []) => {
   await page.evaluate(() => {
     // Mark ChatGPT's own selection button so it stays visible; hide every other page content.
@@ -82,7 +91,9 @@ const shot = async (page, file, masks = []) => {
     mask: masks.map((m) => page.locator(m)),
     maskColor: '#888',
     style: `body * { visibility: hidden !important; }
-      [data-butter-capture], [data-butter-capture] * { visibility: visible !important; }
+      [data-butter-capture], [data-butter-capture] *,
+      chatgpt-butter-pill, chatgpt-butter-pill *,
+      chatgpt-butter-branch, chatgpt-butter-branch * { visibility: visible !important; }
       chatgpt-butter-consent, chatgpt-butter-nav { display: none !important; }`,
   });
   return file;
@@ -200,10 +211,11 @@ try {
     await mark('before');
     await dragSelect(page);
     await mark('selected');
-    await page.locator(`${HOST} .chip`).waitFor({ timeout: 5000 });
+    await page.locator(CELL).waitFor({ timeout: 5000 });
     await page.waitForTimeout(300);
     run.button = await page.evaluate((host) => {
-      const chip = document.querySelector(host).shadowRoot.querySelector('.chip');
+      // The pill draws the look; Ask in branch is its first cell.
+      const chip = document.querySelector(host).shadowRoot.querySelector('.pill');
       const ask = [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Ask ChatGPT');
       let box = ask;
       for (let el = ask, i = 0; el && i < 3; el = el.parentElement, i++)
@@ -217,23 +229,16 @@ try {
         const s = getComputedStyle(el);
         return [s.height, s.borderTopLeftRadius, s.backgroundColor, s.boxShadow].join(' | ');
       };
-      // The label's text style (live, the label is the button's own text).
-      const font = (el) => {
-        const s = getComputedStyle(el);
-        return [s.fontFamily, s.fontSize, s.fontWeight, s.letterSpacing, s.lineHeight, s.webkitFontSmoothing, s.color].join(' | ');
-      };
       return {
         gap: Math.round((c.left - a.right) * 10) / 10,
         topDelta: Math.round((c.top - a.top) * 10) / 10,
         native: css(box),
         butter: css(chip),
-        nativeFont: font(ask),
-        butterFont: font(chip.querySelector('span')),
       };
-    }, HOST);
+    }, PILL);
     await mark('button shown');
     run.screenshots.push(await shot(page, `button-${width}.png`));
-    await page.locator(`${HOST} .chip`).click();
+    await page.locator(CELL).click();
     await mark('box open');
     await page.locator(`${HOST} textarea`).fill(QUESTION);
     await page.waitForTimeout(200);

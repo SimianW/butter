@@ -2,17 +2,27 @@
 // ChatGPT chat: every chatgpt.com request is answered locally (the page, /backend-api/me and the
 // conversation's messages, which Butter's own fetch hook reads), and the run fails if anything
 // else is requested. No ChatGPT requests.
-// Checks: hover a paragraph, the button waits 120 ms, click it, a dot appears beside the right
-// question's tick (#71) with its grow-in and halo, the pointer over the dot shows the tick's card and a click there opens the question, the card's row lands on the
-// paragraph, a reload shows the dot again, a bookmarked paragraph shows the filled button, the
-// conversation's bookmarks are read once and not during scrolling, going to the home page and Back
-// through history shows the dot again, and with the rail off or Butter paused neither the button
-// nor a dot shows.
-// A one-question chat (ONLY=one runs it alone): no rail, but the filled button and its remove work.
+// The fixture draws ChatGPT's own "Ask ChatGPT" below a selection in an answer, and a "More
+// actions" button per turn, so that Butter's selection pill (#77) shows Ask in branch and Bookmark.
+// Checks: select a paragraph, the pill 4 px right of "Ask ChatGPT" (its look copied, Ask in branch
+// then Bookmark, 32 px cells, names and aria-keyshortcuts, the label after 300 ms, 8 px below,
+// switching at once), no hover button in the left margin, the Bookmark cell saves and clears the
+// selection and the pill, the "Bookmark saved" card top right (12 px below the header, 8 px left of
+// the rail, gone after 4 s), ⌥⇧M on it again says "Already bookmarked", a dot appears beside the
+// right question's tick (#71) with its grow-in and halo, the pointer over the dot shows the tick's
+// card and a click there opens the question, the card's row lands on the paragraph, a reload shows
+// the dot again, the conversation's bookmarks are read once and not during scrolling, going to the
+// home page and Back through history shows the dot again, and with the rail off or Butter paused
+// neither the Bookmark cell nor a dot shows.
+// A one-question chat (ONLY=one runs it alone): no rail, but the Bookmark cell saves there.
 // The rail's hover card (#53), now the tick's card (#70): one and several bookmarks, moving onto the
-// card, jumping from a row, deleting with × and the filled button, the dot fading out (at once
-// under reduced motion), keyboard-only jump and delete with arrow stops on the ticks only, and light
-// and dark screenshots of both cards.
+// card, jumping from a row, deleting with × ("Bookmark removed", whose Undo brings back the same
+// key and time), the dot fading out (at once under reduced motion), keyboard-only jump and delete
+// with arrow stops on the ticks only, and light and dark screenshots of both cards.
+// The pill and the notification (#77; ONLY=pill runs it alone): triple-click then Bookmark,
+// keyboard, Undo of a save and of a remove, replacement, the motion with and without reduced
+// motion, the rail switched off, Ask in branch off (the Bookmark cell alone, 30 × 30), Chinese, and
+// the approved mockup's states shot at 1400 and 700 px into `<SHOTS>/<markup>/states/`.
 // Stale bookmarks (#55): regenerating a bookmarked answer in the fixture (in the page, then as the
 // conversation's current version after a reload) and editing a bookmarked paragraph: the grey row
 // with "answer changed", the hollow dot only when every bookmark under the question is stale,
@@ -22,9 +32,10 @@
 // mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them). An answer that streamed in
 // this tab (sent here, so no page GET lists it): its bookmark stays live once the virtualizer
 // unmounts the turn, and its row still lands on the paragraph.
-// First-use notice (#56): the first save shows it, Undo deletes the bookmark and its dot and the
-// next save shows it again (light and dark, English and Chinese, with layout consent pending,
-// declined, granted and switched off), Got it keeps it away on a third save and after a reload.
+// The first bookmark ever (#56, #77): the expanded card at top right (the consent card staying
+// bottom right), Undo deletes the bookmark and its dot and the next save expands it again (light
+// and dark, English and Chinese, with layout consent pending, declined, granted and switched off),
+// Got it leaves only the small card on a third save and after a reload; the pointer holds a card.
 // Earlier history (#51 addendum, #72), near the end: the chat opens with its latest 5 questions and
 // loads earlier ones two per page, as ChatGPT does; a bookmark in that history shows a dot beside the
 // rail's earlier-history dots, which show its card on hover or focus (their hint card without
@@ -33,13 +44,13 @@
 // ×, keyboard, Escape, reduced motion, and screenshots of each state in light and dark, English and
 // Chinese, at 1400 and 600 px (ONLY=earlier runs this part alone;
 // BUTTER_BOOKMARKS_EARLIER_MOCKUP=<2-Earlier-history-mockup.html> also shoots the mockup's panels).
-// Selection and shortcut (#54): a selection's tooltip and the key Chrome reports, a selection saved
-// with the button and with the shortcut (also across paragraphs), the top paragraph with the
+// Selection and shortcut (#54): the Bookmark cell's label and the key Chrome reports, a selection
+// saved with the cell and with the shortcut (also across paragraphs), the top paragraph with the
 // shortcut and nothing selected, nothing for a selection outside the answers, each landing on its
 // text, and no key hint once the command's key is cleared in chrome://extensions/shortcuts.
 // List items (#51): each item of the fixture answer's list is a paragraph of its own for the
-// button, a selection, the shortcut's top paragraph, landing and staleness. The button's name holds
-// the start of the paragraph or selection (#53); the store keeps `ask` and `line` (#55).
+// cell, a selection, the shortcut's top paragraph, landing and staleness. The store keeps `ask` and
+// `line` (#55).
 // The shortcut must be real keyboard input (chrome.commands ignores DevTools key events): with an X
 // display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
 // below. Without a display the run asks the worker to relay the command instead and says so.
@@ -54,8 +65,7 @@
 // The landing wash (#73, #74), after the earlier history: see washSection (ONLY=wash runs it alone;
 // BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> adds the comparison with its section 5).
 // BUTTER_BOOKMARKS_MOCKUP=<1-Mockup.html> (gh issue artifact download 51 1 -R SimianW/butter) also
-// compares the notice in each theme and language with the mockup's section 4: same size, under 0.1%
-// of pixels differing by more than 24 in a channel.
+// shoots that mockup's stale cards next to the built ones.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
@@ -144,7 +154,7 @@ const userOf = (i) =>
     : `<div data-message-author-role="user" data-message-id="${question(i)}"><div data-user-message-bubble>${QUESTION(i)}</div></div>`;
 const turnHtml = (i) =>
   `<div><article data-turn-key="${question(i)}" data-testid="conversation-turn-${i + 1}"><div class="user">${userOf(i)}</div>` +
-  `<div ${answerAttrs(answerId(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}${'<p>Fixture filler: more of the answer.</p>'.repeat(page$.tail)}</div></div></article></div>`;
+  `<div ${answerAttrs(answerId(i))}><div data-markdown-text-style="assistant-message" class="markdown prose">${blocks(i)}${'<p>Fixture filler: more of the answer.</p>'.repeat(page$.tail)}</div></div><button type="button" class="fx-more" aria-label="More actions" tabindex="-1"></button></article></div>`;
 // ChatGPT's paging, in the page: opened at the bottom; within 230 px of the top it fetches the
 // page before the first loaded question, then mounts its turns above and keeps the view in place.
 const earlierScript = () => `
@@ -165,13 +175,43 @@ sc.addEventListener('scroll', () => {
     fxLoading = false;
   }, 100));
 });`;
+// The fixture's "Ask ChatGPT": shown 60 ms after a selection settles inside an answer, its left
+// edge under the selection's first line and 8 px below its last; it follows the chat's scroll.
+const nativeScript = `
+const fxNative = document.querySelector('.fx-native');
+let fxNativeTimer;
+const fxPlace = () => {
+  const s = getSelection();
+  const el = s.rangeCount && !s.isCollapsed && s.getRangeAt(0).commonAncestorContainer;
+  const inAnswer = el && (el.nodeType === 1 ? el : el.parentElement)?.closest('[data-markdown-text-style]');
+  if (!inAnswer) { fxNative.hidden = true; return; }
+  const rects = [...s.getRangeAt(0).getClientRects()].filter((r) => r.width);
+  if (!rects.length) { fxNative.hidden = true; return; }
+  fxNative.hidden = false;
+  fxNative.style.left = rects[0].left + 'px';
+  // Below the selection's end, kept in the view as ChatGPT keeps its toolbar.
+  fxNative.style.top = Math.min(rects.at(-1).bottom + 8, innerHeight - 180) + 'px';
+};
+document.addEventListener('selectionchange', () => { clearTimeout(fxNativeTimer); fxNativeTimer = setTimeout(fxPlace, 60); });
+document.querySelector('.thread-scroll-container').addEventListener('scroll', fxPlace, { passive: true });`;
 const html = () => `<!doctype html><html lang="en" class="${page$.theme}"><head><meta charset="utf-8"><title>Fixture chat</title><style>
 body { margin:0; overflow:hidden; font:16px/26px system-ui, sans-serif; background:#fff; color:#0d0d0d }
 .dark body { background:#212121; color:#ececec }
 header { position:fixed; top:0; left:0; right:0; height:52px; background:inherit; z-index:5; display:flex; align-items:center; padding:0 16px; font-weight:600 }
 .thread-scroll-container { height:100vh; overflow-y:scroll; overflow-anchor:none }
 .content { padding:64px 0 600px }
-article { display:block; width:720px; margin:0 auto 24px }
+article { display:block; position:relative; width:720px; max-width:calc(100% - 120px); margin:0 auto 24px }
+/* ChatGPT's "More actions" under each answer, which Ask in branch needs to offer its cell; out of
+   the text's flow and unseen, so nothing moves. */
+.fx-more { position:absolute; right:-40px; bottom:0; width:24px; height:24px; opacity:0; padding:0; border:0 }
+/* ChatGPT's own "Ask ChatGPT" for a selection in an answer (#77), shaped as live: a fixed
+   container round a dark chip, below the selection. Butter's pill sits 4 px right of it. */
+.fx-native { position:fixed; z-index:50; pointer-events:none; width:max-content }
+.fx-native > div { pointer-events:auto; display:flex; height:30px; border-radius:8px; background:rgb(48 48 48);
+  box-shadow:0 4px 8px -2px rgb(0 0 0 / .1), 0 2px 8px rgb(0 0 0 / .18); overflow:hidden }
+.dark .fx-native > div { background:#3a3a3a }
+.fx-native button { all:unset; display:flex; align-items:center; gap:6px; height:30px; padding:0 9px; color:#fff; font:14px/18px system-ui, sans-serif }
+.fx-native[hidden] { display:none }
 .user { display:flex; justify-content:flex-end }
 [data-user-message-bubble] { margin:14px 0; padding:8px 14px; background:#f4f4f4; border-radius:18px }
 .dark [data-user-message-bubble] { background:#303030 }
@@ -182,7 +222,8 @@ ${page$.css}
 </style></head><body><header>ChatGPT</header><div class="thread-scroll-container"><div class="content">${Array.from(
   { length: page$.turns - page$.first },
   (_, k) => turnHtml(k + page$.first),
-).join('')}</div></div><script>
+).join('')}</div></div><div class="fx-native" hidden><div><button type="button">❝ Ask ChatGPT</button></div></div><script>
+${nativeScript}
 fetch('/backend-api/me');
 fetch('/backend-api/conversation/${CONV}');
 ${page$.first ? earlierScript() : ''}
@@ -238,11 +279,14 @@ await context.route('**/*', (route) => {
   return route.fulfill({ contentType: 'text/html', body: page$.scene ? mockHtml() : html() });
 });
 const worker = context.serviceWorkers()[0] || (await context.waitForEvent('serviceworker'));
+// The notification's first-bookmark form is acknowledged unless a run says otherwise (#77): its
+// expanded card stays until Got it. The notice section passes `bookmarkNotice: undefined`.
 const settings = (butter) =>
   worker.evaluate((butter) => chrome.storage.local.set({ butter }), {
     enabled: true,
     lang: 'en',
     layoutConsent: 'declined',
+    bookmarkNotice: 'acknowledged',
     ...butter,
   });
 // Count the store's requests by type, in the worker.
@@ -480,28 +524,116 @@ const questionTop = (turn) =>
     (id) => document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - document.querySelector('.thread-scroll-container').getBoundingClientRect().top,
     question(turn),
   );
-const button = () =>
+// The selection pill (#77): Butter's cells beside the fixture's "Ask ChatGPT", their names, key
+// hints and boxes, the pill's look, and the label under it.
+const pill = () =>
   page.evaluate(() => {
-    const b = document.querySelector('chatgpt-butter-bookmark')?.shadowRoot.querySelector('button');
-    if (!b) return null;
-    const r = b.getBoundingClientRect(),
-      s = getComputedStyle(b);
+    const host = document.querySelector('chatgpt-butter-pill'),
+      root = host?.shadowRoot,
+      el = root?.querySelector('.pill'),
+      shown = !!el && getComputedStyle(el).display !== 'none';
+    const box = (e) => e && e.getBoundingClientRect().toJSON();
+    const tip = root?.querySelector('.tip');
+    const tipShown = !!tip && getComputedStyle(tip).display !== 'none';
+    const native = document.querySelector('.fx-native:not([hidden]) > div');
+    const s = el && getComputedStyle(el);
     return {
-      shown: s.visibility === 'visible' && +s.opacity > 0,
-      x: r.left,
-      y: r.top,
-      w: r.width,
-      h: r.height,
-      radius: s.borderRadius,
-      label: b.getAttribute('aria-label'),
-      tip: b.querySelector('.tip span').textContent,
-      kbd: b.querySelector('.tip kbd').textContent,
-      kbdShown: getComputedStyle(b.querySelector('.tip kbd')).display !== 'none',
-      on: b.classList.contains('on'),
-      fill: getComputedStyle(b.querySelector('svg path')).fill,
-      stroke: getComputedStyle(b.querySelector('svg path')).stroke,
+      shown,
+      inBody: host?.parentNode === document.body,
+      box: shown ? box(el) : null,
+      css: shown ? { bg: s.backgroundColor, radius: s.borderTopLeftRadius, shadow: s.boxShadow } : null,
+      native: box(native),
+      nativeCss: native && { bg: getComputedStyle(native).backgroundColor, radius: getComputedStyle(native).borderTopLeftRadius, shadow: getComputedStyle(native).boxShadow },
+      cells: shown
+        ? [...el.querySelectorAll('button')].map((b) => ({
+            id: b.dataset.cell,
+            name: b.getAttribute('aria-label'),
+            keys: b.getAttribute('aria-keyshortcuts'),
+            text: b.textContent.trim(),
+            divider: getComputedStyle(b).borderLeftWidth,
+            ...box(b),
+          }))
+        : [],
+      tip: tipShown
+        ? { text: tip.querySelector('span').textContent, kbd: tip.querySelector('kbd').textContent, kbdShown: getComputedStyle(tip.querySelector('kbd')).display !== 'none', ...box(tip) }
+        : null,
+      // The old hover button's layer must be gone (#77).
+      hoverButton: !!document.querySelector('chatgpt-butter-bookmark'),
     };
   });
+// The Bookmark cell, or null when the pill doesn't show it.
+const button = async () => {
+  const p = await pill(),
+    c = p.cells.find((x) => x.id === 'bookmark');
+  return c ? { ...c, shown: true, x: c.left, y: c.top, w: c.width, h: c.height, pill: p } : null;
+};
+// Hover cell `id` long enough for its label; returns the pill with the label.
+const hoverCell = async (id, wait = 350) => {
+  const c = (await pill()).cells.find((x) => x.id === id);
+  if (!c) return null;
+  await page.mouse.move(c.left + c.width / 2, c.top + c.height / 2, { steps: 3 });
+  await page.waitForTimeout(wait);
+  return pill();
+};
+// The bookmark notification (#77): its form, text, buttons and box.
+const noteCard = () =>
+  page.evaluate(() => {
+    const host = document.querySelector('chatgpt-butter-bookmark-notice');
+    if (!host) return { shown: false };
+    // Its place from the host: the card inside slides 16 px while it enters.
+    const card = host.shadowRoot.querySelector('.card'),
+      r = host.getBoundingClientRect(),
+      ex = card.querySelector('.ex');
+    return {
+      shown: !host.hidden && host.hasAttribute('data-visible') && !host.inert,
+      kind: card.className,
+      role: card.getAttribute('role'),
+      lang: card.lang,
+      title: card.querySelector('.tx b')?.textContent ?? null,
+      excerpt: ex?.textContent ?? null,
+      oneLine: ex ? ex.scrollHeight <= parseFloat(getComputedStyle(ex).lineHeight) + 1 && getComputedStyle(ex).textOverflow === 'ellipsis' : null,
+      struck: ex ? getComputedStyle(ex).textDecorationLine === 'line-through' : null,
+      body: card.querySelector('.d')?.textContent ?? null,
+      href: card.querySelector('a')?.getAttribute('href') ?? null,
+      buttons: [...card.querySelectorAll('button')].map((b) => b.textContent),
+      top: r.top,
+      bottom: r.bottom,
+      left: r.left,
+      right: r.right,
+      width: r.width,
+      z: getComputedStyle(host).zIndex,
+      font: getComputedStyle(card).fontFamily,
+      bg: getComputedStyle(card).backgroundColor,
+      color: getComputedStyle(card).color,
+      transform: getComputedStyle(card).transform,
+      focused: document.activeElement === host,
+      railInset: globalThis.innerWidth - (document.querySelector('chatgpt-butter-nav')?.shadowRoot.querySelector('.rail')?.getBoundingClientRect().right ?? innerWidth),
+    };
+  });
+const waitNote = (title, timeout = 5000) =>
+  page
+    .waitForFunction(
+      (title) => {
+        const host = document.querySelector('chatgpt-butter-bookmark-notice');
+        return host?.hasAttribute('data-visible') && !host.inert && host.shadowRoot.querySelector('.tx b')?.textContent === title;
+      },
+      title,
+      { timeout },
+    )
+    .then(() => page.waitForTimeout(300)) // the 200 ms enter motion
+    .catch(() => {});
+// Click the notification's `which` button ('undo' or 'ok').
+const pressNote = async (which) => {
+  const at = await page.evaluate((which) => {
+    const b = document
+      .querySelector('chatgpt-butter-bookmark-notice')
+      .shadowRoot.querySelector(`button[data-notice="${which}"]`)
+      ?.getBoundingClientRect();
+    return b && { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+  }, which);
+  if (at) await page.mouse.click(at.x, at.y);
+  return !!at;
+};
 // An answer's paragraphs, as bookmarks count them: its top-level blocks, each item of a top-level
 // list on its own (blocks: p, h3, p, p, p, p, then the list's two items).
 const PARAS = ':scope > :not(ul, ol), :scope > :is(ul, ol) > li';
@@ -576,9 +708,10 @@ async function jumpByRow(turn, k = 0) {
   return true;
 }
 
-// Hover a paragraph (away from its first line), then click the button. `low`: the paragraph sits
-// too far down its answer to show after scrolling to its question; scroll it to 200 px instead.
-async function bookmark(turn, k, low = false) {
+// Select a whole paragraph (or with `keep` the selection already made), wait for the pill's
+// Bookmark cell, and hand back a click on it. `low`: the paragraph sits too far down its answer to
+// show after scrolling to its question; scroll it to 200 px instead.
+async function bookmark(turn, k, low = false, { keep = false } = {}) {
   if (low)
     await page.evaluate(
       ([id, k, PARAS]) => {
@@ -588,37 +721,52 @@ async function bookmark(turn, k, low = false) {
       },
       [answer(turn), k, PARAS],
     );
-  else await scrollTo(turn);
+  else if (!keep) await scrollTo(turn);
   await page.mouse.move(10, 10);
   await page.waitForTimeout(100);
   const b = await block(turn, k);
-  await page.mouse.move(b.x + b.w / 2, b.y + b.h / 2);
-  await page.waitForTimeout(40);
-  const early = await button();
-  await page.waitForTimeout(260);
-  const shown = await button();
-  // Content above settles a moment after a scroll (stream/offscreen.js marks blocks after 1 s):
-  // moving within the paragraph keeps the button on its first line.
-  await page.waitForTimeout(1200);
-  await page.mouse.move(b.x + 200, b.y + b.h / 2);
-  const moved = await block(turn, k),
-    placed = await button();
-  // Across the margin to the button (when there is one: without it the checks below fail).
-  if (placed) await page.mouse.move(placed.x + 14, placed.y + 14, { steps: 8 });
+  if (!keep) await selectBlock(turn, k);
+  await page
+    .waitForFunction(() => !!document.querySelector('chatgpt-butter-pill')?.shadowRoot.querySelector('.pill[data-on] [data-cell="bookmark"]'), null, { timeout: 3000 })
+    .catch(() => {});
+  await page.waitForTimeout(100);
   const kept = await button();
   return {
     first: b,
-    b: moved,
-    early,
-    shown,
-    placed,
+    b,
     kept,
-    click: () => placed && page.mouse.click(placed.x + 14, placed.y + 14),
+    click: async () => {
+      if (!kept) return;
+      await page.mouse.click(kept.x + kept.w / 2, kept.y + kept.h / 2);
+    },
   };
 }
+// Select paragraph k of question `turn`'s answer, all of it.
+const selectBlock = (turn, k) =>
+  page.evaluate(
+    ([id, k, PARAS]) => {
+      const el = document.querySelector(`[data-fx-answer="${id}"] [data-markdown-text-style]`).querySelectorAll(PARAS)[k];
+      const r = document.createRange();
+      r.selectNodeContents(el);
+      getSelection().removeAllRanges();
+      getSelection().addRange(r);
+    },
+    [answer(turn), k, PARAS],
+  );
+// Delete row k of question `turn`'s tick card with its ×, as the reader does.
+async function removeRow(turn, k = 0) {
+  await toTop();
+  await hoverTick(turn);
+  const c = await ontoRow(k);
+  if (!c.rows[k]) return false;
+  await page.mouse.move(c.rows[k].xAt.x, c.rows[k].xAt.y, { steps: 3 });
+  await page.mouse.click(c.rows[k].xAt.x, c.rows[k].xAt.y);
+  await page.waitForTimeout(400);
+  return true;
+}
 
-// 11b. A one-question chat: the rail stays hidden, as before, but a bookmark made there still
-// shows the filled button and can be removed with it; with a second question its dot shows.
+// 11b. A one-question chat: the rail stays hidden, as before, but the Bookmark cell still saves
+// there, and saving again says "Already bookmarked"; with a second question its dot shows.
 async function oneQuestionSection() {
   await settings({ bookmarkNotice: 'acknowledged' });
   await seedStore([], { clear: true });
@@ -634,8 +782,8 @@ async function oneQuestionSection() {
   await first.click();
   await page.waitForTimeout(600);
   const made = await stored();
-  check('one question: the button saves a bookmark and the rail stays hidden',
-    first.kept?.shown && !first.kept.on && made.length === 1 && made[0].turn === 0 && made[0].para === PARA && !(await railOn()),
+  check('one question: the Bookmark cell saves a bookmark and the rail stays hidden',
+    first.kept?.shown && made.length === 1 && made[0].turn === 0 && made[0].para === PARA && !(await railOn()),
     { button: first.kept, stored: made.length });
   const read = (await requests())['butter-bookmark-list'] || 0;
   for (let k = 0; k < 10; k++) {
@@ -644,17 +792,15 @@ async function oneQuestionSection() {
     await page.waitForTimeout(30);
   }
   await page.waitForTimeout(300);
-  const again = await bookmark(0, PARA);
-  check('one question: the bookmarked paragraph shows the filled "Remove bookmark" button',
-    again.kept?.on && again.kept.tip === 'Remove bookmark', { button: again.kept });
   check('one question: scrolling reads no bookmarks', ((await requests())['butter-bookmark-list'] || 0) === read,
     { read, now: (await requests())['butter-bookmark-list'] });
+  const again = await bookmark(0, PARA);
   await again.click();
-  await page.waitForTimeout(600);
-  check('one question: the filled button removes it', (await stored()).length === 0 && !(await railOn()), { stored: (await stored()).length });
-  // Saved again, then a second question: the rail shows, with the dot beside question 1.
-  await (await bookmark(0, PARA)).click();
-  await page.waitForTimeout(600);
+  await waitNote('Already bookmarked');
+  const n = await noteCard();
+  check('one question: saving the bookmarked paragraph again says "Already bookmarked", with no Undo',
+    n.shown && n.title === 'Already bookmarked' && n.buttons.length === 0 && (await stored()).length === 1, { n, stored: (await stored()).length });
+  // A second question: the rail shows, with the dot beside question 1.
   page$.turns = 2;
   await open();
   await dotCount(1).catch(() => {});
@@ -662,6 +808,215 @@ async function oneQuestionSection() {
   check('with a second question the rail shows the dot beside question 1', (await stored()).length === 1 && two.dots.length === 1 && !!dotBeside(two, 0),
     { stored: (await stored()).length, dots: two.dots.length });
   page$.turns = TURNS;
+  await seedStore([], { clear: true });
+}
+
+// The selection pill and the notification (#77; ONLY=pill runs this part alone): the cases the
+// spec's testing decisions name that the main flow doesn't, and the approved mockup's states shot
+// at desktop (1400 px) and narrow (700 px, under the card's 760 px breakpoint) widths into
+// `${shots}/states/`: A′ (the pill, pointer on Bookmark, its label), C′ (saved), D′ (removed), F′
+// (the first bookmark ever, expanded), E′ (dark, pointer on Ask in branch, a saved card), and,
+// outside the mockup, "Already bookmarked", the pill with Ask in branch off, and Chinese.
+async function pillSection() {
+  const out = path.join(shots, 'states');
+  await fs.mkdir(out, { recursive: true });
+  const TURN = 6;
+  const size = async (width) => {
+    if (!page) page = await context.newPage();
+    await page.setViewportSize({ width, height: 900 });
+  };
+  const shoot = async (name) => {
+    await page.waitForTimeout(250);
+    await page.screenshot({ path: `${out}/${name}.png` });
+  };
+  const away = () => page.mouse.move(300, 860);
+  // A passage inside paragraph 2 of question 7, in view, as the mockup selects one.
+  const passage = async (k = 2) => {
+    await scrollTo(TURN);
+    await page.waitForTimeout(1300); // content above settles a second after a scroll (stream/offscreen.js)
+    await select(TURN, k, 30, k, 160);
+    return bookmark(TURN, k, false, { keep: true });
+  };
+  // The card's motion as it enters: its running transitions, read in the frame after it shows.
+  const entering = () =>
+    page
+      .waitForFunction(() => {
+        const host = document.querySelector('chatgpt-butter-bookmark-notice');
+        const card = host?.hasAttribute('data-visible') && host.shadowRoot.querySelector('.card');
+        if (!card) return null;
+        return card.getAnimations().map((a) => `${a.transitionProperty} ${a.effect.getTiming().duration}`).sort();
+      })
+      .then((h) => h.jsonValue())
+      .catch(() => null);
+
+  await seedStore([], { clear: true });
+  for (const [name, width] of [['desktop', 1400], ['narrow', 700]]) {
+    const W = width;
+    await size(W);
+    // F′: the first bookmark ever, expanded, until Got it.
+    await settings({ bookmarkNotice: undefined });
+    await open('light');
+    await (await bookmark(TURN, 3)).click();
+    await waitNote('Bookmark saved');
+    let n = await noteCard();
+    check(`${name}: the first bookmark's expanded card at top right`, n.shown && n.kind.includes('first') && Math.round(n.top) === 64 &&
+      (W < 760 ? Math.round(n.left) === 16 && Math.round(W - n.right) === 16 : n.width === 300 && Math.round(W - n.right) === n.railInset + 60),
+      { left: n.left, right: W - n.right, top: n.top, width: n.width, railInset: n.railInset });
+    await away();
+    await shoot(`f-first-${name}`);
+    await pressNote('ok');
+    await page.waitForTimeout(400);
+    // A′: a passage selected, the pointer on Bookmark, its label below the pill.
+    await passage();
+    const a = await hoverCell('bookmark');
+    check(`${name}: the pill beside "Ask ChatGPT" with Bookmark's label`, a?.shown && a.tip?.text === 'Bookmark selection' &&
+      Math.round(a.box.left - a.native.right) === 4, { box: a?.box, native: a?.native, tip: a?.tip });
+    await shoot(`a-pill-bookmark-${name}`);
+    // C′: saved, the dot on the rail at the same time.
+    const ac = a.cells.find((c) => c.id === 'bookmark');
+    await page.mouse.click(ac.left + ac.width / 2, ac.top + 15);
+    await waitNote('Bookmark saved');
+    await away();
+    n = await noteCard();
+    check(`${name}: "Bookmark saved", one line of its first words, Undo`, n.shown && !n.kind.includes('first') && n.oneLine &&
+      JSON.stringify(n.buttons) === '["Undo"]' && Math.round(n.top) === 64 && (W >= 760 || (Math.round(n.left) === 16 && Math.round(W - n.right) === 16)), n);
+    await shoot(`c-saved-${name}`);
+    // Already bookmarked (not in the mockup): the same passage again, with the Bookmark cell (the
+    // main flow clears the shortcut's key in Chrome's settings before this section; it checks ⌥⇧M).
+    await (await passage()).click();
+    await waitNote('Already bookmarked');
+    await away();
+    await page.evaluate(() => getSelection().removeAllRanges());
+    n = await noteCard();
+    check(`${name}: "Already bookmarked" without Undo`, n.shown && n.buttons.length === 0, n);
+    await shoot(`already-${name}`);
+    // D′: × on the rail card; Undo puts it back.
+    const kept = (await stored()).filter((b) => b.turn === TURN);
+    await removeRow(TURN, 0); // paragraph 2's: rows are in answer order
+    await waitNote('Bookmark removed');
+    await away();
+    await page.waitForTimeout(500); // the tick's card closes once the pointer has left
+    n = await noteCard();
+    check(`${name}: "Bookmark removed", struck through, with Undo`, n.shown && n.struck && JSON.stringify(n.buttons) === '["Undo"]', n);
+    await shoot(`d-removed-${name}`);
+    await pressNote('undo');
+    await page.waitForTimeout(600);
+    const restored = (await stored()).filter((b) => b.turn === TURN);
+    check(`${name}: Undo of a remove restores the same bookmarks, with their dot`,
+      JSON.stringify(restored.map((b) => [b.key, b.time]).sort()) === JSON.stringify(kept.map((b) => [b.key, b.time]).sort()) && !!dotBeside(await rail(), TURN),
+      { kept: kept.length, restored: restored.length });
+    // E′: dark, a saved card, the pointer on Ask in branch.
+    await open('dark');
+    await (await bookmark(2, 0)).click();
+    await waitNote('Bookmark saved');
+    await passage();
+    const e = await hoverCell('branch');
+    n = await noteCard();
+    check(`${name}: dark: the card in Butter's dark tokens beside the pill, Ask in branch's label`,
+      n.shown && n.bg === 'rgb(38, 33, 27)' && n.color === 'rgb(236, 227, 207)' && e?.tip?.text === 'Ask in branch', { bg: n.bg, color: n.color, tip: e?.tip });
+    await shoot(`e-dark-branch-${name}`);
+    await page.evaluate(() => getSelection().removeAllRanges());
+    // Ask in branch off: the Bookmark cell alone, 30 × 30.
+    await settings({ opts: { branch: false } });
+    await open('light');
+    await passage();
+    const alone = await hoverCell('bookmark');
+    check(`${name}: Ask in branch off: the pill is the Bookmark cell alone, 30 × 30`,
+      alone?.cells.map((c) => c.id).join() === 'bookmark' && alone.box.width === 30 && alone.box.height === 30 && alone.cells[0].width === 30,
+      { cells: alone?.cells });
+    await shoot(`pill-branch-off-${name}`);
+    await page.evaluate(() => getSelection().removeAllRanges());
+    // Chinese: the first bookmark, the pill, saved, already, removed.
+    await seedStore([], { clear: true });
+    await settings({ lang: 'zh', bookmarkNotice: undefined });
+    await open('light');
+    await (await bookmark(TURN, 3)).click();
+    await waitNote('书签已保存');
+    await away();
+    await shoot(`zh-f-first-${name}`);
+    await pressNote('ok');
+    await page.waitForTimeout(400);
+    await passage();
+    const zh = await hoverCell('bookmark');
+    await shoot(`zh-a-pill-bookmark-${name}`);
+    const zc = zh.cells.find((c) => c.id === 'bookmark');
+    await page.mouse.click(zc.left + zc.width / 2, zc.top + 15);
+    await waitNote('书签已保存');
+    await away();
+    const zhSaved = await noteCard();
+    await shoot(`zh-c-saved-${name}`);
+    await (await passage()).click();
+    await waitNote('已有此书签');
+    await away();
+    await page.evaluate(() => getSelection().removeAllRanges());
+    const zhAlready = await noteCard();
+    await shoot(`zh-already-${name}`);
+    await removeRow(TURN, 0);
+    await waitNote('已移除书签');
+    await away();
+    await page.waitForTimeout(500);
+    const zhRemoved = await noteCard();
+    await shoot(`zh-d-removed-${name}`);
+    check(`${name}: Chinese: 为选中内容加书签, 书签已保存, 已有此书签, 已移除书签 and 撤销`,
+      zh?.tip?.text === '为选中内容加书签' && zhSaved.title === '书签已保存' && JSON.stringify(zhSaved.buttons) === '["撤销"]' &&
+        zhAlready.title === '已有此书签' && zhRemoved.title === '已移除书签',
+      { tip: zh?.tip?.text, saved: zhSaved.title, already: zhAlready.title, removed: zhRemoved.title });
+    await settings({});
+    await seedStore([], { clear: true });
+  }
+  await size(1400);
+
+  // Triple-click a paragraph, then Bookmark: the whole paragraph.
+  await open('light');
+  await scrollTo(TURN);
+  await page.waitForTimeout(300);
+  const para = await block(TURN, 4);
+  await page.mouse.click(para.x + 40, para.y + 10, { clickCount: 3 });
+  await page.waitForTimeout(300);
+  const tri = await button();
+  if (tri) await page.mouse.click(tri.x + tri.w / 2, tri.y + tri.h / 2);
+  await page.waitForTimeout(600);
+  const whole = (await stored()).find((b) => b.turn === TURN && b.para === 4);
+  check('triple-click a paragraph, then Bookmark: the whole paragraph', !!tri && whole && whole.start === 0 && whole.end === PARAGRAPH(TURN, 3).length,
+    { tri: !!tri, whole });
+  // Keyboard: the Bookmark cell takes focus, and Enter saves.
+  await bookmark(TURN, 5);
+  await page.locator('chatgpt-butter-pill button[data-cell="bookmark"]').focus();
+  const focusTip = await pill();
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(600);
+  check('keyboard: focus shows the label; Enter on the Bookmark cell saves the selection',
+    focusTip.tip?.text === 'Bookmark selection' && (await stored()).some((b) => b.turn === TURN && b.para === 5), { tip: focusTip.tip });
+  // Undo of a save deletes it and its dot.
+  await waitNote('Bookmark saved');
+  await pressNote('undo');
+  await page.waitForTimeout(600);
+  check('Undo of a save deletes the bookmark', !(await stored()).some((b) => b.turn === TURN && b.para === 5) && !(await noteCard()).shown);
+  // A new card replaces the current one at once.
+  await (await bookmark(2, 0)).click();
+  await waitNote('Bookmark saved');
+  await (await bookmark(3, 0)).click();
+  await page.waitForTimeout(150);
+  const replaced = await page.evaluate(() => document.querySelectorAll('chatgpt-butter-bookmark-notice').length);
+  const now = await noteCard();
+  check('a new card replaces the current one at once', replaced === 1 && now.excerpt?.startsWith('Fixture answer 4 paragraph 1'), { replaced, excerpt: now.excerpt });
+  // Motion: a 16 px slide and a fade over 200 ms; under reduced motion the fade only.
+  await page.waitForTimeout(4500);
+  const move = (await (await bookmark(4, 0)).click(), await entering());
+  await page.waitForTimeout(4500);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const still = (await (await bookmark(5, 0)).click(), await entering());
+  const stillRight = (await noteCard()).transform;
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  check('the card slides 16 px and fades in over 200 ms; with reduced motion it only fades',
+    JSON.stringify(move) === '["opacity 200","transform 200"]' && JSON.stringify(still) === '["opacity 200"]' && stillRight === 'none', { move, still, stillRight });
+  // The rail switched off puts the card away.
+  await (await bookmark(7, 0)).click();
+  await waitNote('Bookmark saved');
+  await settings({ opts: { rail: false } });
+  await page.waitForTimeout(400);
+  check('turning the rail off puts the card away', !(await noteCard()).shown);
+  await settings({});
   await seedStore([], { clear: true });
 }
 
@@ -1197,8 +1552,7 @@ async function dotSection() {
     [...document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot')].map((d) => d.getAnimations().length),
   );
   check('reduced motion: a new dot appears with no grow-in and no halo', quiet.every((n) => n === 0), { quiet });
-  const removed = await bookmark(4, 0);
-  await removed.click();
+  await removeRow(4, 0); // × on the tick's card, the only remove (#77)
   await page.waitForTimeout(100);
   const left = await page.evaluate(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot').length);
   check('reduced motion: a deleted question\'s dot goes at once, with no fade', left === 3, { left });
@@ -2460,7 +2814,7 @@ async function washMockup({ rowJump, waitWash, coverage, blockCoverage, sc, reco
       const el = document.querySelector(sc);
       el.scrollTop += document.querySelector(`[data-turn-key="${id}"]`).getBoundingClientRect().top - colTop;
     }, [sc, question(MOCK_TURN), colTop]);
-    await page.mouse.move(300, 420); // off the rail and the text: the rail at rest, no hover button
+    await page.mouse.move(300, 420); // off the rail and the text: the rail at rest
     await page.waitForTimeout(150);
     const cover = range ? await coverage(b) : await blockCoverage(b, 'pre'),
       composer = await page.evaluate((WASH) => ({
@@ -2553,46 +2907,57 @@ try {
   else if (process.env.ONLY === 'card') await cardSection();
   else if (process.env.ONLY === 'dot') await dotSection();
   else if (process.env.ONLY === 'wash') await washSection();
+  else if (process.env.ONLY === 'pill') await pillSection();
   else {
     await settings({});
     await open();
     const before = await rail();
     check('rail draws no dot before any bookmark', before.dots.length === 0);
 
-    // 1. Hover, wait, click: a dot appears beside question 7's tick (#71).
+    // 1. Select a paragraph, the pill's Bookmark cell (#77): a dot appears beside question 7's tick (#71).
     const TURN = 6,
       PARA = 3, // the narrow paragraph: blocks are p, h3, p, p, p, p, ul
       TEXT = PARAGRAPH(TURN, 2);
-    // The user's own question is not a target.
+    // The user's own question gets no Bookmark cell.
     await scrollTo(TURN);
     await page.waitForTimeout(1200);
-    const bubble = await page.evaluate((id) => {
-      const r = document.querySelector(`[data-turn-key="${id}"] [data-user-message-bubble]`).getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-    }, question(TURN));
-    await page.mouse.move(bubble.x, bubble.y);
+    await page.evaluate((id) => getSelection().selectAllChildren(document.querySelector(`[data-turn-key="${id}"] [data-user-message-bubble]`)), question(TURN));
     await page.waitForTimeout(400);
-    check('the user question shows no button', !(await button())?.shown);
+    check('a selection in the user question shows no Bookmark cell', !(await button()));
+    await page.evaluate(() => getSelection().removeAllRanges());
     const hover = await bookmark(TURN, PARA);
-    check('button waits before it shows', !hover.early?.shown);
-    check('button shows over the left margin, on the first line', hover.shown?.shown &&
-      hover.shown.w === 28 && hover.shown.h === 28 && hover.shown.radius === '8px' &&
-      Math.abs(hover.shown.x - (hover.first.x - 38)) <= 1 && Math.abs(hover.shown.y + 14 - (hover.first.y + 13)) <= 3,
-      { button: hover.shown, block: hover.first });
-    // The name holds the start of the paragraph (#53): its first 80 characters.
-    check('tooltip says "Bookmark"; the name adds the start of the paragraph',
-      hover.shown?.tip === 'Bookmark' && hover.shown.label === `Bookmark: ${TEXT.slice(0, 80).trim()}…`, { label: hover.shown?.label });
-    // Chrome assigned the suggested key (it does not when the key is one of its own), and the
-    // tooltip shows it as the mockup writes keys.
+    const p1 = hover.kept?.pill;
+    check('no hover button in the left margin any more', p1 && !p1.hoverButton);
+    check('the pill sits 4 px right of "Ask ChatGPT", top edges aligned, 30 px high, inside <body>',
+      p1 && Math.round(p1.box.left - p1.native.right) === 4 && Math.round(p1.box.top) === Math.round(p1.native.top) && p1.box.height === 30 && p1.inBody,
+      { pill: p1?.box, native: p1?.native });
+    check('the pill copies "Ask ChatGPT"’s background, radius and shadow',
+      p1 && JSON.stringify(p1.css) === JSON.stringify(p1.nativeCss), { pill: p1?.css, native: p1?.nativeCss });
+    check('Ask in branch, then Bookmark: icon cells 32 px wide with a 1 px divider',
+      p1 && p1.cells.map((c) => c.id).join() === 'branch,bookmark' && p1.cells.every((c) => c.width === 32 && c.height === 30 && !c.text) &&
+        p1.cells[1].divider === '1px' && p1.box.width === 64,
+      { cells: p1?.cells });
+    check('the cells are named by their labels; the Bookmark cell carries its key in aria-keyshortcuts',
+      p1 && p1.cells[0].name === 'Ask in branch' && p1.cells[1].name === 'Bookmark selection' && p1.cells[1].keys === 'Alt+Shift+M' && !p1.cells[0].keys,
+      { cells: p1?.cells.map(({ name, keys }) => ({ name, keys })) });
+    // The label: not at 100 ms, shown by 350 ms, 8 px below the pill, centred under its cell.
+    const early = await hoverCell('bookmark', 100);
+    const late = await hoverCell('bookmark', 250);
+    const cellBox = late?.cells[1];
+    // Chrome assigned the suggested key (it does not when the key is one of its own); the label
+    // shows it as the mockup writes keys.
     const commands = await worker.evaluate(() => chrome.commands.getAll());
-    check('Chrome reports Alt+Shift+M for the bookmark command, and the tooltip shows it',
-      commands.find((c) => c.name === 'bookmark')?.shortcut === 'Alt+Shift+M' && hover.shown.kbd === 'Alt Shift M' && hover.shown.kbdShown,
-      { commands, kbd: hover.shown.kbd });
-    check('button follows its paragraph when content above it settles',
-      Math.abs(hover.placed.x - (hover.b.x - 38)) <= 1 && Math.abs(hover.placed.y + 14 - (hover.b.y + 13)) <= 3,
-      { button: hover.placed, block: hover.b });
-    check('button stays while the pointer crosses the margin', hover.kept?.shown);
-    await page.screenshot({ path: `${shots}/button-light.png`, clip: { x: hover.b.x - 60, y: hover.b.y - 50, width: 820, height: 160 } });
+    check('the label waits 300 ms, then shows "Bookmark selection" and the key 8 px below the pill, under its cell',
+      !early?.tip && late?.tip?.text === 'Bookmark selection' && late.tip.kbd === 'Alt Shift M' && late.tip.kbdShown &&
+        Math.round(late.tip.top - late.box.bottom) === 8 && Math.abs(late.tip.left + late.tip.width / 2 - (cellBox.left + cellBox.width / 2)) <= 1 &&
+        commands.find((c) => c.name === 'bookmark')?.shortcut === 'Alt+Shift+M',
+      { early: early?.tip, tip: late?.tip, commands });
+    const toBranch = await hoverCell('branch', 0);
+    check('moving to the other cell switches the label at once', toBranch?.tip?.text === 'Ask in branch', { tip: toBranch?.tip });
+    await page.mouse.move(10, 10);
+    await page.waitForTimeout(100);
+    check('the label goes when the pointer leaves the pill', !(await pill()).tip);
+    await page.screenshot({ path: `${shots}/button-light.png`, clip: { x: hover.b.x - 60, y: hover.b.y - 50, width: 820, height: 260 } });
     await hover.click();
     // The new dot's motion, read before it ends: its animations, their timing and the halo's widest.
     const motion = await page
@@ -2609,6 +2974,10 @@ try {
         };
       })
       .then((h) => h.jsonValue());
+    // After the dot's motion is read (its grow-in lasts 180 ms): the page and the card.
+    check('clicking Bookmark clears the selection and the pill',
+      (await page.evaluate(() => getSelection().isCollapsed)) && !(await pill()).shown);
+    const savedCard = await noteCard(); // read now: it leaves 4 s after it shows
     await page.waitForTimeout(60);
     const made = await rail();
     const tick = made.ticks[TURN],
@@ -2660,11 +3029,23 @@ try {
       cut.first.length > 0 && cut.first.length < 80 && saved[0]?.line === cut.first.length && excerpt.startsWith(cut.first),
       { line: saved[0]?.line, first: cut.first });
 
-    // 2. Hovering the bookmarked paragraph again shows the filled button (a click would remove it).
-    const again = await bookmark(TURN, PARA);
-    check('a bookmarked paragraph shows the filled button', again.kept?.on && again.kept.tip === 'Remove bookmark',
-      { button: again.kept });
-    check('the paragraph is saved once', (await stored()).length === 1 && (await rail()).dots.length === 1);
+    // 2. The save's card (#77), top right; then ⌥⇧M on the same paragraph says it is already bookmarked.
+    check('the save shows "Bookmark saved" top right: 300 px, 12 px below the header, 8 px left of the rail, with its first words and Undo',
+      savedCard.title === 'Bookmark saved' && savedCard.width === 300 && Math.round(savedCard.top) === 64 &&
+        Math.round(1400 - savedCard.right) === savedCard.railInset + 52 + 8 && savedCard.excerpt === excerpt.replace(/\s+/g, ' ') &&
+        savedCard.oneLine && JSON.stringify(savedCard.buttons) === '["Undo"]' && savedCard.role === 'status' && !savedCard.focused,
+      savedCard);
+    await page.waitForTimeout(4300);
+    check('the small card leaves by itself after 4 s', !(await noteCard()).shown);
+    await scrollTo(TURN);
+    await selectBlock(TURN, PARA);
+    await shortcut();
+    await waitNote('Already bookmarked');
+    const already = await noteCard();
+    check('⌥⇧M on a bookmarked paragraph: "Already bookmarked", its first words, no Undo; saved once',
+      already.title === 'Already bookmarked' && already.buttons.length === 0 && (await stored()).length === 1 && (await rail()).dots.length === 1,
+      { already, stored: (await stored()).length });
+    await page.evaluate(() => getSelection().removeAllRanges());
 
     // 3. The dot is not a target: the pointer over it is over its tick's row, which shows the tick's card.
     await toTop();
@@ -2721,42 +3102,43 @@ try {
     check('away to the home page and Back: the dot is beside question 7 again', backAgain.dots.length === 1 && !!dotBeside(backAgain, TURN),
       { dots: backAgain.dots.length });
 
-    // 6. Dark theme: the dot and the button in dark butter.
+    // 6. Dark theme: the dot in dark butter, the pill in ChatGPT's dark button colours.
     await open('dark');
     await dotCount(1);
     const dark = await rail();
     check('dark theme dot is #e3c766', dark.dots[0].color === 'rgb(227, 199, 102)', { color: dark.dots[0].color });
     await page.screenshot({ path: `${shots}/rail-dark.png`, clip: { x: 1400 - 120, y: dark.ticks[0].y - 30, width: 120, height: pitch * TURNS + 60 } });
     const hoverDark = await bookmark(2, 0);
-    await page.screenshot({ path: `${shots}/button-dark.png`, clip: { x: hoverDark.b.x - 60, y: hoverDark.b.y - 50, width: 820, height: 160 } });
-    check('dark theme button shows', hoverDark.shown?.shown);
-    // The bookmarked paragraph's filled button, for the mockup's dark "Remove bookmark" frame.
-    const filledDark = await bookmark(TURN, PARA);
-    check('dark theme: a bookmarked paragraph shows the filled "Remove bookmark" button',
-      filledDark.kept?.on && filledDark.kept.tip === 'Remove bookmark', { button: filledDark.kept });
-    await page.screenshot({ path: `${shots}/button-remove-dark.png`, clip: { x: filledDark.b.x - 60, y: filledDark.b.y - 50, width: 820, height: 160 } });
+    const darkTip = await hoverCell('bookmark');
+    await page.screenshot({ path: `${shots}/button-dark.png`, clip: { x: hoverDark.b.x - 60, y: hoverDark.b.y - 50, width: 820, height: 260 } });
+    check('dark theme: the pill copies the dark "Ask ChatGPT"; the label turns white',
+      darkTip?.shown && JSON.stringify(darkTip.css) === JSON.stringify(darkTip.nativeCss) && darkTip.css.bg === 'rgb(58, 58, 58)' &&
+        (await page.evaluate(() => getComputedStyle(document.querySelector('chatgpt-butter-pill').shadowRoot.querySelector('.tip')).backgroundColor)) === 'rgb(255, 255, 255)',
+      { css: darkTip?.css });
+    await page.evaluate(() => getSelection().removeAllRanges());
 
     // 6b. Selection and shortcut (#54).
     await open('light');
-    // (a) A selection inside one paragraph, saved with the button: question 3, paragraph 2.
+    // (a) A selection inside one paragraph, saved with the Bookmark cell: question 3, paragraph 2.
     const SEL = 'reads the table statistics gathered by ANALYZE',
       selText = PARAGRAPH(2, 1),
       selStart = selText.indexOf(SEL);
     await scrollTo(2);
     await select(2, 2, selStart, 2, selStart + SEL.length);
-    const selHover = await bookmark(2, 2);
-    check('with a selection, the tooltip and name say "Bookmark selection", with the key',
-      selHover.kept?.tip === 'Bookmark selection' && selHover.kept.label === `Bookmark selection: ${SEL}` && selHover.kept.kbd === 'Alt Shift M',
-      { tip: selHover.kept?.tip, label: selHover.kept?.label, kbd: selHover.kept?.kbd });
-    await page.screenshot({ path: `${shots}/button-selection-light.png`, clip: { x: selHover.b.x - 60, y: selHover.b.y - 50, width: 820, height: 160 } });
+    const selHover = await bookmark(2, 2, false, { keep: true });
+    const selTip = await hoverCell('bookmark');
+    check('with a selection, the Bookmark cell is named "Bookmark selection" and its label shows the key',
+      selHover.kept?.name === 'Bookmark selection' && selTip?.tip?.text === 'Bookmark selection' && selTip.tip.kbd === 'Alt Shift M',
+      { name: selHover.kept?.name, tip: selTip?.tip });
+    await page.screenshot({ path: `${shots}/button-selection-light.png`, clip: { x: selHover.b.x - 60, y: selHover.b.y - 50, width: 820, height: 260 } });
     await selHover.click();
     await page.waitForTimeout(600);
     let all = await stored();
     const bySel = all.find((b) => b.turn === 2);
-    check('the button saves only the selection: its offsets and its text',
+    check('the Bookmark cell saves only the selection: its offsets and its text',
       bySel && bySel.para === 2 && bySel.start === selStart && bySel.end === selStart + SEL.length && bySel.excerpt === SEL,
       { bySel });
-    check('the selection survives the click', await page.evaluate(() => getSelection().toString()) === SEL);
+    check('the click clears the selection and the pill', (await page.evaluate(() => getSelection().isCollapsed)) && !(await pill()).shown);
     check('the selection bookmark has its dot beside question 3', !!dotBeside(await rail(), 2));
     await page.evaluate(() => getSelection().removeAllRanges());
     check('clicking its row lands on the selected text, not the paragraph',
@@ -2823,25 +3205,18 @@ try {
       LI_TEXT = 'Fixture list item two';
     await page.mouse.move(10, 10);
     const liHover = await bookmark(3, LI, true);
-    const firstPara = await block(3, 0);
-    check('a list item shows the button on its own first line, in the paragraphs\' column, named with its text',
-      liHover.kept?.shown && Math.abs(liHover.placed.x - (firstPara.x - 38)) <= 1 &&
-        Math.abs(liHover.placed.y + 14 - (liHover.b.y + 13)) <= 3 && liHover.kept.label === `Bookmark: ${LI_TEXT}`,
-      { button: liHover.placed, item: liHover.b, label: liHover.kept?.label });
+    check('a list item selected whole shows the Bookmark cell', !!liHover.kept?.shown, { button: liHover.kept });
     await liHover.click();
     await page.waitForTimeout(600);
     const liMark = (await stored()).find((b) => b.turn === 3);
-    check('clicking it bookmarks that item alone', liMark && liMark.para === LI && liMark.start === 0 && liMark.end === LI_TEXT.length && liMark.excerpt === LI_TEXT,
+    check('the Bookmark cell bookmarks that item alone', liMark && liMark.para === LI && liMark.start === 0 && liMark.end === LI_TEXT.length && liMark.excerpt === LI_TEXT,
       { liMark });
-    const liOther = await bookmark(3, LI - 1, true);
-    check('the other item of the list is not shown as bookmarked', liOther.kept?.shown && !liOther.kept.on && liOther.kept.label === 'Bookmark: Fixture list item one',
-      { button: liOther.kept });
     check('clicking its row lands on that item, not on the start of the list',
       (await jumpByRow(3)) && Math.abs((await block(3, LI)).fromTop - 64) <= 3,
       { fromTop: (await block(3, LI)).fromTop, list: (await block(3, LI - 1)).fromTop });
-    // A selection inside the first item, saved with the button.
+    // A selection inside the first item, saved with the Bookmark cell.
     await select(3, LI - 1, 8, LI - 1, 12);
-    const liSel = await bookmark(3, LI - 1, true);
+    const liSel = await bookmark(3, LI - 1, false, { keep: true });
     await liSel.click();
     await page.waitForTimeout(600);
     await page.evaluate(() => getSelection().removeAllRanges());
@@ -2873,17 +3248,22 @@ try {
     check('after a reload the list items\' bookmarks are live', liTicks.length === 2 &&
       liTicks.every(([i, l]) => !l.includes('(answer changed)') && dotBeside(liRail, i) && !dotBeside(liRail, i).cls.includes('stale')), { liTicks });
 
-    // (e) Dark theme, the selection tooltip.
+    // (e) Dark theme, the selection's label; then Chinese.
     await open('dark');
     await scrollTo(2);
     await select(2, 2, selStart, 2, selStart + SEL.length);
-    const selDark = await bookmark(2, 2);
-    await page.screenshot({ path: `${shots}/button-selection-dark.png`, clip: { x: selDark.b.x - 60, y: selDark.b.y - 50, width: 820, height: 160 } });
-    check('dark theme: the selection tooltip shows', selDark.kept?.tip === 'Bookmark selection');
+    const selDark = await bookmark(2, 2, false, { keep: true });
+    const selDarkTip = await hoverCell('bookmark');
+    await page.screenshot({ path: `${shots}/button-selection-dark.png`, clip: { x: selDark.b.x - 60, y: selDark.b.y - 50, width: 820, height: 260 } });
+    check('dark theme: the selection label shows', selDarkTip?.tip?.text === 'Bookmark selection');
     await settings({ lang: 'zh' });
     await page.waitForTimeout(400);
-    const zhTip = await button();
-    check('in Chinese the selection tooltip reads 为选中内容加书签', zhTip?.tip === '为选中内容加书签' && zhTip.label === `为选中内容加书签：${SEL}`, { tip: zhTip?.tip, label: zhTip?.label });
+    await page.mouse.move(10, 10);
+    const zhTip = await hoverCell('bookmark');
+    check('in Chinese the Bookmark cell and its label read 为选中内容加书签, Ask in branch 在分支中问',
+      zhTip?.tip?.text === '为选中内容加书签' && zhTip.cells.find((c) => c.id === 'bookmark')?.name === '为选中内容加书签' &&
+        zhTip.cells.find((c) => c.id === 'branch')?.name === '在分支中问',
+      { tip: zhTip?.tip, cells: zhTip?.cells.map((c) => c.name) });
     await settings({});
     await page.evaluate(() => getSelection().removeAllRanges());
 
@@ -2896,10 +3276,15 @@ try {
     await settingsPage.close();
     const cleared = await worker.evaluate(() => chrome.commands.getAll());
     await open('light');
-    const noKey = await bookmark(TURN, 2);
-    check('with the key cleared, the tooltip shows no shortcut hint',
-      cleared.find((c) => c.name === 'bookmark')?.shortcut === '' && noKey.kept?.tip === 'Bookmark' && noKey.kept.kbd === '' && !noKey.kept.kbdShown,
-      { cleared, kbd: noKey.kept?.kbd });
+    await bookmark(TURN, 2);
+    await page.waitForTimeout(300); // the key is read again as the cell shows
+    const noKey = await hoverCell('bookmark');
+    const noKeyCell = noKey?.cells.find((c) => c.id === 'bookmark');
+    check('with the key cleared, the label shows no shortcut hint and the cell no aria-keyshortcuts',
+      cleared.find((c) => c.name === 'bookmark')?.shortcut === '' && noKey?.tip?.text === 'Bookmark selection' && noKey.tip.kbd === '' &&
+        !noKey.tip.kbdShown && noKeyCell?.keys === null,
+      { cleared, tip: noKey?.tip, keys: noKeyCell?.keys });
+    await page.evaluate(() => getSelection().removeAllRanges());
     // Leave the store and the key as the later sections expect: only question 7's bookmark.
     await worker.evaluate(async () => {
       const db = await database(),
@@ -2910,16 +3295,20 @@ try {
       await new Promise((ok, no) => ((tx.oncomplete = ok), (tx.onerror = () => no(tx.error))));
     });
 
-    // 7. Turning the rail off live hides a shown button and the dots at once.
+    // 7. Turning the rail off live drops the Bookmark cell and hides the dots at once; Ask in branch stays.
     await open('light');
     const live = await bookmark(TURN, PARA);
     await settings({ opts: { rail: false } });
     await page.waitForTimeout(300);
     const liveOff = await page.evaluate(() => getComputedStyle(document.querySelector('chatgpt-butter-nav')).display);
-    check('rail switched off live: button and dots hide', live.kept?.shown && !(await button()).shown && liveOff === 'none', { liveOff });
+    const branchOnly = await pill();
+    check('rail switched off live: the Bookmark cell and the dots hide; the pill keeps Ask in branch',
+      live.kept?.shown && !(await button()) && liveOff === 'none' && branchOnly.cells.map((c) => c.id).join() === 'branch',
+      { liveOff, cells: branchOnly.cells.map((c) => c.id) });
     await settings({});
+    await page.evaluate(() => getSelection().removeAllRanges());
 
-    // 8. Rail off, then Butter paused, from a fresh load: neither the button nor a dot.
+    // 8. Rail off, then Butter paused, from a fresh load: neither the Bookmark cell nor a dot.
     for (const [name, butter] of [
       ['rail off', { opts: { rail: false } }],
       ['Butter paused', { enabled: false }],
@@ -2937,11 +3326,11 @@ try {
         };
       });
       await scrollTo(TURN);
-      const b = await block(TURN, PARA);
-      await page.mouse.move(b.x + b.w / 2, b.y + b.h / 2);
+      await selectBlock(TURN, PARA);
       await page.waitForTimeout(400);
       const btn = await button();
-      check(`${name}: no dot and no button`, off.marks === 0 && !btn?.shown, { off, btn });
+      check(`${name}: no dot and no Bookmark cell`, off.marks === 0 && !btn, { off, btn });
+      await page.evaluate(() => getSelection().removeAllRanges());
       const after = (await requests())['butter-bookmark-list'] || 0;
       check(`${name}: the page reads no bookmarks`, after === reads, { reads, after });
       await settings({});
@@ -3026,20 +3415,30 @@ try {
     let left = (await stored()).filter((b) => b.turn === TURN);
     check('× deletes that bookmark; the card now lists five', left.length === 5 && !left.some((b) => b.para === 0) &&
       c.shown && c.name === 'Question 7 of 12 · 5 bookmarks' && c.rows.length === 5, { left: left.length, name: c.name });
-
-    // The filled button removes every bookmark in its paragraph (two in paragraph 2).
+    // The remove's card (#77): "Bookmark removed", its first words struck through, and Undo, which
+    // stores the same bookmark again (same key and time) and brings it back to the card.
+    const gone = SEEDS.find((b) => b.turn === TURN && b.para === 0);
+    await waitNote('Bookmark removed');
+    const removedCard = await noteCard();
+    check('× shows "Bookmark removed" top right, its first words struck through, with Undo',
+      removedCard.shown && removedCard.title === 'Bookmark removed' && removedCard.excerpt === gone.excerpt && removedCard.struck &&
+        JSON.stringify(removedCard.buttons) === '["Undo"]' && Math.round(removedCard.top) === 64 &&
+        Math.round(1400 - removedCard.right) === removedCard.railInset + 60,
+      removedCard);
+    await page.mouse.move(700, 300);
+    await pressNote('undo');
+    await page.waitForTimeout(600);
+    const back = (await stored()).find((b) => b.turn === TURN && b.para === 0);
     await toTop();
-    const filled = await bookmark(TURN, 2);
-    check('a bookmarked paragraph: filled butter button with a dark outline, "Remove bookmark"',
-      filled.kept?.on && filled.kept.tip === 'Remove bookmark' && filled.kept.fill === 'rgb(251, 224, 122)' &&
-        filled.kept.stroke === 'rgb(27, 23, 15)' && filled.kept.label.startsWith('Remove bookmark: ') &&
-        filled.kept.label.includes(excerptOf(TURN, 2)), { button: filled.kept });
-    await page.screenshot({ path: `${shots}/button-remove-light.png`, clip: { x: filled.b.x - 60, y: filled.b.y - 50, width: 820, height: 160 } });
-    await filled.click();
-    await page.waitForTimeout(400);
+    await hoverTick(TURN);
+    check('Undo brings the same bookmark back: its key, its original time, its row in the card',
+      back && back.key === (await worker.evaluate((b) => ButterBookmarks.key(b), gone)) && back.time === gone.time && (await tickCard()).rows.length === 6 && !(await noteCard()).shown,
+      { back, rows: (await tickCard()).rows.length });
+    // × again on the first row, then on paragraph 2's two rows: three left.
+    for (let k = 0; k < 3; k++) await removeRow(TURN, 0);
     left = (await stored()).filter((b) => b.turn === TURN);
-    check('clicking the filled button removes both bookmarks in that paragraph', left.length === 3 && !left.some((b) => b.para === 2) &&
-      !(await button()).on, { left: left.map((b) => b.para) });
+    check('× on paragraph 2\'s rows removes both; three left', left.length === 3 && !left.some((b) => b.para === 2 || b.para === 0),
+      { left: left.map((b) => b.para) });
 
     // Keyboard alone: Tab into the rail, arrows to the tick (no stop for its bookmarks), left into the
     // card, Enter to jump.
@@ -3125,30 +3524,9 @@ try {
     await page.waitForTimeout(500);
     check('after a reload the deletions are still gone', (await stored()).length === 0 && (await rail()).dots.length === 0);
 
-    // 10. First-use notice (#56). Each run below starts unacknowledged: `settings` replaces the whole
-    // settings object. The first three save, check the notice and press Undo; the last presses Got it.
-    const notice = () =>
-      page.evaluate(() => {
-        const host = document.querySelector('chatgpt-butter-bookmark-notice');
-        if (!host) return { shown: false };
-        const card = host.shadowRoot.querySelector('.card'),
-          r = card.getBoundingClientRect();
-        return {
-          shown: !host.hidden && host.hasAttribute('data-visible') && !host.inert,
-          lang: card.lang,
-          title: card.querySelector('.t')?.textContent,
-          body: card.querySelector('.d')?.textContent,
-          href: card.querySelector('a')?.getAttribute('href'),
-          buttons: [...card.querySelectorAll('button')].map((b) => b.textContent),
-          top: r.top,
-          bottom: r.bottom,
-          left: r.left,
-          right: r.right,
-          width: r.width,
-          z: getComputedStyle(host).zIndex,
-          font: getComputedStyle(card).fontFamily,
-        };
-      });
+    // 10. The first bookmark ever (#56, #77): the notification expanded with the privacy text, at top
+    // right. Each run below starts unacknowledged. The first three save, check the card and press
+    // Undo; the last presses Got it.
     const consentCard = () =>
       page.evaluate(() => {
         const host = document.querySelector('chatgpt-butter-consent');
@@ -3156,40 +3534,23 @@ try {
         const r = host.shadowRoot.querySelector('.card').getBoundingClientRect();
         return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, z: getComputedStyle(host).zIndex };
       });
-    const press = async (which) => {
-      const at = await page.evaluate((which) => {
-        const b = document
-          .querySelector('chatgpt-butter-bookmark-notice')
-          .shadowRoot.querySelector(`button[data-notice="${which}"]`)
-          .getBoundingClientRect();
-        return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
-      }, which);
-      await page.mouse.click(at.x, at.y);
-    };
     const acknowledged = () =>
       worker.evaluate(() => chrome.storage.local.get('butter').then(({ butter }) => butter.bookmarkNotice));
-    const waitNotice = () =>
-      page
-        .waitForFunction(() => document.querySelector('chatgpt-butter-bookmark-notice')?.hasAttribute('data-visible'), null, {
-          timeout: 5000,
-        })
-        .then(() => page.waitForTimeout(400)); // the 200 ms enter motion
     await seedStore([], { clear: true });
     const COPY = {
       en: {
         title: 'Bookmark saved',
-        body: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail. Privacy policy',
+        body: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.Privacy policy',
         href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.md',
         buttons: ['Undo', 'Got it'],
       },
       zh: {
         title: '书签已保存',
-        body: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。 隐私政策',
+        body: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。隐私政策',
         href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.zh-CN.md',
         buttons: ['撤销', '知道了'],
       },
     };
-    const built = [];
     for (const [i, run] of [
       { theme: 'light', lang: 'en', butter: {}, consent: 'declined' },
       { theme: 'dark', lang: 'en', butter: { layoutConsent: 'pending' }, consent: 'pending' },
@@ -3197,78 +3558,85 @@ try {
       { theme: 'dark', lang: 'zh', butter: { lang: 'zh', layoutConsent: 'granted', opts: { layout: false } }, consent: 'layouts off' },
     ].entries()) {
       const name = `${run.theme} ${run.lang}, consent ${run.consent}`;
-      await settings(run.butter);
+      await settings({ ...run.butter, bookmarkNotice: undefined });
       await open(run.theme);
       const save = await bookmark(TURN, PARA);
-      check(`notice (${name}): nothing before the save`, !(await notice()).shown);
+      check(`first bookmark (${name}): nothing before the save`, !(await noteCard()).shown);
       await save.click();
-      await waitNotice().catch(() => {});
-      const n = await notice();
+      await waitNote(COPY[run.lang].title);
+      const n = await noteCard();
       const c = COPY[run.lang];
-      check(`notice (${name}): shown after the save, with the approved copy`,
-        n.shown && n.title === c.title && n.body === c.body && n.href === c.href &&
-          JSON.stringify(n.buttons) === JSON.stringify(c.buttons) && n.lang === (run.lang === 'zh' ? 'zh-CN' : 'en'),
+      check(`first bookmark (${name}): the expanded card, with the approved copy`,
+        n.shown && n.kind.includes('first') && n.title === c.title && n.body === c.body && n.href === c.href &&
+          JSON.stringify(n.buttons) === JSON.stringify(c.buttons) && n.lang === (run.lang === 'zh' ? 'zh-CN' : 'en') &&
+          n.excerpt.length > 0 && n.oneLine,
         n);
-      check(`notice (${name}): the consent card's place, width and stacking`,
-        // With consent pending, the consent card may already show: then the notice stacks above it.
-        n.width === 300 && Math.round(1400 - n.right) === 30 && n.z === '19' &&
-          (run.consent === 'pending' || Math.round(900 - n.bottom) === 82) &&
+      check(`first bookmark (${name}): top right, 12 px below the header and 8 px left of the rail, 300 px, Butter's font`,
+        n.width === 300 && Math.round(n.top) === 64 && Math.round(1400 - n.right) === n.railInset + 60 && n.z === '19' &&
           n.font.includes('ButterConsentNunito'),
-        { right: 1400 - n.right, bottom: 900 - n.bottom, width: n.width, z: n.z });
+        { top: n.top, right: 1400 - n.right, railInset: n.railInset, width: n.width, z: n.z });
       if (run.consent === 'pending') {
         await page.waitForSelector('chatgpt-butter-consent[data-visible]', { state: 'attached', timeout: 5000 });
         await page.waitForTimeout(400);
-        const [m, k] = [await notice(), await consentCard()];
-        check(`notice (${name}): stacks above the pending consent card, not over it`,
-          k && m.shown && m.bottom <= k.top - 12 + 0.5 && Math.abs(m.right - k.right) < 0.5, { notice: m, consent: k });
+        const [m, k] = [await noteCard(), await consentCard()];
+        check(`first bookmark (${name}): the consent card stays bottom right, apart from the notification`,
+          k && m.shown && Math.round(1400 - k.right) === 30 && Math.round(900 - k.bottom) >= 82 && m.bottom < k.top,
+          { notice: m, consent: k });
       }
-      const file = `${shots}/notice-${run.theme}-${run.lang}.png`;
-      // On whole pixels, as the mockup's card sits (a stacked card's top can be fractional).
-      const shot = await notice();
-      // The rail is hidden for this capture only: with a classic scrollbar (headed, under Xvfb) it
-      // sits 15 px further left and its ticks, which stack above cards, cross the card's right edge.
-      // notice-page-* below keeps the rail.
-      const railHost = (v) => page.evaluate((v) => (document.querySelector('chatgpt-butter-nav').style.visibility = v), v);
-      await railHost('hidden');
+      if (i === 0) {
+        await page.waitForTimeout(4500);
+        check('the expanded card does not leave by itself', (await noteCard()).shown);
+      }
+      const shot = await noteCard();
       await page.screenshot({
-        path: file,
-        clip: { x: Math.round(shot.left), y: Math.round(shot.top), width: 300, height: Math.round(shot.bottom - shot.top) },
+        path: `${shots}/notice-${run.theme}-${run.lang}.png`,
+        clip: { x: Math.round(shot.left) - 8, y: Math.round(shot.top) - 8, width: 316 + 60, height: Math.round(shot.bottom - shot.top) + 16 },
       });
-      await railHost('');
-      built.push({ ...run, file });
-      await page.screenshot({ path: `${shots}/notice-page-${run.theme}-${run.lang}.png` });
-      check(`notice (${name}): the save drew its dot`, (await rail()).dots.length === 1);
+      check(`first bookmark (${name}): the save drew its dot`, (await rail()).dots.length === 1);
       if (i < 3) {
-        await press('undo');
+        await pressNote('undo');
         await page
           .waitForFunction(() => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.bdot:not(.gone)').length === 0, null, { timeout: 5000 })
           .catch(() => {});
         await page.waitForTimeout(300);
-        const after = await notice();
-        check(`notice (${name}): Undo deletes the bookmark, its dot goes, the notice hides unacknowledged`,
+        const after = await noteCard();
+        check(`first bookmark (${name}): Undo deletes the bookmark, its dot goes, the card goes unacknowledged`,
           (await stored()).length === 0 && (await rail()).dots.length === 0 && !after.shown &&
             (await acknowledged()) === undefined,
           { stored: (await stored()).length, dots: (await rail()).dots.length, after: after.shown });
       } else {
-        await press('ok');
+        await pressNote('ok');
         await page.waitForTimeout(400);
-        check(`notice (${name}): Got it keeps the bookmark and records the acknowledgement`,
-          !(await notice()).shown && (await stored()).length === 1 && (await rail()).dots.length === 1 &&
+        check(`first bookmark (${name}): Got it keeps the bookmark and records the acknowledgement`,
+          !(await noteCard()).shown && (await stored()).length === 1 && (await rail()).dots.length === 1 &&
             (await acknowledged()) === 'acknowledged');
       }
     }
-    // A third save, and one after a reload: no notice.
+    // A third save, and one after a reload: the small card only.
+    await settings({ lang: 'en' });
+    await open('light');
     const third = await bookmark(TURN, 0);
     await third.click();
-    await dotCount(1);
-    await page.waitForTimeout(800);
-    check('after Got it, a third save shows no notice', !(await notice()).shown && (await stored()).length === 2);
+    await waitNote('Bookmark saved');
+    let small = await noteCard();
+    check('after Got it, a save shows the small card', small.shown && !small.kind.includes('first') && JSON.stringify(small.buttons) === '["Undo"]' &&
+      (await stored()).length === 2, small);
     await open('light');
     const fourth = await bookmark(2, 0);
     await fourth.click();
-    await dotCount(2);
-    await page.waitForTimeout(800);
-    check('after Got it and a reload, a save shows no notice', !(await notice()).shown && (await stored()).length === 3);
+    await waitNote('Bookmark saved');
+    small = await noteCard();
+    check('after Got it and a reload, the small card again', small.shown && !small.kind.includes('first') && (await stored()).length === 3, small);
+    // The pointer on the card holds it; it leaves 4 s after the pointer goes.
+    await page.mouse.move((small.left + small.right) / 2 - 60, (small.top + small.bottom) / 2, { steps: 4 });
+    await page.waitForTimeout(4500);
+    const held = (await noteCard()).shown;
+    await page.mouse.move(700, 600, { steps: 4 });
+    await page.waitForTimeout(2000);
+    const stillThere = (await noteCard()).shown;
+    await page.waitForTimeout(2600);
+    check('the pointer on the card holds it; it leaves 4 s after the pointer goes', held && stillThere && !(await noteCard()).shown,
+      { held, stillThere });
 
     // 11. Stale bookmarks (#55). Start over with seeded bookmarks: question 10 holds one, question 7
     // three (blocks 0, 2 and 4). English, the notice already acknowledged.
@@ -3521,35 +3889,19 @@ try {
       remounted && Math.abs(sentAt - 64) <= 3, { remounted, fromTop: sentAt, question: sentQuestion });
     await seedStore([], { clear: true });
 
+    await pillSection();
     await cardSection();
     await dotSection();
     await oneQuestionSection();
     await earlierSection();
     await washSection();
 
-    // Against the mockup's section 4, when given.
+    // The #51 mockup's stale cards, when given, for a side-by-side look (its section 4 notice is
+    // replaced by #77's notification, which pillSection shoots).
     if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
       const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
       await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_MOCKUP)}`);
-      // Headed (under Xvfb) Chromium draws a 15 px classic scrollbar, which moves the centred mockup
-      // half a pixel off the grid; without it the layout is the headless one, on whole pixels.
       await mock.addStyleTag({ content: 'html { scrollbar-width: none }' });
-      for (const b of built) {
-        await mock.click(`#lang button[data-l="${b.lang}"]`);
-        await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
-        const reference = `${shots}/mockup-notice-${b.theme}-${b.lang}.png`;
-        // Clipped on whole pixels, as the built notice is: a locator screenshot widens a card at a
-        // fractional x by one pixel.
-        const card = mock.locator(`.frame${b.theme === 'dark' ? '.dark' : ':not(.dark)'}[data-scene="notice"] .notice`);
-        await card.scrollIntoViewIfNeeded();
-        const box = await card.boundingBox();
-        await mock.screenshot({
-          path: reference,
-          clip: { x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), height: Math.round(box.height) },
-        });
-        const diff = await compare(mock, b.file, reference);
-        check(`notice ${b.theme} ${b.lang} matches the mockup`, diff.ratio !== undefined && diff.ratio < 0.001, diff);
-      }
       // Section 3's stale states, for a side-by-side look at card-stale-* and card-list-stale-*.
       await mock.click('#lang button[data-l="en"]');
       for (const theme of ['light', 'dark'])

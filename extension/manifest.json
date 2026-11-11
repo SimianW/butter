@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "0.1.0.19",
-  "version_name": "0.1.0-alpha.19",
+  "version": "0.1.0.20",
+  "version_name": "0.1.0-alpha.20",
   "description": "__MSG_appDesc__",
   "icons": {
     "16": "icons/icon-16.png",
@@ -25,6 +25,7 @@
         "bookmarks/wash.js",
         "bookmarks/client.js",
         "rail/rail.js",
+        "selection/pill.js",
         "bookmarks/content.js",
         "bookmarks/notice.js",
         "stream/offscreen.js",

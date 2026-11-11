@@ -41,6 +41,8 @@ const WORK_LEAF = /^(Branch into Work mode|在工作模式中创建分支)$/;
 const WAITING = ['Waiting for the reply to finish…', '正在等待回复完成…'];
 const QUESTION = 'Explain this passage briefly.';
 
+for (let i = 0; i < 60 && !(await L.cdpVersion(lab)); i++)
+  await new Promise((resolve) => setTimeout(resolve, 500));
 const { browser, context } = await L.connect(lab);
 await L.sendGuard(context, lab);
 await context.route('**/*', (route) => {
@@ -92,10 +94,14 @@ const redactPath = (p) =>
   p.startsWith('/cdn-cgi/')
     ? '/cdn-cgi/<challenge>'
     : p.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/gi, '<id>').replace(/local-chatgpt(%3A|:)<id>/gi, '<local>');
+const pageErrors = { butter: 0, other: 0 };
 const tag = new Map(),
   started = new WeakMap();
 const watch = (page, name) => {
   tag.set(page, name);
+  page.on('pageerror', (e) => {
+    pageErrors[/chrome-extension:|chatgpt-butter/.test(e.stack || '') ? 'butter' : 'other']++;
+  });
   const log = (r, failed) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(r.method())) return;
     const u = new URL(r.url());
@@ -114,6 +120,8 @@ const watch = (page, name) => {
 };
 
 const HOST = 'chatgpt-butter-branch';
+// Ask in branch's icon cell in the shared selection pill (selection/pill.js).
+const CELL = 'chatgpt-butter-pill button[data-cell="branch"]';
 // Screenshots show only Butter's UI and ChatGPT's selection toolbar; all page content is hidden.
 const shot = async (page, file, masks = []) => {
   await page.evaluate((ask) => {
@@ -127,7 +135,9 @@ const shot = async (page, file, masks = []) => {
     mask: masks.map((m) => page.locator(m)),
     maskColor: '#888',
     style: `body * { visibility: hidden !important; }
-      [data-butter-capture], [data-butter-capture] * { visibility: visible !important; }
+      [data-butter-capture], [data-butter-capture] *,
+      chatgpt-butter-pill, chatgpt-butter-pill *,
+      chatgpt-butter-branch, chatgpt-butter-branch * { visibility: visible !important; }
       chatgpt-butter-consent, chatgpt-butter-nav { display: none !important; }`,
   });
   return file;
@@ -204,9 +214,13 @@ const evidence = (page) =>
         sideChat: !!toolbar && [...toolbar.querySelectorAll('button')].some((b) => new RegExp(side).test(b.textContent.trim())),
         replies: replies.length,
         repliesWithMoreActions: more,
+        butterPill: (() => {
+          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
+          return !!pill && getComputedStyle(pill).display !== 'none';
+        })(),
         butterButton: (() => {
-          const chip = document.querySelector('chatgpt-butter-branch')?.shadowRoot?.querySelector('.chip');
-          return !!chip && getComputedStyle(chip).display !== 'none';
+          const pill = document.querySelector('chatgpt-butter-pill')?.shadowRoot?.querySelector('.pill');
+          return !!pill?.querySelector('[data-cell="branch"]') && getComputedStyle(pill).display !== 'none';
         })(),
       };
     },
@@ -214,7 +228,7 @@ const evidence = (page) =>
   );
 const butterChip = async (page, timeout) =>
   page
-    .locator(`${HOST} .chip`)
+    .locator(CELL)
     .waitFor({ timeout })
     .then(() => true, () => false);
 const pageState = (page) =>
@@ -251,7 +265,7 @@ const openFixture = async (page) => {
   await settleScroll(page);
 };
 
-const results = { at: new Date().toISOString(), lab: lab.id, lang: LANG, streamMs: STREAM_MS };
+const results = { at: new Date().toISOString(), lab: lab.id, pageErrors, lang: LANG, streamMs: STREAM_MS };
 const sfx = LANG === 'zh' ? '-zh' : '';
 try {
   const page = context.pages().find((p) => p.url().startsWith('https://chatgpt.com')) || (await context.newPage());
@@ -271,7 +285,7 @@ try {
   const before = await pageState(page);
   const latestPrint = await fingerprint(page);
   await page.waitForTimeout(300);
-  await page.locator(`${HOST} .chip`).click();
+  await page.locator(CELL).click();
   await page.locator(`${HOST} textarea`).fill(QUESTION);
   const opened = context.waitForEvent('page');
   const enterAt = Date.now();
@@ -414,6 +428,7 @@ try {
   results.workBranch.screenshot = await shot(work, `hidden-work-1280${sfx}.png`);
   assert.ok(results.workBranch.sideChat, 'Work mode toolbar offers side chat');
   assert.equal(results.workBranch.butterButton, false, 'no button in Work mode');
+  assert.equal(results.workBranch.butterPill, false, 'no pill in Work mode');
   await work.close();
 
   // ---- Temporary Chat: the page and its markers (no replies to select without sending).

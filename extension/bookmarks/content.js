@@ -1,5 +1,6 @@
-// Isolated world. Bookmarks on the page: the hover button over answer paragraphs, the client of the
-// worker's store (bookmarks/worker.js), and the marks the history rail draws (rail/rail.js). The
+// Isolated world. Bookmarks on the page: the Bookmark cell of the selection pill (selection/pill.js),
+// the shortcut, the client of the worker's store (bookmarks/worker.js), the marks the history rail
+// draws (rail/rail.js) and the notification on every save and remove (bookmarks/notice.js). The
 // rules live in bookmarks/model.js. A conversation's bookmarks are read once when the rail shows it
 // and written on create and delete; nothing here runs while a scrollbar drag is seeking.
 (() => {
@@ -34,23 +35,9 @@
   const answerOf = (block) => (block?.matches(BLOCK) ? answerAt(block.closest(ANSWER)) : null);
   // The answers rendered in `root` (a turn or the document).
   const answersIn = (root) => [...root.querySelectorAll(ANSWER)].map(answerAt).filter(Boolean);
-  const SHOW_AFTER = 120; // ms of hover before the button fades in
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
   const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
-  const strings = (zh) =>
-    zh
-      ? {
-          add: '加书签',
-          sel: '为选中内容加书签',
-          remove: '删除书签',
-          removeOf: (t) => `删除书签：${t}`,
-        }
-      : {
-          add: 'Bookmark',
-          sel: 'Bookmark selection',
-          remove: 'Remove bookmark',
-          removeOf: (t) => `Remove bookmark: ${t}`,
-        };
+  const strings = (zh) => (zh ? { sel: '为选中内容加书签' } : { sel: 'Bookmark selection' });
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   let TXT = strings(zh());
   const railOff = () =>
@@ -63,7 +50,7 @@
     const next = B.hash(e.detail) ? e.detail : null;
     if (next === account) return;
     account = next;
-    hide();
+    pill();
     refresh();
   });
   document.dispatchEvent(new CustomEvent('butter-account-request'));
@@ -196,7 +183,6 @@
     fresh.clear();
     onDots = dots;
     globalThis.ButterRail?.setMarks(conv, marks, items);
-    label();
   }
   // Staleness follows the page between renders: a regenerated answer or a switched version shows
   // after a click on the page, and the rail is checked again as the pointer or focus reaches it.
@@ -221,9 +207,10 @@
     } catch {
       return;
     }
+    const was = seeking;
     seeking = m.state === 'dragging' || m.state === 'loading';
+    if (seeking !== was) pill();
     if (seeking) {
-      hide();
       unwash(); // a scrollbar drag puts the wash away as it starts
     } else if (deferred) {
       deferred = false;
@@ -306,8 +293,9 @@
   };
   // The reader's selection inside one answer, as a bookmark's range: anchored to its first
   // paragraph, ending at that answer's last selected paragraph. `blocks` are the paragraphs it
-  // touches. Null when nothing is selected or the selection holds no answer text.
-  const selection = () => {
+  // touches. Null when nothing is selected or the selection holds no answer text. With `full` false
+  // only whether there is such a range: its first lines aren't measured.
+  const selection = (full = true) => {
     const s = getSelection();
     if (!s || s.isCollapsed || !s.rangeCount) return null;
     const r = s.getRangeAt(0),
@@ -344,6 +332,7 @@
       },
     );
     if (!a) return null;
+    if (!full) return { block: siblings[a.para], blocks };
     const parts = [];
     for (let p = a.para; p <= a.last.para; p++)
       parts.push({
@@ -450,21 +439,30 @@
     const r = await send('butter-bookmark-create', { bookmark });
     if (!r.bookmark) return;
     const list = await listOf(owner, conv);
-    if (r.created && !list.some((b) => b.key === r.bookmark.key)) {
-      list.push(r.bookmark);
-      fresh.add(r.bookmark.key);
-    }
+    if (r.created) keep(list, r.bookmark);
     hashOf.set(id, msg);
     if (owner === account && conv === view.conv) refresh();
-    // Every save, by the button or the shortcut, comes through here: the first one tells the user
-    // what is kept (bookmarks/notice.js). Its Undo deletes the bookmark; then drop its dot.
-    if (r.created)
-      globalThis.ButterBookmarkNotice?.saved(r.bookmark, () => {
-        const at = list.findIndex((b) => b.key === r.bookmark.key);
-        if (at >= 0) list.splice(at, 1);
-        if (owner === account && conv === view.conv) refresh();
-      });
+    // Every save, by the Bookmark cell or the shortcut, comes through here and shows the
+    // notification (bookmarks/notice.js): "Bookmark saved" with Undo, which deletes the bookmark
+    // (then its dot goes), or "Already bookmarked".
+    const notice = globalThis.ButterBookmarkNotice;
+    if (!r.created) return notice?.already(r.bookmark);
+    notice?.saved(r.bookmark, () => {
+      drop(list, r.bookmark.key);
+      if (owner === account && conv === view.conv) refresh();
+    });
   }
+  // The page's copy of a conversation's list: a bookmark made or brought back (its dot grows in),
+  // or one deleted.
+  const keep = (list, b) => {
+    if (list.some((x) => x.key === b.key)) return;
+    list.push(b);
+    fresh.add(b.key);
+  };
+  const drop = (list, key) => {
+    const at = list.findIndex((b) => b.key === key);
+    if (at >= 0) list.splice(at, 1);
+  };
   // Deletes bookmarks from the store and from the page's copy of the conversation's list.
   async function remove(owner, conv, bookmarks) {
     const hash = await digest(conv);
@@ -476,208 +474,74 @@
       ),
     );
     const list = await listOf(owner, conv);
-    for (const key of done) {
-      const at = list.findIndex((b) => b.key === key);
-      if (key && at >= 0) list.splice(at, 1);
-    }
+    for (const key of done) if (key) drop(list, key);
     if (owner === account && conv === view.conv) refresh();
+    // × on a rail card removes one: "Bookmark removed", whose Undo stores it again (the same key
+    // and time) and brings its dot back.
+    const gone = bookmarks.filter((b) => done.includes(b.key)).at(-1);
+    if (gone)
+      globalThis.ButterBookmarkNotice?.removed(gone, (back) => {
+        keep(list, back);
+        if (owner === account && conv === view.conv) refresh();
+      });
   }
-  // The bookmarks anchored to a paragraph of the conversation in view.
-  const marksOf = (block) => {
-    const answer = answerOf(block),
-      msg = hashOf.get(answer?.id);
-    const para = answer ? blocksOf(answer.answer).indexOf(block) : -1;
-    return msg && view.conv === convOfPath()
-      ? shownList.filter((b) => b.msg === msg && b.para === para)
-      : [];
-  };
-
-  // ---- The hover button, in Butter's own layer over the left margin. ChatGPT's DOM is untouched.
+  // ---- The Bookmark cell of the selection pill (selection/pill.js), beside Ask in branch: shown
+  // for a selection the shortcut would bookmark (inside one answer) while the rail is on, Butter
+  // enabled, the reader isn't seeking and the tab shows a conversation. It saves that range,
+  // clears the selection and the pill. Its label shows the key Chrome reports for the command.
   const ICON =
     '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 2.5h8a.5.5 0 0 1 .5.5v10.6a.3.3 0 0 1-.48.24L8 10.9l-4.02 2.94a.3.3 0 0 1-.48-.24V3a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
-  const CSS = `
-    :host { all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 20; display: block;
-      --muted: #8f8f8f; --hoverbg: rgb(0 0 0 / .06); --tipbg: #0d0d0d; --tipfg: #fff; --tipmute: #b4b4b4; --butter: #fbe07a; --outline: #1b170f; }
-    :host([data-dark]) { --muted: #a3a3a3; --hoverbg: rgb(255 255 255 / .08); --tipbg: #fff; --tipfg: #0d0d0d; --tipmute: #6b6b6b;
-      --butter: #e3c766; --outline: var(--butter); }
-    button { all: unset; position: fixed; left: var(--x); top: var(--y); box-sizing: border-box; width: 28px; height: 28px;
-      border-radius: 8px; display: grid; place-items: center; color: var(--muted); background: var(--hoverbg); cursor: pointer;
-      opacity: 0; visibility: hidden; pointer-events: none; -webkit-tap-highlight-color: transparent; }
-    button.show { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .15s; }
-    button:focus-visible { outline: 2px solid #10a37f; outline-offset: 1px; }
-    svg { width: 16px; height: 16px; }
-    button.on path { fill: var(--butter); stroke: var(--outline); }
-    .tip { position: absolute; left: 0; bottom: calc(100% + 8px); white-space: nowrap; background: var(--tipbg); color: var(--tipfg);
-      font: 600 12px/1 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif; padding: 7px 9px;
-      border-radius: 8px; opacity: 0; pointer-events: none; }
-    .tip kbd { font: inherit; color: var(--tipmute); margin-left: 8px; }
-    .tip kbd:empty { display: none; }
-    button:hover .tip, button:focus-visible .tip { opacity: 1; }
-    @media (prefers-reduced-motion: reduce) { button.show { transition: none; } }`;
-  let host = null,
-    button,
-    tip,
-    kbd,
-    target = null, // the paragraph the button is shown for
-    zone = null, // its box extended over the margin to the button: the pointer may cross it
-    waiting = null,
-    timer = 0;
   const isDark = () =>
     document.documentElement.classList.contains('dark') ||
     /dark/.test(getComputedStyle(document.documentElement).colorScheme);
-  const build = () => {
-    host = document.createElement('chatgpt-butter-bookmark');
-    const root = host.attachShadow({ mode: 'open' });
-    root.innerHTML = `<style>${CSS}</style><button type="button">${ICON}<span class="tip"><span></span><kbd></kbd></span></button>`;
-    button = root.querySelector('button');
-    tip = root.querySelector('.tip span');
-    kbd = root.querySelector('.tip kbd');
-    label();
-    document.body.append(host);
-    const dark = () => host.toggleAttribute('data-dark', isDark());
-    dark();
-    new MutationObserver(dark).observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class', 'style'],
-    });
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () =>
-      setTimeout(dark, 50),
-    );
-    // Keep the reader's selection: a click on the button must not move it.
-    button.addEventListener('mousedown', (e) => e.preventDefault());
-    button.addEventListener('click', () => {
-      if (!target || railOff()) return;
-      // A selection that touches the paragraph is saved on its own, even in a bookmarked paragraph.
-      const s = selection();
-      if (s?.blocks.includes(target)) create(s.block, s);
-      else {
-        const marked = marksOf(target);
-        if (marked.length) {
-          if (account && view.conv) remove(account, view.conv, marked);
-        } else create(target);
-      }
-    });
-  };
-  // Three states: "Bookmark selection" while the reader's selection touches the paragraph; filled
-  // on a bookmarked paragraph, where a click removes its bookmarks; else "Bookmark". The
-  // first two show the key Chrome reports for the bookmark command (none when it has no key).
-  // The accessible name adds the start of the text the click would bookmark or remove.
-  const label = () => {
-    if (!host) return;
-    const s = target ? selection() : null,
-      sel = !!s?.blocks.includes(target),
-      marked = sel ? [] : marksOf(target);
-    button.classList.toggle('on', marked.length > 0);
-    button.setAttribute(
-      'aria-label',
-      sel
-        ? B.addLabel(s.excerpt, true, zh())
-        : marked.length
-          ? TXT.removeOf(marked.map((b) => b.excerpt).join(' '))
-          : B.addLabel(target ? textOf(target) : '', false, zh()),
-    );
-    tip.textContent = sel ? TXT.sel : marked.length ? TXT.remove : TXT.add;
-    kbd.textContent = marked.length ? '' : keys;
-  };
-  let keys = '';
+  let shortcut = null, // the key Chrome reports for the command; null until read
+    reading = false;
+  // Read again each time the cell shows: the reader may have changed it in Chrome's settings.
   const readKey = async () => {
+    if (reading) return;
+    reading = true;
+    let next = '';
     try {
       const r = await chrome.runtime.sendMessage({ version: 1, type: 'butter-bookmark-key' });
-      keys = B.keyHint(r?.shortcut);
+      next = typeof r?.shortcut === 'string' ? r.shortcut : '';
     } catch {}
-    label();
+    reading = false;
+    if (next === shortcut) return;
+    shortcut = next;
+    pill();
   };
-  document.addEventListener('selectionchange', () => {
-    if (target) label();
-  });
-  function hide() {
-    clearTimeout(timer);
-    waiting = null;
-    if (!target) return;
-    target = zone = null;
-    button.classList.remove('show');
-    removeEventListener('scroll', hide, true);
-    removeEventListener('wheel', hide, true);
+  function pill() {
+    globalThis.ButterPill?.update();
   }
-  // Over the left margin, centred on the paragraph's first rendered line. False if it has no box.
-  const place = (block) => {
-    const b = block.getBoundingClientRect();
-    if (!b.height) return false;
-    // In the answer's own margin, so a list item's button lines up with the paragraphs' buttons.
-    const left = Math.min(b.left, block.closest(ANSWER)?.getBoundingClientRect().left ?? b.left);
-    const r = document.createRange();
-    r.selectNodeContents(block);
-    const line = [...r.getClientRects()].find((q) => q.height) ?? b;
-    const x = Math.max(4, Math.round(left - 38)),
-      y = Math.round(line.top + line.height / 2 - 14);
-    host.style.setProperty('--x', `${x}px`);
-    host.style.setProperty('--y', `${y}px`);
-    zone = { left: x, right: b.right, top: Math.min(y, b.top), bottom: Math.max(y + 28, b.bottom) };
-    return true;
-  };
-  const show = (block) => {
-    if (waiting !== block || !block.isConnected || railOff() || !account) return;
-    waiting = null;
-    if (!host) build();
-    if (!place(block)) return;
-    button.classList.add('show');
-    target = block;
-    label();
-    readKey(); // the reader may have changed it in Chrome's shortcut settings since
-    // The first scroll puts the button away; pointer moves over the paragraph keep it in place
-    // when content above it changes size.
-    addEventListener('scroll', hide, { capture: true, passive: true, once: true });
-    addEventListener('wheel', hide, { capture: true, passive: true, once: true });
-  };
-  addEventListener(
-    'pointermove',
-    (e) => {
-      if (e.buttons || e.pointerType === 'touch' || seeking || railOff() || !account) {
-        if (target || waiting) hide();
-        return;
-      }
-      if (host && e.target === host) return; // over the button
-      const t = e.target instanceof Element ? e.target : null;
-      // Cheap tests first: most moves are nowhere near an answer.
-      const near = t && t.closest(STYLE) && !t.closest('button') ? t.closest(BLOCK) : null,
-        block = answerOf(near) ? near : null;
-      if (block && block === target) {
-        place(block);
-        return;
-      }
-      if (block && block === waiting) return;
-      if (
-        !block &&
-        zone &&
-        e.clientX >= zone.left &&
-        e.clientX <= zone.right &&
-        e.clientY >= zone.top &&
-        e.clientY <= zone.bottom
-      )
-        return;
-      hide();
-      if (block && convOfPath()) {
-        waiting = block;
-        timer = setTimeout(() => show(block), SHOW_AFTER);
-      }
+  ButterPill.register({
+    id: 'bookmark',
+    feature: 'rail',
+    icon: ICON,
+    label: () => TXT.sel,
+    keys: () => B.keyHint(shortcut ?? ''),
+    shortcut: () => B.ariaKeys(shortcut ?? ''),
+    wants() {
+      if (!account || seeking || !convOfPath() || !selection(false)) return false;
+      readKey();
+      return true;
     },
-    { capture: true, passive: true },
-  );
+    activate() {
+      const range = railOff() ? null : selection();
+      if (range) create(range.block, range);
+      getSelection()?.removeAllRanges();
+      ButterPill.hide();
+    },
+  });
   document.addEventListener('butter-settings', () => {
     TXT = strings(zh());
-    label();
-    if (railOff()) {
-      hide();
-      unwash();
-    }
+    if (railOff()) unwash();
     refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
   });
 
   // ---- The landing wash (#73). When a bookmark trip from a card row lands on live text, the rail
   // calls its `wash`: the bookmark's range is washed in butter, line by line in reading order, held
-  // and faded (bookmarks/wash.js has the plan). The boxes are in Butter's own fixed layer, as the
-  // hover button is, so nothing goes into ChatGPT's answer. They are measured from the range's
-  // text, clipped to the scroller between ChatGPT's header and composer, and measured again on the
+  // and faded (bookmarks/wash.js has the plan). The boxes are in Butter's own fixed layer, so nothing
+  // goes into ChatGPT's answer. They are measured from the range's text, clipped to the scroller between ChatGPT's header and composer, and measured again on the
   // scroller's scroll and resize, listened to only while the wash shows. Light theme multiplies the
   // butter into the page and dark theme lightens it, so the text keeps its own colour in both. As
   // one highlight broken across lines, the range's start and end are rounded, the line ends between

@@ -1,5 +1,6 @@
-// Isolated world. Ask in branch UI in one shadow root: the button next to ChatGPT's own
-// "Ask ChatGPT", the question box, the new tab's overlay card and the line above the composer.
+// Isolated world. Ask in branch UI in one shadow root: the question box, the new tab's overlay
+// card and the line above the composer. Its button is a cell of the selection pill
+// (selection/pill.js), with ICON.branch.
 // Tokens follow the approved mockup (issue #26 artifact 1). Only static markup enters innerHTML;
 // quotes, questions and titles are always set as textContent.
 (() => {
@@ -80,25 +81,17 @@
 :host { all: initial; position: fixed; inset: 0 auto auto 0; width: 0; height: 0; z-index: 2147483000;
   --fg: #0d0d0d; --fg2: #5d5d5d; --fg3: #8f8f8f; --bg: #fff; --bubble: #f4f4f4; --hair: rgb(0 0 0 / .1);
   --pop: #fff; --pop-shadow: 0 8px 24px rgb(0 0 0 / .12), 0 0 0 1px rgb(0 0 0 / .08);
-  --chip: #2f2f2f; --chip-fg: #fff; --scrim: rgb(255 255 255 / .86); --err: #d03e2b;
+  --scrim: rgb(255 255 255 / .86); --err: #d03e2b;
   font: 16px/1.65 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif;
   color: var(--fg); }
 :host([data-dark]) { --fg: #ececec; --fg2: #b4b4b4; --fg3: #8f8f8f; --bg: #212121; --bubble: #303030; --hair: rgb(255 255 255 / .1);
   --pop: #303030; --pop-shadow: 0 8px 24px rgb(0 0 0 / .45), 0 0 0 1px rgb(255 255 255 / .08);
-  --chip: #3a3a3a; --scrim: rgb(33 33 33 / .88); --err: #f1806d; }
+  --scrim: rgb(33 33 33 / .88); --err: #f1806d; }
 * { box-sizing: border-box; }
 button, textarea { font: inherit; color: inherit; margin: 0; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
 svg { display: block; }
-
-/* 1 · button: geometry and colors are copied from ChatGPT's own button at runtime */
-.chip { position: fixed; display: none; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border: 0;
-  border-radius: 7px; background: var(--native-bg, var(--chip)); color: var(--native-fg, var(--chip-fg));
-  font-size: 14px; line-height: 18px; white-space: nowrap; box-shadow: 0 2px 8px rgb(0 0 0 / .18); }
-.chip[data-on] { display: inline-flex; }
-.chip:hover { background: color-mix(in srgb, var(--native-bg, var(--chip)) 90%, currentColor); }
-.chip svg { width: 15px; height: 15px; flex: none; }
 
 /* 2 · question box: a small ChatGPT composer */
 .qpop { position: fixed; width: min(440px, calc(100vw - 32px)); border-radius: 22px; background: var(--pop);
@@ -207,41 +200,6 @@ svg { display: block; }
       if (cls) node.className = cls;
       node.innerHTML = markup;
       return node;
-    };
-
-    // ---- 1 · button
-    const chip = el('button', 'chip');
-    chip.type = 'button';
-    const chipLabel = document.createElement('span');
-    chip.innerHTML = ICON.branch;
-    chip.append(chipLabel);
-    root.append(chip);
-    const button = {
-      el: chip,
-      // native: computed styles of ChatGPT's own button (container, and its label's text), or null.
-      show(left, top, native) {
-        attach();
-        chipLabel.textContent = t().ask;
-        if (native) {
-          const s = chip.style;
-          s.height = native.height;
-          s.borderRadius = native.borderRadius;
-          s.boxShadow = native.boxShadow;
-          s.border = native.border;
-          s.setProperty('--native-bg', native.backgroundColor);
-          s.setProperty('--native-fg', native.color);
-          Object.assign(chipLabel.style, native.font);
-        }
-        chip.style.left = `${left}px`;
-        chip.style.top = `${top}px`;
-        chip.setAttribute('data-on', '');
-      },
-      hide() {
-        chip.removeAttribute('data-on');
-      },
-      get shown() {
-        return chip.hasAttribute('data-on');
-      },
     };
 
     // ---- 2 · question box
@@ -469,8 +427,8 @@ svg { display: block; }
       },
     };
 
-    return { host, root, button, question, overlay, note, strings: t };
+    return { host, root, question, overlay, note, strings: t };
   }
 
-  globalThis.ButterBranchUI = { create, STRINGS, isDark };
+  globalThis.ButterBranchUI = { create, STRINGS, ICON, isDark, strings: () => STRINGS[lang()] };
 })();

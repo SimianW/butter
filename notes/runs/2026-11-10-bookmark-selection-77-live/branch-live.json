@@ -1,0 +1,89 @@
+{
+  "testedHead": "84941c0",
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  },
+  "runs": [
+    {
+      "width": 1280,
+      "checks": {
+        "ready": true,
+        "newIdentity": true,
+        "latestReplyPreserved": true,
+        "oneSendClickInBranch": true,
+        "sendBlocked": true,
+        "noOriginalSendRequests": true,
+        "originalUnchanged": true
+      },
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "branchReplies": 6,
+      "originalReplies": 5,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          498,
+          498
+        ]
+      },
+      "sendClicks": [
+        {
+          "inBranch": true,
+          "ms": 8318
+        }
+      ],
+      "blockedMutations": 34,
+      "allowedBranchRequests": 1
+    },
+    {
+      "width": 800,
+      "checks": {
+        "ready": true,
+        "newIdentity": true,
+        "latestReplyPreserved": true,
+        "oneSendClickInBranch": true,
+        "sendBlocked": true,
+        "noOriginalSendRequests": true,
+        "originalUnchanged": true
+      },
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "branchReplies": 6,
+      "originalReplies": 5,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          511,
+          511
+        ]
+      },
+      "sendClicks": [
+        {
+          "inBranch": true,
+          "ms": 8632
+        }
+      ],
+      "blockedMutations": 34,
+      "allowedBranchRequests": 1
+    }
+  ]
+}
