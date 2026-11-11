@@ -1,0 +1,36 @@
+{
+  "M1": {
+    "none": {
+      "n": 0,
+      "attempted": 1,
+      "excludedCompleted": 1
+    },
+    "a11": {
+      "n": 0,
+      "attempted": 1,
+      "excludedCompleted": 0
+    },
+    "main": {
+      "n": 0,
+      "attempted": 0,
+      "excludedCompleted": 0
+    }
+  },
+  "M2": {
+    "none": {
+      "n": 0,
+      "attempted": 0,
+      "excludedCompleted": 0
+    },
+    "a11": {
+      "n": 0,
+      "attempted": 0,
+      "excludedCompleted": 0
+    },
+    "main": {
+      "n": 0,
+      "attempted": 0,
+      "excludedCompleted": 0
+    }
+  }
+}
