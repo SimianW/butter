@@ -1124,9 +1124,9 @@ Actual output (private values stripped):
 ```
 
 
-## Exact replay adapter changes
+## Replay adapter changes
 
-`diff -u <archive>/lab/harness/bench.mjs <archive>/lab/harness/bench-live.mjs`: exit 1, as expected for differences. Both arms have the identical final adapter hash above.
+`diff -u <archive>/lab/harness/bench.mjs <archive>/lab/harness/bench-live.mjs`: exit 1, as expected for differences. Both arms have the identical final adapter hash above. Blank diff-context lines are normalized to empty lines for Markdown whitespace checks; the original diff remains local.
 
 ```diff
 --- /home/simon/snap/chromium/common/rail-model-live-main/lab/harness/bench.mjs	2026-11-11 11:58:14.000000000 -0500
@@ -1150,7 +1150,7 @@ Actual output (private values stripped):
  const cdp = await ctx.newCDPSession(page);
 -await cdp.send('Performance.enable');
 +await cdp.send('Performance.enable');await cdp.send('Network.setBypassServiceWorker',{bypass:true});
- 
+
  await page.addInitScript(R => {
    const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
 -  const st = window.__replay = { done: false, started: 0, chunksSent: 0 };
@@ -1216,7 +1216,7 @@ Actual output (private values stripped):
  const CDP_KEYS = ['TaskDuration', 'ScriptDuration', 'LayoutDuration', 'RecalcStyleDuration', 'LayoutCount', 'RecalcStyleCount'];
 @@ -131,11 +142,15 @@
  }
- 
+
  async function runOnce(rep) {
 -  await page.goto(CHAT); await page.locator('.ProseMirror').first().waitFor({ timeout: 60_000 }); await sleep(8000);
 -  const sc = await page.evaluate(() => { const s = document.querySelector('.thread-scroll-container'); s.scrollTop = s.scrollHeight; const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
@@ -1266,7 +1266,7 @@ Actual output (private values stripped):
 -  return res;
 +  if(!res.replayComplete||res.chunksSent!==REPLAY.schedule.length||res.answer.chars<1000||network.writes!==0)throw Error('INCOMPLETE_OR_UNSAFE_REPLAY');await checkPage(page);return res;
  }
- 
+
  log(`replaying ${REPLAY.schedule.length} chunks over ${(REPLAY.schedule.at(-1)[0] / 1000).toFixed(0)}s, ${reps} reps`);
  for (let i = 1; i <= reps; i++) await runOnce(i);
 -await browser.close();
@@ -1383,3 +1383,7 @@ Python read the already-written task-owned `results/bench/pilot-pr-1/rep-1.json`
 ```
 
 The replay had finished and its JSON/screenshot had been written before termination; final console logging/postflight had not completed. Both excluded pilots remain outside all acceptance medians.
+
+## Staged whitespace follow-up
+
+The first `git diff --cached --check` found trailing spaces on three blank context lines in the embedded diff (lines 1153, 1219 and 1269). The shell command continued and committed the report. Those context lines were normalized in a follow-up commit; the repeated staged whitespace check then exited 0 with no output. No measurements changed.
