@@ -37,8 +37,9 @@ try {
       }),
     );
     await page.goto('https://chatgpt.com/c/local-chatgpt:11111111-2222-4333-8444-555555555555');
-    for (const name of ['logic', 'run', 'page'])
-      await page.addScriptTag({ path: path.join(repo, `extension/branch/${name}.js`) });
+    // branch/page.js reads replies through the page reader, which the manifest loads first.
+    for (const name of ['page/reader', 'branch/logic', 'branch/run', 'branch/page'])
+      await page.addScriptTag({ path: path.join(repo, `extension/${name}.js`) });
     const result = await page.evaluate(async (input) => {
       const page = ButterBranchPage.adapter(),
         reads = [],
