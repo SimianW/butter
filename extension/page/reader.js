@@ -140,10 +140,10 @@
     // The paragraphs under `el`, of any answer, in document order.
     paragraphsIn: (el) => [...el.querySelectorAll(PARAGRAPH)],
     // Turns, keyed by the question's message id.
-    turns: (root = document) => [...root.querySelectorAll(TURN)],
-    turnByKey: (key, root = document) =>
-      [...root.querySelectorAll(TURN)].find((t) => t.getAttribute('data-turn-key') === key) ?? null,
-    turnOf: (node) => closest(node, TURN),
+    turns: () => [...document.querySelectorAll(TURN)],
+    turnByKey: (key) =>
+      [...document.querySelectorAll(TURN)].find((t) => t.getAttribute('data-turn-key') === key) ??
+      null,
     turnKeyOf: (node) => closest(node, TURN)?.getAttribute('data-turn-key') ?? null,
     // Ask in branch: the reply `node` is in, the replies under `root`, and the loose turn.
     replyOf: (node) => closest(node, REPLY),
