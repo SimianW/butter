@@ -1,0 +1,10 @@
+{
+  "exit": 1,
+  "records": [],
+  "timeout": 1,
+  "counts": {
+    "alpha6": 0,
+    "current": 0,
+    "passed": 0
+  }
+}

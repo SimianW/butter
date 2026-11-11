@@ -1,0 +1,34 @@
+{
+  "main": {
+    "valid": 0,
+    "complete": 1,
+    "loafBlockMs": 84467,
+    "loafMaxMs": 2735,
+    "p95": 350,
+    "keyMax": 4678.2,
+    "keyP95": 3106.1,
+    "inputDelayP95": 1192.7000002861023,
+    "idle.keyMax": 537.6,
+    "idle.keyP95": 26.9,
+    "idle.inputDelayP95": 2.0999999046325684,
+    "networkWrites": 0,
+    "chunksSent": 189
+  },
+  "pr": {
+    "valid": 0,
+    "processCompleted": 0,
+    "replayComplete": 1,
+    "terminated": 1,
+    "loafBlockMs": 86712,
+    "loafMaxMs": 2811,
+    "p95": 300,
+    "keyMax": 4107.1,
+    "keyP95": 2902.5,
+    "inputDelayP95": 1225.5999999046326,
+    "idle.keyMax": 557.8,
+    "idle.keyP95": 29.5,
+    "idle.inputDelayP95": 2,
+    "networkWrites": 0,
+    "chunksSent": 189
+  }
+}
