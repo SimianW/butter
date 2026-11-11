@@ -2,7 +2,8 @@
 // edits), so a scenario declares what it needs from the ones before it, and is skipped with the
 // reason when that is missing: `ONLY=<a later scenario>` alone gives a clean skip, never a crash.
 // Each reads only the live page and the run's own store, and returns why the scenario can't run
-// now, or null.
+// now, or null. A full run fails on a skip (harness.mjs), unless the need returns
+// `{ why, expected: true }`: the fixture itself lacks what the scenario needs.
 
 // The lab fixture's chat is open, with Butter's rail on it.
 export const loaded = async (t) => ((await t.railState()).ticks ? null : 'the fixture chat is not loaded');

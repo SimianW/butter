@@ -61,7 +61,8 @@ async function topLevelList(t) {
   );
   t.rec.summary.listFixture = picked;
   t.listPicked = picked;
-  return picked.lists === 0 ? 'no top-level list in mounted fixture answers' : null;
+  // The fixture lacks one: an expected skip, which a full run passes with (needs.mjs).
+  return picked.lists === 0 ? { why: 'no top-level list in mounted fixture answers', expected: true } : null;
 }
 
 export const listItem = {

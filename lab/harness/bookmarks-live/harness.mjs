@@ -14,30 +14,45 @@ import { launchLive } from './lab.mjs';
 import { livePage } from './page.mjs';
 
 // Runs `scenarios` with `launch(defer)` building what they drive (`liveLauncher`, or a test's fake).
-export function runLive({ scenarios, record, launch, verbose }) {
+// In a full run (`full`: no ONLY), a skip means an earlier scenario left the chat or the store
+// short, so it fails the run, as the old script's throw did; only a reason marked `expected` (the
+// fixture lacks what the scenario needs: list-item's top-level list) lets the run pass.
+export async function runLive({ scenarios, record, launch, verbose, full = !process.env.ONLY }) {
+  const failingSkips = [];
   const noted = (s) =>
     s.precondition
       ? {
           ...s,
           precondition: async (t) => {
-            const why = await s.precondition(t);
+            const unmet = await s.precondition(t);
+            const why = unmet?.why ?? unmet;
             if (why) record.skip(s.name, why);
+            if (why && full && !unmet.expected) failingSkips.push(s.name);
             return why;
           },
         }
       : s;
-  return runScenarios({
+  let t = null;
+  const ok = await runScenarios({
     scenarios: scenarios.map(noted),
     summary: null,
     verbose,
-    onThrow: record.onThrow,
+    onThrow: async (e, name) => {
+      // A throw with the scrollbar thumb held must not leave the button down for the next scenario.
+      await Promise.resolve()
+        .then(() => t?.page?.mouse.up())
+        .catch(() => {});
+      return record.onThrow(e, name);
+    },
     setup: async (defer) => {
       // Registered first, so it runs last: after the lab is restored and released.
       defer(() => record.cleanup('summary', record.finish));
-      const t = await launch(defer);
+      t = await launch(defer);
       return { start: (scenario, check) => record.start(scenario, check, t), report: () => ({}) };
     },
   });
+  if (failingSkips.length) console.log(`FAIL: a full run skipped ${failingSkips.join(', ')}`);
+  return ok && !failingSkips.length;
 }
 
 // Consumes only successful conversation API responses already requested by ChatGPT, for the

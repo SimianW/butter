@@ -13,9 +13,10 @@ import { suites } from '../lab/harness/bookmarks-live/scenarios.mjs';
 
 const SECRET = 'private answer text at https://chatgpt.com/c/0123abcd-0000-4000-8000-000000000000';
 
-// Runs `scenarios` through runLive with `launch(defer, record)`, capturing the console. Returns the
-// result, the console lines, the summary and the error file (null when none was written).
-async function live(scenarios, launch, mode = 'matrix') {
+// Runs `scenarios` through runLive with `launch(defer, record)`, capturing the console, as a full
+// run (no ONLY) unless `full` is false. Returns the result, the console lines, the summary and the
+// error file (null when none was written).
+async function live(scenarios, launch, mode = 'matrix', full = true) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-live-'));
   const errorFile = path.join(dir, 'error.txt');
   const record = createRecord({
@@ -34,6 +35,7 @@ async function live(scenarios, launch, mode = 'matrix') {
       record,
       launch: (defer) => launch(defer, record),
       verbose: false,
+      full,
     });
     console.log = log;
     const summary = await fs.readFile(path.join(dir, 'out', 'summary.json'), 'utf8');
@@ -167,6 +169,74 @@ test('a precondition past "loaded" names what is missing', async () => {
   const { lines } = await live([later], loaded);
   assert.ok(
     lines.includes('skip drag-bookmarked: needs 2 stored test bookmarks, has 1'),
+    lines.join('\n'),
+  );
+});
+
+// A fixture-loaded page with an empty store: a full run's state after load-fixture, had the
+// bookmarks been lost. `lists`: the top-level lists list-item's precondition finds.
+const loadedEmpty = (lists) => async () => ({
+  railState: async () => ({ ticks: 12, marks: 0, more: false, stale: 0, busy: 0 }),
+  storedCount: async () => 0,
+  hasTarget: async () => true,
+  loadEarlier: async () => ({}),
+  page: {
+    evaluate: async () => ({
+      lists,
+      items: 0,
+      maxMeasuredOffset: 0,
+      targetFound: false,
+      paragraph: null,
+    }),
+  },
+});
+const passing = { name: 'load-fixture', run: (t) => t.check('real long fixture loaded', true) };
+
+test('a full run that skips a later scenario fails; with ONLY the same skip does not', async () => {
+  const later = suites.matrix.find((s) => s.name === 'drag-bookmarked');
+  const full = await live([passing, later], loadedEmpty(1));
+  assert.equal(full.ok, false);
+  assert.ok(full.lines.includes('FAIL: a full run skipped drag-bookmarked'), full.lines.join('\n'));
+  const only = await live([passing, later], loadedEmpty(1), 'matrix', false);
+  assert.equal(only.ok, true, only.lines.join('\n'));
+});
+
+test("a full run whose only skip is list-item's missing top-level list passes", async () => {
+  const listItem = suites.matrix.find((s) => s.name === 'list-item');
+  const { ok, lines, summary } = await live([passing, listItem], loadedEmpty(0));
+  assert.equal(ok, true, lines.join('\n'));
+  assert.deepEqual(JSON.parse(summary).skipped, [
+    'list-item: no top-level list in mounted fixture answers',
+  ]);
+});
+
+test('a scenario that throws releases the mouse before the next one runs, even when mouse.up throws', async () => {
+  const events = [];
+  const launch = async () => ({
+    page: {
+      mouse: {
+        up: () => {
+          events.push('mouse up');
+          throw new Error('page closed');
+        },
+      },
+    },
+  });
+  const { lines } = await live(
+    [
+      {
+        name: 'jump-during-drag',
+        run: () => {
+          throw new Error(SECRET);
+        },
+      },
+      { name: 'unloaded-row', run: (t) => (events.push('next scenario'), t.check('next', true)) },
+    ],
+    launch,
+  );
+  assert.deepEqual(events, ['mouse up', 'next scenario']);
+  assert.ok(
+    lines.includes('FAIL jump-during-drag threw: phase=jump-during-drag error=Error'),
     lines.join('\n'),
   );
 });

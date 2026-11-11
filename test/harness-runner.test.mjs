@@ -15,14 +15,14 @@ const harness = async () => ({
 
 // Runs `scenarios` with the runner's output captured. `summary: false` points the summary into a
 // directory that doesn't exist, so that writing it fails.
-async function run(scenarios, { setup = harness, summary = true } = {}) {
+async function run(scenarios, { setup = harness, summary = true, onThrow } = {}) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-runner-'));
   const file = summary ? path.join(dir, 'summary.json') : path.join(dir, 'missing', 'summary.json');
   const lines = [],
     log = console.log;
   console.log = (...a) => lines.push(a.join(' '));
   try {
-    const ok = await runScenarios({ scenarios, setup, summary: file, verbose: false });
+    const ok = await runScenarios({ scenarios, setup, summary: file, verbose: false, onThrow });
     console.log = log;
     const results = summary ? JSON.parse(await fs.readFile(file, 'utf8')).results : null;
     return { ok, results, lines };
@@ -242,4 +242,23 @@ test('onThrow replaces the stack and message of a throw, in a scenario and in se
     }
   }
   assert.deepEqual(described, ['a', 'setup']);
+});
+
+test('an onThrow that returns nothing still keeps the stack and message out', async () => {
+  const secret = 'private chat text';
+  const { ok, results, lines } = await run(
+    [
+      {
+        name: 'a',
+        run: () => {
+          throw new TypeError(secret);
+        },
+      },
+    ],
+    { onThrow: () => {} },
+  );
+  assert.equal(ok, false);
+  assert.deepEqual(results, [{ name: 'a threw', pass: false, error: 'threw' }]);
+  assert.ok(lines.includes('FAIL a threw: threw'), lines.join('\n'));
+  assert.ok(!lines.join('\n').includes(secret));
 });

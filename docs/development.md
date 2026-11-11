@@ -168,7 +168,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   - A live scenario can't reset or seed: it runs on what the ones before it left, declares what it
     needs (the fixture loaded, two stored test bookmarks, a top-level list in the fixture) and is
     skipped with the reason when that is missing, so `ONLY=<a later scenario>` alone prints
-    `skip <name>: <reason>`.
+    `skip <name>: <reason>`. Without `ONLY` a skip fails the run, except list-item's when the
+    fixture has no top-level list.
   - The run prints only failing checks, one line per scenario and the cleanup's results;
     `VERBOSE=1` prints every check and the measurements.
   - `OUT=<dir>` sets where `summary.json` goes (default `notes/runs/<today>-bookmarks-live/`). It

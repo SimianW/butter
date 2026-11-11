@@ -46,7 +46,8 @@ function fail(message) {
 // written (or failed to be). A scenario that throws, in `skip()` or `precondition` too, is reported
 // and the next one still runs; a `setup` that throws is a failing `setup threw` result. A throw is
 // printed with its stack and stored with its message, unless `onThrow(e, name)` is given: what it
-// returns is printed and stored instead (a live harness keeps page text out of both). Resolves to
+// returns is printed and stored instead, or `threw` when it returns nothing, never the stack or
+// message (a live harness keeps page text out of both). Resolves to
 // true when at least one check ran, every check passed, nothing threw, the summary was written and
 // `report()`'s arrays (errors, foreign requests) are empty.
 export async function runScenarios({ scenarios, setup, summary, verbose = !!process.env.VERBOSE, onThrow }) {
@@ -64,7 +65,7 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
     report = {},
     unwritten = null;
   const threw = async (name, e) => {
-    const text = onThrow ? await Promise.resolve().then(() => onThrow(e, name)).catch(() => 'onThrow failed') : null;
+    const text = onThrow ? ((await Promise.resolve().then(() => onThrow(e, name)).catch(() => 'onThrow failed')) ?? 'threw') : null;
     crashed.push(name);
     console.log(`FAIL ${name} threw: ${text ?? e.stack}`);
     results.push({ name: `${name} threw`, pass: false, error: text ?? e.message });
