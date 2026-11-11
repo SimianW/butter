@@ -253,7 +253,10 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   The run covers both answer markups, each in its own browser and screenshot subdirectory: the
   earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
   answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
-  `MARKUP=live` runs only one).
+  `MARKUP=live` runs only one). `--list` names every scenario, and `ONLY=<name>[,<name>…]` runs any
+  of them, each from its own start as in a full run (the version-1 database upgrade is
+  `ONLY=upgrade`). The run prints only failing checks and one line per scenario; `VERBOSE=1` prints
+  every check, and `summary.json` holds them all.
   The live check, `lab/harness/bookmarks-live.mjs` with `MODE=wash` (the lab lock, the send guard
   and a fresh unpacked install, as its header says; `LAB_FIXTURE=demo-en12`, the fixture whose
   answers hold long paragraphs and tables): on real ChatGPT markup in light and dark theme (the dark
