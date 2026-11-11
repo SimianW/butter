@@ -19,7 +19,7 @@ The PR passed all completed prescribed suites, with no PR-only failure observed.
 ## Builds and method
 
 - Main: `86f95e52ebb00fc3edd70856bcbba66e72222ca7`.
-- PR #90 (`t3/page-reader-b`): `3b5a6916b8b364c5ced20ed91e1c08689192ea6d`. Its later commit `2572a05` (review F1–F4) changes only tests, docs and a comment in `page/reader-main.js`. This exact SHA was archived after fetching; the requested head was unchanged.
+- PR #90 (`t3/page-reader-b`): `3b5a6916b8b364c5ced20ed91e1c08689192ea6d`. This exact SHA was archived after fetching; the requested head was unchanged. The PR's later commit `2572a05` (review F1–F4) changes only tests, docs and a comment in `page/reader-main.js`.
 - Each build came from its own `git archive` copy, with `node_modules` linked to installed Playwright 1.65.0. No edit, commit, checkout or push was made in the shared Butter repository; its pre-existing untracked files were left alone.
 - Chromium 156.0.8078.47, headed on Xvfb. The two harness source files are identical between these commits. Snap-readable extension copies matched their archive sources byte for byte.
 - Matrix: main then PR, lab 1, `math12`, default mode, three repetitions per drag arm, harness-owned lab and perf locks.
