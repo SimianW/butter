@@ -4,9 +4,8 @@
 // a tick without bookmarks, dark theme and the tick's name; then clicks, ×, the keyboard alone and a
 // reload. Questions 3, 5, 7 and 10 take the text of the #69 mockup's section 3 and their bookmarks
 // its rows, so the card can be compared with the mockup's panels (BUTTER_BOOKMARKS_DOT_MOCKUP).
-import path from 'node:path';
-import { ACCOUNT, answer, CONV_HASH, sha } from '../fixture.mjs';
-
+import { row as stored } from '../fixture.mjs';
+import { panels } from '../mockup.mjs';
 
 const Q7 = 'Why does Postgres ignore my index on orders.status?',
   TARGET =
@@ -28,8 +27,7 @@ const said = new Map([
     p(TARGET), p("Compare the planner's estimate with reality:"), p("EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'pending';"),
     p('Run ANALYZE orders after a bulk load.'), p('A partial index on the rare statuses stays small, and the planner trusts it.')]],
 ]);
-const row = (turn, para, start, excerpt, time) =>
-  ({ account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: start + excerpt.length, excerpt, time });
+const row = (turn, para, start, excerpt, time) => stored(turn, para, { start, end: start + excerpt.length, excerpt, time });
 const ROWS = [
   row(6, 2, TARGET.indexOf('roughly'), 'roughly more than 5–10% of the table. A sequential scan reads pages in order.', 1),
   row(6, 6, 0, 'A partial index on the rare statuses stays small, and the planner trusts it.', 2),
@@ -41,48 +39,18 @@ const ROWS = [
 // Question 7's rows in answer order: paragraph 2 (twice), 5 (stale), 6.
 const ORDER = [ROWS[3], ROWS[0], ROWS[2], ROWS[1]].map((b) => b.excerpt);
 
-// The rail's card shot as `b.file` (its own box at `b.at`, a viewport rect) against the card in
-// the #69 mockup's panel `b.panel`, open in `mock`: under 0.1% of pixels differing by more than 24.
-export async function cardMatches({ shots, compare, check }, mock, b) {
-  const card = mock.locator(`[data-panel="${b.panel}"] .card`);
-  await card.scrollIntoViewIfNeeded();
-  // The mockup centres its card with translateY(-50%), which puts a card of odd height on half a
-  // pixel and moves some lines' text by a pixel. Lift it by a whole number of pixels instead and
-  // put it on the built card's fraction of a pixel, so both draw on the same grid.
-  const frac = (v) => v - Math.floor(v);
-  await card.evaluate((el) => (el.style.transform = `translateY(${-Math.round(el.offsetHeight / 2)}px)`));
-  const box = await card.boundingBox();
-  await card.evaluate((el, [dx, dy]) => {
-    const s = getComputedStyle(el);
-    el.style.right = `${parseFloat(s.right) - dx}px`;
-    el.style.top = `${parseFloat(s.top) + dy}px`;
-  }, [frac(b.at.x) - frac(box.x), frac(b.at.y) - frac(box.y)]);
-  const moved = await card.boundingBox(),
-    reference = `${shots}/mockup-${b.panel}.png`;
-  await mock.screenshot({ path: reference, clip: { x: Math.floor(moved.x), y: Math.floor(moved.y), width: Math.round(b.at.w), height: Math.round(b.at.h) } });
-  const diff = await compare(mock, b.file, reference, { radius: 12 });
-  check(`the card matches the mockup's ${b.panel}`, diff.ratio !== undefined && diff.ratio < 0.001,
-    { ...diff, built: [b.at.w, b.at.h], mockup: [moved.width, moved.height] });
-}
-
 export default {
   name: 'card',
   description: "The tick's card (#70): rows, stale row, single and plain cards, clicks, ×, keyboard, reload; the #69 mockup's section 3 when given",
   scene: { asked, said },
   store: ROWS,
   async run(qa) {
-    const { page, context, shots, check, open, stored, block, dotCount, tickCard, toTop, hoverTick, ontoRow, questionTop } = qa;
+    const { page, check, open, stored, block, dotCount, tickCard, toTop, hoverTick, ontoRow, questionTop, focused } = qa;
     const marked = () => dotCount(3);
     const tickName = (turn) =>
       page.evaluate((turn) => document.querySelector('chatgpt-butter-nav').shadowRoot.querySelectorAll('.tick')[turn].getAttribute('aria-label'), turn);
-    // The card's own box, on whole pixels; `at` keeps its fractional position for the mockup.
-    const built = [];
-    const shoot = async (panel) => {
-      const { rect } = await tickCard(),
-        file = `${shots}/${panel}.png`;
-      await page.screenshot({ path: file, clip: { x: Math.floor(rect.x), y: Math.floor(rect.y), width: Math.round(rect.w), height: Math.round(rect.h) } });
-      built.push({ panel, file, at: rect });
-    };
+    const mockup = panels(qa),
+      shoot = (panel) => mockup.card(panel);
     const LIGHT_DOT = 'rgb(211, 158, 16)',
       DARK_DOT = 'rgb(227, 199, 102)';
     const seen = {};
@@ -187,10 +155,6 @@ export default {
     // Keyboard alone: Tab into the rail, arrows to tick 7, ArrowLeft into its card.
     await toTop();
     await page.mouse.move(700, 300);
-    const focused = () => page.evaluate(() => {
-      const a = document.querySelector('chatgpt-butter-nav')?.shadowRoot.activeElement;
-      return a ? { cls: a.className, label: a.getAttribute('aria-label'), text: a.textContent } : null;
-    });
     await page.evaluate(() => document.activeElement?.blur());
     for (let k = 0; k < 8 && !(await focused())?.cls.startsWith('tick'); k++) await page.keyboard.press('Tab');
     let f;
@@ -239,13 +203,6 @@ export default {
       after.filter((b) => b.turn === 6).length === 2 && (await tickName(2)) === 'How do I bulk-load 2M rows quickly?', { stored: after.map((b) => [b.turn, b.para]) });
 
     // Against the #69 mockup's section 3, when given: the card's own box in each panel.
-    if (process.env.BUTTER_BOOKMARKS_DOT_MOCKUP) {
-      const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
-      await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_DOT_MOCKUP)}`);
-      await mock.addStyleTag({ content: 'html { scrollbar-width: none } .ann, .ring { display: none }' });
-      await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
-      for (const b of built) await cardMatches(qa, mock, b);
-      await mock.close();
-    }
+    await mockup.match();
   },
 };

@@ -1,58 +1,23 @@
-// Temporary legacy scenario, moved as it was from bookmarks-qa.mjs: it still changes the fixture
-// scene (`page$`) itself. A later PR gives it a declared starting scene.
+// The landing wash's driver (#73, #74): jumping to a bookmark from its row (the one place that knows
+// how a tick's card, or the earlier-history card, opens), recording every frame of the wash, its
+// phases, its boxes against the bookmarked text's own rectangles, and its listeners. `wseed` makes
+// the wash scenarios' store rows; PARA, SEL and STALE are the bookmarks most of them start from.
+import { answer, row } from './fixture.mjs';
 
-// The landing wash (#73), its fixture blocks and helpers; washSection is in wash.mjs. A jump from a tick card row to a live bookmark washes its text once the
-// Builds the wash section's start (settings, store, the edited answer) and hands back its helpers.
 export const WASH = 'chatgpt-butter-wash';
-export async function washKit(qa) {
-  const { open, PARAGRAPH, LIVE, sha, CONV, answer, settings, seedStore, page$, context, page, dotCount, rail, PARAS, shots, png } = qa;
-  // Question 6's answer for the block wash (#74): paragraphs around a code block and a table, each in
-  // the markup's own shape (see washSection's part g).
-  const BT = 5;
-  const CODE_LINES = ['EXPLAIN ANALYZE', "SELECT * FROM orders WHERE status = 'pending';"];
-  const TABLE_HTML = `<table><tbody>${[
-    ['Status', 'Rows', 'Plan'],
-    ['pending', '1,204', 'Index scan'],
-    ['shipped', '912,330', 'Sequential scan'],
-  ].map((r, i) => `<tr>${r.map((c) => (i ? `<td>${c}</td>` : `<th>${c}</th>`)).join('')}</tr>`).join('')}</tbody></table>`;
-  const BLOCKS = [
-    `<p>${PARAGRAPH(BT, 0)}</p>`,
-    LIVE
-      ? `<div data-client-defined-widget><div class="fx-codeblock"><div class="fx-surface" data-code-block><div class="fx-bar"><div>sql</div><div data-code-block-controls><button>Copy</button></div></div>` +
-        `<div class="cm-editor"><div class="cm-content">${CODE_LINES.map((l) => `<div class="cm-line">${l}</div>`).join('')}</div></div></div></div><div></div></div>`
-      : `<pre><div class="fx-panel"><div class="fx-bar">sql<button>Copy</button></div><div class="fx-code"><code>${CODE_LINES.join('\n')}</code></div></div></pre>`,
-    `<p>${PARAGRAPH(BT, 1)}</p>`,
-    LIVE
-      ? `<div class="fx-tableframe"><div class="fx-viewport" data-d-table-viewport>${TABLE_HTML}</div><div class="fx-edges"></div></div>`
-      : `<div class="fx-tablecontainer"><div class="fx-tablewrapper">${TABLE_HTML}</div></div>`,
-    `<p>${PARAGRAPH(BT, 2)}</p>`,
-  ];
-  const BLOCK_CSS = `
-  [data-markdown-text-style] pre { margin:0 0 16px }
-  .fx-panel, .fx-surface { border-radius:16px; background:#f4f4f4; overflow:hidden }
-  .dark .fx-panel, .dark .fx-surface { background:#171717 }
-  .fx-bar { display:flex; justify-content:space-between; padding:4px 12px; font:12px/20px system-ui, sans-serif }
-  .fx-code, .cm-content { padding:12px; font:14px/20px ui-monospace, monospace; white-space:pre }
-  [data-client-defined-widget], .fx-tableframe, .fx-tablecontainer { margin:0 0 16px }
-  .fx-viewport, .fx-tablewrapper { overflow-x:auto }
-  table { border-collapse:collapse } th, td { border:1px solid rgb(0 0 0 / .15); padding:4px 12px; text-align:left }`;
-  const ACCOUNT = sha('user-fixture'),
-    CONV_HASH = sha(CONV);
-  // A bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, li, li),
-  // from `start` to `end` (the whole paragraph by default).
-  const wseed = (turn, para, start = 0, end = null, text = PARAGRAPH(turn, para === 0 ? 0 : para - 1)) => ({
-    account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: end ?? text.length,
-    excerpt: text.slice(start, Math.min(end ?? text.length, start + 120)).trim(), time: Date.now() + para,
-  });
-  const T = 4,
-    PARA = wseed(T, 2), // a whole paragraph, four lines
-    SEL = wseed(T, 4, 20, 150), // a selection of about two lines in another one
-    STALE = wseed(8, 2); // question 9's third paragraph, edited below
-  await settings({ bookmarkNotice: 'acknowledged' });
-  await seedStore([PARA, SEL, STALE], { clear: true });
-  page$.edited.add(8);
+// A bookmark on block `para` of question `turn`'s answer (blocks: p, h3, p, p, p, p, li, li), from
+// `start` to `end` (the whole block by default) of `text` (that block's text by default).
+export const wseed = (turn, para, start = 0, end = null, text = undefined) =>
+  row(turn, para, { start, end: end ?? undefined, text, time: Date.now() + para });
+export const T = 4,
+  PARA = wseed(T, 2), // a whole paragraph, four lines
+  SEL = wseed(T, 4, 20, 150), // a selection of about two lines in another one
+  STALE = wseed(8, 2); // question 9's third paragraph, which the wash scenario's scene edits
+
+export function washDriver({ open, context, page, dotCount, rail, PARAS, shots, png }) {
   const sc = '.thread-scroll-container';
-  const cdp = await context.newCDPSession(page);
+  // A DevTools session on the page, opened when `listeners` first needs it.
+  let cdp = null;
 
   // ---- Helpers. Only `rowJump` knows how a question's bookmark card opens.
   const openChat = async (theme, marks = 2) => {
@@ -215,6 +180,7 @@ export async function washKit(qa) {
   // Listeners on the chat scroller (scroll) and the window (resize), by CDP, as Butter's content
   // scripts added them (their own world: DevTools lists a world's listeners only from inside it).
   const butterWorld = async () => {
+    cdp ??= await context.newCDPSession(page);
     const contexts = [];
     const on = (e) => contexts.push(e.context);
     cdp.on('Runtime.executionContextCreated', on);
@@ -280,5 +246,5 @@ export async function washKit(qa) {
       return best.rgb;
     }, [await png(file), theme === 'dark']);
   };
-  return { BT, CODE_LINES, TABLE_HTML, BLOCKS, BLOCK_CSS, ACCOUNT, CONV_HASH, wseed, T, sc, cdp, openChat, rowJump, earlierRowJump, record, recorded, phases, washHost, waitWash, coverage, butterWorld, listeners, blockCoverage, textUnder, PARA, SEL, STALE };
+  return { sc, openChat, rowJump, earlierRowJump, record, recorded, phases, washHost, waitWash, coverage, listeners, blockCoverage, textUnder };
 }

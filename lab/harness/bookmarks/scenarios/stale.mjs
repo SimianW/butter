@@ -5,16 +5,11 @@
 // live again when the original version is switched back, Chinese, and light and dark screenshots
 // of the stale cards (`card-stale-*`, `card-list-stale-*`; with BUTTER_BOOKMARKS_MOCKUP=<#51's
 // 1-Mockup.html> also the mockup's `mockup-card-stale-*` and `mockup-card-list-*` next to them).
-import path from 'node:path';
-import { ACCOUNT, answer, CONV_HASH, EDITED, PARAGRAPH, regen, REGENERATED, sha } from '../fixture.mjs';
+import { answer, EDITED, regen, REGENERATED, row } from '../fixture.mjs';
+import { openMockup } from '../mockup.mjs';
 
-// A whole-paragraph bookmark (or `start`..`end` of it) on block `para` of question `turn`'s answer
-// (blocks: p, h3, p, p, p, p, li, li).
-const seed = (turn, para, start = 0, end = null, time = Date.now()) => {
-  const text = PARAGRAPH(turn, para === 0 ? 0 : para - 1);
-  const excerpt = text.slice(start, end ?? 120).trim();
-  return { account: ACCOUNT, conv: CONV_HASH, msg: sha(answer(turn)), turn, para, start, end: end ?? text.length, excerpt, time };
-};
+// A whole-paragraph bookmark on block `para` of question `turn`'s answer.
+const seed = (turn, para, time) => row(turn, para, { time });
 // Question 10 holds one bookmark, question 7 three (blocks 0, 2 and 4).
 const TURN = 6,
   LONE = 9;
@@ -22,17 +17,10 @@ const TURN = 6,
 export default {
   name: 'stale',
   description: 'Stale bookmarks (#55): regenerated and edited answers, hollow dots, grey rows, jumps, switching back, reload, Chinese',
-  store: [seed(LONE, 0), seed(TURN, 0, 0, null, 1), seed(TURN, 2, 0, null, 2), seed(TURN, 4, 0, null, 3)],
+  store: [seed(LONE, 0), seed(TURN, 0, 1), seed(TURN, 2, 2), seed(TURN, 4, 3)],
   async run(qa) {
-    const { page, context, shots, check, open, settings, serve, answerAttrs, stored, rail, dotBeside, dotCount, tickCard, staleCard, hoverTick, ontoRow, toTop, questionTop, block } = qa;
+    const { page, context, shots, check, open, settings, serve, answerAttrs, stored, rail, dotBeside, dotCount, staleCard, hoverTick, ontoRow, toTop, questionTop, block, shootCard: shoot } = qa;
     const staleState = staleCard;
-    // The tick's card and the rail beside it, shot as `name`.
-    const shoot = async (name) => {
-      const c = await tickCard(),
-        r = await rail();
-      const y = Math.max(0, Math.min(c.rect.y, r.ticks[0].y) - 30);
-      await page.screenshot({ path: `${shots}/${name}.png`, clip: { x: 1400 - 420, y, width: 420, height: Math.max(c.rect.y + c.rect.h, r.ticks.at(-1).y) - y + 30 } });
-    };
     let c;
 
     // Questions 10's and 7's dots: hollow or solid, and their ticks' names.
@@ -199,9 +187,7 @@ export default {
     // The #51 mockup's stale cards, when given, for a side-by-side look (its section 4 notice is
     // replaced by #77's notification, which the pill scenario shoots).
     if (process.env.BUTTER_BOOKMARKS_MOCKUP) {
-      const mock = await context.newPage({ viewport: { width: 1600, height: 900 } });
-      await mock.goto(`file://${path.resolve(process.env.BUTTER_BOOKMARKS_MOCKUP)}`);
-      await mock.addStyleTag({ content: 'html { scrollbar-width: none }' });
+      const mock = await openMockup(context, process.env.BUTTER_BOOKMARKS_MOCKUP);
       // Section 3's stale states, for a side-by-side look at card-stale-* and card-list-stale-*.
       await mock.click('#lang button[data-l="en"]');
       for (const theme of ['light', 'dark'])

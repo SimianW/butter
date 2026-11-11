@@ -8,8 +8,7 @@
 // Run: npm ci && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
 // `--list` prints the scenarios with what each checks (bookmarks/scenarios.mjs holds them, in run
 // order); ONLY=<name>[,<name>...] runs only those. Each scenario starts from its own declared
-// start on a fresh page in the run's one browser, so a scenario alone runs as it does in a full run;
-// one exception: `main` clears the Bookmark shortcut's key, and later scenarios run without it.
+// start on a fresh page in the run's one browser, so a scenario alone runs as it does in a full run.
 // The output is a FAIL line per failing check and one line per scenario; VERBOSE=1 prints every
 // check. Every result goes to `<SHOTS>/<markup>/summary.json`.
 //
@@ -23,10 +22,9 @@
 // The shortcut must be real keyboard input (chrome.commands ignores DevTools key events): with an X
 // display the browser runs headed and xtest-keys.py presses the key, so run it under xvfb-run as
 // above. Without a display the run asks the worker to relay the command instead and says so.
-// Mockup comparisons, when given: BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> (card, dot,
-// wash), BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51's 2-Earlier-history-mockup.html> (earlier), and
-// BUTTER_BOOKMARKS_MOCKUP=<#51's 1-Mockup.html> (stale; gh issue artifact download 51 1 -R
-// SimianW/butter).
+// Mockup comparisons, when given: BUTTER_BOOKMARKS_DOT_MOCKUP=<#69's 1-Mockup.html> (card, dot*,
+// wash-mockup), BUTTER_BOOKMARKS_EARLIER_MOCKUP=<#51's 2-Earlier-history-mockup.html>
+// (earlier-shots), and BUTTER_BOOKMARKS_MOCKUP=<#51's 1-Mockup.html> (stale); see bookmarks/mockup.mjs.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
