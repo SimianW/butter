@@ -1,0 +1,31 @@
+{
+  "testedHead": "9ab5c4b",
+  "mode": "matrix",
+  "platform": "Linux",
+  "startedUtc": "2026-11-11T09:11:12.965Z",
+  "checks": [],
+  "drags": [],
+  "cleanup": {
+    "remainingBeforeFallback": 0,
+    "remainingAfterFallback": 0,
+    "shortcutsRestored": true,
+    "restored": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensions": true,
+    "labLockReleased": true,
+    "perfLockReleased": true
+  },
+  "extensionTreeSha256": "c6e09447159630fab94b5b322d7954b8bae725c8a5d161d681c382ac21483f96",
+  "chromium": "156.0.8078.47",
+  "sendGuard": {
+    "enabled": true,
+    "sendAttempts": 0,
+    "blockedMutations": 0
+  },
+  "shortcut": "Alt+Shift+M",
+  "skipped": [
+    "resolve: the fixture chat is not loaded"
+  ],
+  "finishedUtc": "2026-11-11T09:11:26.263Z"
+}
