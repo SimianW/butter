@@ -6,6 +6,9 @@
 // scene, settings, store rows). `t` is what the harness's `start(scenario, check)` returns. An
 // optional `skip()` returns why the scenario can't run here (a missing mockup, say): it is then
 // reported as skipped and not started, and named in the summary's `skipped` and on the last line.
+// An optional `precondition(t)`, awaited after `start`, does the same for what only the harness can
+// tell (a live chat's state, say): it returns why the scenario can't run now, or nothing, and the
+// scenario is then skipped without running.
 //
 // Selection: `ONLY=a,b` runs those scenarios (in registry order); unset runs all. `--list` prints
 // each scenario's name and description. An unknown name or argument exits with status 2.
@@ -40,12 +43,14 @@ function fail(message) {
 // Runs `scenarios` in order and writes `summary` ({ results, skipped, ...report() }) whatever happens.
 // `setup(defer)` builds the harness: it returns { start(scenario, check) → t, report() → {} } and
 // registers its cleanups with `defer(fn)`; they run last-in first-out, after the summary is
-// written (or failed to be). A scenario that throws, in `skip()` too, is reported and the next one
-// still runs; a
-// `setup` that throws is a failing `setup threw` result. Resolves to true when at least one check
-// ran, every check passed, nothing threw, the summary was written and `report()`'s arrays (errors,
-// foreign requests) are empty.
-export async function runScenarios({ scenarios, setup, summary, verbose = !!process.env.VERBOSE }) {
+// written (or failed to be). A scenario that throws, in `skip()` or `precondition` too, is reported
+// and the next one still runs; a `setup` that throws is a failing `setup threw` result. A throw is
+// printed with its stack and stored with its message, unless `onThrow(e, name)` is given: what it
+// returns is printed and stored instead, or `threw` when it returns nothing, never the stack or
+// message (a live harness keeps page text out of both). Resolves to
+// true when at least one check ran, every check passed, nothing threw, the summary was written and
+// `report()`'s arrays (errors, foreign requests) are empty.
+export async function runScenarios({ scenarios, setup, summary, verbose = !!process.env.VERBOSE, onThrow }) {
   const results = [],
     cleanups = [],
     crashed = [],
@@ -59,6 +64,16 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
   let harness = null,
     report = {},
     unwritten = null;
+  const threw = async (name, e) => {
+    const text = onThrow ? ((await Promise.resolve().then(() => onThrow(e, name)).catch(() => 'onThrow failed')) ?? 'threw') : null;
+    crashed.push(name);
+    console.log(`FAIL ${name} threw: ${text ?? e.stack}`);
+    results.push({ name: `${name} threw`, pass: false, error: text ?? e.message });
+  };
+  const skipping = (name, why) => {
+    skipped.push(name);
+    console.log(`skip ${name}: ${why}`);
+  };
   try {
     harness = await setup((fn) => cleanups.push(fn));
     for (scenario of scenarios) {
@@ -67,15 +82,18 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
       try {
         const skip = scenario.skip?.();
         if (skip) {
-          skipped.push(scenario.name);
-          console.log(`skip ${scenario.name}: ${skip}`);
+          skipping(scenario.name, skip);
           continue;
         }
-        await scenario.run(await harness.start(scenario, check));
+        const t = await harness.start(scenario, check);
+        const unmet = await scenario.precondition?.(t);
+        if (unmet) {
+          skipping(scenario.name, unmet);
+          continue;
+        }
+        await scenario.run(t);
       } catch (e) {
-        crashed.push(scenario.name);
-        console.log(`FAIL ${scenario.name} threw: ${e.stack}`);
-        results.push({ name: `${scenario.name} threw`, pass: false, error: e.message });
+        await threw(scenario.name, e);
       }
       const mine = results.slice(from),
         failed = mine.filter((r) => !r.pass).length,
@@ -85,12 +103,9 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
     }
     scenario = null;
   } catch (e) {
-    // Only `setup` throws here: each scenario's own throw, in `skip()`, `start` or `run`, is caught
-    // above.
-    const name = scenario?.name ?? 'setup';
-    crashed.push(name);
-    console.log(`FAIL ${name} threw: ${e.stack}`);
-    results.push({ name: `${name} threw`, pass: false, error: e.message });
+    // Only `setup` throws here: each scenario's own throw, in `skip()`, `start`, `precondition` or
+    // `run`, is caught above.
+    await threw(scenario?.name ?? 'setup', e);
   } finally {
     try {
       report = harness?.report() ?? {};

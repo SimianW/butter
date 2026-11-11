@@ -261,14 +261,30 @@ _Where_: `branch/run.js`
 These `_Where_` paths are relative to `lab/harness/`.
 
 **Scenario**:
-One named part of a fixture QA run, with its declared start; `ONLY=<name>` runs it alone as it runs
-in a full run.
+One named part of a harness run. In a fixture QA it has its declared start, so `ONLY=<name>` runs it
+alone as it runs in a full run; in a live harness it starts from where the ones before it left and
+has a precondition.
 _Avoid_: section, case
-_Where_: `bookmarks/scenarios/`, `branch/scenarios/`
+_Where_: `bookmarks/scenarios/`, `branch/scenarios/`, `bookmarks-live/`
+
+**Live harness**:
+A harness that drives real ChatGPT in the live lab, under its lock and send guard, as opposed to a
+fixture QA's synthetic page. It cannot reset or seed: no store writes, no fixture edits.
+_Avoid_: live QA, live test
+_Where_: `bookmarks-live.mjs`, `bookmark-selection-live.mjs`, `branch-live.mjs`, `branch-live-edges.mjs`,
+`dev-capture-live.mjs`
+
+**Precondition**:
+What a live harness's scenario needs from the ones before it (the fixture loaded, two stored test
+bookmarks, a top-level list in the fixture), checked against the live page and store after `start`.
+When it is unmet the scenario is skipped with the reason; in a full run (no `ONLY`) that fails the
+run, unless the fixture itself lacks what the scenario needs.
+_Where_: `bookmarks-live/needs.mjs`; the runner's `precondition(t)`
 
 **Runner**:
-The code shared by the fixture QAs that selects scenarios, runs them, prints their counts and writes
-`summary.json`.
+The code shared by the fixture QAs and bookmarks-live that selects scenarios, runs them, skips those
+whose precondition is unmet, prints their counts and, for the fixture QAs, writes `summary.json`
+(bookmarks-live writes its own, `bookmarks-live/record.mjs`).
 _Where_: `runner/index.mjs`
 
 **Butter driver**:

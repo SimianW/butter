@@ -100,5 +100,13 @@ export function butterDriver({ page, native = null }) {
       [from, start, to, end],
     );
   const clearSelection = () => page.evaluate(() => getSelection().removeAllRanges());
-  return { pill, cell, hoverCell, selectContents, selectText, clearSelection };
+  // Select by dragging the mouse along one line, from `x1` to `x2` at `y`, as a reader does: live
+  // ChatGPT shows its own "Ask ChatGPT" only for a real pointer selection.
+  const dragAcross = async ({ x1, x2, y }) => {
+    await page.mouse.move(x1, y);
+    await page.mouse.down();
+    await page.mouse.move(x2, y, { steps: 10 });
+    await page.mouse.up();
+  };
+  return { pill, cell, hoverCell, selectContents, selectText, clearSelection, dragAcross };
 }
