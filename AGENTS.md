@@ -90,15 +90,14 @@ build, CI).
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
-  into tickets and `implement-spec <spec>` builds them. In Butter their test seams are
-  the ones in docs/bugfix.md step 2. Their review runs `code-review` against the spec issue;
-  sort its findings into fix now / follow-up issue / drop, one line of reason each, and stop
-  for the user to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`.
-  After the fixes, `review-loop` gates the final diff, with the approved refactors listed in
+  into tickets and `implement-spec <spec>` builds them. In Butter their test seams are the ones
+  in docs/bugfix.md step 2. Their review runs `code-review` against the spec issue; sort its
+  findings into fix now / follow-up issue / drop, one line of reason each, and stop for the user
+  to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`. After the
+  fixes, `review-loop` gates the final diff at its tier, with the approved refactors listed in
   its Intent. The work ends in a PR whose body carries `Closes #<issue>` and the `Review tier`
-  line. These four skills are
-  user-only, so the user starts each one: when the work reaches a step, tell the user it is time
-  and give the command to type, such as `/to-spec`.
+  line. These four skills are user-only, so the user starts each one: when the work reaches a
+  step, tell the user it is time and give the command to type, such as `/to-spec`.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
