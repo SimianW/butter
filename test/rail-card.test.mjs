@@ -175,9 +175,15 @@ test('the earlier wait: marks of older items are not synced; a new items revisio
   r.m.setMarks(null, groups({}));
   assert.equal(r.m.synced(), false, 'resolved against no items');
   r.m.setMarks(r.m.rev, groups({ q1: [false] }));
-  r.m.open('aaaaaaaa-0000-0000-0000-000000000001');
+  const other = 'aaaaaaaa-0000-0000-0000-000000000001';
+  r.m.open(other);
   assert.equal(r.m.synced(), false, 'another conversation');
   assert.equal(r.m.mark('q1'), undefined, 'its marks forgotten');
+  // Back to a conversation kept in the tab, whose items are older than the other one's marks.
+  r.m.page({ conv: other, before: null, hasPrev: false, items: questions(2) });
+  r.m.setMarks(r.m.rev, groups({}));
+  r.m.open(conv);
+  assert.equal(r.m.synced(), false, "the other conversation's marks don't count");
 });
 
 test('placed: the question a bookmark is under now, never the three dots, never one not yet rendered', () => {
