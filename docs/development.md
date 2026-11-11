@@ -268,7 +268,7 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   blocks are checked in the fixture only.
 - Version consistency: `python3 scripts/check-version.py`; packaging tests: `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files; its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
-- PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the tier line, the review line, and no tier 1 or 2 change after the reviewed commit.
+- PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the Review section's `- **Tier:** N` item, its `- **Verdict:** approved at <sha>` item for tiers 1 and 2, and no tier 1 or 2 change after the reviewed commit.
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
