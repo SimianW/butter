@@ -1,0 +1,157 @@
+[
+  {
+    "label": "bookmarks-matrix-main-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "exit": 0,
+    "seconds": 303.283
+  },
+  {
+    "label": "bookmarks-matrix-pr-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "exit": 1,
+    "seconds": 305.152,
+    "durationSource": "summary finishedUtc minus startedUtc; external runner stopped to honor no-retry steering"
+  },
+  {
+    "label": "bookmarks-wash-main-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "exit": 0,
+    "seconds": 134.525
+  },
+  {
+    "label": "bookmarks-wash-pr-1",
+    "args": [
+      "node",
+      "lab/harness/bookmarks-live.mjs"
+    ],
+    "exit": 0,
+    "seconds": 133.267
+  },
+  {
+    "label": "branch-live-main-1-acquire",
+    "args": [
+      "$B/lab-lock",
+      "acquire",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-main-1",
+      "--wait",
+      "1800",
+      "--perf"
+    ],
+    "exit": 0,
+    "seconds": 0.051
+  },
+  {
+    "label": "branch-live-main-1-restart",
+    "args": [
+      "$B/lab",
+      "restart-browser"
+    ],
+    "exit": 0,
+    "seconds": 2.026
+  },
+  {
+    "label": "branch-live-main-1",
+    "args": [
+      "node",
+      "lab/harness/branch-live.mjs"
+    ],
+    "exit": 0,
+    "seconds": 43.545
+  },
+  {
+    "label": "branch-live-main-1-restore",
+    "args": [
+      "$B/lab-restore",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-main-1"
+    ],
+    "exit": 0,
+    "seconds": 10.262
+  },
+  {
+    "label": "branch-live-main-1-release",
+    "args": [
+      "$B/lab-lock",
+      "release",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-main-1"
+    ],
+    "exit": 0,
+    "seconds": 0.057
+  },
+  {
+    "label": "branch-live-pr-1-acquire",
+    "args": [
+      "$B/lab-lock",
+      "acquire",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-pr-1",
+      "--wait",
+      "1800",
+      "--perf"
+    ],
+    "exit": 0,
+    "seconds": 0.052
+  },
+  {
+    "label": "branch-live-pr-1-restart",
+    "args": [
+      "$B/lab",
+      "restart-browser"
+    ],
+    "exit": 0,
+    "seconds": 2.028
+  },
+  {
+    "label": "branch-live-pr-1",
+    "args": [
+      "node",
+      "lab/harness/branch-live.mjs"
+    ],
+    "exit": 0,
+    "seconds": 43.833
+  },
+  {
+    "label": "branch-live-pr-1-restore",
+    "args": [
+      "$B/lab-restore",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-pr-1"
+    ],
+    "exit": 0,
+    "seconds": 10.368
+  },
+  {
+    "label": "branch-live-pr-1-release",
+    "args": [
+      "$B/lab-lock",
+      "release",
+      "--lab",
+      "1",
+      "--owner",
+      "butter-bookmark-session-pr-1"
+    ],
+    "exit": 0,
+    "seconds": 0.051
+  }
+]

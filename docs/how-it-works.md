@@ -18,7 +18,7 @@ The [history rail](history-rail.md) lives in `rail/rail.js` and `history/convers
 hovering never restyles ChatGPT's page. It reads layout during a jump and when size changes move
 the jumped-to question; scrolling yourself releases that alignment.
 
-Bookmarks (`bookmarks/content.js`, `bookmarks/model.js`) show on the rail as one dot beside the tick
+Bookmarks (`bookmarks/content.js`, `bookmarks/session.js`, `bookmarks/model.js`) show on the rail as one dot beside the tick
 of each question that holds them, however many it holds: a 4 px circle on the tick's row, its right
 edge 4 px left of the tick's end (`#d39e10` in light theme, `#e3c766` in dark). The rail places the
 dots in the frame loop that sets the ticks' widths, so a dot follows its tick as it lengthens for the

@@ -4,6 +4,9 @@
 // worker's storage reads and bookmark messages; it adds one `drags` entry and the `held drag <arm>
 // <n>` check. The jump probe records clicks, keys, seek states and the rail and bookmark functions
 // a jump calls, into `summary.jumpEvidence[label]`.
+// Butter's bookmark work runs in these two scripts: the page side and the bookmark session.
+export const BOOKMARK_SCRIPTS = ['/bookmarks/content.js', '/bookmarks/session.js'];
+const isBookmarkScript = (url) => BOOKMARK_SCRIPTS.some((name) => url.endsWith(name));
 export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targetBox, waitLanding, waitSeekSettled }) {
   const { summary } = record;
   const requireThat = (v, label) => {
@@ -52,7 +55,7 @@ export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targe
     await cdp.send('Profiler.stopPreciseCoverage');
     const calls = {};
     for (const script of coverage) {
-      const kind = script.url.endsWith('/bookmarks/content.js') ? 'bookmark' : script.url.endsWith('/rail/rail.js') ? 'rail' : null;
+      const kind = isBookmarkScript(script.url) ? 'bookmark' : script.url.endsWith('/rail/rail.js') ? 'rail' : null;
       if (!kind) continue;
       for (const f of script.functions)
         if (['locate', 'jump', 'jumpTo', 'earlierJump', 'landOff', 'targetTop', 'glide'].includes(f.functionName))
@@ -137,13 +140,14 @@ export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targe
     const coverage = (await cdp.send('Profiler.takePreciseCoverage')).result;
     await cdp.send('Profiler.stopPreciseCoverage');
     const critical = ['refresh', 'paragraphs', 'measure', 'selection', 'topBlock', 'locate', 'create', 'remove', 'show', 'place'];
-    observation.bookmarkCoverageScripts = coverage.filter((s) => s.url.endsWith('/bookmarks/content.js')).length;
+    // One coverage entry per bookmark script: fewer would mean a renamed file escaped the count.
+    observation.bookmarkCoverageScripts = coverage.filter((s) => isBookmarkScript(s.url)).length;
     observation.bookmarkFunctionCalls = coverage
-      .filter((s) => s.url.endsWith('/bookmarks/content.js'))
+      .filter((s) => isBookmarkScript(s.url))
       .flatMap((s) => s.functions)
       .reduce((n, f) => n + (f.ranges[0]?.count || 0), 0);
     observation.bookmarkWork = Object.fromEntries(critical.map((n) => [n, 0]));
-    for (const script of coverage.filter((s) => s.url.endsWith('/bookmarks/content.js')))
+    for (const script of coverage.filter((s) => isBookmarkScript(s.url)))
       for (const f of script.functions) if (critical.includes(f.functionName)) observation.bookmarkWork[f.functionName] += f.ranges[0]?.count || 0;
     observation.storage = await worker.evaluate(() => ({ reads: liveProbe.reads, messages: liveProbe.messages }));
     await page.mouse.up();
@@ -152,7 +156,7 @@ export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targe
     summary.drags.push({ arm, repetition, ...observation });
     await record.check(
       `held drag ${arm} ${repetition}`,
-      observation.bookmarkCoverageScripts === 1 &&
+      observation.bookmarkCoverageScripts === BOOKMARK_SCRIPTS.length &&
         observation.held &&
         observation.updates > 0 &&
         observation.mounts === 0 &&

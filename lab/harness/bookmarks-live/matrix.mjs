@@ -1,6 +1,7 @@
 // The matrix suite's first scenarios (#57, seam 3), in run order: load the fixture, the empty-arm
 // drags, the message ids, the two bookmarks, the bookmarked-arm drags and the jumps after and during
 // a drag. The phases and checks are the single script's.
+import { BOOKMARK_SCRIPTS } from './drag.mjs';
 import { all, loaded, stored, target } from './needs.mjs';
 import { requireThat } from './page.mjs';
 
@@ -140,7 +141,7 @@ export const dragBookmarked = {
         [...empty, ...marked].every(
           (d) =>
             d.held &&
-            d.bookmarkCoverageScripts === 1 &&
+            d.bookmarkCoverageScripts === BOOKMARK_SCRIPTS.length &&
             d.mounts === 0 &&
             d.additions === 0 &&
             d.storage.reads === 0 &&

@@ -1,8 +1,9 @@
 // ISOLATED world. The bookmark notification (#77): one card at top right on every save and every
-// remove, both of which go through bookmarks/content.js (`create` for the Bookmark cell and the
-// shortcut, `remove` for × on a rail card). "Bookmark saved", "Bookmark removed" or "Already
-// bookmarked", the bookmark's first words on one line, and Undo (none when it was already
-// bookmarked). The small card leaves 4 s after it shows; the pointer on it or focus inside it holds
+// remove, both of which go through the bookmark session (bookmarks/session.js: `create` for the
+// Bookmark cell and the shortcut, `remove` for × on a rail card). "Bookmark saved", "Bookmark
+// removed" or "Already bookmarked", the bookmark's first words on one line, and Undo (none when it
+// was already bookmarked). It only presents: Undo runs the action the session handed over, which
+// writes the store. The small card leaves 4 s after it shows; the pointer on it or focus inside it holds
 // it, and it leaves 4 s after both are gone. A new card replaces the current one at once, and a
 // replaced card's Undo does nothing. The card never takes focus and is announced politely.
 // The first save ever (#56) shows the card expanded with what Butter keeps, the privacy link and
@@ -59,7 +60,7 @@
 .first .btns button.yes { background: var(--butter); color: #1b170f; }
 `;
   let butter,
-    current = null, // the card showing: { id, kind, bookmark, then, first }
+    current = null, // the card showing: { id, kind, bookmark, undo, first }
     serial = 0,
     busy = false,
     timer = 0,
@@ -116,17 +117,11 @@
     });
   };
 
-  // Undo of a save deletes that bookmark; Undo of a remove stores it again (same key, same time).
+  // The session's Undo: a save's deletes that bookmark, a remove's stores it again (same key, same
+  // time).
   async function undo(it) {
     leave();
-    if (it.kind === 'saved') {
-      const { account, conv, key } = it.bookmark;
-      const r = await ButterBookmarkStore.send('butter-bookmark-delete', { account, conv, key });
-      if (r.deleted) it.then?.();
-    } else if (it.kind === 'removed') {
-      const r = await ButterBookmarkStore.send('butter-bookmark-create', { bookmark: it.bookmark });
-      if (r.bookmark) it.then?.(r.bookmark);
-    }
+    await it.undo?.();
   }
   async function acknowledge() {
     leave();
@@ -146,14 +141,14 @@
     if (butter === undefined) butter = r.butter;
   });
 
-  async function show(kind, bookmark, then) {
+  async function show(kind, bookmark, undo) {
     await loaded;
     const s = settings();
     if (!s.enabled || !s.opts.rail || !document.documentElement) return;
     const t = T[s.lang],
       first = kind === 'saved' && !seen(),
       id = ++serial;
-    current = { id, kind, bookmark, then, first };
+    current = { id, kind, bookmark, undo, first };
     const undoButton = (cls = '') =>
       `<button type="button"${cls} data-notice="undo" data-card="${id}">${t.undo}</button>`;
     const head = `<span class="ic">${ICON[kind === 'removed' ? 'off' : 'on']}</span><span class="tx"><b>${t[kind]}</b><span class="ex"></span></span>`;
@@ -171,11 +166,11 @@
     arm();
   }
   globalThis.ButterBookmarkNotice = {
-    // A bookmark was just created. `undone` runs once Undo deleted it.
-    saved: (bookmark, undone) => show('saved', bookmark, undone),
+    // A bookmark was just created. `undo()` deletes it again.
+    saved: (bookmark, undo) => show('saved', bookmark, undo),
     // A save found the same bookmark already stored.
     already: (bookmark) => show('already', bookmark),
-    // A bookmark was deleted (× on its rail card). `restored(bookmark)` runs once Undo stored it again.
-    removed: (bookmark, restored) => show('removed', bookmark, restored),
+    // A bookmark was deleted (× on its rail card). `undo()` stores it again.
+    removed: (bookmark, undo) => show('removed', bookmark, undo),
   };
 })();

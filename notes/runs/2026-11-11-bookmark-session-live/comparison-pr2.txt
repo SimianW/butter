@@ -1,0 +1,4 @@
+matrix ordered checks identical: True cleanup identical: True
+wash ordered checks identical: True cleanup identical: True
+branch pill measurements identical: True
+branch ready at both widths in every attempt: True
