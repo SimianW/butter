@@ -201,20 +201,25 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   a wave keeping each tick with its question, what lights a tick — seek over opening over a flying jump
   over the lit band and pinned —, the opening snap, the rail turned off between frames, a frame older
   than the last kick, convergence and quiet at rest, the dots through every wave frame, dense and
-  earlier-history dots, names, the fade-out), `test/rail-card.test.mjs` (the card's kinds, contents
+  earlier-history dots, names, the fade-out, the tick under a y and the three dots' zone, the busy
+  tick, the rail turning on at a 560 px chat, dense geometry, opening another chat forgetting the seek
+  preview and the active question), `test/rail-card.test.mjs` (the card's kinds, contents
   and place, holding and leaving, the seek card, keys into and in a card, the card following a
-  deletion, the earlier wait on the marks' items revision and `placed`), both over
+  deletion, the earlier wait on the marks' items revision and `placed`, the 400-character cuts,
+  `unshow`), both over
   `test/helpers/rail-model.mjs`, which drives the model as `rail.js` does;
   `test/rail-conversations.test.mjs` (pages, sends, reconciliation, revisions) and
   `test/rail-wave.test.mjs` (ticks keyed by question, the interval clamp, convergence).
   `test/rail.test.mjs` runs the real `rail.js` and its model in a fake DOM for what needs elements:
-  the send pre-jump, jump cancellation, the seek card's wiring, the dots' fade-out timer and keyboard
+  the rail drawing what the model returns (CSS values, names, the three dots, dots, a tick's line,
+  the card's `inert`), the send pre-jump, jump cancellation, the seek card's wiring, the dots' fade-out timer and keyboard
   focus. bookmarks-qa's `rail-idle` scenario checks the performance floor in a browser: the rail
   schedules no animation frame for 2 s after the chat opens and settles, after a hover wave and after
   a jump lands (a DevTools session wraps `requestAnimationFrame` in Butter's isolated world and counts
   calls from `/rail/` scripts only, so `rail.js` must look it up at call time). Fixtures that inject
   the rail into a page of their own load its scripts in manifest order from
-  `lab/harness/rail-scripts.mjs`.
+  `lab/harness/rail-scripts.mjs` (`test/rail-scripts.test.mjs`: every `rail/` script in the
+  manifest, `rail.js` last).
 - History rail in the lab browser: `lab/harness/nav-jumps.mjs`, `nav-stream.mjs`,
   `nav-switch.mjs`, `nav-video.mjs`; `nav-earlier.mjs` (fixture for far-jump landing and the "earlier" dots, no ChatGPT requests), `nav-earlier-live.mjs` and `nav-settle.mjs` (same checks in an open ChatGPT tab).
   Far-jump timing: `jump-latency.mjs` (phase timings on a long chat), `jump-latency-edge.mjs`,
