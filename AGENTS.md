@@ -87,6 +87,8 @@ build, CI).
   final diff, at the round budget the tier sets. Every gate review before merge, including when
   the user asks to review a PR or branch, runs `review-loop`; only `implement` and
   `implement-spec` work adds a `code-review` pass before it (see Features).
+- Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
+  when you coin one.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
