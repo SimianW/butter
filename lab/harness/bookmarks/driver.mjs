@@ -77,7 +77,7 @@ export function driver({ page, worker }) {
         meta: !meta || getComputedStyle(meta).display === 'none' ? null : meta.textContent,
         text: !text || getComputedStyle(text).display === 'none' ? null : text.textContent,
         textLines: text ? Math.round(text.getBoundingClientRect().height / parseFloat(getComputedStyle(text).lineHeight)) : null,
-        rows: c.classList.contains('qb')
+        rows: getComputedStyle(root.querySelector('.bmc')).display !== 'none'
           ? [...root.querySelectorAll('.bmc .it')].map((it) => {
               const tx = it.querySelector('.tx'),
                 x = it.querySelector('.x'),

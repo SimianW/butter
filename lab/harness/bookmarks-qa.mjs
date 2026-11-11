@@ -8,7 +8,8 @@
 // Run: npm ci && xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/bookmarks-qa.mjs
 // `--list` prints the scenarios with what each checks (bookmarks/scenarios.mjs holds them, in run
 // order); ONLY=<name>[,<name>...] runs only those. Each scenario starts from its own declared
-// start on a fresh page in the run's one browser, so a scenario alone runs as it does in a full run.
+// start on a fresh page in the run's one browser, so a scenario alone runs as it does in a full run;
+// one exception: `main` clears the Bookmark shortcut's key, and later scenarios run without it.
 // The output is a FAIL line per failing check and one line per scenario; VERBOSE=1 prints every
 // check. Every result goes to `<SHOTS>/<markup>/summary.json`.
 //

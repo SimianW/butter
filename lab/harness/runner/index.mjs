@@ -62,6 +62,7 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
       } catch (e) {
         crashed.push(scenario.name);
         console.log(`FAIL ${scenario.name} threw: ${e.stack}`);
+        results.push({ name: `${scenario.name} threw`, pass: false, error: e.message });
       }
       const mine = results.slice(from),
         failed = mine.filter((r) => !r.pass).length,
@@ -81,7 +82,7 @@ export async function runScenarios({ scenarios, setup, summary, verbose = !!proc
     for (const fn of cleanups.reverse()) await fn().catch((e) => console.log(`cleanup failed: ${e.message}`));
   }
   const ok =
-    !crashed.length && results.every((r) => r.pass) && Object.values(report).every((v) => !Array.isArray(v) || !v.length);
+    !crashed.length && results.length > 0 && results.every((r) => r.pass) && Object.values(report).every((v) => !Array.isArray(v) || !v.length);
   const failed = results.filter((r) => !r.pass).length;
   console.log(
     ok

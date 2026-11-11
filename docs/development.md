@@ -254,7 +254,8 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
   earlier `[data-message-author-role="assistant"][data-message-id]` wrapper, and live chats'
   answers, whose ancestor carries `data-chatgpt-selection-message-id` instead (`MARKUP=old` or
   `MARKUP=live` runs only one). `--list` names every scenario, and `ONLY=<name>[,<name>…]` runs any
-  of them, each from its own start as in a full run (the version-1 database upgrade is
+  of them, each from its own start as in a full run (except that `main` clears the Bookmark
+  shortcut's key for the scenarios after it; the version-1 database upgrade is
   `ONLY=upgrade`). The run prints only failing checks and one line per scenario; `VERBOSE=1` prints
   every check, and `summary.json` holds them all.
   The live check, `lab/harness/bookmarks-live.mjs` with `MODE=wash` (the lab lock, the send guard
