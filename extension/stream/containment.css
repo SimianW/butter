@@ -5,6 +5,14 @@
    first layout, and only then may they be skipped. Wide blocks (tables,
    visualizations) deliberately overflow the text column, which paint containment would clip, so
    they are never skipped.
+   An answer block is a child of an answer root (GLOSSARY.md): the markdown root's children, except
+   in ChatGPT's Dil renderer, where the markdown root's one child is the Dil source wrapper
+   (data-dil-source-message-id) and the blocks are the children of the DilResponseRoot nested
+   inside it. The wrapper must never become one huge skipped block. The selectors name the wrapper
+   instead of asking whether the markdown root :has() a DilResponseRoot: a :has() there made
+   Chromium restyle every block of the streaming answer on each inserted node, multiplying the
+   style work of a long stream (notes/runs/2026-11-11-replay-blocking). stream/offscreen.js and
+   shared/settings.js copy these selectors.
    The paint containment that skipping brings clips at the turn's edge; the clip margin lets small
    overflow through, such as ChatGPT's pulsing "responding" dot, which sits flush with the turn's
    left edge and grows past it as it pulses. */
@@ -13,21 +21,25 @@ html:not([data-butter-off~='cv']) [data-turn-key] {
   overflow-clip-margin: 8px;
 }
 html:not([data-butter-off~='cv'])
-  :is(
-    [data-markdown-text-style='assistant-message']:not(:has([class*='DilResponseRoot'])),
-    [data-markdown-text-style='assistant-message'] [class*='DilResponseRoot']
-  )
+  [data-markdown-text-style='assistant-message']
+  > :not([data-dil-source-message-id]):not([data-wide-block]):not([class*='TableFrame-']),
+html:not([data-butter-off~='cv'])
+  [data-markdown-text-style='assistant-message']
+  [class*='DilResponseRoot']
   > :not([data-wide-block]):not([class*='TableFrame-']) {
   contain-intrinsic-size: auto 120px;
 }
 html:not([data-butter-off~="cv"]) [data-turn-key][data-butter-seen],
-html:not([data-butter-off~="cv"]) :is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"]) > [data-butter-seen]:not([data-wide-block]):not([class*="TableFrame-"]),
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-seen]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-seen]:not([data-wide-block]):not([class*="TableFrame-"]),
 /* Blocks of the answer being streamed appear on screen and render before they can scroll away,
    so they are safe to skip right away; waiting for their mark leaves them all rendering. */
-html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] :is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"]) > :not([data-wide-block]):not([class*="TableFrame-"]),
+html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] > :not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
+html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > :not([data-wide-block]):not([class*="TableFrame-"]),
 /* A streamed block skipped before it ever rendered stays skipped after the answer completes, until
    it comes into view: rendering them all at completion froze the page (stream/offscreen.js). */
-html:not([data-butter-off~="cv"]) :is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"]) > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-unrendered]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
+html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
   content-visibility: auto;
 }
 

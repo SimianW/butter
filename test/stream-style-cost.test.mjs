@@ -5,8 +5,9 @@
 // one update per frame, and counts the elements Chromium restyles (the elementCount of every
 // UpdateLayoutTree trace event): a count, not a time, so it does not depend on the machine.
 // A streamed update adds one small block, so it should restyle a handful of elements. A
-// containment selector whose :has() makes Chromium restyle every block of the answer on each
-// insertion multiplied the style work of a long stream (notes/runs/2026-11-11-replay-blocking).
+// containment selector whose :has() made Chromium restyle every block of the streaming answer on
+// each insertion (about 490 elements per update here, whatever the history) made a long stream's
+// style work grow with the square of its length (notes/runs/2026-11-11-replay-blocking).
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -103,7 +104,7 @@ async function styledPerUpdate(css) {
   }
 }
 
-test('a streamed update restyles about its own block, not the answers around it', async () => {
+test('a streamed update restyles about its own block, not the whole answer', async () => {
   const perUpdate = await styledPerUpdate(read('stream/containment.css'));
   console.log(`elements restyled per streamed update: ${perUpdate}`);
   assert.ok(perUpdate < 50, `${perUpdate} elements restyled per update (limit 50)`);

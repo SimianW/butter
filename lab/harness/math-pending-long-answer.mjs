@@ -91,7 +91,7 @@ async function run(name) {
       </style><div class="thread-scroll-container"><div><div data-turn-key="synthetic">
         <div data-talvt-turn-state="${state}"><div data-user-message-bubble>Fixture question</div>
         <div data-message-author-role="assistant" data-message-id="synthetic">
-        <div data-markdown-text-style="assistant-message"><div class="my-4"><div>
+        <div data-markdown-text-style="assistant-message"><div class="my-4" data-dil-source-message-id="synthetic"><div>
         <div></div><div class="Renderer-fixture"><div class="DilResponseRoot-fixture">${Array.from(
           { length: n },
           (_, i) => block(i),
