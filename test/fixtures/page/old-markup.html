@@ -17,10 +17,10 @@
     <main>
       <div class="thread-scroll-container">
         <div>
-          <article data-turn-key="q-old-1" data-testid="conversation-turn-1">
+          <article data-turn-key="q-old-1" data-testid="conversation-turn-1" data-expect-loose-turn>
             <div class="user">
               <div data-message-author-role="user" data-message-id="q-old-1">
-                <div data-user-message-bubble>How does a B-tree index stay shallow?</div>
+                <div data-user-message-bubble data-expect-preview-item>How does a B-tree index stay shallow?</div>
               </div>
             </div>
             <div data-message-author-role="assistant" data-message-id="a-old-1" data-expect-reply>
@@ -31,9 +31,9 @@
                 data-expect-question="q-old-1"
                 data-expect-reply
               >
-                <p data-expect-para="0">A <strong>B-tree</strong> keeps its keys sorted in wide nodes.</p>
-                <h3 data-expect-para="1">Why it stays shallow</h3>
-                <p data-expect-para="2">
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>A <strong>B-tree</strong> keeps its keys sorted in wide nodes.</p>
+                <h3 data-expect-para="1" data-expect-preview-item data-expect-block>Why it stays shallow</h3>
+                <p data-expect-para="2" data-expect-preview-item data-expect-block>
                   With fan-out
                   <span class="katex"
                     ><span class="katex-mathml"
@@ -44,14 +44,14 @@
                   >
                   the height grows as a logarithm.
                 </p>
-                <ul>
+                <ul data-expect-preview-item data-expect-block>
                   <li data-expect-para="3">Few levels to walk.</li>
                   <li data-expect-para="4">Each node fills <em>one page</em>.</li>
                 </ul>
-                <blockquote data-expect-para="5"><p>Fan-out beats balance.</p></blockquote>
-                <hr data-expect-para="6" />
-                <pre data-expect-para="7"><div class="rounded-panel"><div class="bar">sql<button>Copy</button></div><div class="code"><code>EXPLAIN SELECT * FROM orders;</code></div></div></pre>
-                <div class="table-container" data-expect-para="8">
+                <blockquote data-expect-para="5" data-expect-preview-item data-expect-block><p>Fan-out beats balance.</p></blockquote>
+                <hr data-expect-para="6" data-expect-preview-item />
+                <pre data-expect-para="7" data-expect-preview-item data-expect-block><div class="rounded-panel"><div class="bar">sql<button>Copy</button></div><div class="code"><code>EXPLAIN SELECT * FROM orders;</code></div></div></pre>
+                <div class="table-container" data-expect-para="8" data-expect-preview-item data-expect-block>
                   <div class="table-wrapper">
                     <table>
                       <tbody>
@@ -61,7 +61,7 @@
                     </table>
                   </div>
                 </div>
-                <ol>
+                <ol data-expect-preview-item data-expect-block>
                   <li data-expect-para="9">Find the leaf.</li>
                 </ol>
               </div>
@@ -70,10 +70,10 @@
           </article>
         </div>
         <div>
-          <article data-turn-key="q-old-2" data-testid="conversation-turn-2">
+          <article data-turn-key="q-old-2" data-testid="conversation-turn-2" data-expect-loose-turn>
             <div class="user">
               <div data-message-author-role="user" data-message-id="q-old-2">
-                <div data-user-message-bubble>And a hash index?</div>
+                <div data-user-message-bubble data-expect-preview-item>And a hash index?</div>
               </div>
             </div>
             <div data-message-author-role="assistant" data-message-id="a-old-2" data-expect-reply>
@@ -84,9 +84,9 @@
                 data-expect-question="q-old-2"
                 data-expect-reply
               >
-                <p data-expect-para="0">A hash index answers equality only.</p>
-                <h2 data-expect-para="1">Trade-offs</h2>
-                <p data-expect-para="2">No ranges, no order.</p>
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>A hash index answers equality only.</p>
+                <h2 data-expect-para="1" data-expect-preview-item data-expect-block>Trade-offs</h2>
+                <p data-expect-para="2" data-expect-preview-item data-expect-block>No ranges, no order.</p>
               </div>
             </div>
           </article>

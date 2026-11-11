@@ -12,8 +12,8 @@
     <main>
       <div class="thread-scroll-container">
         <div>
-          <article data-turn-key="q-list-1" data-testid="conversation-turn-1">
-            <div class="user"><div data-user-message-bubble>List the steps.</div></div>
+          <article data-turn-key="q-list-1" data-testid="conversation-turn-1" data-expect-loose-turn>
+            <div class="user"><div data-user-message-bubble data-expect-preview-item>List the steps.</div></div>
             <div
               data-chatgpt-selection-conversation-id="c-list"
               data-chatgpt-selection-message-id="a-list-1"
@@ -25,8 +25,8 @@
                 data-expect-question="q-list-1"
                 data-expect-reply
               >
-                <p data-expect-para="0">Three steps:</p>
-                <ul>
+                <p data-expect-para="0" data-expect-preview-item data-expect-block>Three steps:</p>
+                <ul data-expect-preview-item data-expect-block>
                   <li data-expect-para="1">
                     Plan the query
                     <ul>
@@ -45,11 +45,11 @@
                     <p>Watch the timing.</p>
                   </li>
                 </ul>
-                <ol start="3">
+                <ol start="3" data-expect-preview-item data-expect-block>
                   <li data-expect-para="3">Check the result.</li>
                   <li data-expect-para="4"><strong>Repeat</strong> if needed.</li>
                 </ol>
-                <p data-expect-para="5">Done.</p>
+                <p data-expect-para="5" data-expect-preview-item data-expect-block>Done.</p>
               </div>
             </div>
           </article>

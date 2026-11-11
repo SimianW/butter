@@ -58,6 +58,13 @@ test('each content-script file is assigned to one world so Chrome does not dedup
       worlds.set(path, world);
     }
   assert.equal(worlds.get('seek/core-main.js'), 'MAIN');
+  assert.equal(worlds.get('page/reader-main.js'), 'MAIN');
+  assert.equal(worlds.get('page/reader.js'), 'ISOLATED');
+  const main = manifest.content_scripts.find((s) => s.world === 'MAIN').js;
+  assert.ok(
+    main.indexOf('page/reader-main.js') < main.indexOf('seek/core-main.js'),
+    'the MAIN page reader loads before seek',
+  );
   assert.equal(worlds.get('seek/seek-meta.js'), 'ISOLATED');
 });
 

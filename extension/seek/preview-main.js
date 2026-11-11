@@ -1,8 +1,11 @@
 // MAIN world: native-thumb scroll suppression, lean preview and one destination commit.
+// ChatGPT's answer structure (preview items, markdown columns) is read through the page reader,
+// page/reader-main.js.
 (() => {
   const core = globalThis.__butterSeekCore,
+    page = globalThis.__butterPageReader,
     layoutCheck = globalThis.__butterLayoutCheck;
-  if (!core) return;
+  if (!core || !page) return;
   const S = { v: 2, events: [], updates: [], sessions: [], presses: [], active: false };
   let seekFacts = {},
     statusPath = location.pathname;
@@ -391,9 +394,7 @@
       document.documentElement.classList.contains('dark') ||
       /dark/.test(getComputedStyle(document.documentElement).colorScheme);
     host.toggleAttribute('data-dark', a.dark);
-    const md =
-      globalThis.__butterLayoutCache?.column?.(s) ||
-      s.querySelector('[data-markdown-text-style="assistant-message"]');
+    const md = globalThis.__butterLayoutCache?.column?.(s) || page.firstColumn(s);
     const fg = md ? getComputedStyle(md).color : getComputedStyle(document.body).color,
       bg = opaque(s);
     host.style.cssText += `;left:${a.hostRect.x}px;top:${a.hostRect.y}px;width:${a.hostRect.width}px;height:${a.hostRect.height}px;background:${bg};color:${fg}`;
@@ -1280,7 +1281,6 @@
   }
 
   // ---- swap alignment audit: where the preview showed text vs where the real text is ----
-  const ITEMS = core.PREVIEW_ITEMS;
   const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/u;
   const textRect = (root, needle) =>
     (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);
@@ -1304,7 +1304,7 @@
       if (py < H.y || py > H.y + H.height - 20) continue;
       if (!realItems.has(t.id)) {
         const te = s.querySelector(`[data-turn-key="${CSS.escape(t.id)}"]`);
-        realItems.set(t.id, te ? [...te.querySelectorAll(ITEMS)] : null);
+        realItems.set(t.id, te ? [...page.previewItemsIn(te)] : null);
       }
       const real = realItems.get(t.id)?.[f.index];
       if (!real) continue;

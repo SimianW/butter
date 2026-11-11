@@ -9,7 +9,7 @@
   // ---- Answers, as bookmarks read them. An answer root is the element whose children are an
   // answer's blocks: the markdown root, or in ChatGPT's Dil renderer the response root nested
   // inside it behind wrapper layers (one of which can hold an empty sibling). The same rule as
-  // seek/core-main.js ANSWER_ROOT and stream/offscreen.js.
+  // page/reader-main.js ANSWER_ROOT (the MAIN-world copy) and stream/offscreen.js.
   const STYLE = '[data-markdown-text-style="assistant-message"]';
   const ANSWER = `:is(${STYLE}:not(:has([class*="DilResponseRoot"])), ${STYLE} [class*="DilResponseRoot"])`;
   // A paragraph (a bookmark's `para`, #51): a top-level block of an answer root (paragraph,
@@ -140,10 +140,10 @@
     // The paragraphs under `el`, of any answer, in document order.
     paragraphsIn: (el) => [...el.querySelectorAll(PARAGRAPH)],
     // Turns, keyed by the question's message id.
-    turns: (root = document) => [...root.querySelectorAll(TURN)],
-    turnByKey: (key, root = document) =>
-      [...root.querySelectorAll(TURN)].find((t) => t.getAttribute('data-turn-key') === key) ?? null,
-    turnOf: (node) => closest(node, TURN),
+    turns: () => [...document.querySelectorAll(TURN)],
+    turnByKey: (key) =>
+      [...document.querySelectorAll(TURN)].find((t) => t.getAttribute('data-turn-key') === key) ??
+      null,
     turnKeyOf: (node) => closest(node, TURN)?.getAttribute('data-turn-key') ?? null,
     // Ask in branch: the reply `node` is in, the replies under `root`, and the loose turn.
     replyOf: (node) => closest(node, REPLY),

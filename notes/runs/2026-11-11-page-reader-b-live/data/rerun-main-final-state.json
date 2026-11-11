@@ -1,0 +1,38 @@
+{
+  "checkoutStatusUnchanged": true,
+  "trackedDiffExit": 0,
+  "lockStatusExit": 0,
+  "locks": [
+    {
+      "lab": 1,
+      "held": false,
+      "owner": null
+    },
+    {
+      "lab": 2,
+      "held": false,
+      "owner": null
+    },
+    {
+      "lab": "perf",
+      "held": false,
+      "owner": null
+    }
+  ],
+  "labBrowsers": [
+    {
+      "lab": 1,
+      "browserRunning": true,
+      "defaultExtensions": true,
+      "extraFlagsCount": 0
+    },
+    {
+      "lab": 2,
+      "browserRunning": true,
+      "defaultExtensions": true,
+      "extraFlagsCount": 0
+    }
+  ],
+  "taskExtensionCopiesObserved": 2,
+  "observedTaskExtensionCopiesRemoved": true
+}

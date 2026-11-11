@@ -36,6 +36,7 @@ function fixture({ known = true, columns } = {}) {
     location: { pathname: '/c/00000000-0000-0000-0000-000000000000' },
     innerWidth: 1599,
     devicePixelRatio: 1,
+    __butterPageReader: require('../extension/page/reader-main.js'),
     __butterSeekCore: require('../extension/seek/core-main.js'),
     Element: class {},
     requestAnimationFrame: () => 1,

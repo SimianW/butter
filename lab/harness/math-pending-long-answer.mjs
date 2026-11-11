@@ -55,8 +55,14 @@ async function run(name) {
       true,
     );
   });
-  for (const f of ['core-main.js', 'layout-check-main.js', 'layout-codec.js', 'layout-cache-main.js'])
-    await page.addScriptTag({ content: await fs.readFile(new URL('seek/' + f, extension), 'utf8') });
+  for (const f of [
+    'page/reader-main.js',
+    'seek/core-main.js',
+    'seek/layout-check-main.js',
+    'seek/layout-codec.js',
+    'seek/layout-cache-main.js',
+  ])
+    await page.addScriptTag({ content: await fs.readFile(new URL(f, extension), 'utf8') });
   await page.addStyleTag({ path: new URL('stream/containment.css', extension).pathname });
   await page.addScriptTag({ path: new URL('stream/offscreen.js', extension).pathname });
   const streamed = name === 'streamed';
@@ -170,7 +176,7 @@ async function run(name) {
     document.documentElement.setAttribute('data-butter-off', 'cv');
     const t = document.querySelector('[data-turn-key]');
     const row = t.parentElement.getBoundingClientRect();
-    const real = [...t.querySelectorAll(__butterSeekCore.PREVIEW_ITEMS)].map((el) => {
+    const real = [...__butterPageReader.previewItemsIn(t)].map((el) => {
       const b = el.getBoundingClientRect();
       return { top: b.top - row.top, h: b.height };
     });

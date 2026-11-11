@@ -1,19 +1,11 @@
 // Pure seek classification, layout model and release policy; shared by both worlds and tests.
+// Selector-free: ChatGPT's answer structure is read through page/reader-main.js.
 (function (root) {
   'use strict';
   const OVERLAY_BAND = 15; // overlay bars: press must sit within this many px of the inline-end edge
   const CLASSIC_ARROW = 12; // Chromium classic scrollbar endpoint height
   const CLASSIC_MIN_THUMB = 12;
   const OVERLAY_STRIP = 16; // overlay thumb strip the preview leaves uncovered (press band + 1 px slack)
-  // ChatGPT has both direct markdown blocks and Dil answers behind several wrapper layers (one
-  // layer can also hold an empty sibling). Only the response root owns blocks in the latter.
-  // Keep the isolated-world offscreen selector and containment.css in sync; the renderer fixture
-  // exercises all three against real DOM, including hr and wide-block exclusions.
-  const ANSWER_ROOT =
-    ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
-  const ANSWER_BLOCKS =
-    ANSWER_ROOT + ' > :not([data-wide-block]):not([class*="TableFrame-"]):not(hr)';
-  const PREVIEW_ITEMS = '[data-user-message-bubble], ' + ANSWER_ROOT + ' > *';
 
   // Wide wrappers use the scroller's box. Lean text always belongs inside the answer column;
   // keep a narrower item's inset (including right-aligned questions) when it already fits.
@@ -544,9 +536,6 @@
   }
 
   const api = {
-    ANSWER_ROOT,
-    ANSWER_BLOCKS,
-    PREVIEW_ITEMS,
     previewItemSpan,
     previewLitQuestions,
     previewCardQuestion,

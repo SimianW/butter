@@ -1,0 +1,14 @@
+{
+  "filesScanned": 19,
+  "accountLabelsChecked": 2,
+  "uuidMatches": 0,
+  "conversationUrlMatches": 0,
+  "emailMatches": 0,
+  "privateEndpointMatches": 0,
+  "accountLabelMatches": 0,
+  "privatePathMatches": 0,
+  "privateHostMatches": 0,
+  "forbiddenArtifactFiles": 0,
+  "notWorldReadableFiles": 0,
+  "violations": []
+}

@@ -1,4 +1,5 @@
 // Shared DOM audit and semantic-anchor selection. Never returns text in the swap diagnostic.
+// The swap audit reads a turn's preview items through the page reader, page/reader-main.js.
 (() => {
   const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/gu;
   function boxes(root, needle) {
@@ -66,7 +67,7 @@
       anchors = [],
       realItems = new Map();
     let missingReal = 0;
-    const ITEMS = globalThis.__butterSeekCore.PREVIEW_ITEMS;
+    const page = globalThis.__butterPageReader;
     for (const [i, el] of a.rendered) {
       const f = a.prep.flat[i],
         t = a.prep.model[f.turn],
@@ -74,7 +75,7 @@
       if (py < H.y || py > H.y + H.height - 20) continue;
       if (!realItems.has(t.id)) {
         const te = s.querySelector(`[data-turn-key="${CSS.escape(t.id)}"]`);
-        realItems.set(t.id, te ? [...te.querySelectorAll(ITEMS)] : null);
+        realItems.set(t.id, te ? [...page.previewItemsIn(te)] : null);
       }
       const real = realItems.get(t.id)?.[f.index];
       if (!real) continue;

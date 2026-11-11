@@ -1,7 +1,10 @@
 // MAIN world: authoritative turn/block geometry and lean preview text, restored before layout.
+// ChatGPT's answer structure (blocks, preview items, markdown columns, a turn's message id) is read
+// through the page reader, page/reader-main.js.
 (() => {
-  const core = globalThis.__butterSeekCore;
-  if (!core) return;
+  const core = globalThis.__butterSeekCore,
+    page = globalThis.__butterPageReader;
+  if (!core || !page) return;
   const S = {
     observed: 0,
     records: 0,
@@ -37,17 +40,13 @@
     leanCache = new WeakMap(),
     mathGeometry = new WeakMap(),
     applied = new WeakSet(); // turns restore() gave their recorded sizes
-  const BLOCK = core.ANSWER_BLOCKS;
-  const ITEMS = core.PREVIEW_ITEMS;
   const conv = () => location.pathname.match(/\/c\/([0-9a-f-]{36})/)?.[1] || null;
   // Any answer column serves for width and font. Reading one inside a turn that content-visibility
   // skips forced style and layout of that whole turn (a DisplayLock update: 0.6 s for a long answer).
-  const MD = '[data-markdown-text-style="assistant-message"]';
   const shownColumn = (s) => {
-    const first = s.querySelector(MD);
+    const first = page.firstColumn(s);
     if (!first || !skipped.has(first.closest?.('[data-turn-key]'))) return first;
-    for (const c of s.querySelectorAll(MD))
-      if (!skipped.has(c.closest('[data-turn-key]'))) return c;
+    for (const c of page.columnsIn(s)) if (!skipped.has(c.closest('[data-turn-key]'))) return c;
     return first; // every answer skipped: nothing cheaper to read
   };
   const scroller = () =>
@@ -528,9 +527,7 @@
   const busy = new Map(); // turn element -> { since, streamed }
   const streams = (t) => t.matches(BUSY) || !!t.querySelector(BUSY);
   const generating = (t) =>
-    !complete(t) ||
-    (!!t.querySelector('[data-user-message-bubble]') &&
-      !t.querySelector('[data-markdown-text-style="assistant-message"]'));
+    !complete(t) || (!!t.querySelector('[data-user-message-bubble]') && !page.hasAnswer(t));
   // ChatGPT's markdown renderer reveals a streamed answer gradually. Only while it does so does it
   // render the revealed prefix instead of the full text, and only then does its markdown root carry
   // .AdaptiveStreaming (hashed: AdaptiveStreaming-xxxxxx). The turn may already read complete, so a
@@ -538,11 +535,7 @@
   const revealing = (t) => !!t.querySelector('[class*="AdaptiveStreaming"]');
   const mathReady = (t) =>
     [...t.querySelectorAll('[data-math-source]')].every((e) => e.querySelector('.katex'));
-  const identity = (t) =>
-    t.querySelector('[data-message-author-role="assistant"]')?.getAttribute('data-message-id') ||
-    t
-      .querySelector('[data-chatgpt-selection-message-id]')
-      ?.getAttribute('data-chatgpt-selection-message-id');
+  const identity = page.turnMessageId;
   const offList = () =>
     (document.documentElement?.getAttribute?.('data-butter-off') || '').split(/\s+/);
   const disabled = () => !!document.documentElement?.hasAttribute?.('data-butter-disabled');
@@ -801,7 +794,7 @@
       }, 500);
     }
     if (reason === 'zero-block')
-      S.lastZero = [...t.querySelectorAll(BLOCK)]
+      S.lastZero = [...page.blocksIn(t)]
         .filter((b) => !(contentH.get(b) > 0))
         .slice(0, 8)
         .map((b) => ({ tag: b.tagName, observed: contentH.get(b) ?? null }));
@@ -834,7 +827,7 @@
       };
       let els;
       if (isComplete && !isRevealing && ready && !isSkipped) {
-        els = [...t.querySelectorAll(BLOCK)];
+        els = [...page.blocksIn(t)];
         // Register blocks that appeared after the turn was first seen; a block without an observed
         // size makes this snapshot non-authoritative (RO re-queues the turn).
         for (const b of els) register(b, t);
@@ -851,7 +844,7 @@
           snap,
           els,
           changes: changes.get(t),
-          all: [...t.querySelectorAll(ITEMS)],
+          all: [...page.previewItemsIn(t)],
           items: [],
         };
       }
@@ -901,7 +894,7 @@
     return timed(() => {
       const rr = t.parentElement.getBoundingClientRect(),
         sr = sc.getBoundingClientRect(),
-        column = t.querySelector(MD)?.getBoundingClientRect();
+        column = page.firstColumn(t)?.getBoundingClientRect();
       do {
         for (const end = Math.min(j.all.length, j.items.length + SLICE); j.items.length < end; ) {
           const el = j.all[j.items.length];
@@ -1068,7 +1061,7 @@
       meta.set(row, { turn: t }); // a remounted turn in a reused row takes the row over
       ro.observe(row);
     }
-    for (const b of t.querySelectorAll(BLOCK)) register(b, t);
+    for (const b of page.blocksIn(t)) register(b, t);
     S.observed++;
     queue(t);
   };
@@ -1099,7 +1092,7 @@
   function release(t, settled = false) {
     busy.delete(t);
     S.released++;
-    for (const el of t.querySelectorAll(ITEMS)) leanCache.delete(el);
+    for (const el of page.previewItemsIn(t)) leanCache.delete(el);
     watch(t, settled);
   }
   new MutationObserver((rs) => {
@@ -1149,8 +1142,8 @@
           meta.get(b).observing = false;
           meta.get(t).blocks.delete(b);
         }
-      for (const b of t.querySelectorAll(BLOCK)) register(b, t);
-      for (const el of t.querySelectorAll(ITEMS)) leanCache.delete(el);
+      for (const b of page.blocksIn(t)) register(b, t);
+      for (const el of page.previewItemsIn(t)) leanCache.delete(el);
       queue(t);
     }
     if (removed)
@@ -1196,7 +1189,7 @@
   const restore = (t) => {
     if (cvOff()) return;
     const e = currentEntry(t.dataset.turnKey, t.closest('.thread-scroll-container'));
-    const bs = t.querySelectorAll(BLOCK);
+    const bs = page.blocksIn(t);
     const why = core.canRestore(e, {
       conv: conv(),
       vw: innerWidth,
@@ -1234,7 +1227,7 @@
       S.hits.push({ t: performance.now(), key: t.dataset.turnKey, h: e.h, n });
   };
   const unrestore = (t) => {
-    for (const el of [t, ...t.querySelectorAll(BLOCK)]) {
+    for (const el of [t, ...page.blocksIn(t)]) {
       el.style.contentVisibility = '';
       el.style.containIntrinsicSize = '';
     }

@@ -1,0 +1,89 @@
+{
+  "testedHead": "86f95e52ebb00fc3edd70856bcbba66e72222ca7",
+  "mode": "wash",
+  "platform": "Linux",
+  "startedUtc": "2026-11-11T13:27:36.818Z",
+  "checks": [
+    {
+      "name": "wash light: ChatGPT shows its light theme",
+      "pass": true,
+      "background": [
+        252,
+        252,
+        252
+      ],
+      "colorScheme": "light",
+      "darkClass": false
+    },
+    {
+      "name": "wash light: the whole chat loads through the earlier-history dots",
+      "pass": true,
+      "ticks": 12
+    },
+    {
+      "name": "wash: a mounted answer holds two long paragraphs and a table",
+      "pass": true,
+      "paragraph": 1,
+      "selectionParagraph": 75,
+      "selectionCharacters": 110,
+      "table": 188,
+      "tableNested": true
+    },
+    {
+      "name": "wash dark: ChatGPT shows its dark theme",
+      "pass": true,
+      "background": [
+        0,
+        0,
+        0
+      ],
+      "colorScheme": "dark",
+      "darkClass": false
+    },
+    {
+      "name": "wash dark: the whole chat loads through the earlier-history dots",
+      "pass": true,
+      "ticks": 12
+    }
+  ],
+  "drags": [],
+  "cleanup": {
+    "remainingBeforeFallback": 0,
+    "remainingAfterFallback": 0,
+    "restored": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensions": true,
+    "labLockReleased": true,
+    "perfLockReleased": false
+  },
+  "wash": [],
+  "extensionTreeSha256": "6165863f314ee6b6f449ad47907a9a2c7169296c0e08cf7422199587cf6be221",
+  "chromium": "156.0.8078.47",
+  "sendGuard": {
+    "enabled": true,
+    "sendAttempts": 0,
+    "blockedMutations": 92
+  },
+  "shortcut": "",
+  "washTarget": {
+    "paragraph": 1,
+    "selectionParagraph": 75,
+    "selectionCharacters": 110,
+    "table": 188,
+    "tableNested": true
+  },
+  "failure": {
+    "phase": "wash-bookmark",
+    "kind": "Error"
+  },
+  "skipped": [
+    "wash-light-paragraph: needs 3 stored test bookmarks, has 0",
+    "wash-light-selection: needs 3 stored test bookmarks, has 0",
+    "wash-light-table: needs 3 stored test bookmarks, has 0",
+    "wash-dark-paragraph: needs 3 stored test bookmarks, has 0",
+    "wash-dark-selection: needs 3 stored test bookmarks, has 0",
+    "wash-dark-table: needs 3 stored test bookmarks, has 0"
+  ],
+  "finishedUtc": "2026-11-11T13:28:58.932Z"
+}
