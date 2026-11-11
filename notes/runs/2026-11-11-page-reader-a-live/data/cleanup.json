@@ -1,0 +1,128 @@
+[
+  {
+    "name": "main-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "main-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": true
+  },
+  {
+    "name": "main-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "main-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": true
+  },
+  {
+    "name": "pr-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "pr-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": true
+  },
+  {
+    "name": "main-nav-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "main-nav-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": true
+  },
+  {
+    "name": "pr-nav-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "pr-nav-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": true
+  },
+  {
+    "name": "main-probe-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "main-probe-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": false
+  },
+  {
+    "name": "pr-probe-restore",
+    "exitCode": 0,
+    "lab": 1,
+    "restored": true,
+    "restarted": true,
+    "composerEmpty": true,
+    "oneHomeTab": true,
+    "defaultExtensionCount": 1,
+    "extraFlagCount": 0
+  },
+  {
+    "name": "pr-probe-release",
+    "exitCode": 0,
+    "lab": 1,
+    "lab_released": true,
+    "perf_released": false
+  }
+]

@@ -1,0 +1,310 @@
+[
+  {
+    "name": "bookmarks-matrix-main",
+    "exitCode": 0,
+    "durationSeconds": 303.017,
+    "command": "node lab/harness/bookmarks-live.mjs"
+  },
+  {
+    "name": "bookmarks-matrix-pr",
+    "exitCode": 0,
+    "durationSeconds": 300.779,
+    "command": "node lab/harness/bookmarks-live.mjs"
+  },
+  {
+    "name": "bookmarks-wash-main",
+    "exitCode": 0,
+    "durationSeconds": 132.422,
+    "command": "node lab/harness/bookmarks-live.mjs"
+  },
+  {
+    "name": "bookmarks-wash-pr",
+    "exitCode": 0,
+    "durationSeconds": 133.967,
+    "command": "node lab/harness/bookmarks-live.mjs"
+  },
+  {
+    "name": "main-acquire",
+    "exitCode": 0,
+    "durationSeconds": 0.047,
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-main --wait 1800 --perf"
+  },
+  {
+    "name": "main-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.025,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "branch-live-main",
+    "exitCode": 1,
+    "durationSeconds": 43.524,
+    "command": "node lab/harness/branch-live.mjs"
+  },
+  {
+    "name": "main-restore",
+    "exitCode": 0,
+    "durationSeconds": 10.036,
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-main"
+  },
+  {
+    "name": "main-release",
+    "exitCode": 0,
+    "durationSeconds": 0.054,
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-main"
+  },
+  {
+    "name": "main-acquire",
+    "exitCode": 0,
+    "durationSeconds": 0.048,
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-main --wait 1800 --perf"
+  },
+  {
+    "name": "main-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.025,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "branch-live-main-2",
+    "exitCode": 0,
+    "durationSeconds": 44.097,
+    "command": "node lab/harness/branch-live.mjs"
+  },
+  {
+    "name": "main-edges-restart-1",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "branch-live-edges-main-1",
+    "exitCode": 0,
+    "durationSeconds": 61.936,
+    "command": "node lab/harness/branch-live-edges.mjs"
+  },
+  {
+    "name": "main-nav-earlier-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.027,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-earlier-main",
+    "exitCode": 1,
+    "durationSeconds": 0.345,
+    "command": "node lab/harness/nav-earlier.mjs"
+  },
+  {
+    "name": "main-nav-takeovers-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-takeovers-main",
+    "exitCode": 1,
+    "durationSeconds": 0.315,
+    "command": "node lab/harness/nav-takeovers.mjs"
+  },
+  {
+    "name": "main-restore",
+    "exitCode": 0,
+    "durationSeconds": 10.403,
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-main"
+  },
+  {
+    "name": "main-release",
+    "exitCode": 0,
+    "durationSeconds": 0.074,
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-main"
+  },
+  {
+    "name": "pr-acquire",
+    "exitCode": 0,
+    "durationSeconds": 0.051,
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-pr --wait 1800 --perf"
+  },
+  {
+    "name": "pr-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "branch-live-pr-1",
+    "exitCode": 0,
+    "durationSeconds": 47.498,
+    "command": "node lab/harness/branch-live.mjs"
+  },
+  {
+    "name": "pr-edges-restart-1",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "branch-live-edges-pr-1",
+    "exitCode": 0,
+    "durationSeconds": 62.66,
+    "command": "node lab/harness/branch-live-edges.mjs"
+  },
+  {
+    "name": "pr-nav-earlier-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-earlier-pr",
+    "exitCode": 1,
+    "durationSeconds": 0.32,
+    "command": "node lab/harness/nav-earlier.mjs"
+  },
+  {
+    "name": "pr-nav-takeovers-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.025,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-takeovers-pr",
+    "exitCode": 1,
+    "durationSeconds": 0.318,
+    "command": "node lab/harness/nav-takeovers.mjs"
+  },
+  {
+    "name": "pr-restore",
+    "exitCode": 0,
+    "durationSeconds": 10.171,
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-pr"
+  },
+  {
+    "name": "pr-release",
+    "exitCode": 0,
+    "durationSeconds": 0.055,
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-pr"
+  },
+  {
+    "name": "main-nav-acquire",
+    "exitCode": 0,
+    "durationSeconds": 0.047,
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-nav-main --wait 1800 --perf"
+  },
+  {
+    "name": "main-nav-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-earlier-main-ready",
+    "exitCode": 1,
+    "durationSeconds": 30.85,
+    "command": "node lab/harness/nav-earlier.mjs"
+  },
+  {
+    "name": "nav-takeovers-main-ready",
+    "exitCode": 1,
+    "durationSeconds": 60.822,
+    "command": "node lab/harness/nav-takeovers.mjs"
+  },
+  {
+    "name": "main-nav-restore",
+    "exitCode": 0,
+    "durationSeconds": 10.201,
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-nav-main"
+  },
+  {
+    "name": "main-nav-release",
+    "exitCode": 0,
+    "durationSeconds": 0.054,
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-nav-main"
+  },
+  {
+    "name": "pr-nav-acquire",
+    "exitCode": 0,
+    "durationSeconds": 0.053,
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-nav-pr --wait 1800 --perf"
+  },
+  {
+    "name": "pr-nav-restart",
+    "exitCode": 0,
+    "durationSeconds": 2.026,
+    "command": "$B/lab restart-browser"
+  },
+  {
+    "name": "nav-earlier-pr-ready",
+    "exitCode": 1,
+    "durationSeconds": 30.71,
+    "command": "node lab/harness/nav-earlier.mjs"
+  },
+  {
+    "name": "nav-takeovers-pr-ready",
+    "exitCode": 1,
+    "durationSeconds": 60.81,
+    "command": "node lab/harness/nav-takeovers.mjs"
+  },
+  {
+    "name": "pr-nav-restore",
+    "exitCode": 0,
+    "durationSeconds": 10.134,
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-nav-pr"
+  },
+  {
+    "name": "pr-nav-release",
+    "exitCode": 0,
+    "durationSeconds": 0.06,
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-nav-pr"
+  },
+  {
+    "name": "main-probe-acquire",
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-probe-main --wait 1800",
+    "exitCode": 0
+  },
+  {
+    "name": "main-probe-restart",
+    "command": "$B/lab restart-browser",
+    "exitCode": 0
+  },
+  {
+    "name": "nav-probe-main",
+    "command": "node probe-nav.mjs main",
+    "exitCode": 0
+  },
+  {
+    "name": "main-probe-restore",
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-probe-main",
+    "exitCode": 0
+  },
+  {
+    "name": "main-probe-release",
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-probe-main",
+    "exitCode": 0
+  },
+  {
+    "name": "pr-probe-acquire",
+    "command": "$B/lab-lock acquire --lab 1 --owner butter-page-reader-a-probe-pr --wait 1800",
+    "exitCode": 0
+  },
+  {
+    "name": "pr-probe-restart",
+    "command": "$B/lab restart-browser",
+    "exitCode": 0
+  },
+  {
+    "name": "nav-probe-pr",
+    "command": "node probe-nav.mjs pr",
+    "exitCode": 0
+  },
+  {
+    "name": "pr-probe-restore",
+    "command": "$B/lab-restore --lab 1 --owner butter-page-reader-a-probe-pr",
+    "exitCode": 0
+  },
+  {
+    "name": "pr-probe-release",
+    "command": "$B/lab-lock release --lab 1 --owner butter-page-reader-a-probe-pr",
+    "exitCode": 0
+  }
+]

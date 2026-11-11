@@ -1,0 +1,11 @@
+{
+  "build": "pr",
+  "harness": "nav-earlier",
+  "exitCode": 1,
+  "failure": "TimeoutError",
+  "phase": "current rail activation",
+  "completedCases": 0,
+  "currentCasesCompleted": 0,
+  "expectedCases": 14,
+  "results": []
+}

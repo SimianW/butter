@@ -1,0 +1,149 @@
+{
+  "at": "2026-11-11T11:35:48.830Z",
+  "lab": 1,
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  },
+  "lang": "en",
+  "streamMs": 8000,
+  "control": {
+    "route": "saved",
+    "temporaryParam": null,
+    "composerForm": {
+      "data-composer-placement": "thread",
+      "data-chatgpt-composer": true
+    },
+    "composerLabel": "Ask ChatGPT",
+    "selectionToolbar": [
+      "Ask ChatGPT"
+    ],
+    "sideChat": false,
+    "replies": 5,
+    "repliesWithMoreActions": 5,
+    "butterPill": true,
+    "butterButton": true
+  },
+  "stream": {
+    "waitingShown": true,
+    "titleWhileWaiting": "Waiting for the reply to finish\u2026",
+    "end": "ready",
+    "streamHeldMs": 8036,
+    "holdInstalledMs": 422,
+    "markerReapplied": 1,
+    "branchRequestAfterStreamEndMs": 1567,
+    "branch": {
+      "route": "unsaved local branch",
+      "sameAsOriginal": false,
+      "sameLatestReply": true
+    },
+    "sendClicks": [
+      {
+        "inBranch": true,
+        "ms": 15855
+      }
+    ],
+    "originalUnchanged": true,
+    "guard": {
+      "nonGetRequests": 45,
+      "blockedRequests": 44,
+      "unblockedRequests": 1,
+      "onlyBranchMutationAllowed": true,
+      "requestsAfterSendClick": 4,
+      "allRequestsAfterSendClickBlocked": true,
+      "originalSendRequestCount": 0
+    }
+  },
+  "unsavedBranch": {
+    "route": "unsaved local branch",
+    "temporaryParam": null,
+    "composerForm": {
+      "data-composer-placement": "thread",
+      "data-chatgpt-composer": true
+    },
+    "composerLabel": "Ask ChatGPT",
+    "selectionToolbar": [
+      "Ask ChatGPT"
+    ],
+    "sideChat": false,
+    "replies": 7,
+    "repliesWithMoreActions": 0,
+    "butterPill": false,
+    "butterButton": false
+  },
+  "workBranch": {
+    "route": "unsaved local branch",
+    "temporaryParam": null,
+    "composerForm": {
+      "data-composer-placement": "thread",
+      "data-chatgpt-composer": false
+    },
+    "composerLabel": "Work with ChatGPT",
+    "selectionToolbar": [
+      "Ask ChatGPT",
+      "Ask in side chat"
+    ],
+    "sideChat": true,
+    "replies": 7,
+    "repliesWithMoreActions": 0,
+    "butterPill": false,
+    "butterButton": false
+  },
+  "temporary": {
+    "route": "none",
+    "temporaryParam": "true",
+    "composerForm": {
+      "data-composer-placement": "home",
+      "data-chatgpt-composer": true
+    },
+    "composerLabel": "Ask ChatGPT",
+    "selectionToolbar": [],
+    "sideChat": false,
+    "replies": 0,
+    "repliesWithMoreActions": 0,
+    "butterPill": false,
+    "butterButton": false,
+    "toggle": [
+      {
+        "label": "Turn off temporary chat",
+        "icon": "codex-icon-chat-bubble-checkmark-dashed-light-20"
+      }
+    ]
+  },
+  "home": {
+    "chat": {
+      "route": "none",
+      "temporaryParam": null,
+      "composerForm": {
+        "data-composer-placement": "home",
+        "data-chatgpt-composer": false
+      },
+      "composerLabel": "Work with ChatGPT",
+      "selectionToolbar": [],
+      "sideChat": false,
+      "replies": 0,
+      "repliesWithMoreActions": 0,
+      "butterPill": false,
+      "butterButton": false
+    },
+    "work": {
+      "route": "none",
+      "temporaryParam": null,
+      "composerForm": {
+        "data-composer-placement": "home",
+        "data-chatgpt-composer": false
+      },
+      "composerLabel": "Work with ChatGPT",
+      "selectionToolbar": [],
+      "sideChat": false,
+      "replies": 0,
+      "repliesWithMoreActions": 0,
+      "butterPill": false,
+      "butterButton": false
+    },
+    "switch": [
+      "Chat=false",
+      "Work=true"
+    ]
+  }
+}
