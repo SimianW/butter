@@ -19,7 +19,7 @@ export const maxLinesCaps = {
   'test/dev-sources.test.js': 519,
   'test/height-cache-dom.test.js': 1463,
   'test/layout-storage.test.js': 565,
-  'test/rail.test.mjs': 621,
+  'test/rail.test.mjs': 647,
   'test/seek-landing.test.js': 917,
 };
 

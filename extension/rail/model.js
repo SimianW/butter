@@ -458,7 +458,6 @@
         }
         return { labels, more, drop, dots, place: place() };
       },
-      holds,
       // The question the bookmark `key` is under now, other than the three dots; null while none.
       placed(key) {
         for (const [id, m] of marks)

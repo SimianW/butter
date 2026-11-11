@@ -568,6 +568,32 @@ test('seek card follows live language changes and ignores state from a different
   assert.equal(nav.select('.meta').textContent, '第 3 / 5 个问题');
 });
 
+// The adapter applies what the model returns: CSS values, names, the three dots, the card's
+// looks, the dots' looks, and each wave frame's tick styles.
+test('the rail draws the model: host CSS, tick names, the three dots hidden, card and dot looks, wave frames', () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [true], q2: [false] });
+  const rail = nav.select('.rail'),
+    card = nav.select('.card'),
+    st = nav.host.style;
+  assert.deepEqual([st['--y'], st['--pitch'], st['--r']], ['368px', '14px', '212px']);
+  const label = nav.ticks()[1].getAttribute('aria-label');
+  assert.equal(label, 'Question 1 · Bookmark: Bookmark 0 (answer changed)');
+  assert.equal(nav.select('.more').hidden, true);
+  assert.deepEqual(
+    nav.dots().map((d) => d.stale),
+    [true, false],
+  ); // q1 all stale: hollow
+  rail.emit('pointerenter');
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 1.5 * 14 }); // tick 1's centre
+  nav.frame();
+  const bar = nav.ticks()[1].firstChild;
+  assert.deepEqual([bar.style.transform, bar.style.opacity], ['scale(1.375, 1.140)', '0.449']);
+  assert.deepEqual([card.inert, card.classList.contains('qb')], [false, true]);
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 0.5 * 14 }); // tick 0: no bookmarks
+  assert.deepEqual([card.inert, card.classList.contains('qb')], [true, false]);
+});
+
 // Adapter wiring: the model's dots drawn, the fade-out's timer, the host hidden with the rail off.
 test("a question's last bookmark deleted: its dot fades out over 160 ms; with the rail off, none", () => {
   const nav = setup({ count: 4 });

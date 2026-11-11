@@ -13,6 +13,7 @@ import {
   rail,
   RailModel,
   REST,
+  top,
 } from './helpers/rail-model.mjs';
 
 test('the rail inset keeps overlay scrollbars clear and follows a gutter that comes and goes', () => {
@@ -43,7 +44,7 @@ test('the rail shows for two or more stops in a wide enough chat; the three dots
   assert.equal(e.m.shows(false), false, 'narrower than 560 px');
 });
 
-test('history prepended during a wave keeps each bar with its question; new ones start at rest', () => {
+test('history prepended during a wave keeps each tick with its question; new ones start at rest', () => {
   const r = rail();
   r.point(2);
   r.frame();
@@ -84,7 +85,7 @@ test('what lights a tick: seek over opening over a flying jump over the lit band
   assert.equal(r.m.setActive('q0'), true);
 });
 
-test('a chat opening shows its prediction at once: the latest bar lit without easing', () => {
+test('a chat opening shows its prediction at once: the latest tick lit without easing', () => {
   const r = rail();
   r.m.opening(true);
   r.m.page({ conv, before: null, hasPrev: false, items: questions(6) });
@@ -114,7 +115,7 @@ test('the rail turned off between frames: the pending frame stops the wave, and 
   assert.deepEqual(r.bars()[2], [2.6, 1, 1.6]);
 });
 
-test('a frame whose timestamp predates the kick keeps every bar between its start and its target', () => {
+test("a frame whose timestamp predates the kick keeps every tick's line between its start and its target", () => {
   const r = rail();
   r.point(2);
   r.settle();
@@ -270,4 +271,58 @@ test("a question's last bookmark deleted: its dot fades out; with the rail off i
   r.marks({ q2: [false] });
   r.render(true); // the rail off
   assert.deepEqual(r.marks({}).drop, [['q2', false]]);
+});
+
+test('the tick under a y: the three dots above the first tick while history is unloaded; clamped at both ends', () => {
+  const e = rail({ count: 3, hasPrev: true });
+  const t = top(e.m);
+  assert.deepEqual(
+    [t - 16, t - 0.5, t, t + 1000, t - 16.5].map((y) => e.m.indexAt(y)),
+    [EARLIER, EARLIER, 0, 2, 0],
+  );
+  assert.equal(e.point(EARLIER).meta, '', 'the pointer on the three dots shows their card');
+  const r = rail({ count: 3 });
+  assert.deepEqual(
+    [top(r.m) - 8, top(r.m) + 1000].map((y) => r.m.indexAt(y)),
+    [0, 2],
+  );
+  assert.equal(r.point(1).text, 'Question 1');
+  r.m.hide();
+  assert.equal(r.m.indexAt(400), -2, 'off: no tick');
+});
+
+test('the busy tick follows the jump; the rail turns on at a 560 px chat', () => {
+  const r = rail();
+  r.m.journey({ busy: 'q2' });
+  assert.deepEqual(r.m.layout(1200).busy, [false, false, true, false, false]);
+  assert.deepEqual([r.m.busyAt(2), r.m.busyAt(1)], [true, false]);
+  r.m.measure({ ...box(), width: 560 });
+  assert.equal(r.m.shows(false), true);
+});
+
+test('geometry: the ticks take 85% of the free height when they are dense; the rail top is a whole pixel', () => {
+  const r = rail({ count: 60 });
+  const css = Object.fromEntries(r.m.layout(1200).css);
+  const pitch = ((900 - 140 - 52 - 20) * 0.85) / 60;
+  assert.equal(css['--pitch'], `${pitch}px`);
+  assert.equal(css['--y'], `${Math.round(406 - (20 + 60 * pitch) / 2)}px`);
+  assert.notEqual(406 - (20 + 60 * pitch) / 2, Math.round(406 - (20 + 60 * pitch) / 2));
+});
+
+test('opening another chat forgets the seek preview and the active question', () => {
+  const r = rail();
+  r.m.journey({ pinned: true });
+  r.m.setActive('q2');
+  r.m.seek({ state: 'dragging', id: 'q1', n: 2, total: 5 });
+  r.m.open('other');
+  assert.equal(r.m.seeking, false);
+  assert.equal(r.m.setActive('q2'), true, 'no active tick any more');
+  const s = rail();
+  s.m.journey({ pinned: true });
+  s.m.setActive('q2');
+  s.m.open('other');
+  s.m.page({ conv: 'other', before: null, hasPrev: false, items: questions(5) });
+  s.render();
+  s.settle();
+  assert.deepEqual(s.lit(), [], 'nothing pinned in the new chat');
 });

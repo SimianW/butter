@@ -8,7 +8,7 @@ import test from 'node:test';
 const Wave = createRequire(import.meta.url)('../extension/rail/wave.js');
 const rest = (j, kept) => kept ?? [1, 0.28, 1];
 
-test('bars follow their questions when the questions move, and new ones start where start() says', () => {
+test('ticks follow their questions when the questions move, and new ones start where start() says', () => {
   const w = Wave();
   assert.deepEqual(w.carry(['a', 'b'], rest), [
     ['scale(1.000, 1.000)', '0.280'],
@@ -25,7 +25,7 @@ test('bars follow their questions when the questions move, and new ones start wh
   assert.equal(w.scale(3), undefined);
 });
 
-test('one frame moves each bar part of the way: the interval is clamped to 0–64 ms and time never runs back', () => {
+test("one frame moves each tick's line part of the way: the interval is clamped to 0–64 ms and time never runs back", () => {
   const w = Wave();
   w.carry(['a'], rest);
   const to = () => [3, 1, 1];
@@ -50,7 +50,7 @@ test('one frame moves each bar part of the way: the interval is clamped to 0–6
   assert.ok(long.scale(0) < 3);
 });
 
-test('a bar within 0.003 of its target snaps to it once; then frames change nothing and none is due', () => {
+test("a tick's line within 0.003 of its target snaps to it once; then frames change nothing and none is due", () => {
   const w = Wave();
   w.carry(['a', 'b'], rest);
   w.start(0);

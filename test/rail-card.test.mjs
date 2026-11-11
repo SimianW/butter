@@ -207,3 +207,33 @@ test('callers read a coherent snapshot but cannot change it', () => {
   }, TypeError);
   assert.equal(r.m.shown, -2);
 });
+
+test('long questions: the card cuts them at 400 characters with …, the seek card without', () => {
+  const r = rail({ count: 2 });
+  const long = 'x'.repeat(401);
+  r.m.page({
+    conv,
+    before: null,
+    hasPrev: false,
+    items: [
+      { id: 'a', q: long },
+      { id: 'b', q: long.slice(1) },
+    ],
+  });
+  r.render();
+  assert.equal(r.m.hover(0).text, `${'x'.repeat(400)}…`);
+  assert.equal(r.m.hover(1).text, 'x'.repeat(400), 'exactly 400: whole');
+  r.m.seek({ state: 'dragging', id: 'a', n: 1, total: 2 });
+  assert.equal(r.m.seekCard().text, 'x'.repeat(400));
+  r.m.seekEnd();
+  assert.equal(r.m.hover(0).instant, true, 'after the seek card, a card appears in place');
+});
+
+test('unshow forgets the card shown, so the next hover fills it afresh', () => {
+  const r = rail();
+  r.m.hover(1);
+  assert.equal(r.m.hover(1), null);
+  assert.equal(r.m.unshow(), 1);
+  assert.equal(r.m.shown, -2);
+  assert.equal(r.m.hover(1).text, 'Question 1');
+});

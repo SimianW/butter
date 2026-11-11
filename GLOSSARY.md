@@ -109,7 +109,7 @@ _Where_: `rail/wave.js`, `rail/model.js`
 The rail's control above the first tick that stands for earlier history; clicking it loads earlier
 pages.
 _Avoid_: ellipsis, load-more
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Card**:
 The panel a tick or the three dots shows on hover or focus: the question's meta line and text, plus
@@ -146,7 +146,7 @@ _Where_: `rail/rail.js`
 **Pinned**:
 The clicked question staying current and aligned after a jump until you scroll yourself.
 _Avoid_: locked, sticky
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Journey status**:
 What a jump tells the rail presentation model while it runs: whether it is travelling (only its
@@ -188,7 +188,7 @@ _Where_: `bookmarks/model.js`
 The mark beside a tick (or the three dots) that holds bookmarks: one per question however many it
 holds, hollow when all are stale.
 _Avoid_: badge, indicator
-_Where_: `rail/rail.js`
+_Where_: `rail/model.js`, `rail/rail.js`
 
 **Bookmark session**:
 A tab's bookmarks over time: the account and conversation in view, the list read from the store,

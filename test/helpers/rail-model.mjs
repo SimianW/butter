@@ -73,11 +73,14 @@ export function rail({ count = 5, hasPrev = false, height = 900, gutter = 0 } = 
         return [Number(s), Number(o), Number(y)];
       }),
     lit: () => r.bars().flatMap(([, o], j) => (o === 1 ? [j] : [])),
-    // The pointer over tick `i` (EARLIER: the three dots).
+    // The pointer over tick `i` (EARLIER: the three dots), as rail.js's pointermove: the card for
+    // the index under its y, which it returns.
     point(i, x = 0) {
       const y = i === EARLIER ? top(m) - 8 : m.tickY(i); // the three dots' row is 16 px tall
       m.move(x, y);
+      const card = m.hover(m.indexAt(y));
       r.kick();
+      return card;
     },
     marks(byId, revision = m.rev) {
       m.setMarks(revision, groups(byId));

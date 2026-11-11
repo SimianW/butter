@@ -16,7 +16,7 @@
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `extension/rail/conversations.js` | The rail's conversations (`ButterRailConversations`), pure: each conversation's messages oldest first, pages merged (`page`), sends (`send`), the list policy against the mounted turns (`reconcile`), and the items revision every new list takes. Loads before `rail/model.js`. |
 | `extension/rail/wave.js` | The hover wave's progress (`ButterRailWave`), pure: each tick's scale and opacity kept with its question, one frame's easing toward the model's targets (the interval clamped to 0–64 ms), and whether a frame is still due. Loads before `rail/model.js`. |
-| `extension/rail/model.js` | The rail presentation model (`ButterRailModel`), no DOM, timers or frames: it holds the conversations and the wave, and owns the questions as of the last render, the rail's geometry, what lights a tick (seek, opening, the jump's status, the lit band, pinned), the card (its kind, contents, place, held) and its key intents, the seek card, the bookmark dots and names, and the earlier wait (`synced`, `placed`). It returns plain data: bar styles, CSS values, dots to create, update, drop and place, the card to show. Loads before `rail/rail.js`. |
+| `extension/rail/model.js` | The rail presentation model (`ButterRailModel`), no DOM, timers or frames: it holds the conversations and the wave, and owns the questions as of the last render, the rail's geometry, what lights a tick (seek, opening, the jump's status, the lit band, pinned), the card (its kind, contents, place, held) and its key intents, the seek card, the bookmark dots and names, and the earlier wait (`synced`, `placed`). It returns plain data: the tick lines' styles, CSS values, dots to create, update, drop and place, the card to show. Loads before `rail/rail.js`. |
 | `extension/rail/rail.js` | The rail's DOM adapter: the shadow DOM built and patched from the model, the scroller's observers and box, frames only while the model says something moves, focus, the send pre-jump and the jump (glide, trip, journey), which reads the model's questions and marks and publishes its status to it. `ButterRail` (`WIDTH`, `inset()`, `setMarks`) and `butterNavTurn` are its interface. |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
@@ -198,7 +198,7 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the Review section's `- **Tier:** N` item, its `- **Verdict:** approved at <sha>` item for tiers 1 and 2, and no tier 1 or 2 change after the reviewed commit.
 - History rail: the rail presentation model runs under `node --test` with no DOM, through its
   interface: `test/rail-model.test.mjs` (the inset and when the rail shows, history prepended during
-  a wave keeping each bar with its question, what lights a tick — seek over opening over a flying jump
+  a wave keeping each tick with its question, what lights a tick — seek over opening over a flying jump
   over the lit band and pinned —, the opening snap, the rail turned off between frames, a frame older
   than the last kick, convergence and quiet at rest, the dots through every wave frame, dense and
   earlier-history dots, names, the fade-out), `test/rail-card.test.mjs` (the card's kinds, contents
@@ -206,7 +206,7 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   deletion, the earlier wait on the marks' items revision and `placed`), both over
   `test/helpers/rail-model.mjs`, which drives the model as `rail.js` does;
   `test/rail-conversations.test.mjs` (pages, sends, reconciliation, revisions) and
-  `test/rail-wave.test.mjs` (bars keyed by question, the interval clamp, convergence).
+  `test/rail-wave.test.mjs` (ticks keyed by question, the interval clamp, convergence).
   `test/rail.test.mjs` runs the real `rail.js` and its model in a fake DOM for what needs elements:
   the send pre-jump, jump cancellation, the seek card's wiring, the dots' fade-out timer and keyboard
   focus. bookmarks-qa's `rail-idle` scenario checks the performance floor in a browser: the rail

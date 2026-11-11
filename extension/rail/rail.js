@@ -655,7 +655,7 @@
   // The card open on the three dots or a tick follows its bookmarks, keeping keyboard focus on the
   // same row.
   const refill = () => {
-    if (!host) return;
+    if (!host || !model.shownBm || model.shown === -2) return; // no bookmark card
     const a = host.shadowRoot.activeElement,
       inCard = card.contains(a),
       r = model.refill(
