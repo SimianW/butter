@@ -8,7 +8,7 @@ export const maxLines = 500;
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 566,
   'extension/dev/recorder.js': 574,
-  'extension/rail/rail.js': 1831,
+  'extension/rail/rail.js': 1520,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
@@ -19,7 +19,7 @@ export const maxLinesCaps = {
   'test/dev-sources.test.js': 519,
   'test/height-cache-dom.test.js': 1463,
   'test/layout-storage.test.js': 565,
-  'test/rail.test.mjs': 924,
+  'test/rail.test.mjs': 621,
   'test/seek-landing.test.js': 917,
 };
 
