@@ -255,3 +255,24 @@ _Where_: `branch/worker.js`, `branch/content.js`
 The new tab's work from loading to ready: making the branch, verifying it, then sending the quote and
 question.
 _Where_: `branch/run.js`
+
+## Lab harness
+
+These `_Where_` paths are relative to `lab/harness/`.
+
+**Scenario**:
+One named part of a fixture QA run, with its declared start; `ONLY=<name>` runs it alone as it runs
+in a full run.
+_Avoid_: section, case
+_Where_: `bookmarks/scenarios/`, `branch/scenarios/`
+
+**Runner**:
+The code shared by the fixture QAs that selects scenarios, runs them, prints their counts and writes
+`summary.json`.
+_Where_: `runner/index.mjs`
+
+**Butter driver**:
+The shared code that drives Butter's pill and its cells and selects text in an answer as a reader
+does, for any page; each harness binds it to its own page and keeps its feature's helpers apart.
+_Avoid_: page object
+_Where_: `driver/butter.mjs`

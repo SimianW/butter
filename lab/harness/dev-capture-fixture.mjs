@@ -7,7 +7,7 @@
 //   data-message-author-role="assistant" with a data-message-id, in a
 //   data-markdown-text-style="assistant-message" column, as on the live page.
 // - Answers mix paragraphs, headings, lists, code blocks, inline and display formulas in KaTeX
-//   markup (as branch-fixture.mjs, live 2026-11-07). Every 17th turn holds a formula ChatGPT has
+//   markup (as branch/fixture.mjs, live 2026-11-07). Every 17th turn holds a formula ChatGPT has
 //   not typeset yet (raw TeX in data-math-source), which the cache rejects as math-pending.
 // - The first mounted turn carries a stand-in React fiber with the virtualizer's entries
 //   (turn order) and its measured row heights: the read-only shape the seek code and the

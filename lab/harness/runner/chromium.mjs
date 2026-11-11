@@ -33,3 +33,12 @@ export async function launchButter({ defer, name = 'butter-qa', viewport = { wid
   const worker = context.serviceWorkers()[0] || (await context.waitForEvent('serviceworker'));
   return { context, worker, errors };
 }
+
+// A scenario's first page: a new page, then every other page in `context` closed (the previous
+// scenario's, and any it left open when it threw), so that no old page sees the reset that follows.
+// The new page comes first: a context left with no page may close its window.
+export async function freshPage(context) {
+  const page = await context.newPage();
+  for (const p of context.pages()) if (p !== page) await p.close();
+  return page;
+}

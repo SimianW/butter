@@ -57,14 +57,21 @@ The MAIN-world scripts retain their dependency order. `seek/layout-codec.js` sup
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
   Work-mode detection, menu matching), `test/branch-run.test.js` (state machine with a fake
   page and virtual clock) and `test/branch-worker.test.mjs` run under `node --test`.
-  `node lab/harness/branch-qa.mjs` loads the real extension in its own headless Chromium over the
-  synthetic page in `branch-fixture.mjs` (no ChatGPT requests; `lang=zh`, `stream=<ms>`, `work`,
-  `side`, `nobranch`, `nodisclaimer` and `temporary-chat=true` select ChatGPT variants). Since #77
-  it drives Ask in branch's icon cell in the selection pill: 4 px right of the native button, its
-  look copied, named and labelled "Ask in branch", opening the question box under it by pointer and
-  by keyboard. It writes the mockup-state screenshots to
-  `notes/runs/2026-11-07-ask-in-branch-29/screenshots/` (`SHOTS=` overrides; set it to keep that
-  run's committed screenshots).
+  The fixture QA, `lab/harness/branch-qa.mjs`, loads the real extension in its own headless
+  Chromium over the synthetic page in `lab/harness/branch/fixture.mjs` (no ChatGPT requests; query
+  parameters such as `lang=zh`, `stream=<ms>`, `work` and `fail=<type>` select ChatGPT variants, each
+  described where `fixtureHtml` reads it). Run `npm ci`, then
+  `node lab/harness/branch-qa.mjs`. Its scenarios live in `lab/harness/branch/scenarios/`, listed
+  in run order in `branch/scenarios.mjs`; each declares its start (fixture parameters, settings),
+  and each scenario's `--list` description and file header are the reference for what it checks.
+  - `--list` prints every scenario's name and description; `ONLY=<name>[,<name>…]` runs only those
+    (an unknown name exits 2).
+  - The run prints only failing checks and one line per scenario; `VERBOSE=1` prints every check
+    and the measurements.
+  - `SHOTS=<dir>` sets where the mockup-state screenshots and `summary.json` go; the default is
+    `notes/runs/2026-11-07-ask-in-branch-29/screenshots/`, so set it to keep that run's committed
+    screenshots.
+
   `branch-live.mjs` is the live check: hold the lab lock, restart the lab browser with a
   snap-readable copy of `extension/`, then run it with `LAB_ID`, `LAB_OWNER` and
   `BRANCH_PATH='^/backend-api/conversation/new_branch$'` (the only request let past the send guard).

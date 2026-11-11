@@ -11,10 +11,11 @@ import path from 'node:path';
 
 export const DOT_MOCKUP = process.env.BUTTER_BOOKMARKS_DOT_MOCKUP;
 
-// `file` open in a new page of `context`, `width` x 900, with `css` added; `fonts`: once its fonts
-// have loaded. No scrollbar: the centred mockup stays on whole pixels.
-export async function openMockup(context, file, { width = 1600, css = '', fonts = false } = {}) {
-  const mock = await context.newPage({ viewport: { width, height: 900 } });
+// `file` open in a new page of `context`, at the context's viewport (a persistent context's
+// `newPage()` takes no options), with `css` added; `fonts`: once its fonts have loaded. No
+// scrollbar: the centred mockup stays on whole pixels.
+export async function openMockup(context, file, { css = '', fonts = false } = {}) {
+  const mock = await context.newPage();
   await mock.goto(`file://${path.resolve(file)}`);
   await mock.addStyleTag({ content: `html { scrollbar-width: none } ${css}` });
   if (fonts) await mock.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));

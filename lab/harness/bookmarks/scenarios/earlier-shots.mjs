@@ -74,7 +74,7 @@ export default {
 
     // The mockup's panels next to them, when given.
     if (process.env.BUTTER_BOOKMARKS_EARLIER_MOCKUP) {
-      const mock = await openMockup(context, process.env.BUTTER_BOOKMARKS_EARLIER_MOCKUP, { width: 1400 });
+      const mock = await openMockup(context, process.env.BUTTER_BOOKMARKS_EARLIER_MOCKUP);
       await mock.click('[data-mode="clean"]');
       const names = ['before', 'rest', 'single', 'list', 'loading', 'landed'];
       for (const lang of ['en', 'zh']) {
