@@ -24,12 +24,13 @@ import * as fixture from './fixture.mjs';
 
 const { CONV, PAGE_TURNS, TURNS, sha } = fixture;
 
-export async function launchBookmarks({ markup, shots, defer, verbose = !!process.env.VERBOSE }) {
+// `launch` is the Chromium launcher (launchButter); a test passes a fake one, with no browser.
+export async function launchBookmarks({ markup, shots, defer, verbose = !!process.env.VERBOSE, launch = launchButter }) {
   const LIVE = markup === 'live';
   await fs.mkdir(shots, { recursive: true });
   const fx = fixture.createFixture({ live: LIVE });
   const { page$ } = fx;
-  const { context, worker, errors } = await launchButter({
+  const { context, worker, errors } = await launch({
     defer,
     name: 'butter-bookmarks-qa',
     // Grayscale text, as the notice's own compositing layer draws it, for the mockup comparison.
