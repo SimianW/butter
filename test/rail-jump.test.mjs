@@ -1,4 +1,4 @@
-// The jump (extension/rail/journey.js) driven directly: a fake model that records the journey
+// The jump (extension/rail/jump.js) driven directly: a fake model that records the journey
 // status it is told, a fake turn tracker over planted turns, a recording trip and a manual clock for
 // frames and timers. The chat: a scroller 900 px tall; question i's turn starts at 100 + gap * i
 // and mounts while it is within 2000 px of the scroll position, as ChatGPT's window of turns does.
@@ -8,7 +8,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
 
-const source = fs.readFileSync(new URL('../extension/rail/journey.js', import.meta.url), 'utf8');
+const source = fs.readFileSync(new URL('../extension/rail/jump.js', import.meta.url), 'utf8');
 
 function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
   let now = 10_000,
@@ -32,7 +32,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     },
     setTimeout,
   });
-  vm.runInContext(source, ctx, { filename: 'rail/journey.js' });
+  vm.runInContext(source, ctx, { filename: 'rail/jump.js' });
 
   // The scroller and its turns.
   const scroller = new FakeElement();
@@ -173,7 +173,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     wait: (on) => views.push(`wait ${on}`),
     found: (i, keyboard) => views.push(`found ${i} ${keyboard}`),
   };
-  const journey = ctx.ButterRailJourney(model, turns, () => (built ? trip : null), view);
+  const jump = ctx.ButterRailJump(model, turns, () => (built ? trip : null), view);
 
   // One frame `ms` after the last: due timers, then frames, then every promise continuation.
   const step = async (ms = 16) => {
@@ -193,7 +193,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     for (const end = now + ms; now < end && !done(); ) await step(frame);
   };
   return {
-    journey,
+    jump,
     model,
     st,
     log,
@@ -221,32 +221,32 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
 
 test('glide or trip: a near mounted question glides, a far or unmounted one or a takeover trips', async () => {
   const near = setup();
-  near.journey.go(2);
+  near.jump.go(2);
   assert.equal(near.scroller.scrollTop, 300 - 64, 'a plain smooth scroll to it');
   await near.run(3000);
   assert.deepEqual(near.trips, [['take', 1, 10_000]], 'no trip departed');
 
   const far = setup({ count: 10, gap: 700 });
-  far.journey.go(2); // mounted, but 1436 px away: more than 1.5 screens
+  far.jump.go(2); // mounted, but 1436 px away: more than 1.5 screens
   assert.deepEqual(far.of('depart'), [['depart', 1, 10_000, -1]], 'content moves up: going down');
   await far.run(8000, () => far.of('arrive').length > 0);
   assert.equal(far.scroller.scrollTop, 1500 - 64);
 
   const unmounted = setup({ count: 10, gap: 700 });
   unmounted.blocked.add('q1'); // 736 px away, but not mounted
-  unmounted.journey.go(1);
+  unmounted.jump.go(1);
   assert.equal(unmounted.of('depart').length, 1);
 
   // Near, but within the paging band of a chat with earlier history: a trip, as ChatGPT may load
   // earlier messages on arrival.
   const top = setup({ hasPrev: true });
-  top.journey.go(1);
+  top.jump.go(1);
   assert.equal(top.of('depart').length, 1);
 });
 
 test('pin, follow, unpin: the jump publishes its status in order and keeps its question aligned', async () => {
   const nav = setup();
-  nav.journey.go(2);
+  nav.jump.go(2);
   assert.deepEqual(nav.log, [
     '{"wait":null}',
     '{"busy":null}',
@@ -265,12 +265,12 @@ test('pin, follow, unpin: the jump publishes its status in order and keeps its q
   assert.equal(nav.scroller.scrollTop, 500 - 64);
   const remount = nav.turn('q2', 700);
   nav.els.set('q2', remount);
-  nav.journey.observe(remount);
+  nav.jump.observe(remount);
   nav.resize(remount);
   assert.equal(nav.scroller.scrollTop, 700 - 64, 'a remounted turn is followed');
   // The user scrolls: unpinned, and back to lighting what is on screen.
   nav.log.length = nav.views.length = 0;
-  nav.journey.cancel();
+  nav.jump.cancel();
   assert.deepEqual(nav.log, ['{"flying":false}', '{"pinned":false}']);
   assert.deepEqual(nav.views, ['kick']);
   remount.top = 900;
@@ -281,7 +281,7 @@ test('pin, follow, unpin: the jump publishes its status in order and keeps its q
 test('cancel invalidates a pending jump mid-wait: no landing, no pin, the trip and the wait end', async () => {
   const nav = setup({ count: 10, gap: 1000, hasPrev: true });
   nav.model.marksSynced = false;
-  nav.journey.earlier({ key: 'k' }, false);
+  nav.jump.earlier({ key: 'k' }, false);
   assert.deepEqual(nav.views.slice(0, 1), ['wait true'], 'the dots blink');
   assert.equal(nav.st.wait, 'k');
   // A page of earlier messages arrives; the jump waits for the marks of the items as they are now.
@@ -291,7 +291,7 @@ test('cancel invalidates a pending jump mid-wait: no landing, no pin, the trip a
   nav.els.set('p0', nav.turn('p0', 0));
   await nav.run(300);
   nav.views.length = 0;
-  nav.journey.cancel();
+  nav.jump.cancel();
   assert.deepEqual(nav.views, ['kick', 'busy', 'wait false']); // unpinned, the busy tick and the wait cleared
   assert.deepEqual([nav.st.wait, nav.st.pinned, nav.st.flying], [null, false, false]);
   assert.deepEqual(nav.trips.at(-1).slice(0, 2), ['end', undefined]);
@@ -308,14 +308,14 @@ test('a takeover inherits the first click deadline and takes the trip over; the 
   const nav = setup({ count: 10, gap: 1000 });
   nav.blocked.add('q8').add('q4'); // ChatGPT is busy: neither renders
   const start = nav.now();
-  nav.journey.go(8);
+  nav.jump.go(8);
   await nav.run(1000, () => false, 100); // the page paints every 100 ms
   // A repeated click on the busy destination keeps its in-progress work.
   assert.equal(nav.st.busy, 'q8');
   const before = nav.trips.length;
-  nav.journey.go(8);
+  nav.jump.go(8);
   assert.equal(nav.trips.length, before, 'ignored: no takeover');
-  nav.journey.go(4);
+  nav.jump.go(4);
   assert.deepEqual(nav.trips.slice(before, before + 2), [
     ['take', 2, start + 1000],
     ['redirect', 2, start + 1000, 1],
@@ -337,7 +337,7 @@ test('an earlier trip waits for the marks of the items as they are now, then lan
     bookmarks: [{ key: 'k' }],
     land: (turn, b) => (b.key === 'k' ? 30 : 0), // the bookmarked text, 30 px into the turn
   });
-  nav.journey.earlier({ key: 'k' }, true);
+  nav.jump.earlier({ key: 'k' }, true);
   await nav.paging();
   // Two earlier questions arrive above; the marks lag a moment behind.
   nav.model.items = [{ id: 'p0', q: 'p0' }, { id: 'p1', q: 'p1' }, ...nav.model.items];
@@ -360,6 +360,6 @@ test('an earlier trip waits for the marks of the items as they are now, then lan
 test('cancel before the rail is built: no trip to end', () => {
   const nav = setup();
   nav.unbuilt();
-  nav.journey.cancel();
+  nav.jump.cancel();
   assert.deepEqual(nav.log, ['{"flying":false}']);
 });

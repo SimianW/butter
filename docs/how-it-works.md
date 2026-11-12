@@ -24,7 +24,7 @@ rail in a shadow root from what the model returns and animates only `transform` 
 hovering never restyles ChatGPT's page. It schedules animation frames only while the model says
 something moves, so an idle rail runs no loop. It reads layout during a jump and when size changes
 move the jumped-to question; scrolling yourself releases that alignment. The jump is
-`rail/journey.js`: it reads the questions and marks from the model and tells it what it is doing
+`rail/jump.js`: it reads the questions and marks from the model and tells it what it is doing
 (travelling, pinned, the question it opens, the busy tick, an earlier wait), which decides what is
 lit. A far jump's look, the trip, is `rail/trip.js`: it fades the chat out, streams placeholder lines
 while ChatGPT renders the target, and puts the chat back.

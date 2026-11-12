@@ -2,7 +2,7 @@
 // that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
 // the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
 // its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs,
-// test/rail-journey.test.mjs and test/pre-jump.test.mjs.
+// test/rail-jump.test.mjs and test/pre-jump.test.mjs.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
@@ -436,7 +436,7 @@ test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Es
   assert.equal(FakeElement.focused, more);
 });
 
-// The jump (rail/journey.js) through the rail: the turn tracker's mounts reach its pin, and card rows
+// The jump (rail/jump.js) through the rail: the turn tracker's mounts reach its pin, and card rows
 // start bookmark and earlier jumps whose busy dots the rail draws.
 test('a remounted target stays pinned: the turn tracker hands new turns to the jump', async () => {
   const nav = setup();

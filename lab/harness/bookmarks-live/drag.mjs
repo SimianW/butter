@@ -55,7 +55,7 @@ export function liveDrags({ page, worker, cdp, record, xkeys, barGeometry, targe
     await cdp.send('Profiler.stopPreciseCoverage');
     const calls = {};
     for (const script of coverage) {
-      const kind = isBookmarkScript(script.url) ? 'bookmark' : /\/rail\/(rail|journey)\.js$/.test(script.url) ? 'rail' : null;
+      const kind = isBookmarkScript(script.url) ? 'bookmark' : /\/rail\/(rail|jump)\.js$/.test(script.url) ? 'rail' : null;
       if (!kind) continue;
       for (const f of script.functions)
         if (['locate', 'jump', 'jumpTo', 'earlierJump', 'landOff', 'targetTop', 'glide'].includes(f.functionName))

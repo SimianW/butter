@@ -8,7 +8,7 @@
 // patched from it, the card is measured, frames run only while the model says something moves,
 // and focus runs. It installs the turn tracker (rail/turns.js: the scroller, its turns and the
 // user's scrolling), the send pre-jump (rail/pre-jump.js), the trip (rail/trip.js: a far jump's
-// look) and the jump (rail/journey.js: glide, trip, pin), each holding its own state.
+// look) and the jump (rail/jump.js: glide, trip, pin), each holding its own state.
 (() => {
   const model = ButterRailModel();
   const { RAIL_W, PAD, MORE_H, REST, EARLIER } = ButterRailModel;
@@ -121,7 +121,7 @@
     kick: () => kick(),
     sync: syncConv,
     scrolled: cancelJump,
-    mounted: (el) => journey.observe(el),
+    mounted: (el) => jump.observe(el),
     ignore: (t) => t === host,
   });
   const sc = () => turns.scroller;
@@ -325,8 +325,8 @@
         hover(-2);
         model.hold(true);
       }
-      if (i === -1) journey.earlier();
-      else if (i >= 0) journey.go(i);
+      if (i === -1) jump.earlier();
+      else if (i >= 0) jump.go(i);
     });
     // Arrows walk the earlier-history dots and the ticks. ArrowLeft on one that holds bookmarks
     // enters its card (#70, #72).
@@ -517,7 +517,7 @@
     const h = parseFloat(getComputedStyle(card).height);
     return Math.round(cy - h / 2) + h / 2;
   };
-  // A row's jump goes through the rail's jump (rail/journey.js), landing on that bookmark's text.
+  // A row's jump goes through the rail's jump (rail/jump.js), landing on that bookmark's text.
   // A row on the dots' card loads earlier messages first, with the card left open to show it.
   const jumpTo = (id, b, keyboard) => {
     if (id === EARLIER) return earlierJump(b, keyboard);
@@ -531,14 +531,14 @@
       model.hold(true);
       if (!model.pointing) rail.classList.remove('hot');
     }
-    journey.bookmark(i, m, b);
+    jump.bookmark(i, m, b);
   };
   // Loads earlier pages until `b`'s answer is known and mounted, then lands on its text; while
   // they load the dots blink and its row shows a spinner.
   const earlierJump = (b, keyboard) => {
     if (!b || railOff() || !sc() || !model.qs.length) return;
     endOpening();
-    journey.earlier(b, keyboard);
+    jump.earlier(b, keyboard);
   };
   // Escape puts the dots' card away, also while the pointer holds it; any loading goes on.
   addEventListener(
@@ -716,9 +716,9 @@
     kick();
   };
 
-  // ---- Jumping: the jump (rail/journey.js) owns the jump in progress and publishes its status to
+  // ---- Jumping: the jump (rail/jump.js) owns the jump in progress and publishes its status to
   // the model; the rail lends it the few effects a jump has on the rail's own elements.
-  const journey = ButterRailJourney(model, turns, () => trip, {
+  const jump = ButterRailJump(model, turns, () => trip, {
     kick,
     busy: drawBusy,
     wait: (on) => {
@@ -738,6 +738,6 @@
   // Stops a jump in progress and shows the chat again at once.
   function cancelJump() {
     endOpening();
-    journey.cancel();
+    jump.cancel();
   }
 })();

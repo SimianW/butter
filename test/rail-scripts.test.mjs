@@ -13,7 +13,7 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
     'rail/model.js',
     'rail/turns.js',
     'rail/trip.js',
-    'rail/journey.js',
+    'rail/jump.js',
     'rail/pre-jump.js',
     'rail/rail.js',
   ]);

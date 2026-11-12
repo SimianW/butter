@@ -1,4 +1,4 @@
-// Isolated world. The jump (`ButterRailJourney`): moving the chat to a question or a bookmark from
+// Isolated world. The jump (`ButterRailJump`): moving the chat to a question or a bookmark from
 // the rail, as a glide when the question is near and mounted, otherwise as a trip (rail/trip.js)
 // while ChatGPT renders it, loading earlier pages first for the three dots. A turn ChatGPT hasn't
 // mounted has no element to scroll to: go where it should be (the turn tracker's estimate), let
@@ -16,7 +16,7 @@
 //   refills);
 // - `found(i, keyboard)`: that bookmark is under question `i` now: focus follows a keyboard trip to
 //   its tick, and the dots' card goes away.
-// test/rail-journey.test.mjs drives it directly.
+// test/rail-jump.test.mjs drives it directly.
 (() => {
   const TOP_INSET = 64; // a jumped-to question lands this far below the scroller's top
   const PAGE_AT = 240; // ChatGPT loads earlier messages when scrolled within ~230px of the top
@@ -25,7 +25,7 @@
   const frame = () => new Promise((r) => requestAnimationFrame(r));
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   // `model`: the rail presentation model (rail/model.js); `turns`: the turn tracker (rail/turns.js).
-  function ButterRailJourney(model, turns, trip, view) {
+  function ButterRailJump(model, turns, trip, view) {
     const sc = () => turns.scroller;
     const setActive = (id) => {
       if (model.setActive(id)) view.kick();
@@ -469,6 +469,6 @@
       observe: (el) => anchor?.observe(el),
     };
   }
-  globalThis.ButterRailJourney = ButterRailJourney;
-  if (typeof module !== 'undefined') module.exports = ButterRailJourney;
+  globalThis.ButterRailJump = ButterRailJump;
+  if (typeof module !== 'undefined') module.exports = ButterRailJump;
 })();
