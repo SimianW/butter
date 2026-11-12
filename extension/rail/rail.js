@@ -5,11 +5,13 @@
 // opacity, so hovering never restyles ChatGPT's page. Layout is read for jumps and their size corrections.
 // This file is the rail's DOM adapter: rail/model.js decides what the rail shows (questions,
 // geometry, the wave, the lit ticks, the card, the bookmark dots); here the shadow DOM is built and
-// patched from it, the scroller and the card are measured, frames run only while the model says
-// something moves, and focus, scrolling, pre-send and the jump run.
+// patched from it, the card is measured, frames run only while the model says something moves,
+// and focus and the jump run. It installs the turn tracker (rail/turns.js: the scroller, its turns
+// and the user's scrolling), the trip (rail/trip.js: a far jump's look) and the send pre-jump
+// (rail/pre-jump.js), each holding its own state.
 (() => {
   const model = ButterRailModel();
-  const { RAIL_W, PAD, MORE_H, HEADER, COMPOSER, REST, EARLIER } = ButterRailModel;
+  const { RAIL_W, PAD, MORE_H, REST, EARLIER } = ButterRailModel;
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   model.lang(zh());
   const railOff = () =>
@@ -34,11 +36,8 @@
     changed();
   });
   const TOP_INSET = 64; // a jumped-to question lands this far below the scroller's top
-  const EDGE = 40; // a turn showing only this much at the top or bottom isn't lit
   const PAGE_AT = 240; // ChatGPT loads earlier messages when scrolled within ~230px of the top
   const MAX_EARLIER = 50; // at most 100 older turns / 60s per click; another click continues
-  const SPEED = 2.5; // far jumps travel at this many viewport heights per second
-  const STREAK = 420; // height of one repeat of the travel placeholder, px
   const frame = () => new Promise((r) => requestAnimationFrame(r));
   const convOfPath = () => /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1] ?? null;
 
@@ -54,7 +53,7 @@
     if (m.type === 'page') {
       model.page(m);
       // Earlier messages go in above every recorded turn and push them all down: forget where they were.
-      if (m.before && m.conv === model.conv) pos.clear();
+      if (m.before && m.conv === model.conv) turns.forget();
     } else if (m.type === 'send') {
       model.send(m);
       cancelJump();
@@ -66,8 +65,8 @@
     const c = convOfPath();
     if (!model.open(c)) return; // also forgets the marks, the seek preview and the active question
     clearTimeout(seekTimer);
-    pos.clear();
-    reband();
+    turns.forget();
+    turns.reband();
     cancelJump();
     hover(-2);
     if (c) {
@@ -105,11 +104,12 @@
       return;
     }
     // The previous chat can remain visible after the URL changes; don't settle against its scroller.
-    if (model.box?.width && model.items.some((x) => x.q != null && mountedEl(x.id))) {
-      const top = sc.scrollTop,
-        height = sc.scrollHeight;
-      if (sc !== opening.sc || top !== opening.top || height !== opening.height) {
-        Object.assign(opening, { sc, top, height, since: now });
+    if (model.box?.width && model.items.some((x) => x.q != null && turns.el(x.id))) {
+      const s = sc(),
+        top = s.scrollTop,
+        height = s.scrollHeight;
+      if (s !== opening.sc || top !== opening.top || height !== opening.height) {
+        Object.assign(opening, { sc: s, top, height, since: now });
       } else if (now - opening.since >= 350) {
         endOpening();
         return;
@@ -118,254 +118,23 @@
     openRaf = requestAnimationFrame(settleOpen);
   };
 
-  // ---- Turns in the DOM. ChatGPT mounts a window of about five turns; `data-turn-key` is the
-  // id of the turn's question.
-  let sc = null,
-    ioPos = null,
-    ioBand = null;
-  const onScreen = new Set(); // mounted turn elements with any part in view
-  const mounted = new Map(); // question id -> its turn element while mounted
-  const pos = new Map(); // question id -> top of its turn in scroll coordinates, last seen
-  const mountedEl = (id) => {
-    const el = mounted.get(id);
-    return el?.isConnected && sc?.contains(el) ? el : null;
-  };
-
-  // ChatGPT keeps chats opened earlier in the tab as hidden copies, each with its own scroller, and
-  // shows a copy again without remounting anything: follow whichever scroller is visible.
-  // Layout is clean in a ResizeObserver callback, so reading it there is free.
-  const scrollers = new WeakSet();
-  const ro = new ResizeObserver((es) => {
-    for (const e of es) {
-      const s = e.target;
-      if (!s.isConnected) {
-        ro.unobserve(s);
-        continue;
-      }
-      if (e.contentRect.width > 0 && s !== sc) attach(s);
-      if (s !== sc) continue;
-      const r = s.getBoundingClientRect();
-      model.measure({
-        top: r.top,
-        bottom: r.bottom,
-        left: r.left,
-        right: r.right - (s.offsetWidth - s.clientWidth),
-        gutter: s.offsetWidth - s.clientWidth,
-        width: r.width,
-      });
-      changed();
-    }
+  // ---- Turns in the DOM: the turn tracker (rail/turns.js) follows the visible scroller and the
+  // turns ChatGPT mounts in it, lights the band and notices the user scrolling.
+  const turns = ButterRailTurns(model, {
+    changed: () => changed(),
+    kick: () => kick(),
+    sync: syncConv,
+    scrolled: cancelJump,
+    mounted: (el) => anchor?.observe(el),
+    ignore: (t) => t === host,
   });
+  const sc = () => turns.scroller;
 
-  const attach = (s) => {
-    syncConv(); // a newly visible scroller can precede both its turns and the next URL poll
-    ioPos?.disconnect();
-    ioBand?.disconnect();
-    sc = s;
-    model.measure(null);
-    onScreen.clear();
-    ioPos = new IntersectionObserver(
-      (es) => {
-        for (const e of es)
-          pos.set(
-            e.target.getAttribute('data-turn-key'),
-            e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop,
-          );
-      },
-      { root: sc },
-    );
-    // Every question showing more than EDGE px between the header and the composer is lit. A jump
-    // lands its question TOP_INSET down, so the turn above shows only TOP_INSET - HEADER px under the
-    // header (its last line or action buttons) and doesn't light too. Not shown while a jump is travelling.
-    ioBand = new IntersectionObserver(
-      (es) => {
-        for (const e of es)
-          if (e.isIntersecting && e.target.isConnected) onScreen.add(e.target);
-          else onScreen.delete(e.target);
-        if (!model.flying) kick();
-      },
-      { root: sc, rootMargin: `-${HEADER + EDGE}px 0px -${COMPOSER + EDGE}px 0px` },
-    );
-    for (const el of mounted.values())
-      if (el.isConnected && sc.contains(el)) {
-        ioPos.observe(el);
-        ioBand.observe(el);
-      }
-    if (!reconcileQueued) {
-      reconcileQueued = true;
-      setTimeout(reconcile, 150);
-    }
-  };
-  // Start the lit set over. An observer reports a turn only when it crosses the band, so turns
-  // already in view must be observed afresh: ChatGPT can show a chat kept in the tab, or change the
-  // URL after mounting the new chat's turns, and clearing alone left no tick lit until a scroll.
-  const reband = () => {
-    onScreen.clear();
-    if (ioBand)
-      for (const el of mounted.values())
-        if (el.isConnected && sc.contains(el)) {
-          ioBand.unobserve(el);
-          ioBand.observe(el);
-        }
-  };
-
-  let reconcileQueued = false;
-  globalThis.butterNavTurn = (el) => {
-    syncConv();
-    const s = el.closest('.thread-scroll-container');
-    if (!s) return;
-    if (!scrollers.has(s)) {
-      scrollers.add(s);
-      ro.observe(s);
-      // Any user scroll cancels a jump in progress.
-      s.addEventListener('wheel', cancelJump, { passive: true });
-      s.addEventListener('touchstart', cancelJump, { passive: true });
-      s.addEventListener(
-        'pointerdown',
-        (e) => {
-          const box = model.box;
-          if (s === sc && e.target === s && box && e.clientX >= box.right) cancelJump();
-        },
-        { passive: true },
-      ); // scrollbar
-    }
-    mounted.set(el.getAttribute('data-turn-key'), el);
-    if (anchor && s === sc) anchor.observe(el);
-    if (s === sc) {
-      ioPos.observe(el);
-      ioBand.observe(el);
-    }
-    if (!reconcileQueued) {
-      reconcileQueued = true;
-      setTimeout(reconcile, 150);
-    }
-  };
-  // Scrolling by keyboard too, unless the key goes to a text field, a button or the rail.
-  const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' ']);
-  addEventListener(
-    'keydown',
-    (e) => {
-      const t = e.target;
-      if (
-        !SCROLL_KEYS.has(e.key) ||
-        e.altKey ||
-        e.ctrlKey ||
-        e.metaKey ||
-        !(t instanceof Element) ||
-        t === host
-      )
-        return;
-      if (
-        t.isContentEditable ||
-        t.closest('input, textarea, select') ||
-        (e.key === ' ' && t.closest('button, a, [role="button"]'))
-      )
-        return;
-      cancelJump();
-    },
-    { capture: true, passive: true },
-  );
-
-  // ChatGPT's submit spring visits every intervening virtualized turn. Move close to the end
-  // before the spring's first frame, leaving it the final viewport to animate. The send is seen in
-  // the capture phase (the fetch-level `send` notification arrives after placement starts), but the
-  // jump waits for the bubble phase, after ChatGPT's own key or click handler: jumping before it
-  // made that handler mount and lay out the end of the chat before the composer cleared (lab: the
-  // Enter task took 3.1 s instead of 0.6 s, with the typed text still showing). Still in the same
-  // task, so the spring starts from the end. If nothing reaches the bubble phase, jump after the task.
-  const COMPOSER_INPUT = '.ProseMirror[contenteditable="true"]';
-  const SEND_BUTTON = '[data-testid="send-button"], #composer-submit-button, button[type="submit"]';
-  // The pre-jump belongs to the "smoother scrolling" group (older + seek), not to the rail switch.
-  const scrollingOff = () => {
-    const off = document.documentElement?.getAttribute('data-butter-off')?.split(' ') || [];
-    return off.includes('older') || off.includes('seek');
-  };
-  const beforeSend = (composer, type) => {
-    if (scrollingOff()) return;
-    if (!composer?.textContent.trim() || !sc?.isConnected || !sc.clientHeight) return;
-    cancelJump();
-    const s = sc;
-    const jump = () => {
-      removeEventListener(type, jump);
-      clearTimeout(late);
-      if (s !== sc || !s.isConnected) return;
-      const bottom = s.scrollHeight - s.clientHeight;
-      if (bottom - s.scrollTop > 1.5 * s.clientHeight)
-        s.scrollTo({ top: Math.max(0, bottom - s.clientHeight), behavior: 'instant' });
-    };
-    addEventListener(type, jump, { passive: true });
-    const late = setTimeout(jump, 0);
-  };
-  addEventListener(
-    'keydown',
-    (e) => {
-      if (
-        e.key !== 'Enter' ||
-        e.shiftKey ||
-        e.altKey ||
-        e.ctrlKey ||
-        e.metaKey ||
-        e.isComposing ||
-        e.keyCode === 229 ||
-        e.repeat ||
-        !(e.target instanceof Element)
-      )
-        return;
-      const composer = e.target.closest(COMPOSER_INPUT);
-      const button = composer?.closest('form')?.querySelector(SEND_BUTTON);
-      if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
-      beforeSend(composer, 'keydown');
-    },
-    { capture: true, passive: true },
-  );
-  addEventListener(
-    'click',
-    (e) => {
-      if (!(e.target instanceof Element)) return;
-      const button = e.target.closest(SEND_BUTTON);
-      if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
-      beforeSend(button.closest('form')?.querySelector(COMPOSER_INPUT), 'click');
-    },
-    { capture: true, passive: true },
-  );
-
-  // Mounted turns are consecutive in the thread: rail/conversations.js adds any the responses
-  // didn't cover and drops questions that sit between two of them (old branch).
-  const reconcile = () => {
-    reconcileQueued = false;
-    if (!sc?.isConnected || !model.box?.width) return; // a hidden copy holds another chat's turns
-    const keys = [...sc.querySelectorAll('[data-turn-key]')].map((t) =>
-      t.getAttribute('data-turn-key'),
-    );
-    const text = (id) =>
-      mounted.get(id)?.querySelector('[data-user-message-bubble]')?.textContent.trim();
-    if (model.reconcile(keys, text)) changed();
-  };
+  // The send pre-jump (rail/pre-jump.js) belongs to the "smoother scrolling" switch, not to the
+  // rail's: it runs with the rail off.
+  ButterPreJump({ scroller: sc, cancel: cancelJump });
 
   // ---- Rail.
-  // Placeholder for a far jump: paragraphs of text lines and a centered formula, as seen when
-  // scrolling too fast to read. Used as a mask so the color follows the theme.
-  const STREAK_SVG =
-    'data:image/svg+xml,' +
-    encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="${STREAK}" preserveAspectRatio="none">` +
-        [
-          [14, 100],
-          [40, 96],
-          [66, 98],
-          [92, 58],
-          [150, 30, 35],
-          [204, 100],
-          [230, 93],
-          [256, 97],
-          [282, 71],
-          [340, 99],
-          [366, 88],
-        ]
-          .map(([y, w, x = 0]) => `<rect x="${x}" y="${y}" width="${w}" height="10" rx="2"/>`)
-          .join('') +
-        '</svg>',
-    );
   const CSS = `
     :host { all: initial; position: fixed; top: 0; right: 0; width: 0; height: 0; z-index: 20; display: block;
       color: #0d0d0d; font: 13px/1.45 ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -455,13 +224,7 @@
     @keyframes spin { to { transform: rotate(1turn); } }
     .text { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
       white-space: pre-wrap; overflow-wrap: anywhere; }
-    .warp { position: fixed; left: var(--wl); top: var(--wt); width: var(--ww); height: var(--wh); overflow: hidden;
-      pointer-events: none; visibility: hidden; opacity: 0;
-      -webkit-mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent);
-      mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent); }
-    .streak { position: absolute; left: 0; right: 0; top: -${STREAK}px; height: calc(100% + ${2 * STREAK}px);
-      background: var(--streak); will-change: transform;
-      -webkit-mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; mask: url("${STREAK_SVG}") 0 0 / 100% ${STREAK}px repeat-y; }
+    ${ButterRailTrip.CSS}
     @media (prefers-reduced-motion: reduce) { .rail, .pill, .cardpos, .card { transition: none; } .spin, .wspin, .tick.busy .bar, .more.busy i, .bdot.new { animation: none; }
       .bdot.gone { transition: none; } }`;
 
@@ -476,7 +239,8 @@
     text,
     bmc,
     warp,
-    streak;
+    streak,
+    trip = null; // the trip of a far jump (rail/trip.js), once the rail is built
   let ticks = [],
     bars = [];
 
@@ -501,6 +265,7 @@
       '.warp',
       '.streak',
     ].map((s) => root.querySelector(s));
+    trip = ButterRailTrip({ warp, streak, scroller: sc });
     document.body.append(host);
     const dark = () =>
       host.toggleAttribute(
@@ -783,7 +548,7 @@
   let wait = null,
     waitKeyboard = false;
   const earlierJump = (b, keyboard) => {
-    if (!b || railOff() || !sc || !model.qs.length) return;
+    if (!b || railOff() || !sc() || !model.qs.length) return;
     endOpening();
     waitKeyboard = keyboard;
     jump(0, true, null, b.key);
@@ -920,11 +685,7 @@
   };
   // Ids of the questions on screen, worked out once per animation run rather than per bar.
   const kick = () => {
-    const ids = [];
-    for (const el of onScreen)
-      if (el.isConnected) ids.push(el.getAttribute('data-turn-key'));
-      else onScreen.delete(el);
-    if (model.kick(ids, performance.now())) requestAnimationFrame(step);
+    if (model.kick(turns.onScreen(), performance.now())) requestAnimationFrame(step);
   };
   const setActive = (id) => {
     if (model.setActive(id)) kick();
@@ -1000,7 +761,7 @@
     journey = null;
     model.journey({ flying: false });
     unpin();
-    if (trip) arrive(null, 0);
+    trip?.end();
     if (busyTok) setBusy(null);
     if (wait) setWait(null);
   }
@@ -1013,20 +774,20 @@
     const observe = (el) => {
       ro.observe(el);
       if (el.getAttribute('data-turn-key') === id)
-        for (let p = el.parentElement; p && p !== sc; p = p.parentElement) ro.observe(p);
+        for (let p = el.parentElement; p && p !== sc(); p = p.parentElement) ro.observe(p);
     };
     const ro = new ResizeObserver((entries) => {
       // A remount gets observed by butterNavTurn; retain the logical id, not the old element.
       for (const e of entries) if (!e.target.isConnected) ro.unobserve(e.target);
       if (tok !== jumpTok || !model.pinned) return;
-      const el = mountedEl(id);
+      const el = turns.el(id);
       if (el) {
         const t = targetTop(el, anchor.off);
-        if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t;
+        if (Math.abs(t - sc().scrollTop) > 2) sc().scrollTop = t;
       }
     });
     anchor = { ro, observe, off };
-    for (const el of mounted.values()) if (el.isConnected && sc.contains(el)) observe(el);
+    turns.each(observe);
   };
   function unpin() {
     anchor?.ro.disconnect();
@@ -1035,50 +796,7 @@
     model.journey({ pinned: false });
     kick(); // back to lighting what is on screen; the set kept up to date while pinned
   }
-  // Records where the mounted turns are now, adds them to `seen`, and returns their range in `qs`
-  // ([Infinity, -1] if none). The turn after them starts where the last one ends, which keeps an
-  // estimate below a tall turn from landing inside it again.
-  const measure = (seen) => {
-    const qs = model.qs;
-    const top = sc.getBoundingClientRect().top - sc.scrollTop;
-    let a = Infinity,
-      b = -1,
-      bottom = 0;
-    for (const [id, el] of mounted) {
-      if (!el.isConnected || !sc.contains(el)) continue;
-      const r = el.getBoundingClientRect();
-      pos.set(id, r.top - top);
-      seen.add(id);
-      const j = model.index(id);
-      if (j != null) {
-        a = Math.min(a, j);
-        if (j > b) {
-          b = j;
-          bottom = r.bottom - top;
-        }
-      }
-    }
-    if (b >= 0 && b + 1 < qs.length) {
-      pos.set(qs[b + 1].id, bottom);
-      seen.add(qs[b + 1].id);
-    }
-    return [a, b];
-  };
   const MAX_TRIP = 12000;
-  const estimate = (i) => {
-    const qs = model.qs;
-    let lo = i,
-      hi = i;
-    while (lo >= 0 && !pos.has(qs[lo].id)) lo--;
-    while (hi < qs.length && !pos.has(qs[hi].id)) hi++;
-    const y = (j) => pos.get(qs[j].id);
-    if (lo === i) return y(i);
-    const end = sc.scrollHeight;
-    if (lo < 0 && hi >= qs.length) return (end * i) / qs.length;
-    if (lo < 0) return (y(hi) * i) / hi;
-    if (hi >= qs.length) return y(lo) + ((end - y(lo)) * (i - lo)) / (qs.length - lo);
-    return y(lo) + ((y(hi) - y(lo)) * (i - lo)) / (hi - lo);
-  };
 
   // A bookmark jump lands on the bookmarked text instead of the question: px below the turn's top.
   let landing = null;
@@ -1092,17 +810,17 @@
     el?.getAttribute('data-turn-key') === landing.id &&
     !!landing.wash(el, false);
   const washAt = (el) => {
-    el = el && mountedEl(el.getAttribute('data-turn-key'));
+    el = el && turns.el(el.getAttribute('data-turn-key'));
     if (washes(el)) landing.wash(el);
   };
   const targetTop = (el, off = 0) =>
     Math.max(
       0,
       Math.min(
-        sc.scrollHeight - sc.clientHeight,
-        sc.scrollTop +
+        sc().scrollHeight - sc().clientHeight,
+        sc().scrollTop +
           el.getBoundingClientRect().top -
-          sc.getBoundingClientRect().top -
+          sc().getBoundingClientRect().top -
           TOP_INSET +
           off +
           landOff(el),
@@ -1118,7 +836,7 @@
     globalThis.ButterBookmarkPage?.unwash(); // a new jump puts the last wash away at once
     // Repeated input for the current destination keeps its in-progress readiness work.
     // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
-    if (!earlier && trip && !journey?.earlier && model.busy === model.qs[i].id) return;
+    if (!earlier && trip.active && !journey?.earlier && model.busy === model.qs[i].id) return;
     const flight = journey ?? {
       end: performance.now() + (earlier ? 60000 : MAX_TRIP),
       ready: new Map(),
@@ -1133,20 +851,19 @@
     let id = model.qs[i].id;
     // A click during a trip takes the trip over (its jump is no longer live). Ending it would fade the
     // chat in and out again while the page is busy, showing whatever half-rendered part it is at.
-    const relay = !!trip;
-    if (relay) trip.tok = tok;
+    const relay = trip.take(tok);
     setBusy(null);
     model.journey({ flying: true });
     setActive(id);
     model.journey({ pinned: true });
     kick(); // setActive kicks only when the index changes
-    let el = mountedEl(id);
+    let el = turns.el(id);
     // Close by: glide there.
     if (
       !earlier &&
       !relay &&
       el &&
-      Math.abs(targetTop(el) - sc.scrollTop) < sc.clientHeight * 1.5 &&
+      Math.abs(targetTop(el) - sc().scrollTop) < sc().clientHeight * 1.5 &&
       !(model.hasPrev && targetTop(el) < PAGE_AT)
     ) {
       journey = null;
@@ -1166,12 +883,16 @@
     // whose positions are read now, rather than from records that may be stale.
     journey = flight;
     const seen = new Set();
-    let [a, b] = measure(seen);
+    const [, b] = turns.measure(seen);
     const m = earlier
       ? 1
       : -(
           Math.sign(
-            el ? targetTop(el) - sc.scrollTop : b < 0 ? estimate(i) - sc.scrollTop : i - b,
+            el
+              ? targetTop(el) - sc().scrollTop
+              : b < 0
+                ? turns.estimate(i) - sc().scrollTop
+                : i - b,
           ) || 1
         );
     setBusy(want ? null : id, tok); // a bookmark's trip blinks the dots instead
@@ -1180,8 +901,8 @@
     try {
       if (live())
         await (relay
-          ? redirect(m, tok)
-          : depart(el ?? sc.querySelector('[data-turn-key]'), m, tok));
+          ? trip.redirect(m, tok)
+          : trip.depart(el ?? sc().querySelector('[data-turn-key]'), m, tok));
       if (!live()) return;
       if (earlier) {
         const loadEnd = end - 10000; // reserve time to align/reveal after the loading bound
@@ -1191,19 +912,19 @@
           pages++
         ) {
           // Leave and re-enter the paging band: a prepend can keep the sentinel intersecting.
-          sc.scrollTop = PAGE_AT + 32;
+          sc().scrollTop = PAGE_AT + 32;
           await frame();
           await frame();
           if (!live()) return;
           const page = nextPage(Math.min(10000, loadEnd - performance.now()), live); // arm before scrolling
-          sc.scrollTop = 0;
+          sc().scrollTop = 0;
           if (!(await page)) break; // stalled/offline: reveal the oldest loaded question
           await frame();
           id = model.items.find((x) => x.q != null)?.id;
           // The fetch hook reports before React commits. Don't start another page in that gap.
           const until = performance.now() + 2000;
-          while (live() && !mountedEl(id) && performance.now() < until) {
-            sc.scrollTop = 0;
+          while (live() && !turns.el(id) && performance.now() < until) {
+            sc().scrollTop = 0;
             await frame();
           }
           if (want) {
@@ -1242,37 +963,30 @@
           i = 0;
           id = model.qs[0]?.id;
         }
-        el = mountedEl(id);
+        el = turns.el(id);
         setActive(id);
         setBusy(id, tok);
       }
-      el = mountedEl(id);
+      el = turns.el(id);
       for (let tries = 0; tries < 8 && !el && live(); tries++) {
         i = model.index(id); // earlier pages may have changed the question's index
         if (i == null) return;
-        if (tries) {
-          // Where the records put the target, it didn't mount: ChatGPT has re-measured turns or inserted
-          // earlier messages since they were taken. Drop the older records between the turns mounted
-          // here and the target, so the next estimate starts from these and moves toward the target.
-          // Positions read during this jump stay: after an overshoot they bound the target from the other side.
-          [a, b] = measure(seen);
-          const [from, to] =
-            b < 0 || (i >= a && i <= b) ? [i, i + 1] : i < a ? [0, a] : [b + 2, model.qs.length];
-          for (let j = from; j < to; j++) if (!seen.has(model.qs[j].id)) pos.delete(model.qs[j].id);
-        }
-        sc.scrollTop = Math.max(0, estimate(i) - TOP_INSET);
-        for (let f = 0; f < 30 && live() && !(el = mountedEl(id)); f++) await frame();
+        // Where the records put the target, it didn't mount: measure again and move toward it.
+        if (tries) turns.retarget(i, seen);
+        sc().scrollTop = Math.max(0, turns.estimate(i) - TOP_INSET);
+        for (let f = 0; f < 30 && live() && !(el = turns.el(id)); f++) await frame();
       }
       if (!el || !live()) return;
-      sc.scrollTop = targetTop(el);
+      sc().scrollTop = targetTop(el);
       let ready = flight.ready.get(id);
-      const top = sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      const top =
+        sc().scrollTop + el.getBoundingClientRect().top - sc().getBoundingClientRect().top;
       if (!ready || ready.el !== el || Math.abs(ready.top - top) > 2) {
         ready = { el, top, geometry: {} };
         flight.ready.set(id, ready);
       }
       if (!ready.page) {
-        if (!earlier && model.hasPrev && sc.scrollTop < PAGE_AT) {
+        if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
           await nextPage(4000, live);
           await new Promise((r) => setTimeout(r, 150));
         }
@@ -1281,7 +995,7 @@
       }
       // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
       const pendingMath = () =>
-        [...(mountedEl(id)?.querySelectorAll('[data-math-source]') ?? [])].some(
+        [...(turns.el(id)?.querySelectorAll('[data-math-source]') ?? [])].some(
           (x) => !x.querySelector('.katex'),
         );
       if (!ready.math || pendingMath()) {
@@ -1294,9 +1008,9 @@
         if (!live()) return;
         ready.math = !pendingMath();
       }
-      el = mountedEl(id);
+      el = turns.el(id);
       if (!el || !live()) return;
-      const lead = still() ? 0 : m * Math.min(400, sc.clientHeight * 0.4);
+      const lead = reduced() ? 0 : m * Math.min(400, sc().clientHeight * 0.4);
       follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
       // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
       // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
@@ -1311,7 +1025,7 @@
       flash(el);
       landed = true;
       anchor.off = 0;
-      await arrive(el, lead);
+      await trip.arrive(lead, () => targetTop(el));
       if (tok === jumpTok) {
         landedAt(); // stopped moving; settle only nudges by a few px
         washAt(el);
@@ -1322,19 +1036,19 @@
       // A takeover inherits the first click's deadline. At expiry keep a mounted, aligned target;
       // otherwise reveal where ChatGPT got to and release the anchor, without another render.
       if (expired && !landed) {
-        el = mountedEl(id);
+        el = turns.el(id);
         if (el) {
           // `follow` may still hold it `lead` px short of the landing spot: align it before the reveal.
           const t = targetTop(el);
-          if (model.pinned) sc.scrollTop = t;
-          landed = Math.abs(t - sc.scrollTop) <= 2;
+          if (model.pinned) sc().scrollTop = t;
+          landed = Math.abs(t - sc().scrollTop) <= 2;
           if (landed) {
             flash(el);
             washAt(el);
           }
         }
       }
-      if (trip?.tok === tok) arrive(null, 0);
+      trip.end(tok);
       if (busyTok === tok) setBusy(null);
       if (wait?.tok === tok) setWait(null);
       if (tok === jumpTok) {
@@ -1348,7 +1062,7 @@
 
   const scrollEnd = () =>
     new Promise((r) => {
-      sc.addEventListener('scrollend', r, { once: true });
+      sc().addEventListener('scrollend', r, { once: true });
       setTimeout(r, 1500);
     });
   // The browser's smooth scrolling runs on the compositor: it keeps going if the page is busy.
@@ -1356,9 +1070,9 @@
     flash(el);
     // Already there: smooth scrolling won't move, so no scrollend would come.
     const top = targetTop(el);
-    if (Math.abs(top - sc.scrollTop) >= 1) {
+    if (Math.abs(top - sc().scrollTop) >= 1) {
       const done = scrollEnd();
-      sc.scrollTo({ top, behavior: 'smooth' });
+      sc().scrollTo({ top, behavior: 'smooth' });
       await done;
     }
     if (live()) washAt(el);
@@ -1371,14 +1085,15 @@
     const end = performance.now() + max,
       id = el.getAttribute('data-turn-key');
     while (live() && performance.now() < end) {
-      el = mountedEl(id);
+      el = turns.el(id);
       if (!el) {
         state.el = null;
         state.since = performance.now();
         await frame();
         continue;
       }
-      const top = sc.scrollTop + el.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      const top =
+        sc().scrollTop + el.getBoundingClientRect().top - sc().getBoundingClientRect().top;
       if (state.el !== el || Math.abs(state.top - top) > 2 || state.since == null) {
         state.el = el;
         state.top = top;
@@ -1386,13 +1101,13 @@
       }
       const t = Math.max(
         0,
-        Math.min(sc.scrollHeight - sc.clientHeight, top - TOP_INSET + off + landOff(el)),
+        Math.min(sc().scrollHeight - sc().clientHeight, top - TOP_INSET + off + landOff(el)),
       );
-      if (Math.abs(t - sc.scrollTop) > 2) sc.scrollTop = t;
+      if (Math.abs(t - sc().scrollTop) > 2) sc().scrollTop = t;
       if (performance.now() - state.since >= span) return el;
       await frame();
     }
-    return mountedEl(id);
+    return turns.el(id);
   };
   // Resolves once the page paints at a normal pace again: three frames under 40 ms in a row.
   const quiet = async (live, max) => {
@@ -1417,86 +1132,6 @@
     return false;
   };
 
-  // The trip. Both halves are things the compositor runs by itself, so they keep moving while the
-  // page is busy: opacity of the chat's content (the virtualizer's full-height box: turn > its
-  // wrapper > the window of mounted turns > the box), the browser's own smooth scrolling, and the
-  // placeholder layer `warp`. (A transform on the content box would make Chrome repaint all of it.)
-  let trip = null;
-  const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const LEAVE = 260; // ms to speed off
-  const stream = (m) =>
-    streak.animate([{ transform: 'none' }, { transform: `translateY(${m * STREAK}px)` }], {
-      duration: STREAK / ((SPEED * sc.clientHeight) / 1000),
-      iterations: Infinity,
-    });
-  // Speed off: the chat scrolls toward the target and fades while the placeholder lines fade in,
-  // streaming at SPEED. `m` = +1 moves the content down (going up the chat), -1 up.
-  const depart = (turn, m, tok) => {
-    if (trip) arrive(null, 0);
-    const content = turn?.parentElement?.parentElement?.parentElement,
-      T = LEAVE;
-    trip = { tok, m, content: content && content !== sc && sc.contains(content) ? content : null };
-    trip.off = trip.content?.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: T,
-      easing: 'ease-in',
-      fill: 'forwards',
-    });
-    warp.style.visibility = 'visible';
-    trip.in = warp.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: 'forwards' });
-    if (!still()) {
-      sc.scrollTo({ top: sc.scrollTop - m * sc.clientHeight * 0.5, behavior: 'smooth' });
-      trip.loop = stream(m);
-    }
-    return new Promise((r) => setTimeout(r, T));
-  };
-  // A new click mid-trip: the chat stays hidden and the placeholder turns around if the new target is
-  // the other way. Waiting as long as speeding off would means a burst of clicks sends the chat only
-  // to the last target, instead of making ChatGPT render every one on the way.
-  const redirect = (m, tok) => {
-    trip.tok = tok;
-    if (trip.loop && trip.m !== m) {
-      trip.loop.cancel();
-      trip.loop = stream(m);
-    }
-    trip.m = m;
-    return new Promise((r) => setTimeout(r, LEAVE));
-  };
-  // Arrive: the chat, waiting `lead` px short of the target, fades in and scrolls the rest of the
-  // way; the placeholder fades out.
-  const arrive = (el, lead) => {
-    const t = trip;
-    trip = null;
-    if (!t) return Promise.resolve();
-    t.content?.isConnected &&
-      t.content.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: lead ? 320 : 250,
-        easing: 'ease-out',
-      });
-    t.off?.cancel();
-    t.in?.cancel();
-    if (t.in) {
-      const out = warp.animate([{ opacity: 1 }, { opacity: 0 }], {
-        duration: 240,
-        fill: 'forwards',
-      });
-      out.finished.then(
-        () => {
-          t.loop?.cancel();
-          out.cancel();
-          if (!trip) warp.style.visibility = 'hidden';
-        },
-        () => {},
-      );
-    }
-    // Already there (near the chat's bottom both clamp): smooth scrolling won't move, so no
-    // scrollend would come.
-    if (!(el && lead) || Math.abs(targetTop(el) - sc.scrollTop) < 1)
-      return new Promise((r) => setTimeout(r, 250));
-    const done = scrollEnd();
-    sc.scrollTo({ top: targetTop(el), behavior: 'smooth' });
-    return done;
-  };
-
   let busyTok = 0;
   const setBusy = (id, tok = 0) => {
     model.journey({ busy: id });
@@ -1515,6 +1150,6 @@
 
   // ChatGPT loads the previous page when the top of the chat comes into view.
   const loadEarlier = () => {
-    if (sc && model.qs.length) jump(0, true);
+    if (sc() && model.qs.length) jump(0, true);
   };
 })();
