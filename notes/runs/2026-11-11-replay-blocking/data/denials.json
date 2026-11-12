@@ -1,0 +1,214 @@
+{
+  "M1-none-1": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 31,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 2,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-a11-1": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 3,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-main-1": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 32,
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-a11-2": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 32,
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 2,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-main-2": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 32,
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 2,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-none-2": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-main-3": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 2,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-none-3": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 31,
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /backend-api/amphora/clear_settings_cache": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M1-a11-3": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 32,
+      "POST /v1/initialize": 6,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/rgstr": 2,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-none-1": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-a11-1": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-main-1": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-a11-2": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 4
+    },
+    "route": {
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-main-2": {
+    "fetch": {
+      "POST /v1/initialize": 6,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-none-2": {
+    "fetch": {
+      "POST /v1/initialize": 6,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-main-3": {
+    "fetch": {
+      "POST /ces/v1/rgstr": 32,
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-none-3": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 5
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  },
+  "M2-a11-3": {
+    "fetch": {
+      "POST /v1/initialize": 3,
+      "POST /ces/v1/rgstr": 32,
+      "POST /ces/v1/telemetry/intake": 6,
+      "POST /ces/statsc/flush": 4
+    },
+    "route": {
+      "POST /ces/v1/telemetry/intake": 1,
+      "POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>": 1
+    }
+  }
+}

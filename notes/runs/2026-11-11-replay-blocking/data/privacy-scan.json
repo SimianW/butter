@@ -1,0 +1,16 @@
+{
+  "filesScanned": 20,
+  "identifierNeedles": 111,
+  "textFragmentNeedles": 308,
+  "uuid": 0,
+  "chatURL": 0,
+  "email": 0,
+  "privateEndpoint": 0,
+  "challengePathSuffix": 0,
+  "bearerCredential": 0,
+  "tokenCredential": 0,
+  "privateIdentifiers": 0,
+  "capturedTextFragments": 0,
+  "allJsonLeavesNumeric": 1,
+  "passed": 1
+}

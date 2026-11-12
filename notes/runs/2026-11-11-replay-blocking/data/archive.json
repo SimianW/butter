@@ -1,0 +1,14 @@
+{
+  "reportCreatedEpoch": 1794430119.477709,
+  "sourceDriverMtimeEpoch": 1793836098.7362897,
+  "adapterMtimeEpoch": 1794424797.878844,
+  "numericExports": 1,
+  "rawCapturesPublished": 0,
+  "reportUpdatedEpoch": 1794433895.441915,
+  "matrixRuns": 18,
+  "interruptedAttempts": 1,
+  "rerunLockWindows": 2,
+  "bisectReportUpdatedEpoch": 1794440234.5786505,
+  "bisectReplays": 9,
+  "bisectControls": 4
+}

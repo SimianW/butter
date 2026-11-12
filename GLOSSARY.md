@@ -49,6 +49,11 @@ The element whose children are an answer's blocks: the markdown root, or the nes
 root in ChatGPT's Dil renderer; the wrappers around it are not blocks.
 _Where_: `page/reader.js`, `page/reader-main.js`
 
+**Dil source wrapper**:
+The one child of a Dil answer's markdown root, marked `data-dil-source-message-id`, holding the
+wrapper layers around the Dil response root; it is never a block, so it is never skipped.
+_Where_: `stream/containment.css`, `stream/offscreen.js`
+
 **Page reader**:
 How Butter reads ChatGPT's answer structure, one adapter per script world under the same contract.
 The isolated-world `page/reader.js` serves bookmarks, Ask in branch and the pill: answer roots and

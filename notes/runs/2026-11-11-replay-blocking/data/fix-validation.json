@@ -1,0 +1,1104 @@
+{
+  "summary": {
+    "fix": {
+      "loafBlockMs": {
+        "n": 3,
+        "median": 13575,
+        "min": 13107,
+        "max": 17547
+      },
+      "loafMaxMs": {
+        "n": 3,
+        "median": 2460,
+        "min": 2458,
+        "max": 2466
+      },
+      "loafCount": {
+        "n": 3,
+        "median": 378,
+        "min": 376,
+        "max": 381
+      },
+      "p95": {
+        "n": 3,
+        "median": 66.6,
+        "min": 50.1,
+        "max": 66.7
+      },
+      "keyMax": {
+        "n": 3,
+        "median": 276.2,
+        "min": 275,
+        "max": 340.6
+      },
+      "keyP95": {
+        "n": 3,
+        "median": 261.2,
+        "min": 259.5,
+        "max": 311.1
+      },
+      "replayDurationMs": {
+        "n": 3,
+        "median": 121770.90000009537,
+        "min": 121770.69999980927,
+        "max": 121771.19999980927
+      },
+      "renderSLMs": {
+        "n": 3,
+        "median": 23608.199993610382,
+        "min": 23523.699999332428,
+        "max": 27384.599997520447
+      },
+      "forcedSLMs": {
+        "n": 3,
+        "median": 2142.2,
+        "min": 2111.2000000000003,
+        "max": 2463.1
+      },
+      "scriptMs": {
+        "n": 3,
+        "median": 2271.1000001907346,
+        "min": 2128.3,
+        "max": 2397.6000002861024
+      }
+    },
+    "main": {
+      "loafBlockMs": {
+        "n": 3,
+        "median": 67229,
+        "min": 65089,
+        "max": 67700
+      },
+      "loafMaxMs": {
+        "n": 3,
+        "median": 3862,
+        "min": 3619,
+        "max": 3890
+      },
+      "loafCount": {
+        "n": 3,
+        "median": 326,
+        "min": 323,
+        "max": 328
+      },
+      "p95": {
+        "n": 3,
+        "median": 266.7,
+        "min": 250.1,
+        "max": 266.7
+      },
+      "keyMax": {
+        "n": 3,
+        "median": 661.7,
+        "min": 626.5,
+        "max": 716.9
+      },
+      "keyP95": {
+        "n": 3,
+        "median": 651,
+        "min": 620.3,
+        "max": 687.2
+      },
+      "replayDurationMs": {
+        "n": 3,
+        "median": 121792.10000038147,
+        "min": 121770.59999990463,
+        "max": 121803.90000009537
+      },
+      "renderSLMs": {
+        "n": 3,
+        "median": 69011.90000200272,
+        "min": 67539.79999685287,
+        "max": 69520.49999427795
+      },
+      "forcedSLMs": {
+        "n": 3,
+        "median": 6405.2,
+        "min": 6353.5,
+        "max": 6563.2
+      },
+      "scriptMs": {
+        "n": 3,
+        "median": 3904.6000022888184,
+        "min": 3739.1999972343447,
+        "max": 4187.899999904633
+      }
+    }
+  },
+  "runs": {
+    "fix-1": {
+      "loafBlockMs": 17547,
+      "loafMaxMs": 2460,
+      "loafCount": 381,
+      "p95": 66.7,
+      "keyMax": 340.6,
+      "keyP95": 311.1,
+      "replayDurationMs": 121771.19999980927,
+      "renderSLMs": 27384.599997520447,
+      "forcedSLMs": 2463.1,
+      "scriptMs": 2397.6000002861024,
+      "order": 1,
+      "run": 1,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 207853,
+        "turns": 10,
+        "katex": 3028
+      },
+      "after": {
+        "nodes": 194549,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 385,
+        "published": 384
+      },
+      "blockAdds": 1177,
+      "seenMarks": 441,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 654,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 120772,
+          "add": 5952,
+          "rem": 7918
+        }
+      ],
+      "denials": {
+        "fetchDenials": 49,
+        "routeDenials": 1,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 10.900000095367432,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 2932,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 2932,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 2927,
+          "chunksSent": 0,
+          "probeDurationMs": 6849.199999809265,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 1862,
+            "unrendered": 174
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1862,
+            "unrendered": 174
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 2041,
+          "chunksSent": 95,
+          "probeDurationMs": 2454.0999999046326,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 146,
+            "published": 146
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 852
+    },
+    "main-1": {
+      "loafBlockMs": 67700,
+      "loafMaxMs": 3862,
+      "loafCount": 323,
+      "p95": 266.7,
+      "keyMax": 716.9,
+      "keyP95": 687.2,
+      "replayDurationMs": 121803.90000009537,
+      "renderSLMs": 69520.49999427795,
+      "forcedSLMs": 6563.2,
+      "scriptMs": 3739.1999972343447,
+      "order": 2,
+      "run": 1,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 207947,
+        "turns": 10,
+        "katex": 3028
+      },
+      "after": {
+        "nodes": 194643,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 331,
+        "published": 330
+      },
+      "blockAdds": 1171,
+      "seenMarks": 437,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 926,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 121624,
+          "add": 5952,
+          "rem": 7925
+        }
+      ],
+      "denials": {
+        "fetchDenials": 45,
+        "routeDenials": 2,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 12.599999904632568,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 4747,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 2932,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 2927,
+          "chunksSent": 0,
+          "probeDurationMs": 8842.599999904633,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 3676,
+            "unrendered": 175
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1861,
+            "unrendered": 175
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 2041,
+          "chunksSent": 95,
+          "probeDurationMs": 3848.300000190735,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 141,
+            "published": 141
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 1539
+    },
+    "main-2": {
+      "loafBlockMs": 67229,
+      "loafMaxMs": 3619,
+      "loafCount": 328,
+      "p95": 266.7,
+      "keyMax": 626.5,
+      "keyP95": 620.3,
+      "replayDurationMs": 121792.10000038147,
+      "renderSLMs": 69011.90000200272,
+      "forcedSLMs": 6405.2,
+      "scriptMs": 4187.899999904633,
+      "order": 3,
+      "run": 2,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 112135,
+        "turns": 10,
+        "katex": 1514
+      },
+      "after": {
+        "nodes": 194642,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 331,
+        "published": 331
+      },
+      "blockAdds": 1167,
+      "seenMarks": 443,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 938,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 121579,
+          "add": 5952,
+          "rem": 7925
+        }
+      ],
+      "denials": {
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 13,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 3870,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 2055,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 2050,
+          "chunksSent": 0,
+          "probeDurationMs": 7099.5,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 3236,
+            "unrendered": 174
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1421,
+            "unrendered": 174
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 1600,
+          "chunksSent": 95,
+          "probeDurationMs": 3604.0999999046326,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 141,
+            "published": 141
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 1517
+    },
+    "fix-2": {
+      "loafBlockMs": 13107,
+      "loafMaxMs": 2458,
+      "loafCount": 378,
+      "p95": 50.1,
+      "keyMax": 275,
+      "keyP95": 259.5,
+      "replayDurationMs": 121770.69999980927,
+      "renderSLMs": 23523.699999332428,
+      "forcedSLMs": 2142.2,
+      "scriptMs": 2128.3,
+      "order": 4,
+      "run": 2,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 112134,
+        "turns": 10,
+        "katex": 1514
+      },
+      "after": {
+        "nodes": 194642,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 388,
+        "published": 387
+      },
+      "blockAdds": 1168,
+      "seenMarks": 443,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 597,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 120712,
+          "add": 5952,
+          "rem": 7918
+        }
+      ],
+      "denials": {
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 10.800000190734863,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 4747,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 2932,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 2927,
+          "chunksSent": 0,
+          "probeDurationMs": 6994.5,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 3679,
+            "unrendered": 172
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1864,
+            "unrendered": 172
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 2041,
+          "chunksSent": 95,
+          "probeDurationMs": 2452.199999809265,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 147,
+            "published": 147
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 821
+    },
+    "fix-3": {
+      "loafBlockMs": 13575,
+      "loafMaxMs": 2466,
+      "loafCount": 376,
+      "p95": 66.6,
+      "keyMax": 276.2,
+      "keyP95": 261.2,
+      "replayDurationMs": 121770.90000009537,
+      "renderSLMs": 23608.199993610382,
+      "forcedSLMs": 2111.2000000000003,
+      "scriptMs": 2271.1000001907346,
+      "order": 5,
+      "run": 3,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 111912,
+        "turns": 10,
+        "katex": 1514
+      },
+      "after": {
+        "nodes": 194641,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 386,
+        "published": 385
+      },
+      "blockAdds": 1177,
+      "seenMarks": 440,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 577,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 120669,
+          "add": 5952,
+          "rem": 7918
+        }
+      ],
+      "denials": {
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 10.099999904632568,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 1531,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 1526,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 1521,
+          "chunksSent": 0,
+          "probeDurationMs": 4473.800000190735,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 1128,
+            "unrendered": 172
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1123,
+            "unrendered": 172
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 1300,
+          "chunksSent": 95,
+          "probeDurationMs": 2459.0999999046326,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 147,
+            "published": 147
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 798
+    },
+    "main-3": {
+      "loafBlockMs": 65089,
+      "loafMaxMs": 3890,
+      "loafCount": 326,
+      "p95": 250.1,
+      "keyMax": 661.7,
+      "keyP95": 651,
+      "replayDurationMs": 121770.59999990463,
+      "renderSLMs": 67539.79999685287,
+      "forcedSLMs": 6353.5,
+      "scriptMs": 3904.6000022888184,
+      "order": 6,
+      "run": 3,
+      "chunksSent": 189,
+      "shaMatches": 1,
+      "before": {
+        "nodes": 112134,
+        "turns": 10,
+        "katex": 1514
+      },
+      "after": {
+        "nodes": 194642,
+        "turns": 9,
+        "katex": 2909
+      },
+      "butter": {
+        "smootherFrames": 333,
+        "published": 332
+      },
+      "blockAdds": 1157,
+      "seenMarks": 438,
+      "remountCount": 2,
+      "remounts": [
+        {
+          "t": 910,
+          "add": 60,
+          "rem": 40358
+        },
+        {
+          "t": 121494,
+          "add": 5952,
+          "rem": 7926
+        }
+      ],
+      "denials": {
+        "fetchDenials": 46,
+        "routeDenials": 1,
+        "completedWrites": 0,
+        "replayEscapes": 0
+      },
+      "keySamples": 40,
+      "inputDelayP95": 11.699999809265137,
+      "themeLight": 1,
+      "probes": {
+        "before": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 10,
+            "answerRoots": 10,
+            "dilRoots": 0,
+            "turnStates": 10,
+            "seen": 4747,
+            "unrendered": 0
+          },
+          "visibleCounts": {
+            "turns": 5,
+            "answerRoots": 5,
+            "dilRoots": 0,
+            "turnStates": 5,
+            "seen": 2932,
+            "unrendered": 0
+          },
+          "visibleTurnStateValues": {
+            "complete": 5
+          },
+          "turnStateValues": {
+            "complete": 10
+          },
+          "answerBlocks": 3071,
+          "answerBlocksAuto": 2927,
+          "chunksSent": 0,
+          "probeDurationMs": 8811.199999809265,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 0,
+            "published": 0
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 54
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 103412
+            }
+          ]
+        },
+        "mid": {
+          "oldContainerSelectorMatches": 2,
+          "counts": {
+            "turns": 9,
+            "answerRoots": 9,
+            "dilRoots": 0,
+            "turnStates": 9,
+            "seen": 3677,
+            "unrendered": 174
+          },
+          "visibleCounts": {
+            "turns": 4,
+            "answerRoots": 4,
+            "dilRoots": 0,
+            "turnStates": 4,
+            "seen": 1862,
+            "unrendered": 174
+          },
+          "visibleTurnStateValues": {
+            "complete": 3,
+            "in_progress": 1
+          },
+          "turnStateValues": {
+            "complete": 8,
+            "in_progress": 1
+          },
+          "answerBlocks": 2133,
+          "answerBlocksAuto": 2041,
+          "chunksSent": 95,
+          "probeDurationMs": 3870.199999809265,
+          "offEmpty": 1,
+          "butter": {
+            "smootherFrames": 140,
+            "published": 140
+          },
+          "containers": [
+            {
+              "inside": 1,
+              "inlineSize": 1,
+              "subtreeElements": 55
+            },
+            {
+              "inside": 0,
+              "inlineSize": 1,
+              "subtreeElements": 69543
+            }
+          ]
+        }
+      },
+      "probeOverlapBlockingMs": 0,
+      "maxOutsideProbeMs": 1524
+    }
+  },
+  "verification": {
+    "orderCorrect": 1,
+    "sixRunsOrRequiredStop": 1,
+    "threePerBuild": 1,
+    "chunks189": 1,
+    "expectedAnswer": 1,
+    "zeroWrites": 1,
+    "zeroReplayEscapes": 1,
+    "twoProbes": 1,
+    "activeButter": 1,
+    "fixBelow25s": 1,
+    "restoreOk": 1,
+    "releaseOk": 1,
+    "labPerfReleased": 1,
+    "statusUnchanged": 1,
+    "branchUnchanged": 1,
+    "headUnchanged": 1,
+    "buildsEqualGitSha": 1,
+    "seedsAccepted": 1,
+    "m2.mjsMatchesControl": 1,
+    "control-safety.mjsMatchesControl": 1,
+    "selectors.mjsMatchesControl": 1,
+    "allRequiredPassed": 1
+  },
+  "cleanup": {
+    "restoreExit": 0,
+    "releaseExit": 0
+  },
+  "buildChecks": {
+    "fix": {
+      "files": 62,
+      "seedAccepted": 1,
+      "pristine": 1
+    },
+    "main": {
+      "files": 62,
+      "seedAccepted": 1,
+      "pristine": 1
+    }
+  },
+  "methodChecks": {
+    "m2.mjs": 1,
+    "control-safety.mjs": 1,
+    "selectors.mjs": 1
+  },
+  "reportUpdatedEpoch": 1794442224.818325,
+  "privacy": {
+    "filesScanned": 21,
+    "identifierNeedles": 111,
+    "textFragmentNeedles": 308,
+    "uuid": 0,
+    "chatURL": 0,
+    "email": 0,
+    "privateEndpoint": 0,
+    "challengePathSuffix": 0,
+    "bearerCredential": 0,
+    "tokenCredential": 0,
+    "privateIdentifiers": 0,
+    "capturedTextFragments": 0,
+    "allJsonLeavesNumeric": 1,
+    "passed": 1
+  }
+}

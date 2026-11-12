@@ -1,0 +1,55 @@
+{
+  "loafBlockMs": 76890,
+  "loafMaxMs": 2916,
+  "loafCount": 345,
+  "p95": 333.3,
+  "keyMax": 406,
+  "keyP95": 329.8,
+  "replayDurationMs": 121774.80000019073,
+  "wallMs": 125441,
+  "chunksSent": 189,
+  "blockAdds": 1158,
+  "seenMarks": 0,
+  "inputDelayP95": 9.699999809265137,
+  "inputDelayMax": 11.400000095367432,
+  "busyPct": 87.2,
+  "stylePct": 63.6,
+  "scriptPct": 7.7,
+  "layoutPct": 0.5,
+  "valid": 0,
+  "guardTrips": 1,
+  "completedNetworkWrites": 0,
+  "fetchDenials": 46,
+  "routeDenials": 3,
+  "answerShaMatches": 1,
+  "remountCount": 2,
+  "before": {
+    "nodes": 207945,
+    "turns": 10,
+    "katex": 3028
+  },
+  "after": {
+    "nodes": 194641,
+    "turns": 9,
+    "katex": 2909
+  },
+  "butterPresent": 0,
+  "attr": {
+    "renderSLs": 74.5,
+    "renderOthers": 6.3,
+    "forcedSLs": 31.3,
+    "scripts": 8.5
+  },
+  "remounts": [
+    {
+      "t": 2600,
+      "add": 60,
+      "rem": 40358
+    },
+    {
+      "t": 121538,
+      "add": 5952,
+      "rem": 7925
+    }
+  ]
+}

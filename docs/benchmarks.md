@@ -7,6 +7,13 @@ Later builds (alpha.12 and alpha.13) change only the popup, locale metadata and 
 these alpha.11 measurements still apply. The benchmark completed on November 4 in America/Toronto
 (November 5 UTC); the final validator passed **73/73** checks.
 
+Builds alpha.14 through alpha.20 regressed streaming blocking to about 66 s, close to the
+no-extension control. The cause was the Dil answer-root selector from #24: its `:has()` in
+`stream/containment.css` made Chromium restyle every block of the streaming answer on each update,
+so a long answer's style work grew with the square of its length. Released alpha.11 still measures about 13 s on the same host today, so the
+table below remains valid for alpha.11 through alpha.13. #94 fixes it: 13.6 s against main's 67.2 s
+in a live replay ([run report](../notes/runs/2026-11-11-replay-blocking/report.md)).
+
 ### What the results mean
 
 Streaming blocking fell from 76.4 s to 11.5 s, and classic-scrollbar dragging into unread history

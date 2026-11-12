@@ -15,11 +15,12 @@
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
-  // Same answer root as page/reader-main.js and containment.css (separate script world).
-  const ANSWER_ROOT =
-    ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
-  const TARGETS =
-    '[data-turn-key], ' + ANSWER_ROOT + ' > :not([data-wide-block]):not([class*="TableFrame-"])';
+  // Turns, and the answer blocks stream/containment.css may skip (copied from there; separate
+  // script world): the markdown root's children except the Dil source wrapper, and the children of
+  // a Dil response root; never wide blocks or table frames. No :has(), as there.
+  const COLUMN = '[data-markdown-text-style="assistant-message"]';
+  const KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
+  const TARGETS = `[data-turn-key], ${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`;
   // Marks are flushed in one batch per second: each flush is one style invalidation pass instead
   // of one per streamed block. The delay also lets Chrome record the sizes before we mark.
   const FLUSH_MS = 1000;

@@ -82,11 +82,20 @@
     const wrapper = [
       ...scope.querySelectorAll('div.\\[container-type\\:inline-size\\].min-h-full'),
     ].find(visible);
-    // Same response roots as the recorder and isolated-world offscreen markers.
-    const answerRoot =
-      ':is([data-markdown-text-style="assistant-message"]:not(:has([class*="DilResponseRoot"])), [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"])';
+    // The elements stream/containment.css skips, with its selectors: the markdown root's children
+    // except the Dil source wrapper, and a Dil response root's children.
+    const column = '[data-markdown-text-style="assistant-message"]';
+    const keep = ':not([data-wide-block]):not([class*="TableFrame-"])';
+    const blocks = [
+      `${column} > :not([data-dil-source-message-id])`,
+      `${column} [class*="DilResponseRoot"] > *`,
+    ];
     const cv = scope.querySelector(
-      `[data-turn-key][data-butter-seen], ${answerRoot} > [data-butter-seen]:not([data-wide-block]):not([class*="TableFrame-"]), [data-talvt-turn-state="in_progress"] ${answerRoot} > :not([data-wide-block]):not([class*="TableFrame-"])`,
+      [
+        '[data-turn-key][data-butter-seen]',
+        ...blocks.map((b) => `${b}[data-butter-seen]${keep}`),
+        ...blocks.map((b) => `[data-talvt-turn-state="in_progress"] ${b}${keep}`),
+      ].join(', '),
     );
     const streaming = !!scope.querySelector('[data-talvt-turn-state="in_progress"]');
     streamSince = streaming ? streamSince || now : 0;

@@ -12,9 +12,9 @@
   // An answer root is the element whose children are an answer's blocks: the markdown root, or in
   // ChatGPT's Dil renderer the response root nested inside it behind wrapper layers (one of which
   // can hold an empty sibling). Only the response root owns blocks in the latter. Same rule as
-  // page/reader.js ANSWER. Keep the isolated-world stream/offscreen.js ANSWER_ROOT and
-  // stream/containment.css in sync; lab/harness/dil-renderer.mjs exercises all three against real
-  // DOM, including the hr and wide-block exclusions.
+  // page/reader.js ANSWER. stream/offscreen.js and stream/containment.css select the same blocks
+  // without :has(), by naming the Dil source wrapper; lab/harness/dil-renderer.mjs exercises all
+  // three against real DOM, including the hr and wide-block exclusions.
   const COLUMN = '[data-markdown-text-style="assistant-message"]';
   const ANSWER_ROOT = `:is(${COLUMN}:not(:has([class*="DilResponseRoot"])), ${COLUMN} [class*="DilResponseRoot"])`;
   // Seek's blocks: an answer root's children, except wide-block wrappers, table frames and rules

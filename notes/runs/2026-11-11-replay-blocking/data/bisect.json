@@ -1,0 +1,1477 @@
+{
+  "12": {
+    "pr": 60,
+    "stage": 0,
+    "seedAccepted": 1,
+    "filesChecked": 48,
+    "pristine": 1,
+    "values": [
+      65356
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 1,
+    "median": 65356,
+    "runs": {
+      "bisect-i12-r1": {
+        "loafBlockMs": 65356,
+        "loafMaxMs": 3956,
+        "loafCount": 319,
+        "p95": 266.6,
+        "keyMax": 635.4,
+        "keyP95": 629.3,
+        "replayDurationMs": 121871.5,
+        "chunksSent": 189,
+        "blockAdds": 1160,
+        "seenMarks": 444,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 49,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207947,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194643,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 66874.40000295639,
+        "forcedSLMs": 6572.0,
+        "scriptMs": 3997.0999999046326,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 9232.700000286102,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3677,
+              "unrendered": 174
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 3947.5,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 141,
+              "published": 141
+            }
+          }
+        }
+      }
+    }
+  },
+  "6": {
+    "pr": 24,
+    "stage": 0,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      66358
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 1,
+    "median": 66358,
+    "runs": {
+      "bisect-i6-r2": {
+        "loafBlockMs": 66358,
+        "loafMaxMs": 4040,
+        "loafCount": 312,
+        "p95": 250.1,
+        "keyMax": 787.3,
+        "keyP95": 755.6,
+        "replayDurationMs": 121904.09999990463,
+        "chunksSent": 189,
+        "blockAdds": 1159,
+        "seenMarks": 444,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 49,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207853,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194549,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 66868.30000019073,
+        "forcedSLMs": 6949.3,
+        "scriptMs": 4329.299999427795,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 9267.89999961853,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 4024.5,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 139,
+              "published": 139
+            }
+          }
+        }
+      }
+    }
+  },
+  "3": {
+    "pr": 16,
+    "stage": 0,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      11829
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 0,
+    "median": 11829,
+    "runs": {
+      "bisect-i3-r3": {
+        "loafBlockMs": 11829,
+        "loafMaxMs": 2400,
+        "loafCount": 368,
+        "p95": 50,
+        "keyMax": 255.6,
+        "keyP95": 253.2,
+        "replayDurationMs": 121771,
+        "chunksSent": 189,
+        "blockAdds": 1164,
+        "seenMarks": 441,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 1,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 112135,
+          "turns": 10,
+          "katex": 1514
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 22377.299999713898,
+        "forcedSLMs": 1938.6999999999998,
+        "scriptMs": 1968.4999998092653,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 6190.699999809265,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3679,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 2393.5999999046326,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 148,
+              "published": 148
+            }
+          }
+        }
+      }
+    }
+  },
+  "4": {
+    "pr": 19,
+    "stage": 0,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      12783
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 0,
+    "median": 12783,
+    "runs": {
+      "bisect-i4-r4": {
+        "loafBlockMs": 12783,
+        "loafMaxMs": 2284,
+        "loafCount": 368,
+        "p95": 50,
+        "keyMax": 294.5,
+        "keyP95": 283,
+        "replayDurationMs": 121770.30000019073,
+        "chunksSent": 189,
+        "blockAdds": 1170,
+        "seenMarks": 441,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 45,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207945,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 22894.500000953674,
+        "forcedSLMs": 1991.1999999999998,
+        "scriptMs": 2128.3000004768373,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 3870,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2055,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2050,
+            "chunksSent": 0,
+            "probeDurationMs": 5491.900000095367,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3238,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1423,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 1600,
+            "chunksSent": 95,
+            "probeDurationMs": 2278,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 147,
+              "published": 147
+            }
+          }
+        }
+      }
+    }
+  },
+  "5": {
+    "pr": 22,
+    "stage": 0,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      12877
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 0,
+    "median": 12877,
+    "runs": {
+      "bisect-i5-r5": {
+        "loafBlockMs": 12877,
+        "loafMaxMs": 2363,
+        "loafCount": 374,
+        "p95": 66.6,
+        "keyMax": 282.6,
+        "keyP95": 266.3,
+        "replayDurationMs": 121770.80000019073,
+        "chunksSent": 189,
+        "blockAdds": 1174,
+        "seenMarks": 443,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 45,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207946,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 23408.099999904633,
+        "forcedSLMs": 1944.6000000000001,
+        "scriptMs": 2030.9999989509581,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 3870,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2055,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2050,
+            "chunksSent": 0,
+            "probeDurationMs": 5471.60000038147,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3238,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1423,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 1600,
+            "chunksSent": 95,
+            "probeDurationMs": 2355.5999999046326,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 149,
+              "published": 149
+            }
+          }
+        }
+      }
+    }
+  },
+  "1005": {
+    "pr": 24,
+    "stage": 1,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      63913
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 1,
+    "median": 63913,
+    "runs": {
+      "bisect-i1005-r6": {
+        "loafBlockMs": 63913,
+        "loafMaxMs": 4258,
+        "loafCount": 311,
+        "p95": 250,
+        "keyMax": 676.8,
+        "keyP95": 655.7,
+        "replayDurationMs": 121771.59999990463,
+        "chunksSent": 189,
+        "blockAdds": 1158,
+        "seenMarks": 440,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 112135,
+          "turns": 10,
+          "katex": 1514
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 65534.29999732971,
+        "forcedSLMs": 6260.7,
+        "scriptMs": 3793.899997520447,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 8837,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3677,
+              "unrendered": 174
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 4239.400000095367,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 139,
+              "published": 139
+            }
+          }
+        }
+      }
+    }
+  },
+  "1002": {
+    "pr": 24,
+    "stage": 1,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      12882
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 0,
+    "median": 12882,
+    "runs": {
+      "bisect-i1002-r7": {
+        "loafBlockMs": 12882,
+        "loafMaxMs": 2540,
+        "loafCount": 372,
+        "p95": 66.6,
+        "keyMax": 318.6,
+        "keyP95": 270.9,
+        "replayDurationMs": 121770.90000009537,
+        "chunksSent": 189,
+        "blockAdds": 1168,
+        "seenMarks": 443,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 111990,
+          "turns": 10,
+          "katex": 1514
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 22932.90000104904,
+        "forcedSLMs": 2086.1,
+        "scriptMs": 2205.800000572204,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 6267,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3679,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 2533.5,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 147,
+              "published": 147
+            }
+          }
+        }
+      }
+    }
+  },
+  "1003": {
+    "pr": 24,
+    "stage": 1,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      12947
+    ],
+    "controlValues": [],
+    "skips": 0,
+    "verdict": 0,
+    "median": 12947,
+    "runs": {
+      "bisect-i1003-r8": {
+        "loafBlockMs": 12947,
+        "loafMaxMs": 2449,
+        "loafCount": 388,
+        "p95": 50.1,
+        "keyMax": 300.9,
+        "keyP95": 294.8,
+        "replayDurationMs": 121770.7999997139,
+        "chunksSent": 189,
+        "blockAdds": 1172,
+        "seenMarks": 443,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207946,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 23155.700003623962,
+        "forcedSLMs": 2074.1,
+        "scriptMs": 2606.0000003814694,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 6748.599999904633,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3679,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 2436.699999809265,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 148,
+              "published": 148
+            }
+          }
+        }
+      }
+    }
+  },
+  "1004": {
+    "pr": 24,
+    "stage": 1,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [
+      65930
+    ],
+    "controlValues": [
+      66616,
+      67457
+    ],
+    "skips": 0,
+    "verdict": 1,
+    "median": 65930,
+    "runs": {
+      "bisect-i1004-r9": {
+        "loafBlockMs": 65930,
+        "loafMaxMs": 3983,
+        "loafCount": 324,
+        "p95": 266.6,
+        "keyMax": 678.3,
+        "keyP95": 648.8,
+        "replayDurationMs": 121861.59999990463,
+        "chunksSent": 189,
+        "blockAdds": 1157,
+        "seenMarks": 438,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 112132,
+          "turns": 10,
+          "katex": 1514
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 67703.40000343323,
+        "forcedSLMs": 6672.5,
+        "scriptMs": 3899.0999984741215,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 8859.200000286102,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3677,
+              "unrendered": 174
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 3974.5,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 139,
+              "published": 139
+            }
+          }
+        }
+      },
+      "control-i1004-r2": {
+        "loafBlockMs": 66616,
+        "loafMaxMs": 3980,
+        "loafCount": 319,
+        "p95": 266.7,
+        "keyMax": 724.4,
+        "keyP95": 695.7,
+        "replayDurationMs": 121778.90000009537,
+        "chunksSent": 189,
+        "blockAdds": 1160,
+        "seenMarks": 437,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 45,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 111989,
+          "turns": 10,
+          "katex": 1514
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 68230.40000486374,
+        "forcedSLMs": 6164.8,
+        "scriptMs": 3820.299998950959,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 8916.599999904633,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3676,
+              "unrendered": 175
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1861,
+              "unrendered": 175
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 3959.2000002861023,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 141,
+              "published": 141
+            }
+          }
+        }
+      },
+      "control-i1004-r3": {
+        "loafBlockMs": 67457,
+        "loafMaxMs": 3974,
+        "loafCount": 322,
+        "p95": 266.7,
+        "keyMax": 1228.3,
+        "keyP95": 1220.3,
+        "replayDurationMs": 121847.30000019073,
+        "chunksSent": 189,
+        "blockAdds": 1164,
+        "seenMarks": 441,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 48,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207850,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194549,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 68775.20000886917,
+        "forcedSLMs": 6601.800000000001,
+        "scriptMs": 4236.599999141694,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 8816.700000286102,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1862,
+              "unrendered": 174
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 3965.2999997138977,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 141,
+              "published": 141
+            }
+          }
+        }
+      }
+    }
+  },
+  "2001": {
+    "pr": 0,
+    "stage": 2,
+    "seedAccepted": 1,
+    "filesChecked": 34,
+    "pristine": 1,
+    "values": [],
+    "controlValues": [
+      16341,
+      12666
+    ],
+    "skips": 0,
+    "runs": {
+      "control-i2001-r1": {
+        "loafBlockMs": 16341,
+        "loafMaxMs": 2507,
+        "loafCount": 374,
+        "p95": 66.7,
+        "keyMax": 317.7,
+        "keyP95": 293.2,
+        "replayDurationMs": 121770.2999997139,
+        "chunksSent": 189,
+        "blockAdds": 1166,
+        "seenMarks": 443,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 49,
+        "routeDenials": 1,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207791,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194487,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 26178.499993801117,
+        "forcedSLMs": 2312.4,
+        "scriptMs": 2340.5999990463256,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 6515.5,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 2500.1000003814697,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 147,
+              "published": 147
+            }
+          }
+        }
+      },
+      "control-i2001-r4": {
+        "loafBlockMs": 12666,
+        "loafMaxMs": 2406,
+        "loafCount": 367,
+        "p95": 50.1,
+        "keyMax": 257.5,
+        "keyP95": 252.5,
+        "replayDurationMs": 121770.69999980927,
+        "chunksSent": 189,
+        "blockAdds": 1166,
+        "seenMarks": 440,
+        "completedWrites": 0,
+        "replayEscapes": 0,
+        "fetchDenials": 46,
+        "routeDenials": 2,
+        "shaMatches": 1,
+        "remounts": 2,
+        "before": {
+          "nodes": 207935,
+          "turns": 10,
+          "katex": 3028
+        },
+        "after": {
+          "nodes": 194642,
+          "turns": 9,
+          "katex": 2909
+        },
+        "renderSLMs": 22416.399995803833,
+        "forcedSLMs": 2023.1,
+        "scriptMs": 2239.4000028610235,
+        "probes": {
+          "before": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 10,
+              "answerRoots": 10,
+              "dilRoots": 0,
+              "turnStates": 10,
+              "seen": 4747,
+              "unrendered": 0
+            },
+            "visibleCounts": {
+              "turns": 5,
+              "answerRoots": 5,
+              "dilRoots": 0,
+              "turnStates": 5,
+              "seen": 2932,
+              "unrendered": 0
+            },
+            "visibleTurnStateValues": {
+              "complete": 5
+            },
+            "turnStateValues": {
+              "complete": 10
+            },
+            "answerBlocksAuto": 2927,
+            "chunksSent": 0,
+            "probeDurationMs": 6240.700000286102,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 0,
+              "published": 0
+            }
+          },
+          "mid": {
+            "oldContainerSelectorMatches": 2,
+            "counts": {
+              "turns": 9,
+              "answerRoots": 9,
+              "dilRoots": 0,
+              "turnStates": 9,
+              "seen": 3679,
+              "unrendered": 172
+            },
+            "visibleCounts": {
+              "turns": 4,
+              "answerRoots": 4,
+              "dilRoots": 0,
+              "turnStates": 4,
+              "seen": 1864,
+              "unrendered": 172
+            },
+            "visibleTurnStateValues": {
+              "complete": 3,
+              "in_progress": 1
+            },
+            "turnStateValues": {
+              "complete": 8,
+              "in_progress": 1
+            },
+            "answerBlocksAuto": 2041,
+            "chunksSent": 95,
+            "probeDurationMs": 2399.199999809265,
+            "offEmpty": 1,
+            "butter": {
+              "smootherFrames": 147,
+              "published": 147
+            }
+          }
+        }
+      }
+    }
+  }
+}
