@@ -140,33 +140,33 @@ _Where_: `rail/turns.js`, `rail/model.js`
 **Jump**:
 Moving the chat to a question or bookmark from the rail; it plays as a glide or a trip.
 _Avoid_: navigation, scroll-to
-_Where_: `rail/rail.js`
+_Where_: `rail/journey.js`
 
 **Glide**:
 A jump to a nearby mounted question: a plain smooth scroll.
-_Where_: `rail/rail.js`
+_Where_: `rail/journey.js`
 
 **Trip**:
 How a far jump looks: the chat speeds off, placeholder lines stream past on the compositor while
 ChatGPT renders the target, and the chat slides in and stops on it.
 _Avoid_: animation, flight
-_Where_: `rail/trip.js`, `rail/rail.js`
+_Where_: `rail/trip.js`, `rail/journey.js`
 
 **Journey**:
 A far jump's bookkeeping behind the trip: its deadline and readiness, carried over when a new click
 takes the trip over.
-_Where_: `rail/rail.js`
+_Where_: `rail/journey.js`
 
 **Pinned**:
 The clicked question staying current and aligned after a jump until you scroll yourself.
 _Avoid_: locked, sticky
-_Where_: `rail/model.js`, `rail/rail.js`
+_Where_: `rail/model.js`, `rail/journey.js`
 
 **Journey status**:
 What a jump tells the rail presentation model while it runs: whether it is travelling (only its
 target lit) or pinned, the question it opens, the busy tick and the bookmark an earlier trip loads
 pages for. The model decides what is lit from it.
-_Where_: `rail/rail.js`, `rail/model.js`
+_Where_: `rail/journey.js`, `rail/model.js`
 
 **Send pre-jump**:
 On sending a question from more than 1.5 screens above the chat's end, the jump to one screen above

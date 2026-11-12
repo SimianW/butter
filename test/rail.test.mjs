@@ -1,8 +1,8 @@
 // The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: jump cancellation, and wiring
 // that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
 // the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
-// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs and
-// test/pre-jump.test.mjs.
+// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs,
+// test/rail-journey.test.mjs and test/pre-jump.test.mjs.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
@@ -215,6 +215,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0, nested = 
     composer,
     sendButton,
     pendingFrames: () => frames.size,
+    mount: (el) => ctx.butterNavTurn(el), // stream/offscreen.js reports a mounted turn
     // A new URL, as the rail's 700 ms poll sees it.
     navigate: (pathname) => {
       ctx.location.pathname = pathname;
@@ -292,9 +293,11 @@ test('a wheel on the chat during a trip ends the trip: the chat and the placehol
   const json = (x) => JSON.stringify(x.keyframes);
   assert.equal(content.name, 'content');
   assert.equal(warp.style.visibility, 'visible', 'the trip departed');
+  assert.ok(nav.ticks()[35].classList.contains('busy'), 'its tick blinks');
   const [fadeOut] = content.animations;
   assert.equal(json(fadeOut), '[{"opacity":1},{"opacity":0}]');
   nav.scroller.emit('wheel');
+  assert.equal(nav.ticks()[35].classList.contains('busy'), false);
   assert.equal(fadeOut.cancelled, true);
   assert.equal(json(content.animations.at(-1)), '[{"opacity":0},{"opacity":1}]');
   assert.equal(json(warp.animations.at(-1)), '[{"opacity":1},{"opacity":0}]');
@@ -431,4 +434,45 @@ test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Es
   key(nav.select('.rail'), 'ArrowLeft', more);
   key(card, 'Escape', nav.select('.bmc').querySelectorAll('.go')[0]);
   assert.equal(FakeElement.focused, more);
+});
+
+// The jump (rail/journey.js) through the rail: the turn tracker's mounts reach its pin, and card rows
+// start bookmark and earlier jumps whose busy dots the rail draws.
+test('a remounted target stays pinned: the turn tracker hands new turns to the jump', async () => {
+  const nav = setup();
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[2] });
+  nav.scroller.emit('scrollend');
+  for (let i = 0; i < 80; i++) {
+    nav.frame();
+    await Promise.resolve();
+  }
+  const el = new FakeElement('article');
+  el.setAttribute('data-turn-key', 'q2');
+  el.top = 500;
+  el.getBoundingClientRect = () => ({ top: el.top - nav.scroller.scrollTop });
+  nav.turns[2].remove();
+  nav.scroller.append(el);
+  nav.mount(el);
+  nav.resize(el);
+  assert.equal(nav.scroller.scrollTop, 500 - 64);
+});
+
+test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks the dots until stopped", () => {
+  const nav = setup({ count: 5, hasPrev: true });
+  nav.setMarks({ '-1': [false], q3: [false] });
+  const rail = nav.select('.rail'),
+    more = nav.select('.more'),
+    key = (el, k, target) => el.emit('keydown', { key: k, target, preventDefault() {} }),
+    row = () => nav.select('.bmc').querySelectorAll('.go')[0];
+  key(rail, 'ArrowLeft', nav.ticks()[3]);
+  row().emit('click', { detail: 0 });
+  assert.equal(nav.scroller.scrollTop, 400 - 64, 'a glide to its question');
+  assert.equal(FakeElement.focused, nav.ticks()[3]);
+  key(rail, 'ArrowLeft', more);
+  row().emit('click', { detail: 0 });
+  assert.ok(more.classList.contains('busy'), 'the dots blink while pages load');
+  assert.equal(nav.select('.bmc').querySelectorAll('.wspin').length, 1, 'its row spins');
+  nav.scroller.emit('wheel');
+  assert.equal(more.classList.contains('busy'), false);
+  assert.equal(nav.select('.bmc').querySelectorAll('.wspin').length, 0);
 });

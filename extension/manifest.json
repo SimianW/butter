@@ -30,6 +30,7 @@
         "rail/model.js",
         "rail/turns.js",
         "rail/trip.js",
+        "rail/journey.js",
         "rail/pre-jump.js",
         "rail/rail.js",
         "page/reader.js",
