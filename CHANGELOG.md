@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-alpha.21] - 2026-11-12
+
+### Fixed
+
+- Fixed ChatGPT lagging while a long answer streams in, a slowdown since 0.1.0-alpha.14. In the
+  lab, the time the page was blocked during a long streamed answer fell from 67 s to 13.6 s.
+
 ## [0.1.0-alpha.20] - 2026-11-10
 
 ### Added
