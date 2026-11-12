@@ -3,8 +3,8 @@
 // of the turn's question, and stream/offscreen.js reports every turn it mounts (`butterNavTurn`).
 // It privately owns the visible scroller (following ChatGPT's hidden kept copies), the mounted
 // turns, the ones on screen in the lit band, each question's last-seen position, the reconcile with
-// the conversation, and noticing that the user scrolls. rail/rail.js reads it through the interface
-// below and is told through its callbacks:
+// the conversation, and noticing that the user scrolls. rail/rail.js and its jump (rail/jump.js)
+// read it through the interface below; rail.js is told through its callbacks:
 // - `changed()`: what the rail shows may have changed (scroller box, reconciled questions);
 // - `kick()`: the lit band changed (not called while a jump travels);
 // - `sync()`: check which conversation is open (a newly visible scroller or turn can precede the URL poll);

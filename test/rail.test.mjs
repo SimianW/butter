@@ -1,230 +1,12 @@
 // The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: jump cancellation, and wiring
 // that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
 // the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
-// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs and
-// test/pre-jump.test.mjs.
+// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs,
+// test/rail-jump.test.mjs and test/pre-jump.test.mjs.
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import test from 'node:test';
-import vm from 'node:vm';
-import seekMeta from '../extension/seek/seek-meta.js';
-import bookmarks from '../extension/bookmarks/model.js';
-import { RAIL_SCRIPTS } from '../lab/harness/rail-scripts.mjs';
-import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
-
-// The rail's scripts under rail/ in manifest order, the adapter last (its other dependencies, seek's
-// card text and the bookmark rules, are given as globals).
-const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
-  f,
-  fs.readFileSync(new URL(`../extension/${f}`, import.meta.url), 'utf8'),
-]);
-const conversation = '12345678-1234-1234-1234-123456789abc';
-
-// `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
-// than straight in the scroller.
-function setup({ count = 5, hasPrev = false, height = 900, gutter = 0, nested = false } = {}) {
-  let now = 10_000,
-    nextId = 1;
-  const frames = new Map(),
-    timers = new Map(),
-    intervals = [];
-  const document = new FakeElement();
-  document.createElement = (tag) => new FakeElement(tag);
-  document.body = new FakeElement('body');
-  document.documentElement = new FakeElement('html');
-  const window = new FakeElement();
-  const { ResizeObserver, IntersectionObserver, resize } = fakeObservers();
-  const ctx = vm.createContext({
-    document,
-    ButterSeekMeta: seekMeta,
-    ButterBookmarks: bookmarks, // the manifest loads bookmarks/model.js before the rail
-    navigator: { language: 'en' },
-    location: { pathname: `/c/${conversation}` },
-    Element: FakeElement,
-    ResizeObserver,
-    IntersectionObserver,
-    MutationObserver: class {
-      observe() {}
-    },
-    getComputedStyle: () => ({ colorScheme: 'light' }),
-    matchMedia: () => ({ matches: false, addEventListener() {} }),
-    innerWidth: 1200,
-    performance: { now: () => now },
-    addEventListener: window.addEventListener.bind(window),
-    removeEventListener: window.removeEventListener.bind(window),
-    requestAnimationFrame(callback) {
-      const id = nextId++;
-      frames.set(id, callback);
-      return id;
-    },
-    cancelAnimationFrame: (id) => frames.delete(id),
-    setTimeout(callback, ms) {
-      const id = nextId++;
-      timers.set(id, { callback, at: now + ms });
-      return id;
-    },
-    clearTimeout: (id) => timers.delete(id),
-    setInterval: (callback) => intervals.push(callback),
-  });
-  for (const [filename, source] of sources) vm.runInContext(source, ctx, { filename });
-  const frame = (timestamp = now + 16) => {
-    // rAF's frame-start timestamp may lag the current performance.now() clock.
-    now = Math.max(now, timestamp);
-    const due = [...frames.values()];
-    frames.clear();
-    for (const callback of due) callback(timestamp);
-  };
-  const flush = () => {
-    for (let i = 0; frames.size && i < 150; i++) frame();
-    assert.equal(frames.size, 0, 'animation should settle and stop scheduling frames');
-  };
-  const send = (message) => document.emit('butter-nav', { detail: JSON.stringify(message) });
-  const scroller = new FakeElement();
-  Object.assign(scroller, {
-    className: 'thread-scroll-container',
-    scrollTop: 0,
-    scrollHeight: 5000,
-    clientHeight: height,
-    clientWidth: 1000 - gutter,
-    offsetWidth: 1000,
-    getBoundingClientRect: () => ({ top: 0, bottom: height, left: 0, right: 1000, width: 1000 }),
-    scrollTo({ top }) {
-      this.scrollTop = top;
-    },
-  });
-  let box = scroller;
-  if (nested)
-    for (const name of ['content', 'wrapper', 'window']) {
-      const el = new FakeElement();
-      el.name = name;
-      box.append(el);
-      box = el;
-    }
-  const turns = Array.from({ length: count }, (_, i) => {
-    const turn = new FakeElement('article');
-    turn.setAttribute('data-turn-key', `q${i}`);
-    turn.top = 100 + 100 * i;
-    turn.getBoundingClientRect = () => ({
-      top: turn.top - scroller.scrollTop,
-      bottom: turn.top + 100 - scroller.scrollTop,
-    });
-    box.append(turn);
-    ctx.butterNavTurn(turn);
-    return turn;
-  });
-  resize(scroller);
-  send({
-    type: 'page',
-    conv: conversation,
-    before: null,
-    hasPrev,
-    items: turns.map((_, i) => ({ id: `q${i}`, q: `Question ${i}` })),
-  });
-  flush();
-  const host = document.body.children[0];
-  const select = (selector) => host.shadowRoot.querySelector(selector);
-  const ticks = () => select('.ticks').children;
-  const geometry = () =>
-    ticks().map((tick) => {
-      const bar = tick.firstChild;
-      const match = /^scale\(([^,]+), ([^)]+)\)$/.exec(bar.style.transform ?? 'scale(1, 1)');
-      assert.ok(match, `invalid transform: ${bar.style.transform}`);
-      const values = [Number(match[1]), Number(bar.style.opacity ?? 0.28), Number(match[2])];
-      assert.ok(values.every(Number.isFinite), `non-finite geometry: ${values}`);
-      return values;
-    });
-  const form = new FakeElement('form'),
-    composer = new FakeElement(),
-    sendButton = new FakeElement('button');
-  composer.className = 'ProseMirror';
-  composer.textContent = 'New question';
-  sendButton.setAttribute('data-testid', 'send-button');
-  form.append(composer);
-  form.append(sendButton);
-  // Bookmarks under questions, as the bookmark session publishes them: { id: [stale, …] }; id -1
-  // is earlier history that isn't loaded yet (ButterBookmarks.EARLIER).
-  const setMarks = (byId, revision = null) =>
-    ctx.ButterRail.setMarks(conversation, {
-      revision,
-      groups: new Map(
-        Object.entries(byId).map(([key, flags]) => {
-          const id = key === '-1' ? -1 : key;
-          const bookmarks = flags.map((stale, k) => ({
-            key: `${id}-${k}`,
-            excerpt: `Bookmark ${k}`,
-            stale,
-          }));
-          return [
-            id,
-            {
-              count: bookmarks.length,
-              fresh: false,
-              bookmarks,
-              stale: flags.every(Boolean),
-              land: () => 0,
-              remove() {},
-            },
-          ];
-        }),
-      ),
-    });
-  // The rail's bookmark dots: per question index, where its right edge sits left of the ticks'
-  // right end, its centre below the rail's top, its diameter, and its look.
-  const dots = () =>
-    select('.marks')
-      .children.filter((el) => el.className.startsWith('bdot'))
-      .map((el) => {
-        const [x, y] = el.style.translate.split(' ').map(parseFloat),
-          d = parseFloat(el.style.width);
-        return {
-          q: Number(el.getAttribute('data-q')),
-          right: -x,
-          center: y + d / 2,
-          d,
-          hidden: el.getAttribute('aria-hidden'),
-          stale: el.classList.contains('stale'),
-          faint: el.classList.contains('faint'),
-        };
-      });
-  return {
-    document,
-    setMarks,
-    dots,
-    seek: (message) =>
-      document.emit('butter-seek-state', {
-        detail: JSON.stringify({ conv: conversation, ...message }),
-      }),
-    runTimers: () => {
-      for (const [id, timer] of [...timers])
-        if (timer.at <= now) {
-          timers.delete(id);
-          timer.callback();
-        }
-    },
-    frame,
-    flush,
-    send,
-    select,
-    ticks,
-    geometry,
-    host,
-    scroller,
-    turns,
-    resize,
-    window,
-    composer,
-    sendButton,
-    pendingFrames: () => frames.size,
-    // A new URL, as the rail's 700 ms poll sees it.
-    navigate: (pathname) => {
-      ctx.location.pathname = pathname;
-      for (const callback of intervals) callback();
-    },
-    advanceClock: (ms) => {
-      now += ms;
-    },
-  };
-}
+import { FakeElement } from './helpers/rail-dom.mjs';
+import { conversation, setup } from './helpers/rail-boot.mjs';
 
 for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
   test(`${cancel} invalidates a pending jump before it can settle or pin its old target`, async () => {
@@ -292,9 +74,11 @@ test('a wheel on the chat during a trip ends the trip: the chat and the placehol
   const json = (x) => JSON.stringify(x.keyframes);
   assert.equal(content.name, 'content');
   assert.equal(warp.style.visibility, 'visible', 'the trip departed');
+  assert.ok(nav.ticks()[35].classList.contains('busy'), 'its tick blinks');
   const [fadeOut] = content.animations;
   assert.equal(json(fadeOut), '[{"opacity":1},{"opacity":0}]');
   nav.scroller.emit('wheel');
+  assert.equal(nav.ticks()[35].classList.contains('busy'), false);
   assert.equal(fadeOut.cancelled, true);
   assert.equal(json(content.animations.at(-1)), '[{"opacity":0},{"opacity":1}]');
   assert.equal(json(warp.animations.at(-1)), '[{"opacity":1},{"opacity":0}]');
@@ -432,3 +216,94 @@ test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Es
   key(card, 'Escape', nav.select('.bmc').querySelectorAll('.go')[0]);
   assert.equal(FakeElement.focused, more);
 });
+
+// The jump (rail/jump.js) through the rail: the turn tracker's mounts reach its pin, and card rows
+// start bookmark and earlier jumps whose busy dots the rail draws.
+test('a remounted target stays pinned: the turn tracker hands new turns to the jump', async () => {
+  const nav = setup();
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[2] });
+  nav.scroller.emit('scrollend');
+  for (let i = 0; i < 80; i++) {
+    nav.frame();
+    await Promise.resolve();
+  }
+  const el = new FakeElement('article');
+  el.setAttribute('data-turn-key', 'q2');
+  el.top = 500;
+  el.getBoundingClientRect = () => ({ top: el.top - nav.scroller.scrollTop });
+  nav.turns[2].remove();
+  nav.scroller.append(el);
+  nav.mount(el);
+  nav.resize(el);
+  assert.equal(nav.scroller.scrollTop, 500 - 64);
+});
+
+test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks the dots until stopped", () => {
+  const nav = setup({ count: 5, hasPrev: true });
+  nav.setMarks({ '-1': [false], q3: [false] });
+  const rail = nav.select('.rail'),
+    more = nav.select('.more'),
+    key = (el, k, target) => el.emit('keydown', { key: k, target, preventDefault() {} }),
+    row = () => nav.select('.bmc').querySelectorAll('.go')[0];
+  key(rail, 'ArrowLeft', nav.ticks()[3]);
+  row().emit('click', { detail: 0 });
+  assert.equal(nav.scroller.scrollTop, 400 - 64 + 30, 'a glide onto its text, 30 px into the turn');
+  assert.equal(FakeElement.focused, nav.ticks()[3]);
+  key(rail, 'ArrowLeft', more);
+  row().emit('click', { detail: 0 });
+  assert.ok(more.classList.contains('busy'), 'the dots blink while pages load');
+  assert.equal(nav.select('.bmc').querySelectorAll('.wspin').length, 1, 'its row spins');
+  nav.scroller.emit('wheel');
+  assert.equal(more.classList.contains('busy'), false);
+  assert.equal(nav.select('.bmc').querySelectorAll('.wspin').length, 0);
+});
+
+// An earlier trip from the dots' card finds its bookmark under a question that just loaded: the
+// card goes away, held until the pointer comes back (a pointer trip), or focus moves to the
+// bookmark's tick (a keyboard trip).
+for (const keyboard of [false, true]) {
+  test(`an earlier ${keyboard ? 'keyboard' : 'pointer'} trip that finds its bookmark puts the dots' card away${keyboard ? ' and focuses its tick' : ', held'}`, async () => {
+    const nav = setup({ count: 3, hasPrev: true });
+    nav.setMarks({ '-1': [false, false] }, nav.rev());
+    const card = nav.select('.card'),
+      rail = nav.select('.rail');
+    rail.emit('keydown', { key: 'ArrowLeft', target: nav.select('.more'), preventDefault() {} });
+    nav
+      .select('.bmc')
+      .querySelectorAll('.go')[0]
+      .emit('click', { detail: keyboard ? 0 : 1 });
+    const until = async (done) => {
+      for (let i = 0; i < 300 && !done(); i++) {
+        nav.frame();
+        nav.runTimers();
+        await new Promise((r) => setImmediate(r));
+      }
+      assert.ok(done());
+    };
+    await until(() => nav.scroller.scrollTop === 240 + 32); // leaves the paging band
+    await until(() => nav.scroller.scrollTop === 0); // and asks for the page
+    nav.send({
+      type: 'page',
+      conv: conversation,
+      before: 'q0',
+      hasPrev: true, // the other bookmark stays on the dots
+      items: [{ id: 'p0', q: 'Earlier' }],
+    });
+    const el = new FakeElement('article');
+    el.setAttribute('data-turn-key', 'p0');
+    el.top = 0;
+    el.getBoundingClientRect = () => ({ top: el.top - nav.scroller.scrollTop });
+    nav.scroller.prepend(el);
+    nav.mount(el);
+    await until(() => nav.ticks().length === 4); // rendered: the marks can follow its revision
+    assert.ok(card.classList.contains('show'), "the dots' card stays while pages load");
+    nav.setMarks(
+      { '-1': [{ key: '-1-1', stale: false }], p0: [{ key: '-1-0', stale: false }] },
+      nav.rev(),
+    );
+    await until(() => !card.classList.contains('show'));
+    if (keyboard) assert.equal(FakeElement.focused, nav.ticks()[0]);
+    rail.emit('focusin', { target: nav.ticks()[1] }); // held: no card until the pointer comes back
+    assert.equal(card.classList.contains('show'), keyboard);
+  });
+}

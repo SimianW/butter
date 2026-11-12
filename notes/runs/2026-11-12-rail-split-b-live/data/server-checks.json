@@ -1,0 +1,82 @@
+{
+  "branch-main-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-main-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-pr-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-pr-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch800-main-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch800-main-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch800-pr-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch800-pr-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-main-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-main-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-pr-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-pr-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "wash-main-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-main-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-pr-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-pr-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  }
+}

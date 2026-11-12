@@ -5,7 +5,7 @@
 // dots it shows, its contents and place, held or not) and the bookmark dots. rail/rail.js, its DOM
 // adapter, feeds it events, measured facts and time, patches the DOM from what it returns, measures
 // what only layout knows (the card's height), schedules frames while it says something moves, and
-// runs focus and scroll. The jump in rail.js reads the questions and marks from here and publishes
+// runs focus. The jump (rail/jump.js) reads the questions and marks from here and publishes
 // its status (flying, pinned, the active question, the busy tick, the earlier wait) back.
 // test/rail-model.test.mjs and test/rail-card.test.mjs drive it through this interface.
 (() => {

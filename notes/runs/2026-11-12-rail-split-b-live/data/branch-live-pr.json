@@ -1,0 +1,93 @@
+{
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  },
+  "runs": [
+    {
+      "width": 1280,
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "originalUnchanged": true,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          269,
+          269
+        ],
+        "scroll": [
+          498,
+          498
+        ]
+      },
+      "sendClicks": [
+        {
+          "inBranch": true,
+          "ms": 7748
+        }
+      ],
+      "originalSendRequests": [],
+      "afterSendClick": [
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/sentinel/chat-requirements/prepare",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 8078
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/telemetry/intake",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9819
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/codex/notification/subscriptions",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 10282
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11345
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11347
+        }
+      ],
+      "distinctBranch": true,
+      "branchIdentityKind": "local",
+      "latestReplyMatchesOriginal": true
+    }
+  ],
+  "attempts": [
+    {
+      "stage": "branch-live-pr",
+      "exit": 1,
+      "selectionPillTimeout": true,
+      "completedWidths": [
+        1280
+      ]
+    },
+    {
+      "stage": "branch800-live-pr",
+      "exit": 1,
+      "selectionPillTimeout": true,
+      "completedWidths": []
+    }
+  ]
+}

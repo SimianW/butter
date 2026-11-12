@@ -4,8 +4,8 @@
 // box), the browser's own smooth scrolling, and the placeholder layer `warp`, whose `streak` of text
 // lines streams past. (A transform on the content box would make Chrome repaint all of it.)
 // It privately owns the trip in progress: whose jump it is (`tok`), its direction, the content's
-// fade, the placeholder's fade-in and its streaming loop. rail/rail.js's jump decides when to
-// depart, redirect, arrive or end; this module does the animating and puts everything back.
+// fade, the placeholder's fade-in and its streaming loop. The jump (rail/jump.js) decides when
+// to depart, redirect, arrive or end; this module does the animating and puts everything back.
 // `ButterRailTrip.CSS` styles `.warp` and `.streak` in the rail's shadow root.
 // test/rail-trip.test.mjs drives it directly.
 (() => {

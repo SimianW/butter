@@ -10,7 +10,7 @@
     // of a top-level list on its own, #51): page/reader.js.
     R = ButterPageReader;
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
-  const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/rail.js)
+  const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/model.js)
   const strings = (zh) => (zh ? { sel: '为选中内容加书签' } : { sel: 'Bookmark selection' });
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   let TXT = strings(zh());
@@ -370,7 +370,7 @@
   // The bottom of ChatGPT's header over the scroller's top edge: the fixed or sticky box drawn
   // there. Some chats' scrollers start below the header (a project's chats, checked on
   // 2026-11-10): their content shows from the scroller's own top. Found nothing to go by, the
-  // header is taken to overlap the scroller, as rail/rail.js takes it.
+  // header is taken to overlap the scroller, as the rail does (rail/model.js, rail/turns.js band).
   const headerBottom = (sc, r) => {
     const top = Math.max(0, r.top);
     for (

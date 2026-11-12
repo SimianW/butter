@@ -8,7 +8,7 @@ export const maxLines = 500;
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 566,
   'extension/dev/recorder.js': 574,
-  'extension/rail/rail.js': 1155,
+  'extension/rail/rail.js': 743,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
@@ -81,6 +81,7 @@ export default [
         ButterRailModel: 'readonly', // defined in rail/model.js
         ButterRailTurns: 'readonly', // rail/turns.js
         ButterRailTrip: 'readonly', // rail/trip.js
+        ButterRailJump: 'readonly', // rail/jump.js
         ButterPreJump: 'readonly', // rail/pre-jump.js
       },
     },
@@ -201,6 +202,7 @@ export default [
       'extension/rail/model.js',
       'extension/rail/turns.js',
       'extension/rail/trip.js',
+      'extension/rail/jump.js',
       'extension/rail/pre-jump.js',
       'extension/page/reader.js',
       'extension/page/reader-main.js',
