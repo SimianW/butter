@@ -1,0 +1,157 @@
+{
+  "pageErrors": {
+    "butter": 0,
+    "other": 0
+  },
+  "runs": [
+    {
+      "width": 1280,
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "originalUnchanged": true,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          498,
+          498
+        ]
+      },
+      "sendClicks": [
+        {
+          "inBranch": true,
+          "ms": 7596
+        }
+      ],
+      "originalSendRequests": [],
+      "afterSendClick": [
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/sentinel/chat-requirements/prepare",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 7915
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/telemetry/intake",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9450
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/codex/notification/subscriptions",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9452
+        }
+      ],
+      "distinctBranch": true,
+      "branchIdentityKind": "local",
+      "latestReplyMatchesOriginal": true
+    },
+    {
+      "width": 800,
+      "button": {
+        "gap": 4,
+        "topDelta": 0,
+        "native": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px",
+        "butter": "30px | 8px | rgb(48, 48, 48) | rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 8px -2px"
+      },
+      "end": "ready",
+      "originalUnchanged": true,
+      "originalCompare": {
+        "sameUrl": true,
+        "draftLength": [
+          0,
+          0
+        ],
+        "scroll": [
+          511,
+          511
+        ]
+      },
+      "sendClicks": [
+        {
+          "inBranch": true,
+          "ms": 9054
+        }
+      ],
+      "originalSendRequests": [],
+      "afterSendClick": [
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/sentinel/chat-requirements/prepare",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9412
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/telemetry/intake",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9433
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/backend-api/codex/notification/subscriptions",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 9453
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11339
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11340
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11375
+        },
+        {
+          "tab": "branch",
+          "method": "POST",
+          "path": "/ces/v1/rgstr",
+          "blocked": "net::ERR_BLOCKED_BY_CLIENT.Inspector",
+          "ms": 11925
+        }
+      ],
+      "distinctBranch": true,
+      "branchIdentityKind": "local",
+      "latestReplyMatchesOriginal": true
+    }
+  ],
+  "attempts": [
+    {
+      "stage": "branch-live-pr",
+      "exit": 0,
+      "selectionPillTimeout": false,
+      "completedWidths": [
+        1280,
+        800
+      ]
+    }
+  ]
+}

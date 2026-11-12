@@ -13,7 +13,7 @@ this page and the stylesheet disagree, the stylesheet wins. Fix the page.
 
 ## The rail's bookmark dot
 
-The rail's own colour, set in `extension/rail/rail.js` (`--dot`), not a popup token. The dot beside a
+The rail's own colour, set in `extension/rail/style.js` (`--dot`), not a popup token. The dot beside a
 tick that holds bookmarks and the dot that starts each row of the tick's card use it.
 
 | Colour  | Light     | Dark      | Used for                                                                  |

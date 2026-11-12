@@ -3,9 +3,9 @@
 // each tick's identity, the rail's geometry, the hover wave's progress per question, which ticks
 // are lit (seek, opening, a jump's target, the lit band, pinned), the card (which tick or the three
 // dots it shows, its contents and place, held or not) and the bookmark dots. rail/rail.js, its DOM
-// adapter, feeds it events, measured facts and time, patches the DOM from what it returns, measures
-// what only layout knows (the card's height), schedules frames while it says something moves, and
-// runs focus. The jump (rail/jump.js) reads the questions and marks from here and publishes
+// adapter, feeds it events, measured facts and time, patches the DOM from what it returns (the card
+// through rail/card.js, which measures what only layout knows: the card's height), schedules frames
+// while it says something moves, and runs focus. The jump (rail/jump.js) reads the questions and marks from here and publishes
 // its status (flying, pinned, the active question, the busy tick, the earlier wait) back.
 // test/rail-model.test.mjs and test/rail-card.test.mjs drive it through this interface.
 (() => {
@@ -44,7 +44,7 @@
   // (-1, the three dots' index; ButterBookmarks.EARLIER).
   const EARLIER = -1;
   // The three dots' span from the ticks' right end: their 2 px padding, three 3 px dots and two
-  // 3 px gaps (see .more in rail.js's CSS).
+  // 3 px gaps (see .more in rail/style.js).
   const DOTS_W = 17;
 
   function ButterRailModel() {

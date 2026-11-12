@@ -93,8 +93,8 @@ _Where_: `rail/rail.js`, `docs/history-rail.md`
 What the rail shows, worked out with no DOM, timers or frames: the conversation's questions and each
 tick's identity, the rail's geometry, the hover wave, which ticks are lit, the card and the dots.
 `rail/rail.js` is its DOM adapter: it feeds the model events and frame times (the turn tracker
-feeds it measured boxes), patches the shadow DOM from what the model returns, and schedules frames
-only while the model says something moves.
+feeds it measured boxes), patches the shadow DOM from what the model returns (the card through its
+own adapter, `rail/card.js`), and schedules frames only while the model says something moves.
 _Avoid_: rail state, view model
 _Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`
 
@@ -129,7 +129,7 @@ _Where_: `rail/model.js`, `rail/rail.js`
 The panel a tick or the three dots shows on hover or focus: the question's meta line and text, plus
 a row per bookmark when it holds any.
 _Avoid_: tooltip, popover
-_Where_: `rail/model.js`, `rail/rail.js`
+_Where_: `rail/model.js`, `rail/card.js`
 
 **Lit band**:
 The reading region between the header and the composer; the questions showing in it get lit

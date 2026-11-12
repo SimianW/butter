@@ -32,6 +32,8 @@
         "rail/trip.js",
         "rail/jump.js",
         "rail/pre-jump.js",
+        "rail/style.js",
+        "rail/card.js",
         "rail/rail.js",
         "page/reader.js",
         "selection/pill.js",

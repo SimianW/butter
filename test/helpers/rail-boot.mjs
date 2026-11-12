@@ -149,7 +149,8 @@ export function setup({
   form.append(sendButton);
   // Bookmarks under questions, as the bookmark session publishes them: { id: [stale, …] }, or
   // { stale, key } to give one its key (else `${id}-${k}`); id -1 is earlier history that isn't
-  // loaded yet (ButterBookmarks.EARLIER). A jump lands 30 px into its bookmark's turn.
+  // loaded yet (ButterBookmarks.EARLIER). A jump lands 30 px into its bookmark's turn, 10 px more per
+  // bookmark before it in its group.
   const setMarks = (byId, revision = null) =>
     ctx.ButterRail.setMarks(conversation, {
       revision,
@@ -168,7 +169,7 @@ export function setup({
               fresh: false,
               bookmarks,
               stale: bookmarks.every((b) => b.stale),
-              land: () => 30,
+              land: (turn, b) => 30 + 10 * bookmarks.indexOf(b),
               remove() {},
             },
           ];

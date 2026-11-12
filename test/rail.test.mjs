@@ -1,8 +1,8 @@
 // The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: jump cancellation, and wiring
-// that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
-// the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
-// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs,
-// test/rail-jump.test.mjs and test/pre-jump.test.mjs.
+// that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus, the
+// card's grace and Escape). What the rail shows is tested through its model (test/rail-model and
+// rail-card .test.mjs); its modules through their own interfaces (test/rail-turns, rail-trip,
+// rail-jump, rail-card-dom and pre-jump .test.mjs). test/helpers/rail-boot.mjs boots it.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { FakeElement } from './helpers/rail-dom.mjs';
@@ -217,6 +217,28 @@ test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Es
   assert.equal(FakeElement.focused, more);
 });
 
+test("a left bookmark card goes after 200 ms unless the pointer comes back; Escape puts the dots' away", () => {
+  const nav = setup({ count: 3, hasPrev: true });
+  nav.setMarks({ '-1': [false], q1: [false] });
+  const rail = nav.select('.rail'),
+    shows = () => nav.select('.card').classList.contains('show'),
+    key = (k, target) => rail.emit('keydown', { key: k, target, preventDefault() {} }),
+    wait = (ms) => (nav.advanceClock(ms), nav.runTimers());
+  key('ArrowLeft', nav.ticks()[1]);
+  rail.emit('pointerleave');
+  wait(150);
+  rail.emit('pointerenter');
+  wait(100);
+  assert.ok(shows(), 'the pointer came back');
+  rail.emit('pointerleave');
+  wait(200);
+  assert.deepEqual([shows(), rail.classList.contains('hot')], [false, false]);
+  key('ArrowLeft', nav.select('.more'));
+  assert.ok(shows());
+  nav.window.emit('keydown', { key: 'Escape' }, 'capture');
+  assert.equal(shows(), false);
+});
+
 // The jump (rail/jump.js) through the rail: the turn tracker's mounts reach its pin, and card rows
 // start bookmark and earlier jumps whose busy dots the rail draws.
 test('a remounted target stays pinned: the turn tracker hands new turns to the jump', async () => {
@@ -238,16 +260,62 @@ test('a remounted target stays pinned: the turn tracker hands new turns to the j
   assert.equal(nav.scroller.scrollTop, 500 - 64);
 });
 
+// The rail's side of the card: a leftward move keeps it within its height (`spans`), a seek's end
+// hands the card back to the tick under the pointer, and the page's Escape before the rail exists.
+test("heading left to a bookmark card: within the card's height it stays; outside, the tick's card shows", () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [false] });
+  const rail = nav.select('.rail'),
+    y = (j) => 368 + 10 + (j + 0.5) * 14, // tick j's centre
+    text = () => nav.select('.text').textContent;
+  nav.select('.card').getBoundingClientRect = () => ({ top: y(1) - 20, bottom: y(2) + 1 });
+  rail.emit('pointerenter');
+  rail.emit('pointermove', { clientX: 30, clientY: y(1) });
+  assert.equal(text(), 'Question 1');
+  rail.emit('pointermove', { clientX: 20, clientY: y(2) }); // left, within the card's span
+  assert.equal(text(), 'Question 1', 'the bookmark card stays');
+  rail.emit('pointermove', { clientX: 10, clientY: y(3) }); // left, below it
+  assert.equal(text(), 'Question 3');
+});
+
+test('a seek ending with the pointer on the rail: the seek look goes and the tick under it shows', () => {
+  const nav = setup({ count: 4 });
+  const rail = nav.select('.rail'),
+    card = nav.select('.card');
+  nav.seek({ state: 'dragging', id: 'q0', n: 1, total: 4 });
+  nav.seek({ state: 'idle' });
+  rail.emit('pointerenter'); // the pointer comes onto tick 2 in the settled second
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 2.5 * 14 });
+  assert.ok(card.classList.contains('seek-card'));
+  nav.advanceClock(1000);
+  nav.runTimers();
+  assert.equal(card.classList.contains('seek-card'), false);
+  assert.deepEqual(
+    [
+      card.classList.contains('show'),
+      nav.select('.meta').textContent,
+      nav.select('.text').textContent,
+    ],
+    [true, '3 / 4', 'Question 2'],
+  );
+});
+
+test("the page's Escape before the rail is built does nothing", () => {
+  const nav = setup({ count: 1 });
+  assert.equal(nav.host, undefined, 'a one-question chat: no rail');
+  assert.doesNotThrow(() => nav.window.emit('keydown', { key: 'Escape' }, 'capture'));
+});
+
 test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks the dots until stopped", () => {
   const nav = setup({ count: 5, hasPrev: true });
-  nav.setMarks({ '-1': [false], q3: [false] });
+  nav.setMarks({ '-1': [false], q3: [false, false] });
   const rail = nav.select('.rail'),
     more = nav.select('.more'),
     key = (el, k, target) => el.emit('keydown', { key: k, target, preventDefault() {} }),
-    row = () => nav.select('.bmc').querySelectorAll('.go')[0];
+    row = (k = 0) => nav.select('.bmc').querySelectorAll('.go')[k];
   key(rail, 'ArrowLeft', nav.ticks()[3]);
-  row().emit('click', { detail: 0 });
-  assert.equal(nav.scroller.scrollTop, 400 - 64 + 30, 'a glide onto its text, 30 px into the turn');
+  row(1).emit('click', { detail: 0 });
+  assert.equal(nav.scroller.scrollTop, 400 - 64 + 40, "a glide onto the second's text, 40 px in");
   assert.equal(FakeElement.focused, nav.ticks()[3]);
   key(rail, 'ArrowLeft', more);
   row().emit('click', { detail: 0 });
@@ -260,9 +328,10 @@ test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks t
 
 // An earlier trip from the dots' card finds its bookmark under a question that just loaded: the
 // card goes away, held until the pointer comes back (a pointer trip), or focus moves to the
-// bookmark's tick (a keyboard trip).
-for (const keyboard of [false, true]) {
-  test(`an earlier ${keyboard ? 'keyboard' : 'pointer'} trip that finds its bookmark puts the dots' card away${keyboard ? ' and focuses its tick' : ', held'}`, async () => {
+// bookmark's tick (a keyboard trip). A card the pointer moved to meanwhile stays, not held.
+for (const mode of ['pointer', 'keyboard', 'moved']) {
+  const keyboard = mode === 'keyboard';
+  test(`an earlier ${keyboard ? 'keyboard' : 'pointer'} trip that finds its bookmark ${mode === 'moved' ? "leaves another tick's card shown" : `puts the dots' card away${keyboard ? ' and focuses its tick' : ', held'}`}`, async () => {
     const nav = setup({ count: 3, hasPrev: true });
     nav.setMarks({ '-1': [false, false] }, nav.rev());
     const card = nav.select('.card'),
@@ -297,10 +366,18 @@ for (const keyboard of [false, true]) {
     nav.mount(el);
     await until(() => nav.ticks().length === 4); // rendered: the marks can follow its revision
     assert.ok(card.classList.contains('show'), "the dots' card stays while pages load");
+    if (mode === 'moved') rail.emit('focusin', { target: nav.ticks()[1] }); // another tick's card
     nav.setMarks(
       { '-1': [{ key: '-1-1', stale: false }], p0: [{ key: '-1-0', stale: false }] },
       nav.rev(),
     );
+    if (mode === 'moved') {
+      await until(() => !nav.select('.more').classList.contains('busy')); // found: the wait ended
+      assert.ok(card.classList.contains('show'), "tick 1's card stays");
+      rail.emit('focusin', { target: nav.ticks()[2] });
+      assert.equal(nav.select('.text').textContent, 'Question 1', 'not held: the next card shows');
+      return;
+    }
     await until(() => !card.classList.contains('show'));
     if (keyboard) assert.equal(FakeElement.focused, nav.ticks()[0]);
     rail.emit('focusin', { target: nav.ticks()[1] }); // held: no card until the pointer comes back
