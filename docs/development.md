@@ -215,11 +215,15 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   `test/helpers/rail-model.mjs`, which drives the model as `rail.js` does;
   `test/rail-conversations.test.mjs` (pages, sends, reconciliation, revisions) and
   `test/rail-wave.test.mjs` (ticks keyed by question, the interval clamp, convergence).
-  `test/rail.test.mjs` runs the real `rail.js` and its model in a fake DOM for what needs elements:
+  `test/rail.test.mjs` runs the real `rail.js` and its model in a fake DOM for what needs elements,
+  booted by `test/helpers/rail-boot.mjs` (every `rail/` script in manifest order, planted turns, a
+  manual clock):
   the rail drawing what the model returns (CSS values, names, the three dots, dots, a tick's line,
   the card's `inert`), the send pre-jump installed (and working with the rail off), jump
   cancellation, the jump's wiring (a far trip's busy tick, a remounted target followed, card rows'
-  bookmark and earlier jumps with the three dots' blink), the seek card's wiring, the dots' fade-out
+  bookmark and earlier jumps with the three dots' blink, an earlier trip that finds its bookmark
+  putting the dots' card away, held after a pointer trip, focus on its tick after a keyboard one),
+  the seek card's wiring, the dots' fade-out
   timer and keyboard focus. The rail's
   modules run alone over the same fake DOM (`test/helpers/rail-dom.mjs`, with recording observers):
   `test/rail-turns.test.mjs` (the turn tracker: a hidden copy's scroller taking over, the lit band,
@@ -229,7 +233,8 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   redirect, `end(tok)`, reduced motion), `test/rail-jump.test.mjs` (the jump with a fake model
   recording its journey status, a fake turn tracker, a recording trip and a manual frame and timer
   clock: glide or trip, pin, follow and unpin in order, cancel mid-wait, a takeover inheriting the
-  first click's deadline, a repeated click ignored, an earlier trip waiting for synced marks) and
+  first click's deadline, a repeated click ignored, an earlier trip waiting for synced marks, a
+  bookmark jump landing on its text and washed once stopped, or flashed when stale) and
   `test/pre-jump.test.mjs` (the send pre-jump with a fake
   window: Enter and click, the bubble phase and its fallback, the 1.5-screen rule, the switches). bookmarks-qa's `rail-idle` scenario checks the performance floor in a browser: the rail
   schedules no animation frame for 2 s after the chat opens and settles, after a hover wave and after

@@ -33,7 +33,7 @@ export default {
         sentRows[0].turn === SENT && sentRows[0].para === SENT_PARA && !!dotBeside(await rail(), SENT), { stored: sentRows.map(({ turn, para }) => ({ turn, para })) });
     // Scrolled away, the virtualizer swaps the turn for a placeholder of its height, as ChatGPT
     // keeps only the turns around the view. When the placeholder nears the view the turn mounts
-    // again 700 ms later: rendering a far turn takes ChatGPT a second or more (rail/rail.js `jump`),
+    // again 700 ms later: rendering a far turn takes ChatGPT a second or more (rail/jump.js),
     // so the page's re-check 600 ms after the click runs while the turn is still out.
     await toTop();
     const unmounted = await page.evaluate((id) => {

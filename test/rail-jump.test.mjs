@@ -45,11 +45,16 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
       this.scrollTop = top;
     },
   });
+  // Each turn's question bubble records the flashes it gets, by question id, in `flashes`.
+  const flashes = [];
   const turn = (id, top) => {
-    const el = new FakeElement('article');
+    const el = new FakeElement('article'),
+      bubble = new FakeElement();
     el.setAttribute('data-turn-key', id);
     el.top = top;
     el.getBoundingClientRect = () => ({ top: el.top - scroller.scrollTop });
+    el.querySelector = (s) => (s === '[data-user-message-bubble]' ? bubble : null);
+    bubble.setAttribute = (name) => name === 'data-butter-flash' && flashes.push(id);
     scroller.append(el);
     return el;
   };
@@ -68,7 +73,6 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
   const model = {
     items: [...els.keys()].map((id) => ({ id, q: id })),
     hasPrev,
-    shown: -2,
     marksSynced: true,
     placedAt: null, // the question the earlier bookmark is under, once the marks are synced
     get qs() {
@@ -204,6 +208,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     scroller,
     els,
     turn,
+    flashes,
     blocked,
     resize,
     step,
@@ -355,6 +360,30 @@ test('an earlier trip waits for the marks of the items as they are now, then lan
   assert.equal(nav.st.active, 'p1');
   assert.equal(nav.scroller.scrollTop, 1100 - 64 + 30, 'on the bookmarked text');
   assert.equal(nav.st.pinned, true);
+});
+
+test('a bookmark jump lands on its text and washes it once the page stops; a stale one flashes', async () => {
+  for (const live of [true, false]) {
+    const nav = setup();
+    const b = { key: 'k' },
+      washes = [];
+    const mark = {
+      land: (turn, x) => (turn === nav.els.get('q2') && x === b ? 30 : 0), // 30 px into the turn
+      wash(turn, x, draw) {
+        washes.push([turn.getAttribute('data-turn-key'), x === b, draw]);
+        return live; // a stale bookmark has no wash
+      },
+    };
+    const drawn = () => washes.filter(([, , draw]) => draw !== false);
+    nav.jump.bookmark(2, mark, b);
+    assert.equal(nav.scroller.scrollTop, 300 - 64 + 30, 'a glide onto the bookmarked text');
+    assert.deepEqual(drawn(), [], 'no wash while the chat moves');
+    nav.scroller.emit('scrollend');
+    await nav.run(3000);
+    assert.equal(nav.scroller.scrollTop, 300 - 64 + 30);
+    assert.deepEqual(drawn(), live ? [['q2', true, undefined]] : [], 'washed once, when stopped');
+    assert.deepEqual(nav.flashes, live ? [] : ['q2'], 'the wash, else the bubble flash');
+  }
 });
 
 test('cancel before the rail is built: no trip to end', () => {
