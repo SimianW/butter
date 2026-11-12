@@ -107,5 +107,6 @@ async function styledPerUpdate(css) {
 test('a streamed update restyles about its own block, not the whole answer', async () => {
   const perUpdate = await styledPerUpdate(read('stream/containment.css'));
   console.log(`elements restyled per streamed update: ${perUpdate}`);
+  assert.ok(perUpdate >= 1, 'no UpdateLayoutTree element counts in the trace');
   assert.ok(perUpdate < 50, `${perUpdate} elements restyled per update (limit 50)`);
 });

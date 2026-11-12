@@ -9,7 +9,8 @@
   // ---- Answers, as bookmarks read them. An answer root is the element whose children are an
   // answer's blocks: the markdown root, or in ChatGPT's Dil renderer the response root nested
   // inside it behind wrapper layers (one of which can hold an empty sibling). The same rule as
-  // page/reader-main.js ANSWER_ROOT (the MAIN-world copy) and stream/offscreen.js.
+  // page/reader-main.js ANSWER_ROOT (the MAIN-world copy). stream/offscreen.js selects the same
+  // blocks without :has(), by naming the Dil source wrapper.
   const STYLE = '[data-markdown-text-style="assistant-message"]';
   const ANSWER = `:is(${STYLE}:not(:has([class*="DilResponseRoot"])), ${STYLE} [class*="DilResponseRoot"])`;
   // A paragraph (a bookmark's `para`, #51): a top-level block of an answer root (paragraph,
