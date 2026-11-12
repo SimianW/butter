@@ -11,7 +11,8 @@ A .js, .mjs, .cjs or .css file that exists on both sides and changed only in com
 whitespace is tier 0, wherever it lives. JavaScript is compared by scripts/same-code.mjs (espree
 tokens and syntax tree), so it needs node and `npm ci`; without them the script exits with an
 error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
-runs collapse to one space, dropped only next to `{`, `}` and `;`.
+runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS holding a backslash (an
+escape) is never treated as comment-only.
 
 In the manifest, a content_scripts change is tier 1 when it only edits the entries' js and css
 lists (same entries in the same order, every other key unchanged, no file moved between entries);
@@ -164,22 +165,23 @@ SPACE, COMMENT = (" ",), ("/**/",)
 
 def normalize_css(text):
     """CSS text as a tuple of pieces that drops what cannot change its meaning, or None when a
-    string, comment or url() is not closed.
+    string, comment or url() is not closed, or when the text holds a backslash: an escape can eat
+    the whitespace after it (`\\61 b`) or hide a `)` inside url(), so such text is never compared.
 
-    Strings, escapes and unquoted url() stay as written. A run of whitespace and comments between
+    Strings and unquoted url() stay as written. A run of whitespace and comments between
     two pieces becomes SPACE when it holds whitespace and COMMENT when it holds only comments (CSS
     reads `.a/**/.b` as `.a.b`, not `.a .b`), and is dropped at the ends and next to `{`, `}`
     and `;`.
     """
+    if "\\" in text:
+        return None
     pieces, i, n = [], 0, len(text)
     while i < n:
         char = text[i]
         if char in "\"'":
             end = i + 1
             while end < n and text[end] != char:
-                if text[end] == "\\":
-                    end += 1
-                elif text[end] in "\n\r\f":
+                if text[end] in "\n\r\f":
                     return None
                 end += 1
             if end >= n:
@@ -192,9 +194,6 @@ def normalize_css(text):
                 return None
             pieces.append(COMMENT)
             i = end + 2
-        elif char == "\\":
-            pieces.append(text[i : i + 2])
-            i += 2
         elif text[i : i + 4].lower() == "url(" and not text[i + 4 :].lstrip(CSS_SPACE).startswith(
             ("'", '"')
         ):

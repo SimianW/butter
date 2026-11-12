@@ -867,6 +867,8 @@ class FormatOnlyTests(unittest.TestCase):
             (".a { color: red; }\n", ".a { color: red; } /* open\n"),
             ("a b { color: red; }\n", "a\u00a0b { color: red; }\n"),
             (".a { background: url(x.png); }\n", ".a { background: url( x.png); }\n"),
+            (".\\61  b { color: red; }\n", ".\\61 b { color: red; }\n"),
+            (".a { background: url(foo\\)/*one*/bar); }\n", ".a { background: url(foo\\)/*two*/bar); }\n"),
         ]
         for before, after in cases:
             with self.subTest(before=before, after=after):

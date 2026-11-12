@@ -406,6 +406,17 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("reach tier 2: extension/stream/x.js (high-risk directory)", result.stdout)
 
+    def test_css_escape_change_after_the_sha_fails(self):
+        self.review_a_stream_file()
+        self.write("extension/stream/x.css", ".\\61  b { color: red; }\n")
+        self.commit("escape after review")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.write("extension/stream/x.css", ".\\61 b { color: red; }\n")
+        self.commit("one space fewer after the escape")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 2: extension/stream/x.css (high-risk directory)", result.stdout)
+
     def test_tier_zero_pr_needs_no_verdict_item(self):
         self.git("checkout", "-q", "-b", "docs", "main")
         self.write("docs/guide.md", "Guide\n")
