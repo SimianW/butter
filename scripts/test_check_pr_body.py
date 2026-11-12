@@ -380,6 +380,32 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertIn("reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
 
+    def review_a_stream_file(self):
+        """The PR adds a tier 2 script and stylesheet; review at that commit."""
+        self.write("extension/stream/x.js", "// Note.\nexport const s = 1;\n")
+        self.write("extension/stream/x.css", ".a { color: red; }\n")
+        self.commit("pr adds stream files")
+        self.reviewed = self.rev("HEAD")[:7]
+
+    def test_comment_only_change_in_a_tier_two_file_after_the_sha_passes(self):
+        self.review_a_stream_file()
+        self.write("extension/stream/x.js", "// A clearer note,\n// on two lines.\nexport const s = 1; // why\n")
+        self.write("extension/stream/x.css", "/* Why red. */\n.a {\n  color: red;\n}\n")
+        self.commit("comments after review")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: changes after the reviewed commit {self.reviewed} are tier 0", result.stdout)
+        self.assertIn("extension/stream/x.js (comments or formatting only)", result.stdout)
+        self.assertIn("extension/stream/x.css (comments or formatting only)", result.stdout)
+
+    def test_code_change_in_a_tier_two_file_after_the_sha_fails(self):
+        self.review_a_stream_file()
+        self.write("extension/stream/x.js", "// A clearer note.\nexport const s = 2;\n")
+        self.commit("code after review")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 2: extension/stream/x.js (high-risk directory)", result.stdout)
+
     def test_tier_zero_pr_needs_no_verdict_item(self):
         self.git("checkout", "-q", "-b", "docs", "main")
         self.write("docs/guide.md", "Guide\n")
@@ -410,6 +436,14 @@ class WorkflowTest(unittest.TestCase):
         self.assertNotIn("    if:", job)
         check_step = workflow.split("- name: Check the Review section\n", 1)[1]
         self.assertIn("if: ${{ !github.event.pull_request.draft }}", check_step.splitlines()[0])
+
+    def test_installs_node_packages_for_the_javascript_comparison(self):
+        # review-tier.py compares JavaScript with espree through node; without `npm ci` the check
+        # would error out on any PR whose post-review change touches a .js file.
+        workflow = (ROOT / ".github" / "workflows" / "pr-body.yml").read_text(encoding="utf-8")
+        steps = workflow.split("- name: Check the Review section\n", 1)[0]
+        self.assertIn("uses: actions/setup-node@v4", steps)
+        self.assertIn("run: npm ci", steps)
 
 
 if __name__ == "__main__":

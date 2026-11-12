@@ -21,10 +21,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+      # review-tier.py compares JavaScript through node and espree, so the check needs npm ci.
+      - if: ${{ !github.event.pull_request.draft }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
       - if: ${{ !github.event.pull_request.draft }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      - if: ${{ !github.event.pull_request.draft }}
+        run: npm ci
       - name: Check the Review section
         if: ${{ !github.event.pull_request.draft }}
         env:
