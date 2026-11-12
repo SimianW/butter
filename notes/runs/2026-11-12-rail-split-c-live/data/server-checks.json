@@ -1,0 +1,192 @@
+{
+  "bench-main-1-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-1-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-2-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-2-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-3-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-3-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-4-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-4-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-5-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-main-5-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-1-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-1-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-2-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-2-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-3-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-3-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-4-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-4-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-5-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-5-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-5-resume-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "bench-pr-5-resume-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-main-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-main-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-pr-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "branch-pr-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-main-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-main-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-pr-after": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "matrix-pr-before": {
+    "status": 200,
+    "users": 16,
+    "userTurnsSha256": "fd033a734d9085e1e9242eb1ac19b5df7a0425ecb5692eb450fc195b0c9e2470"
+  },
+  "wash-main-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-main-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-pr-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-pr-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-repeat-main-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-repeat-main-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-repeat-pr-after": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  },
+  "wash-repeat-pr-before": {
+    "status": 200,
+    "users": 12,
+    "userTurnsSha256": "96a1611df0b8e38e4403062fdc23ebd56e3985e0616d151fb40a2879e2b6aa2a"
+  }
+}

@@ -1,0 +1,222 @@
+[
+  {
+    "order": 1,
+    "build": "S0",
+    "repetition": 1,
+    "loafBlockMs": 12718,
+    "loafMaxMs": 843,
+    "p95": 50.1,
+    "keyMax": 255.5,
+    "keyP95": 249.1,
+    "idle.keyMax": 58.1,
+    "idle.keyP95": 31.4,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 2,
+    "build": "C",
+    "repetition": 1,
+    "loafBlockMs": 12381,
+    "loafMaxMs": 817,
+    "p95": 50.1,
+    "keyMax": 257.1,
+    "keyP95": 250.7,
+    "idle.keyMax": 247.3,
+    "idle.keyP95": 24.2,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 3,
+    "build": "S0",
+    "repetition": 2,
+    "loafBlockMs": 12469,
+    "loafMaxMs": 793,
+    "p95": 50,
+    "keyMax": 294.1,
+    "keyP95": 282.2,
+    "idle.keyMax": 237.2,
+    "idle.keyP95": 29,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 4,
+    "build": "C",
+    "repetition": 2,
+    "loafBlockMs": 11917,
+    "loafMaxMs": 781,
+    "p95": 50,
+    "keyMax": 255.9,
+    "keyP95": 249.7,
+    "idle.keyMax": 236.7,
+    "idle.keyP95": 29.5,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 5,
+    "build": "S0",
+    "repetition": 3,
+    "loafBlockMs": 12089,
+    "loafMaxMs": 802,
+    "p95": 50,
+    "keyMax": 254.9,
+    "keyP95": 248.2,
+    "idle.keyMax": 239.9,
+    "idle.keyP95": 30.4,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 6,
+    "build": "C",
+    "repetition": 3,
+    "loafBlockMs": 11532,
+    "loafMaxMs": 841,
+    "p95": 50,
+    "keyMax": 253.8,
+    "keyP95": 247.6,
+    "idle.keyMax": 232.8,
+    "idle.keyP95": 28.8,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 7,
+    "build": "S0",
+    "repetition": 4,
+    "loafBlockMs": 12289,
+    "loafMaxMs": 789,
+    "p95": 50,
+    "keyMax": 251.2,
+    "keyP95": 247,
+    "idle.keyMax": 235.2,
+    "idle.keyP95": 29.1,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 8,
+    "build": "C",
+    "repetition": 4,
+    "loafBlockMs": 12653,
+    "loafMaxMs": 769,
+    "p95": 50.1,
+    "keyMax": 244.8,
+    "keyP95": 238.5,
+    "idle.keyMax": 237.3,
+    "idle.keyP95": 26,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 9,
+    "build": "S0",
+    "repetition": 5,
+    "loafBlockMs": 11201,
+    "loafMaxMs": 754,
+    "p95": 50,
+    "keyMax": 288.9,
+    "keyP95": 270.1,
+    "idle.keyMax": 439.3,
+    "idle.keyP95": 371.3,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  },
+  {
+    "order": 10,
+    "build": "C",
+    "repetition": 5,
+    "loafBlockMs": 11263,
+    "loafMaxMs": 794,
+    "p95": 50,
+    "keyMax": 257.5,
+    "keyP95": 242,
+    "idle.keyMax": 231.7,
+    "idle.keyP95": 30.1,
+    "answerSha256": "043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68",
+    "chunksSent": 189,
+    "replayComplete": true,
+    "network": {
+      "writes": 0,
+      "blocked": 2,
+      "fixtureReads": 1
+    },
+    "streamingKeySamples": 40,
+    "idleKeySamples": 54
+  }
+]

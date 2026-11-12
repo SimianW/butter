@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="690" viewBox="0 0 1180 690" role="img" aria-label="Seven matched replay metrics: medians and observed ranges in milliseconds">
+<rect width="1180" height="690" fill="#fff"/>
+<style>text{font-family:Arial,sans-serif;fill:#263245;font-size:14px}.label{font-size:16px;font-weight:bold}</style>
+<text x="26" y="34" style="font-size:22px;font-weight:bold">S0 versus split-rail C (whole series): replay timing</text>
+<text x="26" y="59">Five runs per build · points = medians · lines = min–max · all values in ms · each row has its own scale</text>
+<circle cx="806" cy="30" r="5" fill="#3158a1"/><text x="820" y="35">S0</text><circle cx="906" cy="30" r="5" fill="#b65820"/><text x="920" y="35">PR #98</text>
+<text class="label" x="26" y="113">Total LoAF blocking</text>
+<line x1="255" x2="820" y1="140" y2="140" stroke="#ddd"/>
+<text x="255" y="158">0</text>
+<text x="770" y="158">13735.4</text>
+<line x1="715.75" x2="778.15" y1="105" y2="105" stroke="#3158a1" stroke-width="3"/>
+<circle cx="760.50" cy="105" r="5" fill="#3158a1"/>
+<text x="850" y="110">S0: 12289.000 [11201.000–12718.000]</text>
+<line x1="718.30" x2="775.47" y1="123" y2="123" stroke="#b65820" stroke-width="3"/>
+<circle cx="745.20" cy="123" r="5" fill="#b65820"/>
+<text x="850" y="128">C: 11917.000 [11263.000–12653.000]</text>
+<text class="label" x="26" y="190">Longest LoAF</text>
+<line x1="255" x2="820" y1="217" y2="217" stroke="#ddd"/>
+<text x="255" y="235">0</text>
+<text x="770" y="235">910.4</text>
+<line x1="722.92" x2="778.15" y1="182" y2="182" stroke="#3158a1" stroke-width="3"/>
+<circle cx="747.12" cy="182" r="5" fill="#3158a1"/>
+<text x="850" y="187">S0: 793.000 [754.000–843.000]</text>
+<line x1="732.23" x2="776.91" y1="200" y2="200" stroke="#b65820" stroke-width="3"/>
+<circle cx="747.74" cy="200" r="5" fill="#b65820"/>
+<text x="850" y="205">C: 794.000 [769.000–841.000]</text>
+<text class="label" x="26" y="267">Replay frame p95</text>
+<line x1="255" x2="820" y1="294" y2="294" stroke="#ddd"/>
+<text x="255" y="312">0</text>
+<text x="770" y="312">54.1</text>
+<line x1="777.10" x2="778.15" y1="259" y2="259" stroke="#3158a1" stroke-width="3"/>
+<circle cx="777.10" cy="259" r="5" fill="#3158a1"/>
+<text x="850" y="264">S0: 50.000 [50.000–50.100]</text>
+<line x1="777.10" x2="778.15" y1="277" y2="277" stroke="#b65820" stroke-width="3"/>
+<circle cx="777.10" cy="277" r="5" fill="#b65820"/>
+<text x="850" y="282">C: 50.000 [50.000–50.100]</text>
+<text class="label" x="26" y="344">Streaming slowest key</text>
+<line x1="255" x2="820" y1="371" y2="371" stroke="#ddd"/>
+<text x="255" y="389">0</text>
+<text x="770" y="389">317.6</text>
+<line x1="701.84" x2="778.15" y1="336" y2="336" stroke="#3158a1" stroke-width="3"/>
+<circle cx="709.49" cy="336" r="5" fill="#3158a1"/>
+<text x="850" y="341">S0: 255.500 [251.200–294.100]</text>
+<line x1="690.45" x2="713.04" y1="354" y2="354" stroke="#b65820" stroke-width="3"/>
+<circle cx="710.20" cy="354" r="5" fill="#b65820"/>
+<text x="850" y="359">C: 255.900 [244.800–257.500]</text>
+<text class="label" x="26" y="421">Streaming key p95</text>
+<line x1="255" x2="820" y1="448" y2="448" stroke="#ddd"/>
+<text x="255" y="466">0</text>
+<text x="770" y="466">304.8</text>
+<line x1="712.89" x2="778.15" y1="413" y2="413" stroke="#3158a1" stroke-width="3"/>
+<circle cx="716.79" cy="413" r="5" fill="#3158a1"/>
+<text x="850" y="418">S0: 249.100 [247.000–282.200]</text>
+<line x1="697.14" x2="719.75" y1="431" y2="431" stroke="#b65820" stroke-width="3"/>
+<circle cx="714.01" cy="431" r="5" fill="#b65820"/>
+<text x="850" y="436">C: 247.600 [238.500–250.700]</text>
+<text class="label" x="26" y="498">Idle slowest key</text>
+<line x1="255" x2="820" y1="525" y2="525" stroke="#ddd"/>
+<text x="255" y="543">0</text>
+<text x="770" y="543">474.4</text>
+<line x1="324.19" x2="778.15" y1="490" y2="490" stroke="#3158a1" stroke-width="3"/>
+<circle cx="537.47" cy="490" r="5" fill="#3158a1"/>
+<text x="850" y="495">S0: 237.200 [58.100–439.300]</text>
+<line x1="530.92" x2="549.50" y1="508" y2="508" stroke="#b65820" stroke-width="3"/>
+<circle cx="536.88" cy="508" r="5" fill="#b65820"/>
+<text x="850" y="513">C: 236.700 [231.700–247.300]</text>
+<text class="label" x="26" y="575">Idle key p95</text>
+<line x1="255" x2="820" y1="602" y2="602" stroke="#ddd"/>
+<text x="255" y="620">0</text>
+<text x="770" y="620">401.0</text>
+<line x1="295.86" x2="778.15" y1="567" y2="567" stroke="#3158a1" stroke-width="3"/>
+<circle cx="297.83" cy="567" r="5" fill="#3158a1"/>
+<text x="850" y="572">S0: 30.400 [29.000–371.300]</text>
+<line x1="289.10" x2="297.41" y1="585" y2="585" stroke="#b65820" stroke-width="3"/>
+<circle cx="295.58" cy="585" r="5" fill="#b65820"/>
+<text x="850" y="590">C: 28.800 [24.200–30.100]</text>
+<text x="26" y="670">Requested rule passes for all seven: C median does not exceed the observed S0 maximum. This is not an equivalence test.</text>
+</svg>
