@@ -722,6 +722,20 @@ class ContentScriptsTests(unittest.TestCase):
     def test_malformed_list_is_tier_2(self):
         self.assertEqual(self.tier(lambda entries: entries[0].update(js="rail/rail.js"))[0], 2)
 
+    def test_file_moved_under_another_spelling_is_tier_2(self):
+        # Without the spelling check, `/seek/seek-meta.js` in MAIN and `seek/seek-meta.js` in
+        # ISOLATED would look like two different files and the move would pass as a list edit.
+        def absolute(entries):
+            entries[0]["js"].remove("seek/seek-meta.js")
+            entries[1]["js"].append("/seek/seek-meta.js")
+
+        def dotted(entries):
+            entries[1]["js"].append("./shared/status.js")
+
+        for name, change in (("absolute", absolute), ("dotted", dotted)):
+            with self.subTest(spelling=name):
+                self.assertEqual(self.tier(change)[0], 2)
+
     def test_other_high_risk_key_with_lists_is_tier_2(self):
         after = with_scripts(MANIFEST_ALPHA_13, lambda entries: entries[0]["js"].append("rail/card.js"))
         after = with_keys(after, permissions=["storage", "unlimitedStorage", "tabs"])
@@ -842,6 +856,27 @@ class FormatOnlyTests(unittest.TestCase):
         self.assert_path_tier("extension/rail/x.js", "const a = 1;\n", "const a = ; // c\n", 1)
         self.setUp()
         self.assert_path_tier("extension/rail/x.js", "const a = (;\n", "const a = (; // c\n", 1)
+        # `<!--` is an HTML comment in a script and a syntax error in a module: one source type
+        # parses only one side, which must not be skipped as if neither parsed.
+        self.setUp()
+        self.assert_path_tier("extension/rail/x.js", "x = 1;\n", "x = 1; <!-- c\n", 1)
+
+    def test_comment_only_script_that_is_not_a_module_is_tier_0(self):
+        self.assert_format_only("extension/rail/x.js", "with (o) { a; }\n", "// Why.\nwith (o) { a; }\n")
+
+    def test_shebang_change_is_the_path_tier(self):
+        self.assert_path_tier(
+            "scripts/tool.mjs",
+            "#!/usr/bin/env node\nexport const a = 1;\n",
+            "#!/usr/bin/env -S node --x\nexport const a = 1;\n",
+            1,
+        )
+        self.setUp()
+        self.assert_format_only(
+            "scripts/tool.mjs",
+            "#!/usr/bin/env node\nexport const a = 1;\n",
+            "#!/usr/bin/env node\n// Why.\nexport const a = 1;\n",
+        )
 
     def test_comment_only_css_is_tier_0(self):
         self.assert_format_only(
@@ -869,6 +904,17 @@ class FormatOnlyTests(unittest.TestCase):
             (".a { background: url(x.png); }\n", ".a { background: url( x.png); }\n"),
             (".\\61  b { color: red; }\n", ".\\61 b { color: red; }\n"),
             (".a { background: url(foo\\)/*one*/bar); }\n", ".a { background: url(foo\\)/*two*/bar); }\n"),
+            # my-url( is a function, not url(: its quoted `)` once cut it short, flipped quote
+            # parity and hid the string change after it.
+            (
+                'a{--u:my-url(c ")");content:"x  y"}/*"*/\n',
+                'a{--u:my-url(c ")");content:"x y"}/*"*/\n',
+            ),
+            (".a { background: url(x/*1*/y); }\n", ".a { background: url(x/*2*/y); }\n"),
+            # A string ends at a line break, so the `"` after it opens "p  q"; read past the
+            # break, that quote would close the string and the whitespace change would collapse.
+            ('a{b:"x\n;content:"p  q";}/*"*/\n', 'a{b:"x\n;content:"p q";}/*"*/\n'),
+            ("@media screen and (min-width:1px) { }\n", "@media screen and(min-width:1px) { }\n"),
         ]
         for before, after in cases:
             with self.subTest(before=before, after=after):
@@ -879,6 +925,22 @@ class FormatOnlyTests(unittest.TestCase):
         self.assert_path_tier("extension/stream/new.js", None, "// Only a comment.\n", 2)
         self.setUp()
         self.assert_path_tier("extension/stream/old.css", "/* Only a comment. */\n", None, 2)
+
+    def test_deleted_file_behind_a_symlinked_directory_is_the_path_tier(self):
+        self.write("extension/stream/x.js", "export const s = 1;\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        (self.root / "extension" / "stream").rename(self.root / "moved")
+        (self.root / "extension" / "stream").symlink_to(self.root / "moved")
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "review-tier.py"), "main"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.splitlines()[0], "Review tier: 2")
+        self.assertIn("extension/stream/x.js (high-risk directory)", result.stdout)
 
     def test_missing_espree_fails_instead_of_guessing(self):
         self.write("extension/rail/x.js", "const a = 1;\n")

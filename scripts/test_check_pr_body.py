@@ -425,6 +425,18 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("PASS: tier 0 needs no Verdict item", result.stdout)
 
+    def test_comment_only_pr_to_a_tier_two_file_needs_no_verdict_item(self):
+        self.git("checkout", "-q", "main")
+        self.write("extension/stream/x.js", "export const s = 1;\n")
+        self.commit("main adds a stream file")
+        self.git("checkout", "-q", "-b", "comments")
+        self.write("extension/stream/x.js", "// Why s is 1.\nexport const s = 1;\n")
+        self.commit("comment only")
+        result = self.run_check("## Review\n\n- **Tier:** 0")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: Tier: 0 is at least the computed tier 0", result.stdout)
+        self.assertIn("PASS: tier 0 needs no Verdict item", result.stdout)
+
 
 class WorkflowTest(unittest.TestCase):
     def test_checks_out_the_pr_head_not_the_merge_ref(self):
@@ -447,6 +459,18 @@ class WorkflowTest(unittest.TestCase):
         self.assertNotIn("    if:", job)
         check_step = workflow.split("- name: Check the Review section\n", 1)[1]
         self.assertIn("if: ${{ !github.event.pull_request.draft }}", check_step.splitlines()[0])
+
+    def test_every_step_after_the_first_is_skipped_on_a_draft(self):
+        # A draft runs only the echo step; any other unguarded step would run (npm ci, the
+        # check) under the draft's name.
+        workflow = (ROOT / ".github" / "workflows" / "pr-body.yml").read_text(encoding="utf-8")
+        steps = ("\n" + workflow.split("    steps:\n", 1)[1]).split("\n      - ")[1:]
+        self.assertGreater(len(steps), 1)
+        self.assertIn("if: github.event.pull_request.draft", steps[0].splitlines()[0])
+        for step in steps[1:]:
+            with self.subTest(step=step.splitlines()[0]):
+                guards = [line.strip() for line in step.splitlines() if line.strip().startswith("if:")]
+                self.assertEqual(guards, ["if: ${{ !github.event.pull_request.draft }}"])
 
     def test_installs_node_packages_for_the_javascript_comparison(self):
         # review-tier.py compares JavaScript with espree through node; without `npm ci` the check

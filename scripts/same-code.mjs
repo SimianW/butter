@@ -7,8 +7,9 @@
 // parses either side, both sides parse and give the same tokens (type and raw value, comments
 // left out) and the same syntax tree (positions left out). The tree catches line breaks that
 // change meaning through automatic semicolon insertion, such as `return\nx` against `return x`.
-// A side that fails to parse makes the pair differ. scripts/review-tier.py runs this; exits 2 with
-// a message when espree is missing.
+// A side that fails to parse makes the pair differ, and so does a changed `#!` first line, which
+// espree reads as a comment. scripts/review-tier.py runs this; exits 2 with a message when espree
+// is missing.
 import { readFileSync } from 'node:fs';
 
 let espree;
@@ -40,7 +41,13 @@ function shape(code, sourceType) {
   return JSON.stringify(tokens) + '\n' + tree;
 }
 
+// The first line when code starts with a shebang (`#!`), which espree reads as a comment, else ''.
+function shebang(code) {
+  return code.startsWith('#!') ? code.split(/[\r\n\u2028\u2029]/, 1)[0] : '';
+}
+
 function sameCode(before, after) {
+  if (shebang(before) !== shebang(after)) return false;
   let parsed = false;
   for (const sourceType of SOURCE_TYPES) {
     const a = shape(before, sourceType);

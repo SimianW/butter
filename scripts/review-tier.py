@@ -12,7 +12,7 @@ whitespace is tier 0, wherever it lives. JavaScript is compared by scripts/same-
 tokens and syntax tree), so it needs node and `npm ci`; without them the script exits with an
 error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
 runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS holding a backslash (an
-escape) is never treated as comment-only.
+escape) or `url(` in any letter case is never treated as comment-only.
 
 In the manifest, a content_scripts change is tier 1 when it only edits the entries' js and css
 lists (same entries in the same order, every other key unchanged, no file moved between entries);
@@ -20,6 +20,7 @@ any other content_scripts change is tier 2.
 """
 import json
 import os
+import posixpath
 from pathlib import Path, PurePosixPath
 import shutil
 import subprocess
@@ -69,7 +70,8 @@ def changed_keys(before, after):
 
 def entry_files(entries):
     """{file: set of entry indexes} over the js and css lists of content_scripts entries, or None
-    when an entry or list is malformed."""
+    when an entry or list is malformed or a path is not in plain relative form (`/a.js`,
+    `./a.js`), so a file cannot move between entries under another spelling."""
     homes = {}
     for index, entry in enumerate(entries):
         if not isinstance(entry, dict):
@@ -79,6 +81,8 @@ def entry_files(entries):
             if not isinstance(files, list) or not all(isinstance(file, str) for file in files):
                 return None
             for file in files:
+                if file.startswith("/") or file != posixpath.normpath(file):
+                    return None
                 homes.setdefault(file, set()).add(index)
     return homes
 
@@ -165,15 +169,15 @@ SPACE, COMMENT = (" ",), ("/**/",)
 
 def normalize_css(text):
     """CSS text as a tuple of pieces that drops what cannot change its meaning, or None when a
-    string, comment or url() is not closed, or when the text holds a backslash: an escape can eat
-    the whitespace after it (`\\61 b`) or hide a `)` inside url(), so such text is never compared.
+    string or comment is not closed, when a string holds a line break, or when the text holds a
+    backslash or `url(` in any letter case: an escape can eat the whitespace after it (`\\61 b`),
+    and an unquoted url() keeps `/*` and quotes as written, so such text is never compared.
 
-    Strings and unquoted url() stay as written. A run of whitespace and comments between
-    two pieces becomes SPACE when it holds whitespace and COMMENT when it holds only comments (CSS
-    reads `.a/**/.b` as `.a.b`, not `.a .b`), and is dropped at the ends and next to `{`, `}`
-    and `;`.
+    Strings stay as written. A run of whitespace and comments between two pieces becomes SPACE
+    when it holds whitespace and COMMENT when it holds only comments (CSS reads `.a/**/.b` as
+    `.a.b`, not `.a .b`), and is dropped at the ends and next to `{`, `}` and `;`.
     """
-    if "\\" in text:
+    if "\\" in text or "url(" in text.lower():
         return None
     pieces, i, n = [], 0, len(text)
     while i < n:
@@ -194,14 +198,6 @@ def normalize_css(text):
                 return None
             pieces.append(COMMENT)
             i = end + 2
-        elif text[i : i + 4].lower() == "url(" and not text[i + 4 :].lstrip(CSS_SPACE).startswith(
-            ("'", '"')
-        ):
-            end = text.find(")", i)
-            if end < 0:
-                return None
-            pieces.append(text[i : end + 1])
-            i = end + 1
         elif char in CSS_SPACE:
             pieces.append(SPACE)
             i += 1
@@ -316,9 +312,12 @@ def blobs_at(rev, paths, root):
 
 
 def working_file(path, root):
-    """The bytes of a regular file in the working tree, or None when absent or a symlink."""
+    """The bytes of a regular file in the working tree, or None when absent, a symlink, or reached
+    through a symlinked directory."""
     full = os.path.join(root, path)
     if os.path.islink(full) or not os.path.isfile(full):
+        return None
+    if os.path.realpath(full) != os.path.join(os.path.realpath(root), path):
         return None
     with open(full, "rb") as file:
         return file.read()
