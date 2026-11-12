@@ -509,7 +509,7 @@
   }
 
   function previewLitQuestions(turns, scrollTop, height) {
-    // Match rail/rail.js ioBand: HEADER=52, COMPOSER=140, EDGE=40.
+    // Match rail/turns.js ioBand: HEADER=52, COMPOSER=140, EDGE=40.
     const top = scrollTop + 52 + 40,
       bottom = scrollTop + height - 140 - 40;
     if (bottom < top) return [];

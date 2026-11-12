@@ -66,7 +66,19 @@ function setup({ reduce = false } = {}) {
     streak = element('streak');
   const trip = ctx.ButterRailTrip({ warp, streak, scroller: () => scroller });
   const of = (name) => animations.filter((a) => a.el === name);
-  return { trip, warp, scroller, content, turn, animations, of, timers, scrolls, listeners };
+  return {
+    trip,
+    warp,
+    scroller,
+    content,
+    turn,
+    element,
+    animations,
+    of,
+    timers,
+    scrolls,
+    listeners,
+  };
 }
 const plain = (x) => JSON.parse(JSON.stringify(x));
 const settle = () => new Promise((r) => setImmediate(r));
@@ -94,7 +106,7 @@ test('depart fades the content out, fades the placeholder in and streams it, spe
   );
 });
 
-test('a turn whose content box is not inside the scroller is not faded', () => {
+test('a turn whose content box is not inside the scroller, or is the scroller, is not faded', () => {
   const t = setup();
   t.trip.depart(null, 1, 1);
   t.trip.end();
@@ -103,6 +115,15 @@ test('a turn whose content box is not inside the scroller is not faded', () => {
   loose.trip.depart(loose.turn, 1, 1);
   loose.trip.end();
   for (const x of [t, loose]) assert.equal(x.of('content').length, 0);
+  // A turn two wrappers below the scroller: its third ancestor is the scroller itself.
+  const shallow = setup();
+  const turn = shallow.element(
+    'turn',
+    shallow.element('window', shallow.element('wrapper', shallow.scroller)),
+  );
+  shallow.trip.depart(turn, 1, 1);
+  shallow.trip.end();
+  assert.equal(shallow.of('scroller').length, 0, 'the scroller is never faded');
 });
 
 test('arrival restores the content and hides the placeholder only when no new trip started', async () => {
@@ -186,8 +207,11 @@ test('redirect restarts the streak only on a direction change', () => {
     [260, 260, 260, 260],
   );
   assert.equal(t.of('content').length, 1, 'the chat stays hidden');
+  t.trip.end(1);
   t.trip.end(3);
   assert.equal(t.trip.active, true, 'the trip is jump 4 now');
+  t.trip.end(4);
+  assert.equal(t.trip.active, false, 'jump 4 ends it');
 });
 
 test('end(tok) ignores other tokens; take(tok) hands the trip over', () => {

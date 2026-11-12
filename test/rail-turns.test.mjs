@@ -129,7 +129,9 @@ test('the tracker follows the visible scroller and measures its box', () => {
 
 test("a hidden copy's scroller shown again takes over, and its mounted turns are observed afresh", () => {
   const t = setup();
-  const { s: first } = visible(t);
+  const { s: first, els } = visible(t);
+  t.io()[1].callback([{ target: els[0], isIntersecting: true }]); // q0 lit
+  assert.deepEqual(own(t.turns.onScreen()), ['q0']);
   // ChatGPT kept another chat as a hidden copy with its own scroller and turns.
   const kept = scroller();
   const k = [turn(kept, 'k0', 100), turn(kept, 'k1', 200)];
@@ -141,6 +143,7 @@ test("a hidden copy's scroller shown again takes over, and its mounted turns are
   const [oldPos, oldBand] = t.io();
   t.observers.resize(kept);
   assert.equal(t.turns.scroller, kept);
+  assert.deepEqual(own(t.turns.onScreen()), [], "the other chat's lit turns are forgotten");
   assert.ok(oldPos.disconnected && oldBand.disconnected);
   const [pos, band] = t.io();
   assert.deepEqual(ids(pos.observed), ['k0', 'k1']);
@@ -373,4 +376,20 @@ test('reconcile: once per 150 ms after turns mount or the scroller changes, with
   t.ctx.butterNavTurn(turn(s, 'q5', 600));
   t.runTimers();
   assert.equal(t.model.reconciled.length, 2);
+});
+
+test('a scroller shown with no new turn reported queues one reconcile of its own', () => {
+  const t = setup();
+  visible(t);
+  const kept = scroller();
+  t.ctx.butterNavTurn(turn(kept, 'k0', 100)); // reported while hidden
+  t.runTimers();
+  assert.equal(t.timers.length, 0);
+  t.observers.resize(kept); // shown again: no turn mounts
+  assert.deepEqual(
+    t.timers.map((x) => x.ms),
+    [150],
+  );
+  t.runTimers();
+  assert.deepEqual(own(t.model.reconciled.at(-1)[0]), ['k0']);
 });

@@ -20,7 +20,9 @@ const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
 ]);
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
-function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
+// `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
+// than straight in the scroller.
+function setup({ count = 5, hasPrev = false, height = 900, gutter = 0, nested = false } = {}) {
   let now = 10_000,
     nextId = 1;
   const frames = new Map(),
@@ -90,6 +92,14 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
       this.scrollTop = top;
     },
   });
+  let box = scroller;
+  if (nested)
+    for (const name of ['content', 'wrapper', 'window']) {
+      const el = new FakeElement();
+      el.name = name;
+      box.append(el);
+      box = el;
+    }
   const turns = Array.from({ length: count }, (_, i) => {
     const turn = new FakeElement('article');
     turn.setAttribute('data-turn-key', `q${i}`);
@@ -98,7 +108,7 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
       top: turn.top - scroller.scrollTop,
       bottom: turn.top + 100 - scroller.scrollTop,
     });
-    scroller.append(turn);
+    box.append(turn);
     ctx.butterNavTurn(turn);
     return turn;
   });
@@ -258,6 +268,39 @@ for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
     }
   });
 }
+
+test("a scroll key aimed at the rail itself doesn't cancel a pending jump", async () => {
+  const nav = setup();
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[2] });
+  assert.equal(nav.scroller.scrollTop, nav.turns[2].top - 64);
+  nav.window.emit('keydown', { key: 'ArrowDown', target: nav.host }); // the rail's own arrows
+  nav.turns[2].top = 800; // the target moves before the glide ends
+  nav.scroller.scrollTop = 700;
+  nav.scroller.emit('scrollend');
+  for (let i = 0; i < 80; i++) {
+    nav.frame();
+    await Promise.resolve();
+  }
+  assert.equal(nav.scroller.scrollTop, 800 - 64, 'the jump goes on and settles on its target');
+});
+
+test('a wheel on the chat during a trip ends the trip: the chat and the placeholder come back', async () => {
+  const nav = setup({ count: 40, nested: true });
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[35] }); // far: a trip
+  const warp = nav.select('.warp'),
+    content = nav.scroller.children[0];
+  const json = (x) => JSON.stringify(x.keyframes);
+  assert.equal(content.name, 'content');
+  assert.equal(warp.style.visibility, 'visible', 'the trip departed');
+  const [fadeOut] = content.animations;
+  assert.equal(json(fadeOut), '[{"opacity":1},{"opacity":0}]');
+  nav.scroller.emit('wheel');
+  assert.equal(fadeOut.cancelled, true);
+  assert.equal(json(content.animations.at(-1)), '[{"opacity":0},{"opacity":1}]');
+  assert.equal(json(warp.animations.at(-1)), '[{"opacity":1},{"opacity":0}]');
+  await new Promise((r) => setImmediate(r)); // the placeholder's fade-out finishes
+  assert.equal(warp.style.visibility, 'hidden');
+});
 
 // The send pre-jump's rules are in test/pre-jump.test.mjs; here, that the rail installs it on the
 // visible scroller, and that the rail switch doesn't control it.

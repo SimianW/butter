@@ -26,6 +26,21 @@ export class FakeElement {
     this.isConnected = true;
     this.textContent = '';
   }
+  // Web Animations, recorded in `animations`: each call's keyframes and options, whether it was
+  // cancelled; it finishes at once.
+  animate(keyframes, options) {
+    const a = {
+      keyframes,
+      options,
+      cancelled: false,
+      finished: Promise.resolve(),
+      cancel() {
+        a.cancelled = true;
+      },
+    };
+    (this.animations ??= []).push(a);
+    return a;
+  }
   focus() {
     FakeElement.focused = this;
   }
