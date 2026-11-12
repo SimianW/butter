@@ -1,0 +1,362 @@
+[
+  {
+    "loafBlockMs": 7957,
+    "loafMaxMs": 760,
+    "p95": 49.9,
+    "keyMax": 234.2,
+    "keyP95": 220.6,
+    "idle.keyMax": 175.3,
+    "idle.keyP95": 26.4,
+    "inputDelayP95": 7,
+    "idle.inputDelayP95": 1.8000001907348633,
+    "build": 0,
+    "run": 1,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 207944,
+      "turns": 10,
+      "katex": 3028
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 438,
+    "blockAdds": 1176
+  },
+  {
+    "loafBlockMs": 8178,
+    "loafMaxMs": 808,
+    "p95": 33.5,
+    "keyMax": 229.4,
+    "keyP95": 223.1,
+    "idle.keyMax": 216.2,
+    "idle.keyP95": 24.5,
+    "inputDelayP95": 9.900000095367432,
+    "idle.inputDelayP95": 2,
+    "build": 1,
+    "run": 1,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 207943,
+      "turns": 10,
+      "katex": 3028
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 444,
+    "blockAdds": 1178
+  },
+  {
+    "loafBlockMs": 12237,
+    "loafMaxMs": 808,
+    "p95": 50.1,
+    "keyMax": 254.5,
+    "keyP95": 248,
+    "idle.keyMax": 234.9,
+    "idle.keyP95": 28.7,
+    "inputDelayP95": 9.5,
+    "idle.inputDelayP95": 2.3000001907348633,
+    "build": 0,
+    "run": 2,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 111989,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 442,
+    "blockAdds": 1170
+  },
+  {
+    "loafBlockMs": 12378,
+    "loafMaxMs": 767,
+    "p95": 50.1,
+    "keyMax": 258.9,
+    "keyP95": 252.6,
+    "idle.keyMax": 238.8,
+    "idle.keyP95": 27,
+    "inputDelayP95": 9.5,
+    "idle.inputDelayP95": 2.5,
+    "build": 1,
+    "run": 2,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 3,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 111990,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1160
+  },
+  {
+    "loafBlockMs": 12110,
+    "loafMaxMs": 764,
+    "p95": 50.1,
+    "keyMax": 265.2,
+    "keyP95": 258.9,
+    "idle.keyMax": 429.9,
+    "idle.keyP95": 332.2,
+    "inputDelayP95": 7.700000286102295,
+    "idle.inputDelayP95": 3.3999996185302734,
+    "build": 0,
+    "run": 3,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 3,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 207935,
+      "turns": 10,
+      "katex": 3028
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1173
+  },
+  {
+    "loafBlockMs": 12949,
+    "loafMaxMs": 806,
+    "p95": 50.1,
+    "keyMax": 265,
+    "keyP95": 251.9,
+    "idle.keyMax": 237.8,
+    "idle.keyP95": 28.8,
+    "inputDelayP95": 10.099999904632568,
+    "idle.inputDelayP95": 2.299999713897705,
+    "build": 1,
+    "run": 3,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 111990,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1178
+  },
+  {
+    "loafBlockMs": 11314,
+    "loafMaxMs": 766,
+    "p95": 50,
+    "keyMax": 235,
+    "keyP95": 228.5,
+    "idle.keyMax": 229.3,
+    "idle.keyP95": 28.5,
+    "inputDelayP95": 8.900000095367432,
+    "idle.inputDelayP95": 2.0999999046325684,
+    "build": 0,
+    "run": 4,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 112134,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1172
+  },
+  {
+    "loafBlockMs": 12266,
+    "loafMaxMs": 798,
+    "p95": 50.1,
+    "keyMax": 258.3,
+    "keyP95": 251.8,
+    "idle.keyMax": 230.3,
+    "idle.keyP95": 28.4,
+    "inputDelayP95": 8.899999618530273,
+    "idle.inputDelayP95": 4.200000286102295,
+    "build": 1,
+    "run": 4,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 3,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 112135,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 444,
+    "blockAdds": 1171
+  },
+  {
+    "loafBlockMs": 12465,
+    "loafMaxMs": 782,
+    "p95": 50,
+    "keyMax": 278.8,
+    "keyP95": 263.3,
+    "idle.keyMax": 242.5,
+    "idle.keyP95": 27.6,
+    "inputDelayP95": 10.099999904632568,
+    "idle.inputDelayP95": 2.9000000953674316,
+    "build": 0,
+    "run": 5,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 3,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 111990,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1168
+  },
+  {
+    "loafBlockMs": 12681,
+    "loafMaxMs": 775,
+    "p95": 66.6,
+    "keyMax": 262.7,
+    "keyP95": 247.4,
+    "idle.keyMax": 230.6,
+    "idle.keyP95": 27.3,
+    "inputDelayP95": 10.400000095367432,
+    "idle.inputDelayP95": 2.4000000953674316,
+    "build": 1,
+    "run": 5,
+    "chunks": 189,
+    "answerChars": 21448,
+    "answerKatex": 420,
+    "keySamples": 40,
+    "idleSamples": 54,
+    "network": {
+      "writes": 0,
+      "blocked": 1,
+      "fixtureReads": 1
+    },
+    "before": {
+      "nodes": 111990,
+      "turns": 10,
+      "katex": 1514
+    },
+    "after": {
+      "nodes": 194642,
+      "turns": 9,
+      "katex": 2909
+    },
+    "answerShaMatches": 1,
+    "seenMarks": 440,
+    "blockAdds": 1185
+  }
+]

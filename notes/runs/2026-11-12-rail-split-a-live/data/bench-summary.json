@@ -1,0 +1,107 @@
+{
+  "loafBlockMs": {
+    "main": {
+      "n": 5,
+      "median": 12110,
+      "min": 7957,
+      "max": 12465
+    },
+    "pr": {
+      "n": 5,
+      "median": 12378,
+      "min": 8178,
+      "max": 12949
+    },
+    "noWorse": 1
+  },
+  "loafMaxMs": {
+    "main": {
+      "n": 5,
+      "median": 766,
+      "min": 760,
+      "max": 808
+    },
+    "pr": {
+      "n": 5,
+      "median": 798,
+      "min": 767,
+      "max": 808
+    },
+    "noWorse": 1
+  },
+  "p95": {
+    "main": {
+      "n": 5,
+      "median": 50,
+      "min": 49.9,
+      "max": 50.1
+    },
+    "pr": {
+      "n": 5,
+      "median": 50.1,
+      "min": 33.5,
+      "max": 66.6
+    },
+    "noWorse": 1
+  },
+  "keyMax": {
+    "main": {
+      "n": 5,
+      "median": 254.5,
+      "min": 234.2,
+      "max": 278.8
+    },
+    "pr": {
+      "n": 5,
+      "median": 258.9,
+      "min": 229.4,
+      "max": 265
+    },
+    "noWorse": 1
+  },
+  "keyP95": {
+    "main": {
+      "n": 5,
+      "median": 248,
+      "min": 220.6,
+      "max": 263.3
+    },
+    "pr": {
+      "n": 5,
+      "median": 251.8,
+      "min": 223.1,
+      "max": 252.6
+    },
+    "noWorse": 1
+  },
+  "idle.keyMax": {
+    "main": {
+      "n": 5,
+      "median": 234.9,
+      "min": 175.3,
+      "max": 429.9
+    },
+    "pr": {
+      "n": 5,
+      "median": 230.6,
+      "min": 216.2,
+      "max": 238.8
+    },
+    "noWorse": 1
+  },
+  "idle.keyP95": {
+    "main": {
+      "n": 5,
+      "median": 28.5,
+      "min": 26.4,
+      "max": 332.2
+    },
+    "pr": {
+      "n": 5,
+      "median": 27.3,
+      "min": 24.5,
+      "max": 28.8
+    },
+    "noWorse": 1
+  }
+}

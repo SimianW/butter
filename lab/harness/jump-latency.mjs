@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { railDeps } from './rail-scripts.mjs';
+import { railDeps, railScripts } from './rail-scripts.mjs';
 const here = path.dirname(new URL(import.meta.url).pathname), repo = path.resolve(here, '../..');
 const out = path.resolve(here, process.env.OUT ?? 'scratch/faster-jumps'); fs.mkdirSync(out, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -113,14 +113,23 @@ for (const version of (process.env.VERSION ? [process.env.VERSION] : ['alpha6','
     const content=execFileSync('git',['show',`75a9387:${f}`],{cwd:repo});
     fs.writeFileSync(dest,/\.(js|css|json)$/.test(f)?rename(content.toString('utf8')):content);
   }
+  // A revision's rail: its nav script (`nav`) and the scripts it needs ahead of it (`deps`). Before
+  // the rail moved to rail/ it was one `<stem>-nav.js`; since, rail/rail.js reads the globals of the
+  // scripts its manifest loads before it (rail-scripts.mjs), read from that revision.
   const historicalNav = revision => {
-    const files=historicalFiles(revision), name=historicalStem(files);
-    return execFileSync('git',['show',`${revision}:extension/${name}-nav.js`],{cwd:repo,encoding:'utf8'}).replaceAll(name,'butter');
+    const files=historicalFiles(revision);
+    if (files.includes('extension/rail/rail.js')) {
+      const show=f=>execFileSync('git',['show',`${revision}:extension/${f}`],{cwd:repo,encoding:'utf8'});
+      const scripts=railScripts(JSON.parse(show('manifest.json')));
+      return {deps:scripts.slice(0,-1).map(show),nav:show('rail/rail.js')};
+    }
+    const name=historicalStem(files);
+    return {deps:[],nav:execFileSync('git',['show',`${revision}:extension/${name}-nav.js`],{cwd:repo,encoding:'utf8'}).replaceAll(name,'butter')};
   };
-  const original=ref ? historicalNav(ref) : fs.readFileSync(path.join(repo,'extension/rail/rail.js'),'utf8');
+  const {deps,nav:original}=ref ? historicalNav(ref) : {deps:railDeps(),nav:fs.readFileSync(path.join(repo,'extension/rail/rail.js'),'utf8')};
   fs.writeFileSync(path.join(out,`${version}-original.js`),original);
-  // The working tree's rail needs its dependencies (rail-scripts.mjs) ahead of it in the one staged script.
-  const source=(ref ? '' : railDeps().join('\n')+'\n')+instrument(original); fs.writeFileSync(path.join(stage,'butter-nav.js'),source);
+  // A split rail needs its dependencies ahead of it in the one staged script.
+  const source=deps.map(d=>d+'\n').join('')+instrument(original); fs.writeFileSync(path.join(stage,'butter-nav.js'),source);
   fs.writeFileSync(path.join(out,`${version}-instrumented.js`),source);
   execFileSync('node',['--check',path.join(stage,'butter-nav.js')]);
   log({version,ref,originalSha256:createHash('sha256').update(original).digest('hex'),stage});

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="690" viewBox="0 0 1180 690" role="img" aria-label="Seven matched replay metrics: medians and observed ranges in milliseconds">
+<rect width="1180" height="690" fill="#fff"/>
+<style>text{font-family:Arial,sans-serif;fill:#263245;font-size:14px}.label{font-size:16px;font-weight:bold}</style>
+<text x="26" y="34" style="font-size:22px;font-weight:bold">Main versus split-rail A: replay timing</text>
+<text x="26" y="59">Five runs per build · points = medians · lines = min–max · all values in ms · each row has its own scale</text>
+<circle cx="806" cy="30" r="5" fill="#3158a1"/><text x="820" y="35">Main</text><circle cx="906" cy="30" r="5" fill="#b65820"/><text x="920" y="35">PR #95</text>
+<text class="label" x="26" y="113">Total LoAF blocking</text>
+<line x1="255" x2="820" y1="140" y2="140" stroke="#ddd"/>
+<text x="255" y="158">0</text>
+<text x="770" y="158">13984.9</text>
+<line x1="576.47" x2="758.59" y1="105" y2="105" stroke="#3158a1" stroke-width="3"/>
+<circle cx="744.25" cy="105" r="5" fill="#3158a1"/>
+<text x="850" y="110">main: 12110.000 [7957.000–12465.000]</text>
+<line x1="585.40" x2="778.15" y1="123" y2="123" stroke="#b65820" stroke-width="3"/>
+<circle cx="755.08" cy="123" r="5" fill="#b65820"/>
+<text x="850" y="128">pr: 12378.000 [8178.000–12949.000]</text>
+<text class="label" x="26" y="190">Longest LoAF</text>
+<line x1="255" x2="820" y1="217" y2="217" stroke="#ddd"/>
+<text x="255" y="235">0</text>
+<text x="770" y="235">872.6</text>
+<line x1="747.07" x2="778.15" y1="182" y2="182" stroke="#3158a1" stroke-width="3"/>
+<circle cx="750.95" cy="182" r="5" fill="#3158a1"/>
+<text x="850" y="187">main: 766.000 [760.000–808.000]</text>
+<line x1="751.60" x2="778.15" y1="200" y2="200" stroke="#b65820" stroke-width="3"/>
+<circle cx="771.67" cy="200" r="5" fill="#b65820"/>
+<text x="850" y="205">pr: 798.000 [767.000–808.000]</text>
+<text class="label" x="26" y="267">Replay frame p95</text>
+<line x1="255" x2="820" y1="294" y2="294" stroke="#ddd"/>
+<text x="255" y="312">0</text>
+<text x="770" y="312">71.9</text>
+<line x1="646.97" x2="648.54" y1="259" y2="259" stroke="#3158a1" stroke-width="3"/>
+<circle cx="647.75" cy="259" r="5" fill="#3158a1"/>
+<text x="850" y="264">main: 50.000 [49.900–50.100]</text>
+<line x1="518.15" x2="778.15" y1="277" y2="277" stroke="#b65820" stroke-width="3"/>
+<circle cx="648.54" cy="277" r="5" fill="#b65820"/>
+<text x="850" y="282">pr: 50.100 [33.500–66.600]</text>
+<text class="label" x="26" y="344">Streaming slowest key</text>
+<line x1="255" x2="820" y1="371" y2="371" stroke="#ddd"/>
+<text x="255" y="389">0</text>
+<text x="770" y="389">301.1</text>
+<line x1="694.46" x2="778.15" y1="336" y2="336" stroke="#3158a1" stroke-width="3"/>
+<circle cx="732.55" cy="336" r="5" fill="#3158a1"/>
+<text x="850" y="341">main: 254.500 [234.200–278.800]</text>
+<line x1="685.45" x2="752.25" y1="354" y2="354" stroke="#b65820" stroke-width="3"/>
+<circle cx="740.81" cy="354" r="5" fill="#b65820"/>
+<text x="850" y="359">pr: 258.900 [229.400–265.000]</text>
+<text class="label" x="26" y="421">Streaming key p95</text>
+<line x1="255" x2="820" y1="448" y2="448" stroke="#ddd"/>
+<text x="255" y="466">0</text>
+<text x="770" y="466">284.4</text>
+<line x1="693.31" x2="778.15" y1="413" y2="413" stroke="#3158a1" stroke-width="3"/>
+<circle cx="747.75" cy="413" r="5" fill="#3158a1"/>
+<text x="850" y="418">main: 248.000 [220.600–263.300]</text>
+<line x1="698.28" x2="756.89" y1="431" y2="431" stroke="#b65820" stroke-width="3"/>
+<circle cx="755.30" cy="431" r="5" fill="#b65820"/>
+<text x="850" y="436">pr: 251.800 [223.100–252.600]</text>
+<text class="label" x="26" y="498">Idle slowest key</text>
+<line x1="255" x2="820" y1="525" y2="525" stroke="#ddd"/>
+<text x="255" y="543">0</text>
+<text x="770" y="543">464.3</text>
+<line x1="468.32" x2="778.15" y1="490" y2="490" stroke="#3158a1" stroke-width="3"/>
+<circle cx="540.85" cy="490" r="5" fill="#3158a1"/>
+<text x="850" y="495">main: 234.900 [175.300–429.900]</text>
+<line x1="518.10" x2="545.60" y1="508" y2="508" stroke="#b65820" stroke-width="3"/>
+<circle cx="535.62" cy="508" r="5" fill="#b65820"/>
+<text x="850" y="513">pr: 230.600 [216.200–238.800]</text>
+<text class="label" x="26" y="575">Idle key p95</text>
+<line x1="255" x2="820" y1="602" y2="602" stroke="#ddd"/>
+<text x="255" y="620">0</text>
+<text x="770" y="620">358.8</text>
+<line x1="296.57" x2="778.15" y1="567" y2="567" stroke="#3158a1" stroke-width="3"/>
+<circle cx="299.88" cy="567" r="5" fill="#3158a1"/>
+<text x="850" y="572">main: 28.500 [26.400–332.200]</text>
+<line x1="293.58" x2="300.35" y1="585" y2="585" stroke="#b65820" stroke-width="3"/>
+<circle cx="297.99" cy="585" r="5" fill="#b65820"/>
+<text x="850" y="590">pr: 27.300 [24.500–28.800]</text>
+<text x="26" y="670">Requested rule passes for all seven: PR median does not exceed the observed main maximum. This is not an equivalence test.</text>
+</svg>

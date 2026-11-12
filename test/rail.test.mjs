@@ -1,194 +1,39 @@
-// The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: the send pre-jump, jump
-// cancellation, and wiring that needs elements (seek, the dots' fade-out, keyboard focus). What the
-// rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs.
+// The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: jump cancellation, and wiring
+// that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
+// the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
+// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs and
+// test/pre-jump.test.mjs.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 import seekMeta from '../extension/seek/seek-meta.js';
 import bookmarks from '../extension/bookmarks/model.js';
+import { RAIL_SCRIPTS } from '../lab/harness/rail-scripts.mjs';
+import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
 
-// The rail's scripts in manifest order: the model's conversations and wave, the model, the adapter.
-const sources = ['conversations', 'wave', 'model', 'rail'].map((name) => [
-  `rail/${name}.js`,
-  fs.readFileSync(new URL(`../extension/rail/${name}.js`, import.meta.url), 'utf8'),
+// The rail's scripts under rail/ in manifest order, the adapter last (its other dependencies, seek's
+// card text and the bookmark rules, are given as globals).
+const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
+  f,
+  fs.readFileSync(new URL(`../extension/${f}`, import.meta.url), 'utf8'),
 ]);
 const conversation = '12345678-1234-1234-1234-123456789abc';
 
-class FakeElement {
-  constructor(tag = 'div') {
-    this.tagName = tag;
-    this.children = [];
-    this.attributes = new Map();
-    this.listeners = new Map();
-    this.style = {
-      setProperty(name, value) {
-        this[name] = value;
-      },
-    };
-    const classes = new Set();
-    this.classList = {
-      add: (...names) => names.forEach((name) => classes.add(name)),
-      remove: (...names) => names.forEach((name) => classes.delete(name)),
-      contains: (name) => classes.has(name),
-      toggle(name, force = !classes.has(name)) {
-        if (force) classes.add(name);
-        else classes.delete(name);
-      },
-    };
-    this.isConnected = true;
-    this.textContent = '';
-  }
-  focus() {
-    FakeElement.focused = this;
-  }
-  addEventListener(type, callback, options) {
-    const listeners = this.listeners.get(type) ?? [];
-    listeners.push({ callback, once: options?.once, capture: !!options?.capture });
-    this.listeners.set(type, listeners);
-  }
-  removeEventListener(type, callback) {
-    this.listeners.set(
-      type,
-      (this.listeners.get(type) ?? []).filter((x) => x.callback !== callback),
-    );
-  }
-  emit(type, event = {}, phase = null) {
-    for (const listener of [...(this.listeners.get(type) ?? [])]) {
-      if (phase && listener.capture !== (phase === 'capture')) continue;
-      if (!(this.listeners.get(type) ?? []).includes(listener)) continue;
-      if (listener.once) this.removeEventListener(type, listener.callback);
-      listener.callback({ target: this, ...event });
-    }
-  }
-  // An event dispatched to a page element, seen from window: capture listeners, then the page's
-  // own handler on the target (ChatGPT's submit), then bubble listeners, each list read afresh.
-  dispatch(type, event = {}, atTarget = () => {}) {
-    this.emit(type, event, 'capture');
-    atTarget();
-    this.emit(type, event, 'bubble');
-  }
-  prepend(child) {
-    child.parentElement = this;
-    this.children.unshift(child);
-  }
-  append(...children) {
-    for (const child of children) {
-      if (typeof child === 'string') continue; // text: no element to look up
-      child.parentElement = this;
-      this.children.push(child);
-    }
-  }
-  replaceChildren(...children) {
-    this.children = [];
-    children.forEach((child) => this.append(child));
-  }
-  get firstChild() {
-    return this.children[0];
-  }
-  remove() {
-    this.parentElement.children = this.parentElement.children.filter((x) => x !== this);
-  }
-  setAttribute(name, value) {
-    this.attributes.set(name, value);
-  }
-  getAttribute(name) {
-    return this.attributes.get(name) ?? null;
-  }
-  removeAttribute(name) {
-    this.attributes.delete(name);
-  }
-  toggleAttribute(name, force) {
-    if (force) this.setAttribute(name, '');
-    else this.removeAttribute(name);
-  }
-  contains(el) {
-    return this === el || this.children.some((child) => child.contains(el));
-  }
-  closest(selector) {
-    if (selector === '.thread-scroll-container' && this.className === 'thread-scroll-container')
-      return this;
-    if (selector === 'form' && this.tagName === 'form') return this;
-    if (this.matchesClass(selector)) return this;
-    if (selector === '.ProseMirror[contenteditable="true"]' && this.className === 'ProseMirror')
-      return this;
-    if (
-      selector === '[data-testid="send-button"], #composer-submit-button, button[type="submit"]' &&
-      (this.getAttribute('data-testid') === 'send-button' || this.getAttribute('type') === 'submit')
-    )
-      return this;
-    return this.parentElement?.closest(selector) ?? null;
-  }
-  // Class selectors, alone or in a list (".go, .x"), on the class name the rail sets.
-  matchesClass(selector) {
-    return (
-      /^\.[\w-]+(, \.[\w-]+)*$/.test(selector) &&
-      selector.split(', ').some((c) => `${this.className ?? ''}`.split(' ').includes(c.slice(1)))
-    );
-  }
-  querySelectorAll(selector) {
-    return this.children.flatMap((child) => [
-      ...((selector === '[data-turn-key]' && child.getAttribute('data-turn-key')) ||
-      child.matchesClass(selector)
-        ? [child]
-        : []),
-      ...child.querySelectorAll(selector),
-    ]);
-  }
-  querySelector(selector) {
-    for (const child of this.children) {
-      if (child.closest(selector) === child) return child;
-      const nested = child.querySelector(selector);
-      if (nested) return nested;
-    }
-    return null;
-  }
-  attachShadow() {
-    // Only the rail's static template needs lookup; dynamic buttons use append/firstChild.
-    const elements = new Map();
-    this.shadowRoot = {
-      querySelector(selector) {
-        if (!elements.has(selector)) elements.set(selector, new FakeElement());
-        return elements.get(selector);
-      },
-    };
-    return this.shadowRoot;
-  }
-}
-
-function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
+// `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
+// than straight in the scroller.
+function setup({ count = 5, hasPrev = false, height = 900, gutter = 0, nested = false } = {}) {
   let now = 10_000,
     nextId = 1;
   const frames = new Map(),
     timers = new Map(),
-    intervals = [],
-    resizeObservers = [];
+    intervals = [];
   const document = new FakeElement();
   document.createElement = (tag) => new FakeElement(tag);
   document.body = new FakeElement('body');
   document.documentElement = new FakeElement('html');
   const window = new FakeElement();
-  class ResizeObserver {
-    constructor(callback) {
-      this.callback = callback;
-      this.observed = new Set();
-      resizeObservers.push(this);
-    }
-    observe(el) {
-      this.observed.add(el);
-    }
-    unobserve(el) {
-      this.observed.delete(el);
-    }
-    disconnect() {
-      this.observed.clear();
-    }
-  }
-  class IntersectionObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  }
+  const { ResizeObserver, IntersectionObserver, resize } = fakeObservers();
   const ctx = vm.createContext({
     document,
     ButterSeekMeta: seekMeta,
@@ -247,6 +92,14 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
       this.scrollTop = top;
     },
   });
+  let box = scroller;
+  if (nested)
+    for (const name of ['content', 'wrapper', 'window']) {
+      const el = new FakeElement();
+      el.name = name;
+      box.append(el);
+      box = el;
+    }
   const turns = Array.from({ length: count }, (_, i) => {
     const turn = new FakeElement('article');
     turn.setAttribute('data-turn-key', `q${i}`);
@@ -255,16 +108,10 @@ function setup({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
       top: turn.top - scroller.scrollTop,
       bottom: turn.top + 100 - scroller.scrollTop,
     });
-    scroller.append(turn);
+    box.append(turn);
     ctx.butterNavTurn(turn);
     return turn;
   });
-  const resize = (target) => {
-    for (const observer of [...resizeObservers])
-      if (observer.observed.has(target)) {
-        observer.callback([{ target, contentRect: { width: 1000 } }]);
-      }
-  };
   resize(scroller);
   send({
     type: 'page',
@@ -422,109 +269,49 @@ for (const cancel of ['wheel', 'keyboard', 'send', 'new click']) {
   });
 }
 
-for (const trigger of ['Enter', 'click']) {
-  test(`${trigger} pre-jumps a distant send but leaves the last viewport for ChatGPT`, () => {
-    const nav = setup();
-    if (trigger === 'Enter') nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-    else {
-      const icon = new FakeElement('svg');
-      nav.sendButton.append(icon);
-      nav.window.dispatch('click', { target: icon });
-    }
-    assert.equal(nav.scroller.scrollTop, 3200);
-  });
-
-  test(`${trigger}: ChatGPT's submit handler runs before the pre-jump, in the same event`, () => {
-    // Jumping first made ChatGPT's handler mount and lay out the end of the chat before it cleared
-    // the composer: the page froze for 2-3 s with the typed text still showing.
-    const nav = setup();
-    let seen = null;
-    const submit = () => (seen = nav.scroller.scrollTop);
-    if (trigger === 'Enter')
-      nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer }, submit);
-    else nav.window.dispatch('click', { target: nav.sendButton }, submit);
-    assert.equal(seen, 0, 'the handler sees the thread where the user left it');
-    assert.equal(nav.scroller.scrollTop, 3200, 'the jump lands before the task ends');
-    nav.scroller.scrollTop = 0;
-    nav.runTimers();
-    assert.equal(nav.scroller.scrollTop, 0, 'one jump per send');
-  });
-
-  test(`${trigger}: a send whose event never bubbles still pre-jumps after the task`, () => {
-    const nav = setup();
-    if (trigger === 'Enter')
-      nav.window.emit('keydown', { key: 'Enter', target: nav.composer }, 'capture');
-    else nav.window.emit('click', { target: nav.sendButton }, 'capture');
-    assert.equal(nav.scroller.scrollTop, 0);
-    nav.runTimers();
-    assert.equal(nav.scroller.scrollTop, 3200);
-    nav.window.dispatch('keyup', { key: 'Enter', target: nav.composer });
-    assert.equal(nav.window.listeners.get('keydown').filter((x) => !x.capture).length, 0);
-  });
-}
-
-test('the scrolling group switch also turns off the send pre-jump', () => {
-  for (const off of ['seek', 'older', 'older seek']) {
-    const nav = setup();
-    nav.document.documentElement.setAttribute('data-butter-off', off);
-    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-    nav.window.dispatch('click', { target: nav.sendButton });
-    assert.equal(nav.scroller.scrollTop, 0, `pre-jump must stay off when ${off} is off`);
+test("a scroll key aimed at the rail itself doesn't cancel a pending jump", async () => {
+  const nav = setup();
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[2] });
+  assert.equal(nav.scroller.scrollTop, nav.turns[2].top - 64);
+  nav.window.emit('keydown', { key: 'ArrowDown', target: nav.host }); // the rail's own arrows
+  nav.turns[2].top = 800; // the target moves before the glide ends
+  nav.scroller.scrollTop = 700;
+  nav.scroller.emit('scrollend');
+  for (let i = 0; i < 80; i++) {
+    nav.frame();
+    await Promise.resolve();
   }
+  assert.equal(nav.scroller.scrollTop, 800 - 64, 'the jump goes on and settles on its target');
+});
+
+test('a wheel on the chat during a trip ends the trip: the chat and the placeholder come back', async () => {
+  const nav = setup({ count: 40, nested: true });
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[35] }); // far: a trip
+  const warp = nav.select('.warp'),
+    content = nav.scroller.children[0];
+  const json = (x) => JSON.stringify(x.keyframes);
+  assert.equal(content.name, 'content');
+  assert.equal(warp.style.visibility, 'visible', 'the trip departed');
+  const [fadeOut] = content.animations;
+  assert.equal(json(fadeOut), '[{"opacity":1},{"opacity":0}]');
+  nav.scroller.emit('wheel');
+  assert.equal(fadeOut.cancelled, true);
+  assert.equal(json(content.animations.at(-1)), '[{"opacity":0},{"opacity":1}]');
+  assert.equal(json(warp.animations.at(-1)), '[{"opacity":1},{"opacity":0}]');
+  await new Promise((r) => setImmediate(r)); // the placeholder's fade-out finishes
+  assert.equal(warp.style.visibility, 'hidden');
+});
+
+// The send pre-jump's rules are in test/pre-jump.test.mjs; here, that the rail installs it on the
+// visible scroller, and that the rail switch doesn't control it.
+test('the rail installs the send pre-jump, which works with the rail switched off', () => {
   const nav = setup();
   nav.document.documentElement.setAttribute('data-butter-off', 'rail');
+  nav.document.emit('butter-settings');
   nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-  assert.equal(nav.scroller.scrollTop, 3200, 'the rail switch does not control the pre-jump');
-});
-
-test('near-bottom sends and non-send key events preserve the thread position', () => {
-  const nav = setup();
-  for (const event of [
-    { shiftKey: true },
-    { ctrlKey: true },
-    { metaKey: true },
-    { altKey: true },
-    { isComposing: true },
-    { keyCode: 229 },
-    { repeat: true },
-    { key: 'x' },
-    { target: nav.scroller },
-  ]) {
-    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer, ...event });
-    assert.equal(nav.scroller.scrollTop, 0);
-  }
-  for (const top of [2750, 3200, 4100]) {
-    nav.scroller.scrollTop = top;
-    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-    assert.equal(nav.scroller.scrollTop, top);
-  }
-});
-
-test('empty composers and disabled send buttons do not pre-jump', () => {
-  const nav = setup();
-  for (const text of ['', '  \n ']) {
-    nav.composer.textContent = text;
-    nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-    nav.window.dispatch('click', { target: nav.sendButton });
-    assert.equal(nav.scroller.scrollTop, 0);
-  }
-  nav.composer.textContent = 'New question';
-  nav.sendButton.disabled = true;
-  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
+  assert.equal(nav.scroller.scrollTop, 3200);
+  nav.scroller.scrollTop = 0;
   nav.window.dispatch('click', { target: nav.sendButton });
-  assert.equal(nav.scroller.scrollTop, 0);
-  nav.sendButton.disabled = false;
-  nav.sendButton.setAttribute('aria-disabled', 'true');
-  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
-  nav.window.dispatch('click', { target: nav.sendButton });
-  assert.equal(nav.scroller.scrollTop, 0);
-});
-
-test('the current composer submit button works without legacy IDs', () => {
-  const nav = setup();
-  nav.sendButton.removeAttribute('data-testid');
-  nav.sendButton.setAttribute('type', 'submit');
-  nav.window.dispatch('keydown', { key: 'Enter', target: nav.composer });
   assert.equal(nav.scroller.scrollTop, 3200);
 });
 

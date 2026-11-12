@@ -1,0 +1,116 @@
+{
+  "jumpTyping": {
+    "exit": 1,
+    "failedToClearComposer": true,
+    "samples": []
+  },
+  "jumpLatency": {
+    "exit": 1,
+    "missingZHAnchor": true
+  },
+  "nav-earlier-live": {
+    "exit": 1,
+    "artifact": {
+      "top": null,
+      "ticks": 16,
+      "more": false,
+      "warp": "hidden",
+      "busy": 0,
+      "done": true,
+      "ms": 35269,
+      "pages": [
+        {
+          "at": 709,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 2464,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 4830,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 7582,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 11165,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 13360,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 16301,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 20135,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 22648,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 26199,
+          "status": 200,
+          "turns": "2"
+        },
+        {
+          "at": 28823,
+          "status": 200,
+          "turns": "2"
+        }
+      ],
+      "uncoveredInsertions": 0,
+      "pageErrorCount": 0
+    }
+  },
+  "nav-settle": {
+    "exit": 124,
+    "partialSamples": [
+      {
+        "run": 1,
+        "arrivedMs": null,
+        "top": null,
+        "busy": 0,
+        "warp": "hidden"
+      },
+      {
+        "run": 2,
+        "arrivedMs": null,
+        "top": null,
+        "busy": 0,
+        "warp": "hidden"
+      },
+      {
+        "run": 3,
+        "arrivedMs": null,
+        "top": null,
+        "busy": 0,
+        "warp": "hidden"
+      },
+      {
+        "run": 4,
+        "arrivedMs": null,
+        "top": null,
+        "busy": 0,
+        "warp": "hidden"
+      }
+    ],
+    "artifactWritten": false
+  }
+}

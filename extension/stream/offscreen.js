@@ -78,7 +78,7 @@
     }
   });
   const watch = (el) => {
-    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el); // history rail (rail/rail.js)
+    if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el); // history rail's turn tracker (rail/turns.js)
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {

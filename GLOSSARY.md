@@ -26,17 +26,17 @@ _Where_: `rail/rail.js`, `history/conversation-main.js`
 **Turn**:
 ChatGPT's on-page block of one question and its answer, keyed by the question's id (the turn key).
 _Avoid_: message, row
-_Where_: `rail/rail.js`
+_Where_: `rail/turns.js`
 
 **Mounted**:
 A turn that exists in the page now; ChatGPT keeps only about five mounted and unmounts the rest.
 _Avoid_: loaded (that means fetched; see Earlier)
-_Where_: `rail/rail.js`
+_Where_: `rail/turns.js`
 
 **Hidden chat**:
 A conversation opened earlier in the same tab that ChatGPT keeps as an invisible copy and can show
 again without remounting.
-_Where_: `rail/rail.js`
+_Where_: `rail/turns.js`
 
 **Earlier**:
 History ChatGPT has not fetched yet, loaded page by page as you scroll up or click the three dots;
@@ -92,11 +92,20 @@ _Where_: `rail/rail.js`, `docs/history-rail.md`
 **Rail presentation model**:
 What the rail shows, worked out with no DOM, timers or frames: the conversation's questions and each
 tick's identity, the rail's geometry, the hover wave, which ticks are lit, the card and the dots.
-`rail/rail.js` is its DOM adapter: it feeds the model events, measured boxes and frame times, patches
-the shadow DOM from what the model returns, and schedules frames only while the model says something
-moves.
+`rail/rail.js` is its DOM adapter: it feeds the model events and frame times (the turn tracker
+feeds it measured boxes), patches the shadow DOM from what the model returns, and schedules frames
+only while the model says something moves.
 _Avoid_: rail state, view model
 _Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`
+
+**Turn tracker**:
+What the rail knows of ChatGPT's turns on the page: the visible scroller (following a hidden chat
+shown again), the turns mounted in it, which show in the lit band, where each question's turn was
+last seen and where an unmounted one should be, and the user's own scrolling (wheel, touch, the
+scrollbar, scroll keys), which stops a jump. It owns all of that; `rail/rail.js` reads it and is told
+through callbacks.
+_Avoid_: turn cache, DOM tracker
+_Where_: `rail/turns.js`
 
 **Tick**:
 One question's line on the rail; it lengthens for the question being read and swells in a wave
@@ -126,7 +135,7 @@ _Where_: `rail/model.js`, `rail/rail.js`
 The reading region between the header and the composer; the questions showing in it get lit
 ticks, excluding small tails behind the header or composer.
 _Avoid_: viewport, visible range
-_Where_: `rail/rail.js`, `rail/model.js`
+_Where_: `rail/turns.js`, `rail/model.js`
 
 **Jump**:
 Moving the chat to a question or bookmark from the rail; it plays as a glide or a trip.
@@ -141,7 +150,7 @@ _Where_: `rail/rail.js`
 How a far jump looks: the chat speeds off, placeholder lines stream past on the compositor while
 ChatGPT renders the target, and the chat slides in and stops on it.
 _Avoid_: animation, flight
-_Where_: `rail/rail.js`
+_Where_: `rail/trip.js`, `rail/rail.js`
 
 **Journey**:
 A far jump's bookkeeping behind the trip: its deadline and readiness, carried over when a new click
@@ -158,6 +167,13 @@ What a jump tells the rail presentation model while it runs: whether it is trave
 target lit) or pinned, the question it opens, the busy tick and the bookmark an earlier trip loads
 pages for. The model decides what is lit from it.
 _Where_: `rail/rail.js`, `rail/model.js`
+
+**Send pre-jump**:
+On sending a question from more than 1.5 screens above the chat's end, the jump to one screen above
+the end, right after ChatGPT's own send handler, so ChatGPT's scroll to the new question passes no
+turns in between. It belongs to the smoother scrolling switch, not the rail's.
+_Avoid_: pre-send scroll, send jump
+_Where_: `rail/pre-jump.js`
 
 ## Bookmarks
 
