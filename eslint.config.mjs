@@ -8,7 +8,6 @@ export const maxLines = 500;
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 566,
   'extension/dev/recorder.js': 574,
-  'extension/rail/rail.js': 743,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
@@ -83,12 +82,20 @@ export default [
         ButterRailTrip: 'readonly', // rail/trip.js
         ButterRailJump: 'readonly', // rail/jump.js
         ButterPreJump: 'readonly', // rail/pre-jump.js
+        ButterRailStyle: 'readonly', // rail/style.js
+        ButterRailCard: 'readonly', // rail/card.js
       },
     },
   },
   {
-    // The rail model and the turn tracker fall back to their dependencies under node.
-    files: ['extension/rail/model.js', 'extension/rail/turns.js'],
+    // The rail model, the turn tracker, the rail's style and its card fall back to their
+    // dependencies under node.
+    files: [
+      'extension/rail/model.js',
+      'extension/rail/turns.js',
+      'extension/rail/style.js',
+      'extension/rail/card.js',
+    ],
     languageOptions: { globals: { require: 'readonly' } },
   },
   {
@@ -204,6 +211,8 @@ export default [
       'extension/rail/trip.js',
       'extension/rail/jump.js',
       'extension/rail/pre-jump.js',
+      'extension/rail/style.js',
+      'extension/rail/card.js',
       'extension/page/reader.js',
       'extension/page/reader-main.js',
       'extension/dev/recorder.js',

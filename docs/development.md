@@ -21,7 +21,9 @@
 | `extension/rail/trip.js` | The trip (`ButterRailTrip`), isolated world: privately owns a far jump's trip (its jump's token, direction, the content's fade, the placeholder's fade-in and streaming loop) and its CSS fragment (`ButterRailTrip.CSS`); `depart`, `redirect`, `arrive`, `take`, `end` and `active` for the jump in `rail/jump.js`. |
 | `extension/rail/jump.js` | The jump (`ButterRailJump`), isolated world: privately owns the jump in progress (its token; the journey, a far jump's deadline and readiness that a takeover inherits; the pin and its ResizeObserver; the bookmark landing and wash; the busy tick's token; the earlier wait), the choice of glide or trip, the earlier page loop, the mount retries and the readiness waits (page, math, quiet frames, steady geometry). It reads the model's questions and marks and the turn tracker, publishes its status to the model (`journey`, `setActive`), drives the trip, and asks `rail.js` for the rail's own effects through a `view` (`kick`, `busy`, `wait`, `found`). `go(i)`, `bookmark(i, mark, b)`, `earlier(b?, keyboard?)`, `cancel()` and `observe(el)` (the turn tracker's `mounted`) are its interface. |
 | `extension/rail/pre-jump.js` | The send pre-jump (`ButterPreJump`), isolated world: the capture-phase send detection (Enter, the send button), the jump to one screen above the end in the bubble phase or after the task, and the smoother scrolling switch it follows. Installed by `rail.js`; works with the rail off. |
-| `extension/rail/rail.js` | The rail's DOM adapter: the shadow DOM built and patched from the model, frames only while the model says something moves, focus, the card and its rows, and the rail switch and opening checks before a jump. It installs the turn tracker, the send pre-jump, the trip and the jump. `ButterRail` (`WIDTH`, `inset()`, `setMarks`) is its interface; `butterNavTurn` is the turn tracker's (`rail/turns.js`). |
+| `extension/rail/style.js` | The rail's shadow-root CSS text (`ButterRailStyle`), a constant with the trip's fragment (`ButterRailTrip.CSS`) in it. Loads after `rail/trip.js`. |
+| `extension/rail/card.js` | The card's DOM adapter (`ButterRailCard`), isolated world: privately owns the card's elements and patches them from the model's card (`hover`, `seekCard`, `refill`, `cardKey`): the tooltip, the bookmark rows (stale tag, the earlier row's spinner), the three dots' card clamp, `--cy` on a whole pixel, the 200 ms leave grace, the card's listeners and keys, and the page's Escape for the three dots' card. `rail.js` builds it in `build()` with the host, the rail and the card's elements and a `view` (`seek`, `jumpTo`, `remove`, `focusStop`, `cool`); `show(i)`, `enter(i)`, `seek(s)`, `unseek()`, `hide()`, `refill()`, `holds(el)`, `spans(y)`, `stay()`, `leave()` and `escape(e)` are its interface. |
+| `extension/rail/rail.js` | The rail's DOM adapter: the shadow DOM built (its CSS from `rail/style.js`), the rail, ticks, three dots and dots patched from the model, frames only while the model says something moves, focus, and the rail switch and opening checks before a jump. It installs the turn tracker, the send pre-jump, the trip, the jump and the card (`rail/card.js`, once built). `ButterRail` (`WIDTH`, `inset()`, `setMarks`) is its interface; `butterNavTurn` is the turn tracker's (`rail/turns.js`). |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
 | `extension/bookmarks/client.js` | The store client (`ButterBookmarkStore.send`), which `content.js` hands to the bookmark session: one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
@@ -223,8 +225,8 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   cancellation, the jump's wiring (a far trip's busy tick, a remounted target followed, card rows'
   bookmark and earlier jumps with the three dots' blink, an earlier trip that finds its bookmark
   putting the dots' card away, held after a pointer trip, focus on its tick after a keyboard one),
-  the seek card's wiring, the dots' fade-out
-  timer and keyboard focus. The rail's
+  the seek card's wiring, the dots' fade-out timer, keyboard focus, and the card's leave grace and
+  the page's Escape through the rail. The rail's
   modules run alone over the same fake DOM (`test/helpers/rail-dom.mjs`, with recording observers):
   `test/rail-turns.test.mjs` (the turn tracker: a hidden copy's scroller taking over, the lit band,
   `estimate`, `measure`, `retarget` dropping only unseen records, scroll detection and the scroll
@@ -234,7 +236,11 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   recording its journey status, a fake turn tracker, a recording trip and a manual frame and timer
   clock: glide or trip, pin, follow and unpin in order, cancel mid-wait, a takeover inheriting the
   first click's deadline, a repeated click ignored, an earlier trip waiting for synced marks, a
-  bookmark jump landing on its text and washed once stopped, or flashed when stale) and
+  bookmark jump landing on its text and washed once stopped, or flashed when stale),
+  `test/rail-card-dom.test.mjs` (the card's adapter over the real model with a recording `view`: row
+  fills, single and list, the stale tag, the earlier row's spinner and the three dots' clamp, the
+  refill keeping focus on the same row and going back when the card empties, the leave grace, the
+  card's keys, the page's Escape and the seek patch) and
   `test/pre-jump.test.mjs` (the send pre-jump with a fake
   window: Enter and click, the bubble phase and its fallback, the 1.5-screen rule, the switches). bookmarks-qa's `rail-idle` scenario checks the performance floor in a browser: the rail
   schedules no animation frame for 2 s after the chat opens and settles, after a hover wave and after

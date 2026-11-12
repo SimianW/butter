@@ -1,7 +1,7 @@
 // Synthetic browser fixture. Run in a blank page, then call installRailFixture({source, meta, deps, width}):
 // `meta` is seek/seek-meta.js, `deps` the rail's other scripts before rail/rail.js in manifest order
 // (bookmarks/model.js, rail/conversations.js, rail/wave.js, rail/model.js, rail/turns.js, rail/trip.js,
-// rail/jump.js, rail/pre-jump.js; rail-scripts.mjs lists them) and
+// rail/jump.js, rail/pre-jump.js, rail/style.js, rail/card.js; rail-scripts.mjs lists them) and
 // `source` rail/rail.js. Each install gets a fresh iframe so old rail observers/listeners cannot affect the next case.
 globalThis.installRailFixture = async ({ source, meta, deps = [], width = 1280, gutter = false }) => {
   document.body.style.margin = '0';

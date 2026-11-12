@@ -1,8 +1,8 @@
 // The rail's DOM adapter (extension/rail/rail.js) over a fake DOM: jump cancellation, and wiring
-// that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus). What
-// the rail shows is tested through its model: test/rail-model.test.mjs and test/rail-card.test.mjs;
-// its modules through their own interfaces: test/rail-turns.test.mjs, test/rail-trip.test.mjs,
-// test/rail-jump.test.mjs and test/pre-jump.test.mjs.
+// that needs elements (the send pre-jump installed, seek, the dots' fade-out, keyboard focus, the
+// card's grace and Escape). What the rail shows is tested through its model (test/rail-model and
+// rail-card .test.mjs); its modules through their own interfaces (test/rail-turns, rail-trip,
+// rail-jump, rail-card-dom and pre-jump .test.mjs).
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { FakeElement } from './helpers/rail-dom.mjs';
@@ -215,6 +215,28 @@ test('keyboard: ArrowLeft on the three dots enters their card; ArrowRight and Es
   key(nav.select('.rail'), 'ArrowLeft', more);
   key(card, 'Escape', nav.select('.bmc').querySelectorAll('.go')[0]);
   assert.equal(FakeElement.focused, more);
+});
+
+test("a left bookmark card goes after 200 ms unless the pointer comes back; Escape puts the dots' away", () => {
+  const nav = setup({ count: 3, hasPrev: true });
+  nav.setMarks({ '-1': [false], q1: [false] });
+  const rail = nav.select('.rail'),
+    shows = () => nav.select('.card').classList.contains('show'),
+    key = (k, target) => rail.emit('keydown', { key: k, target, preventDefault() {} }),
+    wait = (ms) => (nav.advanceClock(ms), nav.runTimers());
+  key('ArrowLeft', nav.ticks()[1]);
+  rail.emit('pointerleave');
+  wait(150);
+  rail.emit('pointerenter');
+  wait(100);
+  assert.ok(shows(), 'the pointer came back');
+  rail.emit('pointerleave');
+  wait(200);
+  assert.deepEqual([shows(), rail.classList.contains('hot')], [false, false]);
+  key('ArrowLeft', nav.select('.more'));
+  assert.ok(shows());
+  nav.window.emit('keydown', { key: 'Escape' }, 'capture');
+  assert.equal(shows(), false);
 });
 
 // The jump (rail/jump.js) through the rail: the turn tracker's mounts reach its pin, and card rows

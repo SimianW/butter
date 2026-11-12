@@ -15,6 +15,8 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
     'rail/trip.js',
     'rail/jump.js',
     'rail/pre-jump.js',
+    'rail/style.js',
+    'rail/card.js',
     'rail/rail.js',
   ]);
   const manifest = {
