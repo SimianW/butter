@@ -22,7 +22,9 @@ replayed onto the current base with `git merge-tree` (so a base-branch merge or 
 review does not count, even in files the PR also changed), and the paths that differ between that
 tree and the working tree are classified with review_tier.classify. When the replay conflicts,
 the check falls back to the paths that differ between <sha> and the working tree, limited to paths
-the PR changed at review time or changes now. Markdown or notes added after the approval pass.
+the PR changed at review time or changes now. Markdown or notes added after the approval pass, and
+so does a .js, .mjs, .cjs or .css file whose reviewed and current versions differ only in comments
+and whitespace (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
 import importlib.util
@@ -145,7 +147,8 @@ def check_after_review(sha, base, paths, root):
         return [], [f"nothing changed after the reviewed commit {sha}"]
     before = review_tier.manifest_at(reviewed, root) if review_tier.MANIFEST in changed else None
     after = review_tier.working_manifest(root) if review_tier.MANIFEST in changed else None
-    tier, reasons = review_tier.classify(changed, before, after)
+    format_only = review_tier.format_only_paths(changed, reviewed, root)
+    tier, reasons = review_tier.classify(changed, before, after, format_only)
     if tier >= 1:
         return [
             f"changes after the reviewed commit {sha} reach tier {tier}: {'; '.join(reasons)}; "
@@ -161,15 +164,15 @@ def main(argv):
     base = argv[0] if argv else "origin/main"
     try:
         root = review_tier.git("rev-parse", "--show-toplevel").decode().strip()
-        merge_base, paths, before, after = review_tier.collect(base)
+        merge_base, paths, before, after, format_only = review_tier.collect(base)
         head = review_tier.git("rev-parse", "--short", "HEAD", cwd=root).decode().strip()
-    except (review_tier.GitError, OSError) as error:
+    except (review_tier.GitError, review_tier.ToolError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
     if not paths:
         print(f"check-pr-body: no changes against {base} (merge base {merge_base[:7]})", file=sys.stderr)
         return 1
-    tier, reasons = review_tier.classify(paths, before, after)
+    tier, reasons = review_tier.classify(paths, before, after, format_only)
     try:
         failures, passes = check_body(
             os.environ.get("PR_BODY", ""),
@@ -178,7 +181,7 @@ def main(argv):
             review_gate=lambda sha: check_after_review(sha, base, paths, root),
             head=head,
         )
-    except (review_tier.GitError, OSError) as error:
+    except (review_tier.GitError, review_tier.ToolError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
     for message in failures:

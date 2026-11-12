@@ -86,8 +86,10 @@ build, CI).
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
-  final diff, at the round budget the tier sets. Every gate review before merge, including when
-  the user asks to review a PR or branch, runs `review-loop`; only `implement` and
+  final diff, at the round budget the tier sets. Do not wait for the Codex GitHub bot's review
+  before merging: if it has already posted when CI is green, handle its comments first; comments
+  that arrive after the merge become a follow-up issue. Every gate review before merge,
+  including when the user asks to review a PR or branch, runs `review-loop`; only `implement` and
   `implement-spec` work adds a `code-review` pass before it (see Features).
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.

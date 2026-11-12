@@ -1,6 +1,9 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
+import copy
 import importlib.util
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -647,6 +650,335 @@ class RuleTests(unittest.TestCase):
     def test_empty_change_is_an_error(self):
         with self.assertRaises(ValueError):
             classify([], None, None)
+
+
+def with_scripts(manifest, change):
+    """manifest with change(entries) applied to a deep copy of its content_scripts entries."""
+    entries = copy.deepcopy(manifest["content_scripts"])
+    change(entries)
+    return with_keys(manifest, content_scripts=entries)
+
+
+class ContentScriptsTests(unittest.TestCase):
+    def tier(self, change, before=MANIFEST_ALPHA_13):
+        return classify([review_tier.MANIFEST], before, with_scripts(before, change))
+
+    def test_file_appended_to_a_list_is_tier_1(self):
+        self.assertEqual(
+            self.tier(lambda entries: entries[0]["js"].append("rail/card.js")),
+            (1, ["extension/manifest.json: content_scripts js/css lists changed"]),
+        )
+
+    def test_file_inserted_removed_or_reordered_is_tier_1(self):
+        def edit(entries):
+            entries[0]["js"].insert(3, "rail/style.js")
+            entries[1]["js"].remove("seek/anchor-main.js")
+            entries[1]["js"].reverse()
+            entries[1]["css"] = ["seek/preview.css"]
+
+        self.assertEqual(self.tier(edit)[0], 1)
+
+    def test_lists_and_version_bump_is_tier_1(self):
+        after = with_scripts(MANIFEST_ALPHA_13, lambda entries: entries[0]["js"].append("rail/card.js"))
+        after = with_keys(after, version="0.1.0.14", version_name="0.1.0-alpha.14")
+        self.assertEqual(
+            classify([review_tier.MANIFEST], MANIFEST_ALPHA_13, after),
+            (1, ["extension/manifest.json: content_scripts js/css lists changed"]),
+        )
+
+    def test_matches_or_run_at_change_is_tier_2(self):
+        changes = {
+            "matches": lambda entries: entries[0]["matches"].append("https://example.com/*"),
+            "run_at": lambda entries: entries[1].update(run_at="document_idle"),
+            "world": lambda entries: entries[0].update(world="MAIN"),
+        }
+        for key, change in changes.items():
+            with self.subTest(key=key):
+                self.assertEqual(
+                    self.tier(change), (2, ["extension/manifest.json: content_scripts changed"])
+                )
+
+    def test_file_moved_from_isolated_to_main_is_tier_2(self):
+        def move(entries):
+            entries[0]["js"].remove("seek/seek-meta.js")
+            entries[1]["js"].append("seek/seek-meta.js")
+
+        self.assertEqual(self.tier(move)[0], 2)
+
+    def test_file_copied_into_another_entry_is_tier_2(self):
+        self.assertEqual(self.tier(lambda entries: entries[1]["js"].append("shared/status.js"))[0], 2)
+
+    def test_css_moved_between_entries_is_tier_2(self):
+        def move(entries):
+            entries[1]["css"] = entries[0].pop("css")
+
+        self.assertEqual(self.tier(move)[0], 2)
+
+    def test_entry_added_or_removed_is_tier_2(self):
+        added = {"matches": ["https://chatgpt.com/*"], "js": ["rail/card.js"], "run_at": "document_end"}
+        self.assertEqual(self.tier(lambda entries: entries.append(added))[0], 2)
+        self.assertEqual(self.tier(lambda entries: entries.pop())[0], 2)
+
+    def test_malformed_list_is_tier_2(self):
+        self.assertEqual(self.tier(lambda entries: entries[0].update(js="rail/rail.js"))[0], 2)
+
+    def test_file_moved_under_another_spelling_is_tier_2(self):
+        # Without the spelling check, `/seek/seek-meta.js` in MAIN and `seek/seek-meta.js` in
+        # ISOLATED would look like two different files and the move would pass as a list edit.
+        def absolute(entries):
+            entries[0]["js"].remove("seek/seek-meta.js")
+            entries[1]["js"].append("/seek/seek-meta.js")
+
+        def dotted(entries):
+            entries[1]["js"].append("./shared/status.js")
+
+        for name, change in (("absolute", absolute), ("dotted", dotted)):
+            with self.subTest(spelling=name):
+                self.assertEqual(self.tier(change)[0], 2)
+
+    def test_other_high_risk_key_with_lists_is_tier_2(self):
+        after = with_scripts(MANIFEST_ALPHA_13, lambda entries: entries[0]["js"].append("rail/card.js"))
+        after = with_keys(after, permissions=["storage", "unlimitedStorage", "tabs"])
+        self.assertEqual(
+            classify([review_tier.MANIFEST], MANIFEST_ALPHA_13, after),
+            (2, ["extension/manifest.json: content_scripts, permissions changed"]),
+        )
+
+    def test_new_files_keep_their_own_tier(self):
+        after = with_scripts(MANIFEST_ALPHA_13, lambda entries: entries[0]["js"].append("stream/split.js"))
+        self.assertEqual(
+            classify([review_tier.MANIFEST, "extension/stream/split.js"], MANIFEST_ALPHA_13, after),
+            (2, ["extension/stream/split.js (high-risk directory)"]),
+        )
+
+
+class FormatOnlyTests(unittest.TestCase):
+    """Run the script on one file changed in a throwaway repository."""
+
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.git("init", "-q", "-b", "main")
+        self.write("README.md", "Butter\n")
+
+    def git(self, *args):
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+
+    def write(self, path, text):
+        target = self.root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text, encoding="utf-8")
+
+    def run_script(self, path, before, after):
+        """Commit path holding before (None: absent), leave after (None: deleted) in the working
+        tree, and return review-tier.py's stdout."""
+        if before is not None:
+            self.write(path, before)
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        if after is None:
+            (self.root / path).unlink()
+        else:
+            self.write(path, after)
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "review-tier.py"), "main"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return result.stdout
+
+    def assert_format_only(self, path, before, after):
+        self.assertEqual(
+            self.run_script(path, before, after),
+            f"Review tier: 0\n{path} (comments or formatting only)\n",
+        )
+
+    def assert_path_tier(self, path, before, after, tier):
+        self.assertEqual(self.run_script(path, before, after).splitlines()[0], f"Review tier: {tier}")
+
+    def test_comment_only_js_in_a_high_risk_directory_is_tier_0(self):
+        self.assert_format_only(
+            "extension/stream/offscreen.js",
+            "// Old note.\nconst a = 1; /* why */\nfunction f() {\n  return a;\n}\n",
+            "// New note,\n// over two lines.\nconst a = 1;\nfunction f() {\n  // Says more.\n  return a;\n}\n",
+        )
+
+    def test_format_only_js_is_tier_0(self):
+        self.assert_format_only(
+            "extension/rail/rail.js",
+            "const a = { b: 1, c: [2, 3] };\nf(a, 'x');\n",
+            "const a = {\n  b: 1,\n  c: [\n    2, 3\n  ]\n};\nf(   a,\n  'x'  );\n",
+        )
+
+    def test_comment_only_module_is_tier_0(self):
+        self.assert_format_only(
+            "test/rail.test.mjs",
+            "import { a } from './a.mjs';\nexport const b = a;\n",
+            "// The rail's tests.\nimport { a } from './a.mjs';\nexport const b = a; // re-export\n",
+        )
+
+    def test_string_or_template_content_change_is_the_path_tier(self):
+        cases = [
+            ("const s = 'a // b';\n", "const s = 'a  b';\n"),
+            ('const s = "x /* y */ z";\n', 'const s = "x  z";\n'),
+            ("const t = `a // b ${c}`;\n", "const t = `a  ${c}`;\n"),
+            ("const t = `a /* b */`;\n", "const t = `a   `;\n"),
+            ("const s = 'a b';\n", "const s = 'a  b';\n"),
+            ("const s = 'a';\n", 'const s = "a";\n'),
+        ]
+        for before, after in cases:
+            with self.subTest(before=before):
+                self.setUp()
+                self.assert_path_tier("extension/stream/x.js", before, after, 2)
+
+    def test_regex_literal_change_is_the_path_tier(self):
+        self.assert_path_tier("extension/rail/x.js", "const r = /a+b/g;\n", "const r = /a+ b/g;\n", 1)
+
+    def test_line_break_that_changes_meaning_is_the_path_tier(self):
+        self.assert_path_tier(
+            "extension/rail/x.js", "function f() {\n  return x;\n}\n", "function f() {\n  return\n  x;\n}\n", 1
+        )
+
+    def test_code_and_comment_change_is_the_path_tier(self):
+        self.assert_path_tier(
+            "extension/stream/x.js", "// One.\nconst a = 1;\n", "// Two.\nconst a = 2;\n", 2
+        )
+
+    def test_syntax_error_on_one_side_is_the_path_tier(self):
+        self.assert_path_tier("extension/rail/x.js", "const a = 1;\n", "const a = ; // c\n", 1)
+        self.setUp()
+        self.assert_path_tier("extension/rail/x.js", "const a = (;\n", "const a = (; // c\n", 1)
+        # `<!--` is an HTML comment in a script and a syntax error in a module: one source type
+        # parses only one side, which must not be skipped as if neither parsed.
+        self.setUp()
+        self.assert_path_tier("extension/rail/x.js", "x = 1;\n", "x = 1; <!-- c\n", 1)
+
+    def test_comment_only_script_that_is_not_a_module_is_tier_0(self):
+        self.assert_format_only("extension/rail/x.js", "with (o) { a; }\n", "// Why.\nwith (o) { a; }\n")
+
+    def test_shebang_change_is_the_path_tier(self):
+        self.assert_path_tier(
+            "scripts/tool.mjs",
+            "#!/usr/bin/env node\nexport const a = 1;\n",
+            "#!/usr/bin/env -S node --x\nexport const a = 1;\n",
+            1,
+        )
+        self.setUp()
+        self.assert_format_only(
+            "scripts/tool.mjs",
+            "#!/usr/bin/env node\nexport const a = 1;\n",
+            "#!/usr/bin/env node\n// Why.\nexport const a = 1;\n",
+        )
+
+    def test_comment_only_css_is_tier_0(self):
+        self.assert_format_only(
+            "extension/stream/containment.css",
+            "/* Old. */\n.a {\n  color: red;\n}\n",
+            "/* New,\n   longer. */\n.a{color: red;}\n\n/* Trailing note. */\n",
+        )
+        self.setUp()
+        self.assert_format_only(
+            "extension/stream/containment.css",
+            ".a/* x */.b { color: red; }\n",
+            ".a/* y, longer */.b {\n  /* Why. */\n  color: red;\n}\n",
+        )
+
+    def test_css_changes_that_matter_are_the_path_tier(self):
+        cases = [
+            (".a { width: calc(1px + 2px); }\n", ".a { width: calc(1px+2px); }\n"),
+            ("a :hover { color: red; }\n", "a:hover { color: red; }\n"),
+            (".a { content: '/* x */'; }\n", ".a { content: ''; }\n"),
+            (".a { content: 'a b'; }\n", ".a { content: 'a  b'; }\n"),
+            (".a .b { color: red; }\n", ".a/* c */.b { color: red; }\n"),
+            (".a { color: red; }\n", ".a { color: blue; } /* c */\n"),
+            (".a { color: red; }\n", ".a { color: red; } /* open\n"),
+            ("a b { color: red; }\n", "a\u00a0b { color: red; }\n"),
+            (".a { background: url(x.png); }\n", ".a { background: url( x.png); }\n"),
+            (".\\61  b { color: red; }\n", ".\\61 b { color: red; }\n"),
+            (".a { background: url(foo\\)/*one*/bar); }\n", ".a { background: url(foo\\)/*two*/bar); }\n"),
+            # my-url( is a function, not url(: its quoted `)` once cut it short, flipped quote
+            # parity and hid the string change after it.
+            (
+                'a{--u:my-url(c ")");content:"x  y"}/*"*/\n',
+                'a{--u:my-url(c ")");content:"x y"}/*"*/\n',
+            ),
+            (".a { background: url(x/*1*/y); }\n", ".a { background: url(x/*2*/y); }\n"),
+            # A string ends at a line break, so the `"` after it opens "p  q"; read past the
+            # break, that quote would close the string and the whitespace change would collapse.
+            ('a{b:"x\n;content:"p  q";}/*"*/\n', 'a{b:"x\n;content:"p q";}/*"*/\n'),
+            ("@media screen and (min-width:1px) { }\n", "@media screen and(min-width:1px) { }\n"),
+        ]
+        for before, after in cases:
+            with self.subTest(before=before, after=after):
+                self.setUp()
+                self.assert_path_tier("extension/stream/containment.css", before, after, 2)
+
+    def test_added_or_deleted_file_is_the_path_tier(self):
+        self.assert_path_tier("extension/stream/new.js", None, "// Only a comment.\n", 2)
+        self.setUp()
+        self.assert_path_tier("extension/stream/old.css", "/* Only a comment. */\n", None, 2)
+
+    def test_deleted_file_behind_a_symlinked_directory_is_the_path_tier(self):
+        self.write("extension/stream/x.js", "export const s = 1;\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        (self.root / "extension" / "stream").rename(self.root / "moved")
+        (self.root / "extension" / "stream").symlink_to(self.root / "moved")
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "review-tier.py"), "main"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.splitlines()[0], "Review tier: 2")
+        self.assertIn("extension/stream/x.js (high-risk directory)", result.stdout)
+
+    def test_missing_espree_fails_instead_of_guessing(self):
+        self.write("extension/rail/x.js", "const a = 1;\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        self.write("extension/rail/x.js", "const a = 1; // c\n")
+        scripts = self.root / "copied-scripts"
+        scripts.mkdir()
+        for name in ("review-tier.py", "same-code.mjs"):
+            (scripts / name).write_bytes((ROOT / "scripts" / name).read_bytes())
+        result = subprocess.run(
+            [sys.executable, str(scripts / "review-tier.py"), "main"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+            env={**os.environ, "NODE_PATH": ""},
+        )
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("run npm ci", result.stderr)
+
+    def test_missing_node_fails_instead_of_guessing(self):
+        self.write("extension/rail/x.js", "const a = 1;\n")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "base")
+        self.write("extension/rail/x.js", "const a = 1; // c\n")
+        bin_dir = self.root / "bin-without-node"
+        bin_dir.mkdir()
+        (bin_dir / "git").symlink_to(shutil.which("git"))
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "review-tier.py"), "main"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+            env={**os.environ, "PATH": str(bin_dir)},
+        )
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("node is not installed", result.stderr)
 
 
 class CommandTests(unittest.TestCase):
