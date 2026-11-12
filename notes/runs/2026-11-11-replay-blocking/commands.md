@@ -964,3 +964,186 @@ $ python3 /tmp/replay-blocking-work/bisect/export.py: bisect report, numeric dat
 $ python3 /tmp/replay-blocking-work/bisect/privacy.py
 {"filesScanned": 20, "identifierNeedles": 111, "textFragmentNeedles": 308, "uuid": 0, "chatURL": 0, "email": 0, "privateEndpoint": 0, "challengePathSuffix": 0, "bearerCredential": 0, "tokenCredential": 0, "privateIdentifiers": 0, "capturedTextFragments": 0, "allJsonLeavesNumeric": 1, "passed": 1}
 ```
+
+## Fix validation commands and actual output
+
+Read host lab README and lab/README.md before the run. `git fetch origin` updated origin/t3/replay-blocking from afeccf4 to ff23c24. Preparation archived the two pinned extension trees into new directories, verified every source/staged byte, and checked both normalizers against the control seed. It copied the M2 driver, probes and guards, changing output paths only.
+
+```text
+$ python3 /tmp/replay-blocking-work/prepare-fix-validation.py
+fix ff23c24d636c7851a1f6aff587be105e5d5ed465 files verified 62 seed accepted
+main 2f2412706c318e2592c081e13436cee8e1af80c6 files verified 62 seed accepted
+M2/probes/guards identical after path substitution {'m2.mjs': 1, 'control-safety.mjs': 1, 'selectors.mjs': 1}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab-lock acquire --lab auto --owner replay-blocking --wait 1800 --perf --needs-fixture math12
+# UTC 2026-11-11T23:51:50.386924+00:00 -> 2026-11-11T23:51:50.451145+00:00; exit 0; 0.064 s
+1
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-11T23:51:50.451491+00:00 -> 2026-11-11T23:51:52.523658+00:00; exit 0; 2.072 s
+chromium: stopped
+chromium: started (pid 3067308)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs fix-1 1
+# UTC 2026-11-11T23:51:56.047652+00:00 -> 2026-11-11T23:54:41.966737+00:00; exit 0; 165.919 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+23:51:59 [fix-1] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":2932,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":2932,"unrendered":0},"states":{"complete":5},"autoBlocks":2927,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":6849.199999809265}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1862,"unrendered":174},"states":{"complete":3,"in_progress":1},"autoBlocks":2041,"off":"","butter":{"smootherFrames":146,"published":146},"chunks":95,"probeMs":2454.0999999046326}
+active Butter preflight {"ticks":10,"seen":2248,"visibleScrollers":1,"off":""}
+23:54:41 [fix-1] rep 1: fps=42.1 p95=66.7 jank=6.7% busy=62.1% style=23.5% blocked=17.5s maxFreeze=2460 keyP95=311.1 keyMax=340.6 wheelP95=114 LoAF[renderSL=27.4s forcedSL=2.5s script=2.4s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1177 seenMarks=441 butter={"smootherFrames":385,"published":384} nodes=194549 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":2248,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-11T23:54:41.970418+00:00 -> 2026-11-11T23:54:44.040931+00:00; exit 0; 2.071 s
+chromium: stopped
+chromium: started (pid 3071757)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs main-1 1
+# UTC 2026-11-11T23:54:47.541840+00:00 -> 2026-11-11T23:57:44.945642+00:00; exit 0; 177.404 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+23:54:51 [main-1] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":5864,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":2932,"unrendered":0},"states":{"complete":5},"autoBlocks":2927,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":8842.599999904633}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1861,"unrendered":175},"states":{"complete":3,"in_progress":1},"autoBlocks":2041,"off":"","butter":{"smootherFrames":141,"published":141},"chunks":95,"probeMs":3848.300000190735}
+active Butter preflight {"ticks":10,"seen":4060,"visibleScrollers":1,"off":""}
+23:57:44 [main-1] rep 1: fps=17.5 p95=266.7 jank=14.8% busy=86.7% style=62% blocked=67.7s maxFreeze=3862 keyP95=687.2 keyMax=716.9 wheelP95=394 LoAF[renderSL=69.5s forcedSL=6.6s script=3.7s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1171 seenMarks=437 butter={"smootherFrames":331,"published":330} nodes=194643 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":4060,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-11T23:57:44.947429+00:00 -> 2026-11-11T23:57:47.020212+00:00; exit 0; 2.073 s
+chromium: stopped
+chromium: started (pid 3075853)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs main-2 1
+# UTC 2026-11-11T23:57:50.521212+00:00 -> 2026-11-12T00:00:31.174604+00:00; exit 0; 160.653 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+23:57:54 [main-2] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":4987,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":2055,"unrendered":0},"states":{"complete":5},"autoBlocks":2050,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":7099.5}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1421,"unrendered":174},"states":{"complete":3,"in_progress":1},"autoBlocks":1600,"off":"","butter":{"smootherFrames":141,"published":141},"chunks":95,"probeMs":3604.0999999046326}
+active Butter preflight {"ticks":10,"seen":3621,"visibleScrollers":1,"off":""}
+00:00:30 [main-2] rep 1: fps=17.9 p95=266.7 jank=14.5% busy=87.1% style=61.4% blocked=67.2s maxFreeze=3619 keyP95=620.3 keyMax=626.5 wheelP95=384 LoAF[renderSL=69s forcedSL=6.4s script=4.2s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1167 seenMarks=443 butter={"smootherFrames":331,"published":331} nodes=194642 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":3621,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-12T00:00:31.176482+00:00 -> 2026-11-12T00:00:33.248970+00:00; exit 0; 2.073 s
+chromium: stopped
+chromium: started (pid 3080156)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs fix-2 1
+# UTC 2026-11-12T00:00:36.749966+00:00 -> 2026-11-12T00:03:22.004810+00:00; exit 0; 165.255 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+00:00:40 [fix-2] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":5864,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":2932,"unrendered":0},"states":{"complete":5},"autoBlocks":2927,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":6994.5}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1864,"unrendered":172},"states":{"complete":3,"in_progress":1},"autoBlocks":2041,"off":"","butter":{"smootherFrames":147,"published":147},"chunks":95,"probeMs":2452.199999809265}
+active Butter preflight {"ticks":10,"seen":4063,"visibleScrollers":1,"off":""}
+00:03:21 [fix-2] rep 1: fps=44.6 p95=50.1 jank=5.2% busy=59.1% style=20.3% blocked=13.1s maxFreeze=2458 keyP95=259.5 keyMax=275 wheelP95=107 LoAF[renderSL=23.5s forcedSL=2.1s script=2.1s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1168 seenMarks=443 butter={"smootherFrames":388,"published":387} nodes=194642 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":4063,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-12T00:03:22.009676+00:00 -> 2026-11-12T00:03:24.080166+00:00; exit 0; 2.071 s
+chromium: stopped
+chromium: started (pid 3084718)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs fix-3 1
+# UTC 2026-11-12T00:03:27.581144+00:00 -> 2026-11-12T00:06:15.352922+00:00; exit 0; 167.772 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+00:03:31 [fix-3] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":4054,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":1526,"unrendered":0},"states":{"complete":5},"autoBlocks":1521,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":4473.800000190735}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1123,"unrendered":172},"states":{"complete":3,"in_progress":1},"autoBlocks":1300,"off":"","butter":{"smootherFrames":147,"published":147},"chunks":95,"probeMs":2459.0999999046326}
+active Butter preflight {"ticks":10,"seen":1509,"visibleScrollers":1,"off":""}
+00:06:15 [fix-3] rep 1: fps=44.3 p95=66.6 jank=5.5% busy=60.7% style=20.3% blocked=13.6s maxFreeze=2466 keyP95=261.2 keyMax=276.2 wheelP95=108 LoAF[renderSL=23.6s forcedSL=2.1s script=2.3s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1177 seenMarks=440 butter={"smootherFrames":386,"published":385} nodes=194641 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":1509,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab restart-browser
+# UTC 2026-11-12T00:06:15.356041+00:00 -> 2026-11-12T00:06:17.426758+00:00; exit 0; 2.071 s
+chromium: stopped
+chromium: started (pid 3088592)
+```
+
+```text
+$ node /tmp/replay-blocking-work/fix-validation/harness/m2.mjs main-3 1
+# UTC 2026-11-12T00:06:20.927775+00:00 -> 2026-11-12T00:09:19.870646+00:00; exit 0; 178.943 s
+storage seed {"version":"0.1.0-alpha.20","storage":{"butter":{"enabled":true,"layoutConsent":"granted","opts":{"layout":true}}}}
+environment {"version":"\n            \n              156.0.8078.47\n              (Official Build)\n              snap\n              (x86_64)\n  \n            \n            \n              \n            \n          ","extensionVerified":true}
+00:06:24 [main-3] replaying 189 chunks over 122s, 1 reps
+active Butter preflight {"ticks":9,"seen":5864,"visibleScrollers":1,"off":""}
+selector probe {"phase":"before","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":54,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":103412,"type":"inline-size"}],"visibleCounts":{"turns":5,"answerRoots":5,"dilRoots":0,"turnStates":5,"seen":2932,"unrendered":0},"states":{"complete":5},"autoBlocks":2927,"off":"","butter":{"smootherFrames":0,"published":0},"chunks":0,"probeMs":8811.199999809265}
+selector probe {"phase":"mid","oldMatches":2,"containers":[{"scope":"inside","tag":"DIV","classes":"ComposerLayoutFooter-_8IVRO AnimatedAdaptiveFooter-By8hrZ LegacyExpandableFooter-NDIzy0","subtreeElements":55,"type":"inline-size"},{"scope":"ancestor","tag":"DIV","classes":"MainContentFrame-sss8BP","subtreeElements":69543,"type":"inline-size"}],"visibleCounts":{"turns":4,"answerRoots":4,"dilRoots":0,"turnStates":4,"seen":1862,"unrendered":174},"states":{"complete":3,"in_progress":1},"autoBlocks":2041,"off":"","butter":{"smootherFrames":140,"published":140},"chunks":95,"probeMs":3870.199999809265}
+active Butter preflight {"ticks":10,"seen":4060,"visibleScrollers":1,"off":""}
+00:09:19 [main-3] rep 1: fps=18.7 p95=250.1 jank=13.8% busy=85.6% style=60.4% blocked=65.1s maxFreeze=3890 keyP95=651 keyMax=661.7 wheelP95=370 LoAF[renderSL=67.5s forcedSL=6.4s script=3.9s] answer=21448c/420k/043dc8afaf8d1e05e984597494a403589e3f38448954c6343e33689c4ff82e68 remounts=2 blockAdds=1157 seenMarks=438 butter={"smootherFrames":333,"published":332} nodes=194642 turns=9 chunks=189/189
+active Butter preflight {"ticks":10,"seen":4060,"visibleScrollers":1,"off":""}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab-restore --lab 1 --owner replay-blocking
+# UTC 2026-11-12T00:09:19.873340+00:00 -> 2026-11-12T00:09:30.162075+00:00; exit 0; 10.289 s
+restore lab 1: restarting browser (now {"pid":3088592,"extensions":["/home/simon/snap/chromium/common/replay-blocking-validation-main"],"flags":["--disable-extensions-except=/home/simon/snap/chromium/common/replay-blocking-validation-main"]}, cdp up, want {"extensions":["/home/simon/snap/chromium/common/butter-blank-head"],"flags":[]})
+chromium: stopped
+chromium: started (pid 3093273)
+restored {"lab":1,"restarted":true,"url":"<REDACTED_CHAT_URL>","composer":"","pages":["<REDACTED_CHAT_URL>"],"browser":{"pid":3093273,"extensions":["/home/simon/snap/chromium/common/butter-blank-head"],"flags":[]},"at":"2026-11-12T00:09:29.561Z","ok":true}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab-lock release --lab 1 --owner replay-blocking
+# UTC 2026-11-12T00:09:30.162213+00:00 -> 2026-11-12T00:09:30.226065+00:00; exit 0; 0.064 s
+{"lab": 1, "lab_released": true, "perf_released": true}
+```
+
+```text
+$ /home/simon/.local/share/chatgpt-lab/bin/lab-lock status
+# UTC 2026-11-12T00:09:30.226265+00:00 -> 2026-11-12T00:09:30.290149+00:00; exit 0; 0.064 s
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}
+```
+
+```text
+$ python3 /tmp/replay-blocking-work/fix-validation/verify.py
+{"orderCorrect": 1, "sixRunsOrRequiredStop": 1, "threePerBuild": 1, "chunks189": 1, "expectedAnswer": 1, "zeroWrites": 1, "zeroReplayEscapes": 1, "twoProbes": 1, "activeButter": 1, "fixBelow25s": 1, "restoreOk": 1, "releaseOk": 1, "labPerfReleased": 1, "statusUnchanged": 1, "branchUnchanged": 1, "headUnchanged": 1, "buildsEqualGitSha": 1, "seedsAccepted": 1, "m2.mjsMatchesControl": 1, "control-safety.mjsMatchesControl": 1, "selectors.mjsMatchesControl": 1, "allRequiredPassed": 1}
+task-owned runtime copies removed after restore; raw captures retained
+```
+
+M2 was launched with CHAT resolved privately from math12, REC set to the frozen copied recording, and LAB_ID from the lock output. No private fixture URL is published. The validation fix/main source SHA and file counts are above; the environment remained headed and software-rendered.
+
+### Fix validation privacy scan
+
+```text
+$ python3 /tmp/replay-blocking-work/fix-validation/privacy.py
+{"filesScanned": 21, "identifierNeedles": 111, "textFragmentNeedles": 308, "uuid": 0, "chatURL": 0, "email": 0, "privateEndpoint": 0, "challengePathSuffix": 0, "bearerCredential": 0, "tokenCredential": 0, "privateIdentifiers": 0, "capturedTextFragments": 0, "allJsonLeavesNumeric": 1, "passed": 1}
+```
+
+Publication uses a temporary index based on the re-fetched origin/t3/replay-blocking, hash-object, update-index, write-tree and commit-tree; only report.md, commands.md, data/fix-validation.json and the README index result are updated. Actual final commit/push output stays in the local publication log and task reply. No PR.

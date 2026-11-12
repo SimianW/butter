@@ -268,3 +268,63 @@ Before/half-stream counts, off markers, Butter counters, remounts, DOM counts an
 ### Bisect lock, cleanup and publication
 
 Fresh lab/perf lock owner replay-blocking, fixture math12: acquire completed 2026-11-11T22:55:52.644565+00:00; restore completed 2026-11-11T23:34:07.443005+00:00; release completed 2026-11-11T23:34:07.557087+00:00. Restore/release exit codes 0/0. The detached coordinator survived a conversation interruption without stopping the browser or changing this lock window. Raw captures remain local under `/tmp/replay-blocking-work/bisect/`. No shared branch, index or working-tree changes, no extension code changes, no PR. The follow-up privacy scan covers every published file and all JSON numeric leaves.
+
+## Fix validation
+
+**The live performance prediction held at the median.** The fix has median total LoAF blocking 13575 [13107–17547] ms, versus pinned main 67229 [65089–67700] ms, with three repetitions per build. That is a 79.8% reduction in the median. All fix runs stayed below the required 25000 ms stop threshold; the first sample (17547 ms) was slightly above the approximate 12000–17000 ms prediction band and is retained. Median render style/layout is 23608.2 ms on the fix, near the good parent's 24297.4 ms paired-control median, versus 69011.9 ms on main. This confirms the large live improvement; it is not a claim that every sample exactly reproduces the old alpha.11 median.
+
+**Skipping counts differ across some runs, so complete skip-set equivalence is not established.** All probes have the same total visible answer-block count (3071 before Enter, 2133 at midpoint), but auto-skipped midpoint counts are fix 2041, 2041, 1300 versus main 2041, 1600, 2041. Seen marks at midpoint are fix 1862, 1864, 1123 versus main 1861, 1421, 1862; unrendered marks are fix 174, 172, 172 versus main 175, 174, 174. Fewer seen marks and fewer auto-skipped blocks already occur before Enter in fix run 3 and main run 2; they are not discarded or explained away. This is a material difference in measured skipping state and warrants separate investigation if strict skip-set equivalence is required. This validation made no extra run or harness change to investigate it.
+
+The improvement also appears when the counted skip state matches: fix run 1 and main run 3 both have 2041 auto-skipped blocks, 1862 seen marks and 174 unrendered marks at midpoint, yet blocking is 17547 versus 65089 ms; both have 2927 auto-skipped history blocks before Enter. Equal counts do not prove identical element identity, but they show that fewer counted skipped blocks are not necessary for the performance improvement. Every midpoint has one in_progress turn, zero Dil response roots, empty off markers and active Butter counters. The original inner-container selector still matches two roots globally, and the visible thread wrapper computes normal on both builds. The same footer and outer MainContentFrame ancestor retain inline-size. The public app manifest remains manifest-42f0cd0e.js throughout these runs.
+
+This frozen classic-answer fixture has zero Dil roots, so it confirms the classic-path live regression is corrected; the live replay alone does not validate the Dil source-wrapper path on a Dil-rendered answer. The supplied synthetic restyle measurements are background evidence, not rerun or counted as live samples here.
+
+
+Tested fix `ff23c24d636c7851a1f6aff587be105e5d5ed465` versus pinned main `2f2412706c318e2592c081e13436cee8e1af80c6`. Both were built with fresh `git archive <sha> extension` directories, compared against their Git bytes before staging and again after cleanup. Only the three selector files differ between these extension trees. Both accept the exact control storage seed `{butter:{enabled:true,layoutConsent:'granted',opts:{layout:true}}}`.
+
+Method: M2 exactly as in the control and bisect; driver, corrected guards and selector probes match after output-directory substitution. Same frozen recording/history, 1440 × 1000 light viewport, browser restart per run, and extension restriction flags. Requested order: fix → main → main → fix → fix → main. The stop rule was any fix sample over 25000 ms, plus the existing completed-write/replay-escape/send-guard/auth/fixture safety rules. No retry, alternate fix or additional replay was attempted.
+
+### Fix validation per run
+
+Attribution values are milliseconds over the original recorder window. Primary LoAF blocking and frames retain M2's replay-bounded window. The required probes remain included; probe-overlap blocking and longest LoAF outside probes are separately recorded in numeric data. All completed replays delivered 189 chunks and the expected answer hash, with zero completed ChatGPT writes and zero escaped replay POSTs. Denial counts are fetch / route; denial means the guard worked.
+
+| Order | Build / rep | loafBlockMs | loafMaxMs | loafCount | Frame p95 ms | Render SL ms | Forced SL ms | Script ms | Key max ms | Key p95 ms | Denials |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | fix 1 | 17547 | 2460 | 381 | 66.7 | 27384.6 | 2463.1 | 2397.6 | 340.6 | 311.1 | 49 / 1 |
+| 2 | main 1 | 67700 | 3862 | 323 | 266.7 | 69520.5 | 6563.2 | 3739.2 | 716.9 | 687.2 | 45 / 2 |
+| 3 | main 2 | 67229 | 3619 | 328 | 266.7 | 69011.9 | 6405.2 | 4187.9 | 626.5 | 620.3 | 46 / 2 |
+| 4 | fix 2 | 13107 | 2458 | 378 | 50.1 | 23523.7 | 2142.2 | 2128.3 | 275 | 259.5 | 46 / 2 |
+| 5 | fix 3 | 13575 | 2466 | 376 | 66.6 | 23608.2 | 2111.2 | 2271.1 | 276.2 | 261.2 | 46 / 2 |
+| 6 | main 3 | 65089 | 3890 | 326 | 250.1 | 67539.8 | 6353.5 | 3904.6 | 661.7 | 651 | 46 / 1 |
+
+### Fix validation medians [min–max]
+
+| Metric (ms unless count) | Fix | Main |
+|---|---:|---:|
+| loafBlockMs | 13575.0 [13107.0–17547.0], $n=3$ | 67229.0 [65089.0–67700.0], $n=3$ |
+| loafMaxMs | 2460.0 [2458.0–2466.0], $n=3$ | 3862.0 [3619.0–3890.0], $n=3$ |
+| loafCount | 378.0 [376.0–381.0], $n=3$ | 326.0 [323.0–328.0], $n=3$ |
+| p95 | 66.6 [50.1–66.7], $n=3$ | 266.7 [250.1–266.7], $n=3$ |
+| keyMax | 276.2 [275.0–340.6], $n=3$ | 661.7 [626.5–716.9], $n=3$ |
+| keyP95 | 261.2 [259.5–311.1], $n=3$ | 651.0 [620.3–687.2], $n=3$ |
+| replayDurationMs | 121770.9 [121770.7–121771.2], $n=3$ | 121792.1 [121770.6–121803.9], $n=3$ |
+| renderSLMs | 23608.2 [23523.7–27384.6], $n=3$ | 69011.9 [67539.8–69520.5], $n=3$ |
+| forcedSLMs | 2142.2 [2111.2–2463.1], $n=3$ | 6405.2 [6353.5–6563.2], $n=3$ |
+| scriptMs | 2271.1 [2128.3–2397.6], $n=3$ | 3904.6 [3739.2–4187.9], $n=3$ |
+
+Render SL is rendering-phase style/layout; forced SL is synchronous style/layout attributed to scripts; script time excludes forced layout. These values are not added together as a causal decomposition of blocking. All per-run attribution, replay durations, DOM before/after, remounts, key samples, Butter stats and probe counters are in `data/fix-validation.json`, with numeric leaves only.
+
+### Fix validation probes
+
+Ranges across completed repetitions, scoped to the visible scroller except the original selector's global count. All off markers were empty.
+
+| Build | Probe | Original selector globally | Turns | Answer roots | Dil roots | in_progress | Seen | Unrendered | Auto blocks | Published |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| fix | before | 2 | 5 | 5 | 0 | 0 | 1526–2932 | 0 | 1521–2927 | 0 |
+| fix | mid | 2 | 4 | 4 | 0 | 1 | 1123–1864 | 172–174 | 1300–2041 | 146–147 |
+| main | before | 2 | 5 | 5 | 0 | 0 | 2055–2932 | 0 | 2050–2927 | 0 |
+| main | mid | 2 | 4 | 4 | 0 | 1 | 1421–1862 | 174–175 | 1600–2041 | 140–141 |
+
+### Fix validation cleanup and provenance
+
+Fresh lab/perf lock owner replay-blocking, fixture math12: acquisition completed 2026-11-11T23:51:50.451145+00:00; restore completed 2026-11-12T00:09:30.162075+00:00; release completed 2026-11-12T00:09:30.226065+00:00. Restore/release exit codes 0/0. The detached runner preserves continuity across T3 conversation interruptions. The dated report directory is retained as requested; these UTC timestamps record this follow-up's actual dates. Raw captures remain in `/tmp/replay-blocking-work/fix-validation/` (mode 700). Runtime extension copies were removed after successful restore and byte verification. No shared checkout branch/index/working-tree changes; no extension-code edits or PR. Only this report, commands, the run-index result and `data/fix-validation.json` are changed by the validation publication.
