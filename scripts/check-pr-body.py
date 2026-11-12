@@ -10,12 +10,14 @@ end:
 
     - **Tier:** 1
     - **Verdict:** approved at `fd81ae1`
-    - **Reviewers:** gpt-6.1-sol ×3 → claude-fable-5-2 ×1
+    - **Reviewers:** gpt-6.1-sol ×3 → claude-opus-5-5 ×1
 
 The Tier item (`-` or `*` bullet, `- **Tier:** N`) must give N = 0, 1 or 2 and at least the tier
 scripts/review-tier.py computes against base; the first Tier item counts. When that tier is 1 or
 2, the body must also carry a Verdict item `- **Verdict:** approved at <sha>` (`-` or `*` bullet,
-backticks around the sha optional, 7 to 40 hex digits). When several Verdict items exist, the last
+backticks around the sha optional, 7 to 40 hex digits), or its override form
+`- **Verdict:** overridden by <user> at <sha>`, which records the user shipping a stuck
+review-loop (`<user>` is a login without `@`). When several Verdict items exist, the last
 one counts. The Reviewers item is for humans; the check does not read it. The sha must exist in
 this checkout, and nothing after it may reach tier 1 or 2: <sha> is
 replayed onto the current base with `git merge-tree` (so a base-branch merge or rebase after the
@@ -41,7 +43,9 @@ review_tier = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(review_tier)
 
 TIER_ITEM = re.compile(r"[-*] \*\*Tier:\*\* ([0-9]+)")
-VERDICT_ITEM = re.compile(r"[-*] \*\*Verdict:\*\* approved at (`?)([0-9a-fA-F]{7,40})\1")
+VERDICT_ITEM = re.compile(
+    r"[-*] \*\*Verdict:\*\* (approved|overridden by [^`@\s]+) at (`?)([0-9a-fA-F]{7,40})\2"
+)
 
 
 def tier_item(tier):
@@ -50,12 +54,6 @@ def tier_item(tier):
 
 def verdict_item(sha=None):
     return f"- **Verdict:** approved at {sha or '<sha>'}"
-
-
-def reviewed_sha(line):
-    """The sha of an approved Verdict item, or None when line is not one."""
-    match = VERDICT_ITEM.fullmatch(line)
-    return match.group(2) if match else None
 
 
 def check_body(body, tier, reasons, review_gate=None, head=None):
@@ -88,14 +86,14 @@ def check_body(body, tier, reasons, review_gate=None, head=None):
         passes.append("tier 0 needs no Verdict item")
         return failures, passes
 
-    approved = [sha for sha in map(reviewed_sha, lines) if sha]
-    if not approved:
+    verdicts = [match for match in map(VERDICT_ITEM.fullmatch, lines) if match]
+    if not verdicts:
         failures.append(
             f"tier {tier} needs a `- **Verdict:** approved at <sha>` item; add `{verdict_item(head)}`"
         )
         return failures, passes
-    sha = approved[-1]
-    passes.append(f"tier {tier} has a `- **Verdict:** approved at {sha}` item")
+    verdict, sha = verdicts[-1].group(1), verdicts[-1].group(3)
+    passes.append(f"tier {tier} has a `- **Verdict:** {verdict} at {sha}` item")
     if review_gate is not None:
         gate_failures, gate_passes = review_gate(sha)
         failures.extend(gate_failures)

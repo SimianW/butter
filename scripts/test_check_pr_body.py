@@ -15,7 +15,7 @@ SPEC.loader.exec_module(check_pr_body)
 check_body = check_pr_body.check_body
 
 REVIEWED = "- **Verdict:** approved at `abc1234`"
-REVIEWERS = "- **Reviewers:** gpt-6.1-sol ×3 → claude-fable-5-2 ×1"
+REVIEWERS = "- **Reviewers:** gpt-6.1-sol ×3 → claude-opus-5-5 ×1"
 
 
 def tier(n):
@@ -159,6 +159,20 @@ class VerdictItemTest(unittest.TestCase):
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
         self.assertIn("add `- **Verdict:** approved at <sha>`", failures[0])
+
+    def test_override_verdict_passes(self):
+        seen = []
+        body = f"{tier(2)}\n- **Verdict:** overridden by simian at `fd81ae1`"
+        failures, passes = check_body(body, 2, ["extension/stream/x.js"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, ["fd81ae1"])
+        self.assertIn("tier 2 has a `- **Verdict:** overridden by simian at fd81ae1` item", passes)
+
+    def test_override_verdict_needs_a_user(self):
+        for who in ("overridden", "overridden by", "overridden by @simian", "overridden by two words"):
+            body = f"{tier(1)}\n- **Verdict:** {who} at `fd81ae1`"
+            failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
+            self.assertEqual(len(failures), 1, who)
 
     def test_sha_is_read_from_the_last_verdict_item(self):
         seen = []

@@ -42,4 +42,4 @@ Done when: the step 2 command passes, and so does every check in
 Run `python3 scripts/review-tier.py origin/main` and follow the Workflow rule in
 [AGENTS.md](../AGENTS.md). The PR body carries the step 1 result and the step 2 command.
 
-Done when: the PR is open with the `- **Tier:** N` item in its Review section and, for tiers 1 and 2, an APPROVE recorded as `- **Verdict:** approved at <sha>`.
+Done when: the PR is open with the `- **Tier:** N` item in its Review section and, for tiers 1 and 2, an APPROVE recorded as `- **Verdict:** approved at <sha>`, or the user's override of a stuck loop as `- **Verdict:** overridden by <user> at <sha>`.
