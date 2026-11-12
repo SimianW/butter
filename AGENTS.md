@@ -81,7 +81,8 @@ build, CI).
 - Every change reaches `main` through a PR. Before merging, run
   `python3 scripts/review-tier.py origin/main` and put the tier it prints in the PR body's
   `## Review` section as `- **Tier:** N` (the `pr` skill); after an APPROVE, `review-loop` adds
-  the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items. CI's `pr-body` check
+  the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items (the Verdict reads
+  `overridden by <user> at <sha>` when the user ships a stuck loop). CI's `pr-body` check
   enforces the Tier and Verdict items, and
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
