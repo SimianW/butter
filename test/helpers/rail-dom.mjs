@@ -1,8 +1,8 @@
 // A small fake DOM for the rail's scripts under node: elements with listeners (capture and bubble
 // phases, as seen from window), children, attributes, classes and the few selectors the rail uses,
 // and observers that record what they observe. test/helpers/rail-boot.mjs boots the whole rail on
-// it for test/rail.test.mjs; test/pre-jump.test.mjs and test/rail-turns.test.mjs drive one module
-// each.
+// it for test/rail.test.mjs; test/pre-jump.test.mjs, test/rail-turns.test.mjs,
+// test/rail-jump.test.mjs and test/rail-card-dom.test.mjs drive one module each.
 export class FakeElement {
   constructor(tag = 'div') {
     this.tagName = tag;
