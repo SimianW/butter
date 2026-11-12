@@ -1,0 +1,1123 @@
+{
+  "checks": [
+    {
+      "pass": 1,
+      "initialTicks": 5,
+      "totalTicks": 16,
+      "earlierPages": 11
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 89,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 33.3,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "checked": 10,
+      "matched": 10,
+      "targetMatched": 1,
+      "apiPages": 13,
+      "assistantApiMessages": 41
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "stored": 1,
+      "marks": 1
+    },
+    {
+      "pass": 1,
+      "stored": 2,
+      "selectionCharacters": 30,
+      "commands": 1,
+      "marks": 1
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.7,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "pass": 1,
+      "emptyRuns": 3,
+      "bookmarkedRuns": 3,
+      "emptyP95FrameMs": [
+        16.8,
+        16.8,
+        16.8
+      ],
+      "bookmarkedP95FrameMs": [
+        16.7,
+        16.7,
+        16.7
+      ]
+    },
+    {
+      "pass": 1,
+      "top": 61.703125,
+      "bottom": 113.921875,
+      "x": 736,
+      "y": 125.703125,
+      "height": 52.21875,
+      "inView": 1
+    },
+    {
+      "pass": 1,
+      "heldBefore": 1,
+      "heldAfterActivation": 1,
+      "visibleWhileHeld": 0,
+      "visibleAfterRelease": 1,
+      "textTopAfterRelease": 669
+    },
+    {
+      "pass": 1,
+      "ticks": 5,
+      "marks": 1,
+      "more": 1,
+      "stale": 0,
+      "busy": 0,
+      "stored": 2,
+      "targetMounted": 0,
+      "earlierPagesBefore": 11
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": 1,
+      "gapLeftOfDotsPx": 4,
+      "offsetBelowDotsPx": 0,
+      "widthPx": 4,
+      "heightPx": 4,
+      "butterColor": 1
+    },
+    {
+      "pass": 1,
+      "shown": 1,
+      "correctMeta": 1,
+      "correctAccessibleName": 1,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": 0
+    },
+    {
+      "pass": 1,
+      "earlierPages": 5,
+      "targetMounted": 1,
+      "inView": 1,
+      "textTop": 61.703125,
+      "sawLoadingMeta": 1,
+      "sawSpinner": 1,
+      "sawBusyDots": 1
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": 1,
+      "butterColor": 0
+    },
+    {
+      "pass": 1,
+      "ticks": 5,
+      "marks": 1,
+      "more": 1,
+      "stale": 0,
+      "busy": 0,
+      "stored": 2,
+      "targetMounted": 0,
+      "earlierPagesBefore": 16
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": 1,
+      "gapLeftOfDotsPx": 4,
+      "offsetBelowDotsPx": 0,
+      "widthPx": 4,
+      "heightPx": 4,
+      "butterColor": 1
+    },
+    {
+      "pass": 1,
+      "shown": 1,
+      "correctMeta": 1,
+      "correctAccessibleName": 1,
+      "rows": 2,
+      "staleRows": 0,
+      "singleExplanation": 0
+    },
+    {
+      "pass": 1,
+      "earlierPages": 5,
+      "targetMounted": 1,
+      "inView": 1,
+      "textTop": 64,
+      "sawLoadingMeta": 1,
+      "sawSpinner": 1,
+      "sawBusyDots": 1
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "earlierMarks": 0,
+      "loadedMarks": 1,
+      "moreVisible": 1,
+      "butterColor": 0
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "staleMarks": 0,
+      "cardRows": 2,
+      "staleRows": 0,
+      "targetMounted": 1,
+      "records": 2,
+      "matchingMessagesAndExcerpts": 2,
+      "matchingQuestions": 2,
+      "validFirstLines": 2
+    },
+    {
+      "pass": 1,
+      "remaining": 1
+    },
+    {
+      "pass": 1,
+      "marks": 1,
+      "earlierMarks": 1,
+      "loadedMarks": 0,
+      "moreVisible": 1,
+      "gapLeftOfDotsPx": 4,
+      "offsetBelowDotsPx": 0,
+      "widthPx": 4,
+      "heightPx": 4,
+      "butterColor": 1
+    },
+    {
+      "pass": 1,
+      "shown": 1,
+      "correctMeta": 1,
+      "correctAccessibleName": 1,
+      "rows": 1,
+      "staleRows": 0,
+      "singleExplanation": 1
+    },
+    {
+      "pass": 1,
+      "remaining": 0,
+      "marks": 0
+    },
+    {
+      "pass": 1,
+      "lists": 20,
+      "items": 56,
+      "maxMeasuredOffset": 78.65625,
+      "targetFound": 1,
+      "paragraph": 29
+    },
+    {
+      "pass": 1
+    },
+    {
+      "pass": 1,
+      "stored": 1,
+      "matchingParagraph": 1,
+      "matchingQuestion": 1,
+      "validFirstLine": 1,
+      "top": 160.34375,
+      "bottom": 186.5625,
+      "x": 762,
+      "y": 224.34375,
+      "height": 26.21875,
+      "inView": 1,
+      "isListItem": 1,
+      "itemOrdinal": 3,
+      "offsetFromListStart": 78.65625,
+      "listTop": 81.6875,
+      "landsOnItem": 0
+    },
+    {
+      "pass": 1,
+      "top": 64.34375,
+      "bottom": 90.5625,
+      "x": 762,
+      "y": 128.34375,
+      "height": 26.21875,
+      "inView": 1,
+      "isListItem": 1,
+      "itemOrdinal": 3,
+      "offsetFromListStart": 78.65625,
+      "listTop": -14.3125,
+      "landsOnItem": 1
+    },
+    {
+      "pass": 1,
+      "cold": {
+        "ticks": 5,
+        "marks": 1,
+        "more": 1,
+        "stale": 0,
+        "busy": 0,
+        "targetMounted": 0
+      },
+      "top": 64.34375,
+      "bottom": 90.5625,
+      "x": 762,
+      "y": 128.34375,
+      "height": 26.21875,
+      "inView": 1,
+      "isListItem": 1,
+      "itemOrdinal": 3,
+      "offsetFromListStart": 78.65625,
+      "listTop": -14.3125,
+      "landsOnItem": 1,
+      "matchingMessageAndExcerpt": 1,
+      "staleMarks": 0,
+      "staleRows": 0
+    },
+    {
+      "pass": 1,
+      "remaining": 0,
+      "marks": 0
+    }
+  ],
+  "drags": [
+    {
+      "repetition": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "repetition": 2,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "repetition": 3,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 89,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 33.3,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "repetition": 1,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "repetition": 2,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 85,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.7,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    },
+    {
+      "repetition": 3,
+      "mounts": 0,
+      "additions": 0,
+      "held": 1,
+      "updates": 32,
+      "frames": 86,
+      "p95FrameMs": 16.7,
+      "maxFrameMs": 16.8,
+      "bookmarkCoverageScripts": 2,
+      "bookmarkFunctionCalls": 128,
+      "bookmarkWork": {
+        "refresh": 0,
+        "paragraphs": 0,
+        "measure": 0,
+        "selection": 0,
+        "topBlock": 0,
+        "locate": 0,
+        "create": 0,
+        "remove": 0,
+        "show": 0,
+        "place": 0
+      },
+      "storage": {
+        "reads": 0,
+        "messages": 0
+      }
+    }
+  ],
+  "cleanup": {
+    "remainingBeforeFallback": 0,
+    "remainingAfterFallback": 0,
+    "shortcutsRestored": 1,
+    "restored": 1,
+    "composerEmpty": 1,
+    "oneHomeTab": 1,
+    "defaultExtensions": 1,
+    "labLockReleased": 1,
+    "perfLockReleased": 1
+  },
+  "sendGuard": {
+    "enabled": 1,
+    "sendAttempts": 0,
+    "blockedMutations": 192
+  },
+  "initial": {
+    "ticks": 5,
+    "marks": 0,
+    "more": 1,
+    "stale": 0,
+    "busy": 0,
+    "x": 1589,
+    "top": 52,
+    "height": 860,
+    "scrollHeight": 1268,
+    "scrollTop": 408,
+    "gutter": 20,
+    "y": 620.3596214511041
+  },
+  "history": {
+    "before": {
+      "ticks": 5,
+      "marks": 0,
+      "more": 1,
+      "stale": 0,
+      "busy": 0
+    },
+    "after": {
+      "ticks": 16,
+      "marks": 0,
+      "more": 0,
+      "stale": 0,
+      "busy": 0
+    }
+  },
+  "structure": [
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 1,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 347,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 408,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 246,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 314,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 319,
+      "messageIds": 0
+    },
+    {
+      "assistant": 0,
+      "ids": 0,
+      "markdown": 1,
+      "paragraphs": 264,
+      "messageIds": 0
+    }
+  ],
+  "target": {
+    "turnOrdinalMounted": 7,
+    "paragraphs": [
+      11,
+      145
+    ]
+  },
+  "answerAncestors": [
+    {
+      "attributes": []
+    },
+    {
+      "attributes": []
+    },
+    {
+      "attributes": []
+    },
+    {
+      "attributes": []
+    },
+    {
+      "attributes": []
+    }
+  ],
+  "paragraphAttempt": {
+    "inView": 1,
+    "bookmarkCellShown": 1
+  },
+  "jumpEvidence": {
+    "after-drag": {
+      "clicks": [
+        {
+          "trusted": 1,
+          "detail": 1
+        }
+      ],
+      "keys": [
+        {
+          "trusted": 1
+        }
+      ],
+      "seekStates": [],
+      "calls": {
+        "rail.jumpTo": 1,
+        "rail.landOff": 25,
+        "rail.targetTop": 7,
+        "rail.jump": 6,
+        "bookmark.locate": 25
+      },
+      "paragraph": {
+        "top": -6878,
+        "bottom": -6826,
+        "x": 736,
+        "y": -6814,
+        "height": 52,
+        "inView": 0
+      },
+      "selection": {
+        "top": 61.703125,
+        "bottom": 113.921875,
+        "x": 736,
+        "y": 125.703125,
+        "height": 52.21875,
+        "inView": 1
+      }
+    },
+    "during-drag": {
+      "clicks": [
+        {
+          "trusted": 1,
+          "detail": 0
+        }
+      ],
+      "keys": [
+        {
+          "trusted": 1
+        },
+        {
+          "trusted": 1
+        }
+      ],
+      "seekStates": [
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 1,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 1
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 0
+        },
+        {
+          "targetEqualsBookmarkedQuestion": 0,
+          "pointerHeld": 0
+        }
+      ],
+      "calls": {
+        "rail.landOff": 44,
+        "rail.targetTop": 9,
+        "rail.jump": 6
+      },
+      "paragraph": {
+        "top": 669,
+        "bottom": 721,
+        "x": 736,
+        "y": 733,
+        "height": 52,
+        "inView": 1
+      },
+      "selection": {
+        "top": 7608.703125,
+        "bottom": 7660.921875,
+        "x": 736,
+        "y": 7672.703125,
+        "height": 52.21875,
+        "inView": 0
+      }
+    },
+    "unloaded-row": {
+      "clicks": [
+        {
+          "trusted": 1,
+          "detail": 1
+        }
+      ],
+      "keys": [],
+      "seekStates": [],
+      "calls": {
+        "rail.jumpTo": 1,
+        "rail.earlierJump": 1,
+        "rail.landOff": 17,
+        "rail.targetTop": 5,
+        "rail.jump": 1,
+        "bookmark.locate": 17
+      },
+      "paragraph": {
+        "top": -6878,
+        "bottom": -6826,
+        "x": 736,
+        "y": -6814,
+        "height": 52,
+        "inView": 0
+      },
+      "selection": {
+        "top": 61.703125,
+        "bottom": 113.921875,
+        "x": 736,
+        "y": 125.703125,
+        "height": 52.21875,
+        "inView": 1
+      }
+    },
+    "unloaded-keyboard": {
+      "clicks": [
+        {
+          "trusted": 1,
+          "detail": 0
+        }
+      ],
+      "keys": [
+        {
+          "trusted": 1
+        },
+        {
+          "trusted": 1
+        }
+      ],
+      "seekStates": [],
+      "calls": {
+        "rail.jumpTo": 1,
+        "rail.earlierJump": 1,
+        "rail.landOff": 20,
+        "rail.targetTop": 5,
+        "rail.jump": 1,
+        "bookmark.locate": 20
+      },
+      "paragraph": {
+        "top": 64,
+        "bottom": 116,
+        "x": 736,
+        "y": 128,
+        "height": 52,
+        "inView": 1
+      },
+      "selection": {
+        "top": 7003.703125,
+        "bottom": 7055.921875,
+        "x": 736,
+        "y": 7067.703125,
+        "height": 52.21875,
+        "inView": 0
+      }
+    }
+  },
+  "listFixture": {
+    "lists": 20,
+    "items": 56,
+    "maxMeasuredOffset": 78.65625,
+    "targetFound": 1,
+    "paragraph": 29
+  }
+}
