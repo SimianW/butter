@@ -365,3 +365,43 @@ test('holds and spans: what the rail asks of the card', () => {
     [false, true, true, false],
   );
 });
+
+test('focus leaving a card the pointer is over, for the page: the grace keeps it', () => {
+  const c = setup({ marks: { q1: [false] } });
+  c.card.show(1);
+  c.els.card.emit('pointerenter');
+  c.els.card.emit('focusout', { relatedTarget: null });
+  c.advance(200);
+  assert.ok(c.shows(), 'the pointer is over the card');
+});
+
+test("refill re-centres a tick's card on its new height, its top on a whole pixel", () => {
+  const c = setup({ marks: { q2: [false, false] } });
+  c.card.show(2);
+  const cy = c.m.tickY(2);
+  assert.equal(c.cy(), whole(cy));
+  c.els.card.offsetHeight = 30.2; // a row gone: the card is shorter
+  c.r.marks({ q2: [false] });
+  c.card.refill();
+  assert.notEqual(whole(cy, 30.2), whole(cy), 'the two heights round apart');
+  assert.notEqual(whole(cy, 30.2), `${cy}px`, 'and away from the raw centre');
+  assert.equal(c.cy(), whole(cy, 30.2));
+});
+
+test("the page's Escape leaves the three dots' hint (no bookmarks) shown", () => {
+  const c = setup({ count: 3, hasPrev: true });
+  c.card.show(EARLIER);
+  assert.ok(c.shows());
+  c.card.escape({ key: 'Escape' });
+  assert.ok(c.shows());
+});
+
+test('seek from a hidden card: it shows, its meta line unhidden, with no spinner unless loading', () => {
+  const c = setup();
+  c.els.meta.hidden = true; // as the three dots' hint leaves it
+  assert.equal(c.shows(), false);
+  c.card.seek({ meta: 'Question 2 of 5', text: 'Question 1', cy: 100, loading: false });
+  assert.ok(c.shows());
+  assert.equal(c.els.meta.hidden, false);
+  assert.equal(c.els.meta.children.length, 0, 'no spinner');
+});

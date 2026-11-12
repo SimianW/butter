@@ -260,6 +260,52 @@ test('a remounted target stays pinned: the turn tracker hands new turns to the j
   assert.equal(nav.scroller.scrollTop, 500 - 64);
 });
 
+// The rail's side of the card: a leftward move keeps it within its height (`spans`), a seek's end
+// hands the card back to the tick under the pointer, and the page's Escape before the rail exists.
+test("heading left to a bookmark card: within the card's height it stays; outside, the tick's card shows", () => {
+  const nav = setup({ count: 4 });
+  nav.setMarks({ q1: [false] });
+  const rail = nav.select('.rail'),
+    y = (j) => 368 + 10 + (j + 0.5) * 14, // tick j's centre
+    text = () => nav.select('.text').textContent;
+  nav.select('.card').getBoundingClientRect = () => ({ top: y(1) - 20, bottom: y(2) + 1 });
+  rail.emit('pointerenter');
+  rail.emit('pointermove', { clientX: 30, clientY: y(1) });
+  assert.equal(text(), 'Question 1');
+  rail.emit('pointermove', { clientX: 20, clientY: y(2) }); // left, within the card's span
+  assert.equal(text(), 'Question 1', 'the bookmark card stays');
+  rail.emit('pointermove', { clientX: 10, clientY: y(3) }); // left, below it
+  assert.equal(text(), 'Question 3');
+});
+
+test('a seek ending with the pointer on the rail: the seek look goes and the tick under it shows', () => {
+  const nav = setup({ count: 4 });
+  const rail = nav.select('.rail'),
+    card = nav.select('.card');
+  nav.seek({ state: 'dragging', id: 'q0', n: 1, total: 4 });
+  nav.seek({ state: 'idle' });
+  rail.emit('pointerenter'); // the pointer comes onto tick 2 in the settled second
+  rail.emit('pointermove', { clientX: 5, clientY: 368 + 10 + 2.5 * 14 });
+  assert.ok(card.classList.contains('seek-card'));
+  nav.advanceClock(1000);
+  nav.runTimers();
+  assert.equal(card.classList.contains('seek-card'), false);
+  assert.deepEqual(
+    [
+      card.classList.contains('show'),
+      nav.select('.meta').textContent,
+      nav.select('.text').textContent,
+    ],
+    [true, '3 / 4', 'Question 2'],
+  );
+});
+
+test("the page's Escape before the rail is built does nothing", () => {
+  const nav = setup({ count: 1 });
+  assert.equal(nav.host, undefined, 'a one-question chat: no rail');
+  assert.doesNotThrow(() => nav.window.emit('keydown', { key: 'Escape' }, 'capture'));
+});
+
 test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks the dots until stopped", () => {
   const nav = setup({ count: 5, hasPrev: true });
   nav.setMarks({ '-1': [false], q3: [false, false] });
