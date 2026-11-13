@@ -196,10 +196,14 @@ function render() {
       store = storeOf(key);
     if (store && ButterPopup.storageLine({ clear: stores[store].clear }) === 'confirm')
       return askRow(t, store);
+    // A faulted storage row keeps Clear after the fault text while it holds anything.
+    const held = store && bad && stores[store].shown() && stores[store].count(stores[store].usage);
     const line =
       store && !bad
         ? storageLine(t, store, d)
-        : `<div class="d" role="status">${bad ? fault : d}</div>`;
+        : held
+          ? `<div class="d"><span role="status">${fault}</span> <button type="button" class="lk" data-clear="ask" data-store="${store}">${t.clear}</button></div>`
+          : `<div class="d" role="status">${bad ? fault : d}</div>`;
     return `<label class="row${bad ? ' bad' : ''}" for="sw-${key}">${svg(ic, 'ic')}<div class="t"><div class="n">${n}</div>${line}</div>${switchButton(key, ButterStatus.groupOn(prefs, key), n)}</label>`;
   };
   const privacy = `<a target="_blank" rel="noopener" href="${repo}/blob/main/${t.policy}">${t.privacy}</a>`;

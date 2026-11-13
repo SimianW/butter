@@ -197,3 +197,22 @@ test('the bookmarks cleared token from another page refreshes the count', async 
   await tick();
   assert.equal(descriptions(f.html()).bookmarks, 'Select text, mark the spot to jump back');
 });
+
+test('a layouts fault with layouts saved keeps Clear beside the fault text', async () => {
+  const f = popup(saved);
+  f.finish(
+    { butter: { layoutConsent: 'granted' } },
+    { butterFailures: { layout: { layout: true } } },
+  );
+  await tick();
+  assert.match(descriptions(f.html()).layout, /^Unavailable for now\..* \[Clear\]$/);
+  assert.match(f.html(), /<label class="row bad" for="sw-layout">/);
+  // With nothing saved the faulted row offers no Clear.
+  const g = popup({});
+  g.finish(
+    { butter: { layoutConsent: 'granted' } },
+    { butterFailures: { layout: { layout: true } } },
+  );
+  await tick();
+  assert.match(descriptions(g.html()).layout, /^Unavailable for now\.[^[]*$/);
+});
