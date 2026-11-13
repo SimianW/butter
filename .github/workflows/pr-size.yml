@@ -1,0 +1,39 @@
+name: PR size
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-size:
+    # A fork's token is read-only and cannot set a label, so a fork's PR is skipped.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }} # The head, not the merge ref.
+          fetch-depth: 0 # The merge base needs history.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Set the size label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LABELS_URL: repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels
+          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
+        run: |
+          python3 scripts/pr-size.py "$BASE_REF" > "$RUNNER_TEMP/size.txt"
+          cat "$RUNNER_TEMP/size.txt"
+          label=$(head -n 1 "$RUNNER_TEMP/size.txt")
+          current=$(gh api "$LABELS_URL" --paginate --jq '.[].name')
+          for old in $(python3 scripts/pr-size.py --labels); do
+            if [ "$old" != "$label" ] && printf '%s\n' "$current" | grep -Fxq "$old"; then
+              gh api -X DELETE "$LABELS_URL/${old//\//%2F}" > /dev/null
+            fi
+          done
+          gh api -X POST "$LABELS_URL" -f "labels[]=$label" > /dev/null

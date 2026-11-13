@@ -43,7 +43,8 @@ the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
 ## Changelog
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): one entry per
-build, newest first, its changes grouped under `###` category headings.
+build, newest first, its changes grouped under `###` category headings. Add the entry in the PR
+that changes the version.
 
 ```markdown
 ## [0.1.0-alpha.16] - 2026-11-08
@@ -73,8 +74,8 @@ A problem the build ships with goes last, under `### Known issues`.
 
 Each bullet is one change the user can notice, opening with a past-tense verb ("Added",
 "Fixed", "Reduced"); a known issue instead describes the problem. Name what the user sees, keep
-the bullet short, and give the measured number for a performance change when there is one. Leave out changes only developers see (tests, dev
-build, CI).
+the bullet short, and give the measured number for a performance change when there is one. Leave
+out changes only developers see (tests, dev build, CI, tooling).
 
 ## Agent skills
 
@@ -104,14 +105,22 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   final diff, at the round budget the tier sets. Do not wait for the Codex GitHub bot's review
   before merging: if it has already posted when CI is green, handle its comments first; comments
   that arrive after the merge become a follow-up issue.
+- PR size: CI labels each PR from `size/XS` to `size/XXL` by the lines of code it changes; prose,
+  lock files, binary files and the folders in the script's `SKIP_PREFIXES` (docs, assets and
+  `lab/variants/`) do not count. `python3 scripts/pr-size.py` prints the label locally. The label
+  is CI's to set.
 - Reviews: every gate review before merge, including when the user asks to review a PR or branch,
   runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
   it (see New features).
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.
-- Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams. The `tdd`,
-  `to-spec` and `diagnosing-bugs` skills use them without asking the user.
+- Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams and the skills
+  that test at them without asking the user.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
+- Frontend: before any visible frontend change, use the `mockup-first` skill: show the user a
+  mockup and wait for approval. Mockups are saved in `mockups/`. The UI's default language is
+  English (`extension/_locales/en/`; `zh_CN` is the second locale), and its fonts, colours and
+  tokens are in `extension/popup/popup.css`, described in [design/palette.md](design/palette.md).
 - New features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
   into tickets and `implement-spec <spec>` builds them. Their review runs `code-review` against
