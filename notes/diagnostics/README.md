@@ -228,8 +228,9 @@ Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtual
 | `rail-end`          | The jump ends.                                                                                                     | `jump`, `outcome` (below), `path`, `cause` (the `rail-cancel` before it, if any), `elapsedMs`, `tries` (mount tries used), `expired` (its deadline, 12 s, or 60 s for an earlier trip, had passed), `scrollTop`, `targetTop` (the target's top below the scroller's top, 64 when landed; null while unmounted)                                                                                                                                                                                                                                           |
 
 **Rail jump outcomes.** `landed`: the chat stopped on the target (also at the deadline, if the
-target was mounted and aligned then: `expired: true`); with a `cause`, the user scrolled away
-while it settled there, so `targetTop` is no longer 64; `never-mounted`: the target did not mount in 8 tries;
+target was mounted and aligned then: `expired: true`); with a `cause`, something stopped
+it while it settled there (see the `rail-cancel` before it); after the user's input, `targetTop` is
+no longer 64; `never-mounted`: the target did not mount in 8 tries;
 `expired`: the deadline passed first; `cancelled`: see the `rail-cancel` before it, also when it
 came while the chat was sliding in on the target, before it stopped there; `superseded`: another click started a jump (a
 `takeover` if this one was a trip), likewise; `lost`: the target mounted,

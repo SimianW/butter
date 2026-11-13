@@ -235,6 +235,53 @@ test('a wheel once the chat has stopped on the target records "landed" with its 
   assertAllowed(events);
 });
 
+// A click on the third question's tick with every turn mounted and close by: a glide. The user's
+// wheel comes once the hook has seen step `wheelAt`, and then scrolls 600 px.
+async function glideToThirdQuestion(wheelAt) {
+  const events = [],
+    steps = new Set();
+  let nav;
+  const tracer = createRailTrace({
+    emit: (type, fields) => events.push({ type, t: nav.now(), ...fields }),
+    now: () => nav.now(),
+  });
+  nav = setup({
+    count: 3,
+    trace: (step, fields) => {
+      steps.add(step);
+      tracer.trace(step, fields);
+    },
+  });
+  nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[2] });
+  let wheeled = false;
+  for (let i = 0; i < 400; i++) {
+    if (!wheeled && steps.has(wheelAt)) {
+      wheeled = true;
+      nav.scroller.emit('wheel');
+      nav.scroller.scrollTop += 600;
+    }
+    nav.runTimers();
+    nav.frame();
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+  return events;
+}
+
+test('a glide: a wheel before it arrives is "cancelled", one while it settles is "landed"', async () => {
+  for (const [wheelAt, outcome] of [
+    ['path', 'cancelled'],
+    ['arrived', 'landed'],
+  ]) {
+    const events = await glideToThirdQuestion(wheelAt);
+    assert.equal(ofType(events, 'rail-jump')[0].path, 'glide');
+    assert.equal(ofType(events, 'rail-cancel').length, 1, wheelAt);
+    const [end] = ofType(events, 'rail-end');
+    assert.equal(end.outcome, outcome, wheelAt);
+    assert.equal(end.cause, 'wheel');
+    assertAllowed(events);
+  }
+});
+
 test('with no hook the rail reads the clock no more often than before the trace', async () => {
   // A landing jump over this fixture, counted on the rail before it had a trace (91fc048). A wait's
   // start time is the dev trace's to take, from its own clock; a higher count means a call site
