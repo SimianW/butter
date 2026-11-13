@@ -45,7 +45,7 @@ test('the rail shows from one question in a wide enough chat; the three dots sho
   assert.equal(e.m.shows(false), false, 'narrower than 560 px');
 });
 
-test('one question: one bar lit at the active scale, no three dots, the rail centred and 34 px high', () => {
+test('one question: one tick lit at the active scale, no three dots, the rail centred and 34 px high', () => {
   const r = rail({ count: 1 });
   const l = r.m.layout(1200),
     css = Object.fromEntries(l.css);
