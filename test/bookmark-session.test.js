@@ -395,3 +395,43 @@ test('rail off or paused, or no account: no store reads and empty marks', async 
   assert.deepEqual([t.last().revision, t.last().groups.size], [null, 0]);
   assert.equal(t.store.reads(), 1);
 });
+
+test('Bookmarks off publishes no marks; back on, it reads the store again', async () => {
+  const t = await shown();
+  const key = t.store.put();
+  t.session.refresh();
+  await settle();
+  assert.equal(t.store.reads(), 1);
+  t.state.off = true; // Bookmarks switched off
+  t.session.refresh();
+  await settle();
+  assert.deepEqual([t.last().revision, t.last().groups.size], [null, 0]);
+  // Another tab saves a bookmark while this one is off.
+  const later = t.store.put({ start: 21, end: 40, excerpt: TEXT.slice(21, 40) });
+  t.state.off = false;
+  t.session.refresh();
+  await settle();
+  assert.equal(t.store.reads(), 2, 'read again, not served from before');
+  assert.deepEqual(t.marks(), {
+    q1: [
+      [key, false, false],
+      [later, false, false],
+    ],
+  });
+});
+
+test('the cleared token drops the lists and republishes empty marks', async () => {
+  const t = tab();
+  t.store.put();
+  t.page.texts.set('a1', [TEXT]);
+  t.page.answered.add('q1');
+  t.session.setAccount(A);
+  t.session.view('conv-1', ITEMS, true, 1);
+  await settle();
+  assert.equal(t.last().groups.size, 1);
+  t.store.rows.clear(); // the popup's Clear emptied the store
+  t.session.cleared();
+  await settle();
+  assert.deepEqual([t.last().revision, t.last().groups.size], [1, 0]);
+  assert.equal(t.store.reads(), 2);
+});

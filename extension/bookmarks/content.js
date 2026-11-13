@@ -14,8 +14,9 @@
   const strings = (zh) => (zh ? { sel: '为选中内容加书签' } : { sel: 'Bookmark selection' });
   const zh = () => document.documentElement?.getAttribute('data-butter-lang') === 'zh';
   let TXT = strings(zh());
-  const railOff = () =>
-    document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('rail');
+  // Off with the rail or Bookmarks switched off, or Butter paused (which lists every key).
+  const bookmarksOff = () =>
+    /(^| )(rail|bookmark)( |$)/.test(document.documentElement?.getAttribute('data-butter-off'));
   const convOfPath = () => /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1] ?? null;
 
   // ---- The session, over the store client, the page reader and the DOM below. Ids are hashed as
@@ -40,7 +41,7 @@
       locate,
       wash: washAt,
     },
-    off: railOff,
+    off: bookmarksOff,
     requestAccount: () => document.dispatchEvent(new CustomEvent('butter-account-request')),
     publish: (conv, marks) => globalThis.ButterRail?.setMarks(conv, marks),
     outcome: (kind, b, undo) => globalThis.ButterBookmarkNotice?.[kind](b, undo),
@@ -280,7 +281,7 @@
     });
   }
   // ---- The Bookmark cell of the selection pill (selection/pill.js), beside Ask in branch: shown
-  // for a selection the shortcut would bookmark (inside one answer) while the rail is on, Butter
+  // for a selection the shortcut would bookmark (inside one answer) while bookmarks are on, Butter
   // enabled, the reader isn't seeking and the tab shows a conversation. It saves that range,
   // clears the selection and the pill. Its label shows the key Chrome reports for the command.
   const ICON =
@@ -288,39 +289,23 @@
   const isDark = () =>
     document.documentElement.classList.contains('dark') ||
     /dark/.test(getComputedStyle(document.documentElement).colorScheme);
-  let shortcut = null, // the key Chrome reports for the command; null until read
-    reading = false;
-  // Read again each time the cell shows: the reader may have changed it in Chrome's settings.
-  const readKey = async () => {
-    if (reading) return;
-    reading = true;
-    let next = '';
-    try {
-      const r = await chrome.runtime.sendMessage({ version: 1, type: 'butter-bookmark-key' });
-      next = typeof r?.shortcut === 'string' ? r.shortcut : '';
-    } catch {}
-    reading = false;
-    if (next === shortcut) return;
-    shortcut = next;
-    pill();
-  };
   function pill() {
     globalThis.ButterPill?.update();
   }
   ButterPill.register({
     id: 'bookmark',
-    feature: 'rail',
+    feature: ['rail', 'bookmark'],
     icon: ICON,
     label: () => TXT.sel,
-    keys: () => B.keyHint(shortcut ?? ''),
-    shortcut: () => B.ariaKeys(shortcut ?? ''),
+    keys: () => B.keyHint(ButterBookmarkStore.key ?? ''),
+    shortcut: () => B.ariaKeys(ButterBookmarkStore.key ?? ''),
     wants() {
       if (!session.signedIn || session.seeking || !convOfPath() || !selection(false)) return false;
-      readKey();
+      ButterBookmarkStore.readKey(pill); // read each time the cell shows
       return true;
     },
     activate() {
-      const range = railOff() ? null : selection();
+      const range = bookmarksOff() ? null : selection();
       if (range) create(range.block, range);
       getSelection()?.removeAllRanges();
       ButterPill.hide();
@@ -328,9 +313,10 @@
   });
   document.addEventListener('butter-settings', () => {
     TXT = strings(zh());
-    if (railOff()) unwash();
-    session.refresh(); // reads the conversation once the rail is on, or clears its marks when it goes off
+    if (bookmarksOff()) unwash();
+    session.refresh(); // reads the conversation once bookmarks are on, or clears its marks when off
   });
+  ButterBookmarkStore.cleared(() => session.cleared()); // the popup's Clear: dots and rows go
 
   // ---- The landing wash (#73). When a bookmark trip from a card row lands on live text, the rail
   // calls its `wash`: the bookmark's range is washed in butter, line by line in reading order, held
@@ -394,7 +380,7 @@
     return { left: r.left, top, width: sc.clientWidth, height: Math.max(0, bottom - top) };
   };
   let wash = null; // the wash showing: its layer, scroller and listener
-  // Removes the wash at once: a new jump, a conversation change, a scrollbar drag, the rail off.
+  // Removes the wash at once: a new jump, a conversation change, a scrollbar drag, bookmarks off.
   function unwash() {
     const w = wash;
     if (!w) return;
@@ -445,7 +431,7 @@
   function washAt(turn, raw, b, draw = true) {
     const block = blockIn(turn, raw, b),
       sc = block && scrollerOf(block);
-    if (!sc || railOff() || session.seeking) return false;
+    if (!sc || bookmarksOff() || session.seeking) return false;
     if (!draw) return true;
     unwash();
     const host = document.createElement('chatgpt-butter-wash'),
@@ -553,7 +539,7 @@
   // A selection outside the answers creates nothing.
   chrome.runtime.onMessage.addListener((m) => {
     if (m?.type !== 'butter-bookmark-shortcut' || m.version !== 1) return;
-    if (railOff() || !session.signedIn || session.seeking || !convOfPath()) return;
+    if (bookmarksOff() || !session.signedIn || session.seeking || !convOfPath()) return;
     const s = getSelection();
     if (s && !s.isCollapsed) {
       const range = selection();

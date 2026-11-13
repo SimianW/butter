@@ -61,6 +61,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     scrolling: ['older', 'seek'],
     rail: ['rail'],
     branch: ['branch'],
+    bookmarks: ['bookmark'],
     layout: ['layout'],
   });
   for (const group of Object.keys(status.groups)) {
@@ -129,4 +130,29 @@ test('a branch failure is kept as its own group and cleared only by a branch suc
   assert.deepEqual(status.updateFailures(failed, { branch: 'idle', rail: 'ok' }), failed);
   assert.deepEqual(status.updateFailures(failed, { branch: 'off' }), failed);
   assert.deepEqual(status.updateFailures(failed, { branch: 'ok' }), {});
+});
+test('Bookmarks default on, keep an explicit off, survive unknown values, and toggle as their own group', () => {
+  assert.equal(status.normalize().opts.bookmark, true);
+  assert.equal(status.normalize({ opts: { rail: false } }).opts.bookmark, true);
+  assert.equal(status.normalize({ opts: { bookmark: 'no' } }).opts.bookmark, true);
+  assert.equal(status.normalize({ opts: { bookmark: false } }).opts.bookmark, false);
+  assert.equal(status.groupOn({}, 'bookmarks'), true);
+  const off = status.toggleGroup({ lang: 'zh', layoutConsent: 'pending' }, 'bookmarks');
+  assert.equal(off.opts.bookmark, false);
+  assert.equal(off.opts.rail, true);
+  assert.equal(off.layoutConsent, 'pending', 'no consent of their own');
+  assert.equal(status.classify({}, off).bookmark, 'off');
+  assert.equal(status.toggleGroup(off, 'bookmarks').opts.bookmark, true);
+});
+test('bookmarks are active only while Butter, the rail and Bookmarks are all on', () => {
+  assert.equal(status.bookmarksOn(), true);
+  assert.equal(status.bookmarksOn({ enabled: false }), false);
+  assert.equal(status.bookmarksOn({ opts: { rail: false } }), false);
+  assert.equal(status.bookmarksOn({ opts: { bookmark: false } }), false);
+  assert.equal(status.classify({}, { enabled: false }).bookmark, 'off');
+});
+test('with no health facts reported, the bookmark key is never recorded as a failure', () => {
+  const states = status.classify({ rail: { exercised: true, failed: true } });
+  assert.equal(states.bookmark, 'idle');
+  assert.deepEqual(status.updateFailures({}, states), { rail: { rail: true } });
 });

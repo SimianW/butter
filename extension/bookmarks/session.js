@@ -1,12 +1,13 @@
 // Isolated world. The bookmark session (`ButterBookmarkSession`): a tab's bookmarks over time. It
 // owns which account and conversation are in view, the conversation's list (read once from the
-// store, read again only after it was unavailable), the raw ids behind hashed ones (kept across
+// store, read again after it was unavailable, after bookmarks were off and after a Clear), the raw ids behind hashed ones (kept across
 // unmounts: an answer that streamed in this tab is never in a page GET), the staleness last seen
 // in the tab, the dots that grow in, and the store writes: create, remove and their Undo. It
 // publishes `{ revision, groups }` toward the rail, where `revision` is the rail's revision of the
 // items they were resolved against, and hands each save and remove to the notification with its
-// Undo. Nothing is read while the rail is off (which includes Butter paused), and nothing runs
-// while a scrollbar drag is seeking: a read asked for then runs once when seeking ends.
+// Undo. Nothing is read while bookmarks are off (the rail or Bookmarks switched off, or Butter
+// paused; back on, the list is read again), and nothing runs while a scrollbar drag is seeking: a
+// read asked for then runs once when seeking ends. The popup's Clear drops every list (`cleared`).
 // No DOM and no chrome.* here: bookmarks/content.js builds it over the store client and the page
 // reader; test/bookmark-session.test.js over an in-memory store and planted pages.
 //
@@ -18,7 +19,8 @@
 //   `page.answered(questionId)`: that question's turn is mounted with an answer in it.
 //   `page.locate(turn, rawId, bookmark)` and `page.wash(turn, rawId, bookmark, draw)`: the rail's
 //   landing offset and wash (bookmarks/content.js `locate`, `washAt`).
-// - `off()`: the rail is off. `requestAccount()`: asks history/conversation-main.js again.
+// - `off()`: bookmarks are off: Butter paused, or the rail or Bookmarks switched off.
+//   `requestAccount()`: asks history/conversation-main.js again.
 // - `publish(conv, { revision, groups })`: toward ButterRail.setMarks. `revision` is null when
 //   the groups were resolved against no items (no conversation or account, or the rail off).
 // - `outcome(kind, bookmark, undo)`: 'saved', 'already' or 'removed', toward the notification;
@@ -72,8 +74,10 @@
         deferred = true;
         return;
       }
-      // Nothing is read while the rail is off, which includes Butter paused.
+      // Nothing is read while bookmarks are off (Bookmarks or the rail switched off, or Butter
+      // paused), and what was read is dropped: back on, the store is read again.
       const isOff = off();
+      if (isOff) lists.clear();
       if (!conv || !owner || isOff) {
         if (!owner && !isOff) requestAccount();
         publish(conv, { revision: null, groups: new Map() });
@@ -247,8 +251,15 @@
           refresh();
         }
       },
-      // Settings changed: reads the conversation once the rail is on, or clears its marks.
+      // Settings changed: reads the conversation once bookmarks are on, or clears its marks.
       refresh: () => refresh(),
+      // The popup's Clear emptied the store (its token): every list read is dropped, and the
+      // conversation in view is read and published again, so its dots and card rows go.
+      cleared() {
+        lists.clear();
+        shownList = [];
+        refresh();
+      },
       // The pointer or focus reached the rail: staleness is checked again now.
       check() {
         if (!seeking && shownList.length) refresh(true);
