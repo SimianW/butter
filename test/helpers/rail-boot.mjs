@@ -59,6 +59,7 @@ export function setup({
     getComputedStyle: () => ({ colorScheme: 'light' }),
     matchMedia: () => ({ matches: false, addEventListener() {} }),
     innerWidth: 1200,
+    devicePixelRatio: 1,
     performance: { now: () => (clockReads++, now) },
     addEventListener: window.addEventListener.bind(window),
     removeEventListener: window.removeEventListener.bind(window),

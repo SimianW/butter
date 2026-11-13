@@ -1,0 +1,5233 @@
+{
+  "browser": "Playwright headed Chromium under Xvfb",
+  "browserVersion": "158.0.8127.18",
+  "tolerance": 0.1,
+  "threshold": 25,
+  "sum": "All grayscale pixels, including values <=25, partitioned at tick-center midpoints",
+  "results": [
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-1-native.png",
+      "clip": {
+        "x": 1301,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1,
+      "innerWidth": 1400,
+      "innerHeight": 950,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1329,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, 0)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1354,
+            "y": 384,
+            "width": 21,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            32,
+            33
+          ],
+          "length": 21,
+          "rowPeaks": [
+            236,
+            236
+          ],
+          "sum": 9496
+        },
+        {
+          "bar": 2,
+          "rows": [
+            46,
+            47
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 3,
+          "rows": [
+            60,
+            61
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 4,
+          "rows": [
+            74,
+            75
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        }
+      ],
+      "maxRestBrightness": 1516,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-1-equal.png",
+      "clip": {
+        "x": 1301,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1,
+      "innerWidth": 1400,
+      "innerHeight": 950,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1329,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            32,
+            33
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 2,
+          "rows": [
+            46,
+            47
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 3,
+          "rows": [
+            60,
+            61
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 4,
+          "rows": [
+            74,
+            75
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        }
+      ],
+      "maxRestBrightness": 1516,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-1-no-transform.png",
+      "clip": {
+        "x": 1301,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1,
+      "innerWidth": 1400,
+      "innerHeight": 950,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1329,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            32,
+            33
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 2,
+          "rows": [
+            46,
+            47
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 3,
+          "rows": [
+            60,
+            61
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 4,
+          "rows": [
+            74,
+            75
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        }
+      ],
+      "maxRestBrightness": 1516,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-1-square.png",
+      "clip": {
+        "x": 1301,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1,
+      "innerWidth": 1400,
+      "innerHeight": 950,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1329,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            32,
+            33
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1584
+        },
+        {
+          "bar": 2,
+          "rows": [
+            46,
+            47
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1584
+        },
+        {
+          "bar": 3,
+          "rows": [
+            60,
+            61
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1584
+        },
+        {
+          "bar": 4,
+          "rows": [
+            74,
+            75
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1584
+        }
+      ],
+      "maxRestBrightness": 1584,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-1-layer.png",
+      "clip": {
+        "x": 1301,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1,
+      "innerWidth": 1400,
+      "innerHeight": 950,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1329,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1363,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            32,
+            33
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 2,
+          "rows": [
+            46,
+            47
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 3,
+          "rows": [
+            60,
+            61
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        },
+        {
+          "bar": 4,
+          "rows": [
+            74,
+            75
+          ],
+          "length": 12,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1516
+        }
+      ],
+      "maxRestBrightness": 1516,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-0.9-native.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, -0.444444)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1508.5721435546875,
+            "y": 383.32293701171875,
+            "width": 20.993925094604492,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 397.76043701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.444446)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 412.19793701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.222221)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 425.5243225097656,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            29,
+            30,
+            31
+          ],
+          "length": 18,
+          "rowPeaks": [
+            118,
+            236,
+            118
+          ],
+          "sum": 7859
+        },
+        {
+          "bar": 2,
+          "rows": [
+            43,
+            44
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 3,
+          "rows": [
+            56,
+            57
+          ],
+          "length": 10,
+          "rowPeaks": [
+            33,
+            33
+          ],
+          "sum": 644
+        },
+        {
+          "bar": 4,
+          "rows": [
+            68,
+            69
+          ],
+          "length": 11,
+          "rowPeaks": [
+            66,
+            49
+          ],
+          "sum": 1377
+        }
+      ],
+      "maxRestBrightness": 1377,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-0.9-equal.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.444444)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 383.32293701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 397.76043701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.444446)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 412.19793701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.222221)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 425.5243225097656,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            29,
+            30,
+            31
+          ],
+          "length": 10,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 2,
+          "rows": [
+            43,
+            44
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 3,
+          "rows": [
+            56,
+            57
+          ],
+          "length": 10,
+          "rowPeaks": [
+            33,
+            33
+          ],
+          "sum": 644
+        },
+        {
+          "bar": 4,
+          "rows": [
+            68,
+            69
+          ],
+          "length": 11,
+          "rowPeaks": [
+            66,
+            49
+          ],
+          "sum": 1377
+        }
+      ],
+      "maxRestBrightness": 1377,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-0.9-no-transform.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 383.7673645019531,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 397.76043701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 411.75347900390625,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 425.7465515136719,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            30,
+            31
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 2,
+          "rows": [
+            43,
+            44
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 3,
+          "rows": [
+            56
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66
+          ],
+          "sum": 644
+        },
+        {
+          "bar": 4,
+          "rows": [
+            68,
+            69
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        }
+      ],
+      "maxRestBrightness": 1252,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-0.9-square.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.444444)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 383.32293701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 397.76043701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.444446)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 412.19793701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.222221)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 425.5243225097656,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            29,
+            30,
+            31
+          ],
+          "length": 10,
+          "rowPeaks": [
+            26,
+            66,
+            39
+          ],
+          "sum": 1310
+        },
+        {
+          "bar": 2,
+          "rows": [
+            43,
+            44
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1320
+        },
+        {
+          "bar": 3,
+          "rows": [
+            56,
+            57
+          ],
+          "length": 10,
+          "rowPeaks": [
+            39,
+            26
+          ],
+          "sum": 650
+        },
+        {
+          "bar": 4,
+          "rows": [
+            68,
+            69
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            53
+          ],
+          "sum": 1320
+        }
+      ],
+      "maxRestBrightness": 1320,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-0.9-layer.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.444444)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 383.32293701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 397.76043701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.444446)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 412.19793701171875,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.222221)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 425.5243225097656,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            29,
+            30,
+            31
+          ],
+          "length": 11,
+          "rowPeaks": [
+            26,
+            66,
+            39
+          ],
+          "sum": 1373
+        },
+        {
+          "bar": 2,
+          "rows": [
+            43,
+            44
+          ],
+          "length": 11,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1384
+        },
+        {
+          "bar": 3,
+          "rows": [
+            56,
+            57,
+            58
+          ],
+          "length": 11,
+          "rowPeaks": [
+            39,
+            66,
+            26
+          ],
+          "sum": 1373
+        },
+        {
+          "bar": 4,
+          "rows": [
+            68,
+            69
+          ],
+          "length": 11,
+          "rowPeaks": [
+            66,
+            53
+          ],
+          "sum": 1382
+        }
+      ],
+      "maxRestBrightness": 1384,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 0.9,
+      "extension": true,
+      "probe": "phase",
+      "screenshot": "zoom-0.9-phase.png",
+      "clip": {
+        "x": 1454.4444829740653,
+        "y": 350.0000092718339,
+        "width": 80.00000211927632,
+        "height": 108.88889177345943
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 0.8999999761581421,
+      "innerWidth": 1555,
+      "innerHeight": 1055,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1483.55908203125,
+        "y": 367.7778015136719,
+        "width": 51.99652862548828,
+        "height": 75.97222900390625
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.444444px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.444444)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 385.3194580078125,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 399.7569580078125,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.444446px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.444446)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 414.1944580078125,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.222221px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.222221)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1517.5694580078125,
+            "y": 427.5208435058594,
+            "width": 11.996528625488281,
+            "height": 1.996527910232544
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            31,
+            32,
+            33
+          ],
+          "length": 10,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 2,
+          "rows": [
+            45,
+            46
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 3,
+          "rows": [
+            57,
+            58,
+            59
+          ],
+          "length": 10,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1252
+        },
+        {
+          "bar": 4,
+          "rows": [
+            70,
+            71
+          ],
+          "length": 10,
+          "rowPeaks": [
+            66,
+            49
+          ],
+          "sum": 1246
+        }
+      ],
+      "maxRestBrightness": 1252,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-1.1-native.png",
+      "clip": {
+        "x": 1146.3636115168742,
+        "y": 351.81817419272824,
+        "width": 80.90908915543363,
+        "height": 108.18181583704047
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.100000023841858,
+      "innerWidth": 1273,
+      "innerHeight": 864,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1175.102294921875,
+        "y": 368.1817932128906,
+        "width": 51.9886360168457,
+        "height": 75.96590423583984
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.363636px) scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, 0.363636)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1200.116455078125,
+            "y": 384.5397644042969,
+            "width": 20.980112075805664,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 398.1676025390625,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.363637px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.363637)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 411.7954406738281,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.181817px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.181817)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 426.3323974609375,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            36,
+            37,
+            38
+          ],
+          "length": 26,
+          "rowPeaks": [
+            118,
+            236,
+            118
+          ],
+          "sum": 11151
+        },
+        {
+          "bar": 2,
+          "rows": [
+            51,
+            52
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1776
+        },
+        {
+          "bar": 3,
+          "rows": [
+            65,
+            66,
+            67,
+            68
+          ],
+          "length": 14,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 2606
+        },
+        {
+          "bar": 4,
+          "rows": [
+            82,
+            83
+          ],
+          "length": 13,
+          "rowPeaks": [
+            49,
+            66
+          ],
+          "sum": 1633
+        }
+      ],
+      "maxRestBrightness": 2606,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-1.1-equal.png",
+      "clip": {
+        "x": 1146.3636115168742,
+        "y": 351.81817419272824,
+        "width": 80.90908915543363,
+        "height": 108.18181583704047
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.100000023841858,
+      "innerWidth": 1273,
+      "innerHeight": 864,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1175.102294921875,
+        "y": 368.1817932128906,
+        "width": 51.9886360168457,
+        "height": 75.96590423583984
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.363636px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.363636)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 384.5397644042969,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 398.1676025390625,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.363637px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.363637)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 411.7954406738281,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.181817px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.181817)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 426.3323974609375,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            36,
+            37,
+            38
+          ],
+          "length": 14,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1774
+        },
+        {
+          "bar": 2,
+          "rows": [
+            51,
+            52
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1776
+        },
+        {
+          "bar": 3,
+          "rows": [
+            65,
+            66,
+            67,
+            68
+          ],
+          "length": 14,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 2606
+        },
+        {
+          "bar": 4,
+          "rows": [
+            82,
+            83
+          ],
+          "length": 13,
+          "rowPeaks": [
+            49,
+            66
+          ],
+          "sum": 1633
+        }
+      ],
+      "maxRestBrightness": 2606,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-1.1-no-transform.png",
+      "clip": {
+        "x": 1146.3636115168742,
+        "y": 351.81817419272824,
+        "width": 80.90908915543363,
+        "height": 108.18181583704047
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.100000023841858,
+      "innerWidth": 1273,
+      "innerHeight": 864,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1175.102294921875,
+        "y": 368.1817932128906,
+        "width": 51.9886360168457,
+        "height": 75.96590423583984
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.363636px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 384.1761169433594,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 398.1676025390625,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.363637px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 412.1590881347656,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.181817px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 426.1505432128906,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            36,
+            37
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1776
+        },
+        {
+          "bar": 2,
+          "rows": [
+            51,
+            52
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1776
+        },
+        {
+          "bar": 3,
+          "rows": [
+            66,
+            67,
+            68
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2612
+        },
+        {
+          "bar": 4,
+          "rows": [
+            82,
+            83
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1776
+        }
+      ],
+      "maxRestBrightness": 2612,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-1.1-square.png",
+      "clip": {
+        "x": 1146.3636115168742,
+        "y": 351.81817419272824,
+        "width": 80.90908915543363,
+        "height": 108.18181583704047
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.100000023841858,
+      "innerWidth": 1273,
+      "innerHeight": 864,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1175.102294921875,
+        "y": 368.1817932128906,
+        "width": 51.9886360168457,
+        "height": 75.96590423583984
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.363636px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.363636)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 384.5397644042969,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 398.1676025390625,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.363637px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.363637)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 411.7954406738281,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.181817px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.181817)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 426.3323974609375,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            36,
+            37,
+            38
+          ],
+          "length": 14,
+          "rowPeaks": [
+            39,
+            66,
+            26
+          ],
+          "sum": 1831
+        },
+        {
+          "bar": 2,
+          "rows": [
+            51,
+            52
+          ],
+          "length": 14,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1846
+        },
+        {
+          "bar": 3,
+          "rows": [
+            65,
+            66,
+            67,
+            68
+          ],
+          "length": 14,
+          "rowPeaks": [
+            26,
+            66,
+            66,
+            39
+          ],
+          "sum": 2754
+        },
+        {
+          "bar": 4,
+          "rows": [
+            82,
+            83
+          ],
+          "length": 14,
+          "rowPeaks": [
+            53,
+            66
+          ],
+          "sum": 1845
+        }
+      ],
+      "maxRestBrightness": 2754,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.1,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-1.1-layer.png",
+      "clip": {
+        "x": 1146.3636115168742,
+        "y": 351.81817419272824,
+        "width": 80.90908915543363,
+        "height": 108.18181583704047
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.100000023841858,
+      "innerWidth": 1273,
+      "innerHeight": 864,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1175.102294921875,
+        "y": 368.1817932128906,
+        "width": 51.9886360168457,
+        "height": 75.96590423583984
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.363636px) scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.363636)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 384.5397644042969,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 398.1676025390625,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(-0.363637px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, -0.363637)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 411.7954406738281,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.181817px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.181817)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1209.10791015625,
+            "y": 426.3323974609375,
+            "width": 11.988636016845703,
+            "height": 1.9886362552642822
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            36,
+            37,
+            38
+          ],
+          "length": 13,
+          "rowPeaks": [
+            39,
+            66,
+            26
+          ],
+          "sum": 1634
+        },
+        {
+          "bar": 2,
+          "rows": [
+            51,
+            52
+          ],
+          "length": 13,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1646
+        },
+        {
+          "bar": 3,
+          "rows": [
+            65,
+            66,
+            67
+          ],
+          "length": 13,
+          "rowPeaks": [
+            26,
+            66,
+            39
+          ],
+          "sum": 1634
+        },
+        {
+          "bar": 4,
+          "rows": [
+            82,
+            83
+          ],
+          "length": 13,
+          "rowPeaks": [
+            53,
+            66
+          ],
+          "sum": 1643
+        }
+      ],
+      "maxRestBrightness": 1646,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-1.25-native.png",
+      "clip": {
+        "x": 1000,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.25,
+      "innerWidth": 1120,
+      "innerHeight": 760,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1028,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, 0)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1053,
+            "y": 384,
+            "width": 21,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 398.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 426.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            40,
+            41,
+            42
+          ],
+          "length": 27,
+          "rowPeaks": [
+            236,
+            236,
+            236
+          ],
+          "sum": 17671
+        },
+        {
+          "bar": 2,
+          "rows": [
+            58,
+            59,
+            60
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1912
+        },
+        {
+          "bar": 3,
+          "rows": [
+            75,
+            76,
+            77
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2818
+        },
+        {
+          "bar": 4,
+          "rows": [
+            93,
+            94,
+            95
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1912
+        }
+      ],
+      "maxRestBrightness": 2818,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-1.25-equal.png",
+      "clip": {
+        "x": 1000,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.25,
+      "innerWidth": 1120,
+      "innerHeight": 760,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1028,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 398.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 426.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            40,
+            41,
+            42
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2818
+        },
+        {
+          "bar": 2,
+          "rows": [
+            58,
+            59,
+            60
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1912
+        },
+        {
+          "bar": 3,
+          "rows": [
+            75,
+            76,
+            77
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2818
+        },
+        {
+          "bar": 4,
+          "rows": [
+            93,
+            94,
+            95
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1912
+        }
+      ],
+      "maxRestBrightness": 2818,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-1.25-no-transform.png",
+      "clip": {
+        "x": 1000,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.25,
+      "innerWidth": 1120,
+      "innerHeight": 760,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1028,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            40,
+            41,
+            42
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2818
+        },
+        {
+          "bar": 2,
+          "rows": [
+            58,
+            59
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1912
+        },
+        {
+          "bar": 3,
+          "rows": [
+            75,
+            76,
+            77
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2818
+        },
+        {
+          "bar": 4,
+          "rows": [
+            93,
+            94
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66
+          ],
+          "sum": 1912
+        }
+      ],
+      "maxRestBrightness": 2818,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-1.25-square.png",
+      "clip": {
+        "x": 1000,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.25,
+      "innerWidth": 1120,
+      "innerHeight": 760,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1028,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 398.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 426.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            40,
+            41,
+            42
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2970
+        },
+        {
+          "bar": 2,
+          "rows": [
+            58,
+            59,
+            60
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1980
+        },
+        {
+          "bar": 3,
+          "rows": [
+            75,
+            76,
+            77
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2970
+        },
+        {
+          "bar": 4,
+          "rows": [
+            93,
+            94,
+            95
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            33
+          ],
+          "sum": 1980
+        }
+      ],
+      "maxRestBrightness": 2970,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.25,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-1.25-layer.png",
+      "clip": {
+        "x": 1000,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.25,
+      "innerWidth": 1120,
+      "innerHeight": 760,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 1028,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 398.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.4px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.4)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 1062,
+            "y": 426.3999938964844,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            40,
+            41,
+            42
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2820
+        },
+        {
+          "bar": 2,
+          "rows": [
+            58,
+            59,
+            60,
+            61
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 2814
+        },
+        {
+          "bar": 3,
+          "rows": [
+            75,
+            76,
+            77
+          ],
+          "length": 15,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 2820
+        },
+        {
+          "bar": 4,
+          "rows": [
+            93,
+            94,
+            95,
+            96
+          ],
+          "length": 15,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 2814
+        }
+      ],
+      "maxRestBrightness": 2820,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-1.5-native.png",
+      "clip": {
+        "x": 818.6666666666666,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.5,
+      "innerWidth": 933,
+      "innerHeight": 633,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 847.3333740234375,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, 0)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 872.3333740234375,
+            "y": 384,
+            "width": 21,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            48,
+            49,
+            50
+          ],
+          "length": 32,
+          "rowPeaks": [
+            236,
+            236,
+            236
+          ],
+          "sum": 21386
+        },
+        {
+          "bar": 2,
+          "rows": [
+            69,
+            70,
+            71
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 3,
+          "rows": [
+            90,
+            91,
+            92
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 4,
+          "rows": [
+            111,
+            112,
+            113
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        }
+      ],
+      "maxRestBrightness": 3412,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-1.5-equal.png",
+      "clip": {
+        "x": 818.6666666666666,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.5,
+      "innerWidth": 933,
+      "innerHeight": 633,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 847.3333740234375,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            48,
+            49,
+            50
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 2,
+          "rows": [
+            69,
+            70,
+            71
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 3,
+          "rows": [
+            90,
+            91,
+            92
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 4,
+          "rows": [
+            111,
+            112,
+            113
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        }
+      ],
+      "maxRestBrightness": 3412,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-1.5-no-transform.png",
+      "clip": {
+        "x": 818.6666666666666,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.5,
+      "innerWidth": 933,
+      "innerHeight": 633,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 847.3333740234375,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            48,
+            49,
+            50
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 2,
+          "rows": [
+            69,
+            70,
+            71
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 3,
+          "rows": [
+            90,
+            91,
+            92
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        },
+        {
+          "bar": 4,
+          "rows": [
+            111,
+            112,
+            113
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3412
+        }
+      ],
+      "maxRestBrightness": 3412,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-1.5-square.png",
+      "clip": {
+        "x": 818.6666666666666,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.5,
+      "innerWidth": 933,
+      "innerHeight": 633,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 847.3333740234375,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            48,
+            49,
+            50
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3564
+        },
+        {
+          "bar": 2,
+          "rows": [
+            69,
+            70,
+            71
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3564
+        },
+        {
+          "bar": 3,
+          "rows": [
+            90,
+            91,
+            92
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3564
+        },
+        {
+          "bar": 4,
+          "rows": [
+            111,
+            112,
+            113
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3564
+        }
+      ],
+      "maxRestBrightness": 3564,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.5,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-1.5-layer.png",
+      "clip": {
+        "x": 818.6666666666666,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.5,
+      "innerWidth": 933,
+      "innerHeight": 633,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 847.3333740234375,
+        "y": 368,
+        "width": 52,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 384,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 398,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 412,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 881.3333740234375,
+            "y": 426,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            48,
+            49,
+            50
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3414
+        },
+        {
+          "bar": 2,
+          "rows": [
+            69,
+            70,
+            71
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3414
+        },
+        {
+          "bar": 3,
+          "rows": [
+            90,
+            91,
+            92
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3414
+        },
+        {
+          "bar": 4,
+          "rows": [
+            111,
+            112,
+            113
+          ],
+          "length": 18,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 3414
+        }
+      ],
+      "maxRestBrightness": 3414,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": false,
+      "skipped": "No worker to set arbitrary browser zoom; device control covers extension absence"
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": true,
+      "probe": "native",
+      "screenshot": "zoom-1.75-native.png",
+      "clip": {
+        "x": 689.7142857142857,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.75,
+      "innerWidth": 800,
+      "innerHeight": 543,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 718.4285888671875,
+        "y": 368.0000305175781,
+        "width": 52.000003814697266,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1.75, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1.75, 0, 0, 1, 0, 0)",
+          "opacity": "1",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 743.4285888671875,
+            "y": 384.0000305175781,
+            "width": 21,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 398.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 412.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 426.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "length": 38,
+          "rowPeaks": [
+            236,
+            236,
+            236,
+            236
+          ],
+          "sum": 33458
+        },
+        {
+          "bar": 2,
+          "rows": [
+            81,
+            82,
+            83,
+            84
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 3994
+        },
+        {
+          "bar": 3,
+          "rows": [
+            105,
+            106,
+            107,
+            108
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5270
+        },
+        {
+          "bar": 4,
+          "rows": [
+            130,
+            131,
+            132,
+            133
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 3994
+        }
+      ],
+      "maxRestBrightness": 5270,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": true,
+      "probe": "equal",
+      "screenshot": "zoom-1.75-equal.png",
+      "clip": {
+        "x": 689.7142857142857,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.75,
+      "innerWidth": 800,
+      "innerHeight": 543,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 718.4285888671875,
+        "y": 368.0000305175781,
+        "width": 52.000003814697266,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 384.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 398.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 412.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 426.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5270
+        },
+        {
+          "bar": 2,
+          "rows": [
+            81,
+            82,
+            83,
+            84
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 3994
+        },
+        {
+          "bar": 3,
+          "rows": [
+            105,
+            106,
+            107,
+            108
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5270
+        },
+        {
+          "bar": 4,
+          "rows": [
+            130,
+            131,
+            132,
+            133
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 3994
+        }
+      ],
+      "maxRestBrightness": 5270,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": true,
+      "probe": "no-transform",
+      "screenshot": "zoom-1.75-no-transform.png",
+      "clip": {
+        "x": 689.7142857142857,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.75,
+      "innerWidth": 800,
+      "innerHeight": 543,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 718.4285888671875,
+        "y": 368.0000305175781,
+        "width": 52.000003814697266,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 384.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 398.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 412.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "none",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 426.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5270
+        },
+        {
+          "bar": 2,
+          "rows": [
+            81,
+            82,
+            83
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 4000
+        },
+        {
+          "bar": 3,
+          "rows": [
+            105,
+            106,
+            107,
+            108
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5270
+        },
+        {
+          "bar": 4,
+          "rows": [
+            130,
+            131,
+            132
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66
+          ],
+          "sum": 4000
+        }
+      ],
+      "maxRestBrightness": 5270,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": true,
+      "probe": "square",
+      "screenshot": "zoom-1.75-square.png",
+      "clip": {
+        "x": 689.7142857142857,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.75,
+      "innerWidth": 800,
+      "innerHeight": 543,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 718.4285888671875,
+        "y": 368.0000305175781,
+        "width": 52.000003814697266,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 384.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 398.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 412.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "0px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 426.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5540
+        },
+        {
+          "bar": 2,
+          "rows": [
+            81,
+            82,
+            83,
+            84
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 4154
+        },
+        {
+          "bar": 3,
+          "rows": [
+            105,
+            106,
+            107,
+            108
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5540
+        },
+        {
+          "bar": 4,
+          "rows": [
+            130,
+            131,
+            132,
+            133
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            33
+          ],
+          "sum": 4154
+        }
+      ],
+      "maxRestBrightness": 5540,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    },
+    {
+      "method": "zoom",
+      "scale": 1.75,
+      "extension": true,
+      "probe": "layer",
+      "screenshot": "zoom-1.75-layer.png",
+      "clip": {
+        "x": 689.7142857142857,
+        "y": 352,
+        "width": 80,
+        "height": 108
+      },
+      "viewportBitmap": {
+        "width": 1400,
+        "height": 950
+      },
+      "dpr": 1.75,
+      "innerWidth": 800,
+      "innerHeight": 543,
+      "visualScale": 1,
+      "pitch": "14px",
+      "railOpacity": "1",
+      "railClass": "rail",
+      "moreHidden": true,
+      "bookmarkDots": 0,
+      "rail": {
+        "x": 718.4285888671875,
+        "y": 368.0000305175781,
+        "width": 52.000003814697266,
+        "height": 76
+      },
+      "bars": [
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "1",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 384.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 398.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 412.0000305175781,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        },
+        {
+          "tag": "SPAN",
+          "parent": "tick",
+          "inlineTransform": "translateY(0.285714px) scale(1, 1)",
+          "inlineOpacity": "0.28",
+          "transform": "matrix(1, 0, 0, 1, 0, 0.285714)",
+          "opacity": "0.28",
+          "animation": "none",
+          "radius": "2px",
+          "color": "rgb(236, 236, 236)",
+          "rect": {
+            "x": 752.4285888671875,
+            "y": 426.2857360839844,
+            "width": 12.000000953674316,
+            "height": 2
+          }
+        }
+      ],
+      "measurements": [
+        {
+          "bar": 1,
+          "rows": [
+            56,
+            57,
+            58,
+            59
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5280
+        },
+        {
+          "bar": 2,
+          "rows": [
+            81,
+            82,
+            83,
+            84,
+            85
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            66,
+            33
+          ],
+          "sum": 5275
+        },
+        {
+          "bar": 3,
+          "rows": [
+            105,
+            106,
+            107,
+            108
+          ],
+          "length": 21,
+          "rowPeaks": [
+            66,
+            66,
+            66,
+            66
+          ],
+          "sum": 5280
+        },
+        {
+          "bar": 4,
+          "rows": [
+            130,
+            131,
+            132,
+            133,
+            134
+          ],
+          "length": 21,
+          "rowPeaks": [
+            33,
+            66,
+            66,
+            66,
+            33
+          ],
+          "sum": 5275
+        }
+      ],
+      "maxRestBrightness": 5280,
+      "tolerance": 0.1,
+      "fulfilled": 1,
+      "aborted": 0
+    }
+  ],
+  "failures": [
+    "FAIL zoom=0.9 native bar 3: brightness 644 vs 1377, deficit 53.2% > 10%",
+    "FAIL zoom=0.9 native bar 3: brightness 644 < 90% of Step 2's thick 1242",
+    "FAIL zoom=0.9 equal bar 3: brightness 644 vs 1377, deficit 53.2% > 10%",
+    "FAIL zoom=0.9 equal bar 3: brightness 644 < 90% of Step 2's thick 1242",
+    "FAIL zoom=1.1 native bar 2: brightness 1776 vs 2606, deficit 31.8% > 10%",
+    "FAIL zoom=1.1 native bar 4: brightness 1633 vs 2606, deficit 37.3% > 10%",
+    "FAIL zoom=1.1 native bar 2: brightness 1776 < 90% of Step 2's thick 2599",
+    "FAIL zoom=1.1 native bar 4: brightness 1633 < 90% of Step 2's thick 2599",
+    "FAIL zoom=1.1 equal bar 1: brightness 1774 vs 2606, deficit 31.9% > 10%",
+    "FAIL zoom=1.1 equal bar 2: brightness 1776 vs 2606, deficit 31.8% > 10%",
+    "FAIL zoom=1.1 equal bar 4: brightness 1633 vs 2606, deficit 37.3% > 10%",
+    "FAIL zoom=1.1 equal bar 1: brightness 1774 < 90% of Step 2's thick 2599",
+    "FAIL zoom=1.1 equal bar 2: brightness 1776 < 90% of Step 2's thick 2599",
+    "FAIL zoom=1.1 equal bar 4: brightness 1633 < 90% of Step 2's thick 2599",
+    "FAIL zoom=1.25 native bar 2: brightness 1912 vs 2818, deficit 32.2% > 10%",
+    "FAIL zoom=1.25 native bar 4: brightness 1912 vs 2818, deficit 32.2% > 10%",
+    "FAIL zoom=1.25 native bar 2: brightness 1912 < 90% of Step 2's thick 2818",
+    "FAIL zoom=1.25 native bar 4: brightness 1912 < 90% of Step 2's thick 2818",
+    "FAIL zoom=1.25 equal bar 2: brightness 1912 vs 2818, deficit 32.2% > 10%",
+    "FAIL zoom=1.25 equal bar 4: brightness 1912 vs 2818, deficit 32.2% > 10%",
+    "FAIL zoom=1.25 equal bar 2: brightness 1912 < 90% of Step 2's thick 2818",
+    "FAIL zoom=1.25 equal bar 4: brightness 1912 < 90% of Step 2's thick 2818",
+    "FAIL zoom=1.75 native bar 2: brightness 3994 vs 5270, deficit 24.2% > 10%",
+    "FAIL zoom=1.75 native bar 4: brightness 3994 vs 5270, deficit 24.2% > 10%",
+    "FAIL zoom=1.75 native bar 2: brightness 3994 < 90% of Step 2's thick 5270",
+    "FAIL zoom=1.75 native bar 4: brightness 3994 < 90% of Step 2's thick 5270",
+    "FAIL zoom=1.75 equal bar 2: brightness 3994 vs 5270, deficit 24.2% > 10%",
+    "FAIL zoom=1.75 equal bar 4: brightness 3994 vs 5270, deficit 24.2% > 10%",
+    "FAIL zoom=1.75 equal bar 2: brightness 3994 < 90% of Step 2's thick 5270",
+    "FAIL zoom=1.75 equal bar 4: brightness 3994 < 90% of Step 2's thick 5270"
+  ]
+}

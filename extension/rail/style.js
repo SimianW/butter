@@ -2,7 +2,7 @@
 // the trip's fragment (`ButterRailTrip.CSS`) in it. A constant; rail/rail.js puts it in the
 // `<style>` it builds. Loads after rail/model.js (the rail's sizes) and rail/trip.js.
 (() => {
-  const { RAIL_W, PAD, MORE_H, REST } = globalThis.ButterRailModel || require('./model.js');
+  const { RAIL_W, BAR_H, PAD, MORE_H, REST } = globalThis.ButterRailModel || require('./model.js');
   const ButterRailTrip = globalThis.ButterRailTrip || require('./trip.js');
   const CSS = `
     :host { all: initial; position: fixed; top: 0; right: 0; width: 0; height: 0; z-index: 20; display: block;
@@ -34,8 +34,8 @@
     .tick.busy .bar { animation: busy .7s ease-in-out infinite alternate; }
     @keyframes busy { to { opacity: .25; } }
     @keyframes dots { from { opacity: 1; } to { opacity: .2; } }
-    .bar { width: 12px; height: 2px; border-radius: 2px; background: currentColor; opacity: ${REST.o};
-      transform-origin: right center; }
+    .bar { position: relative; width: 12px; height: ${BAR_H}px; border-radius: 2px; background: currentColor;
+      opacity: ${REST.o}; transform-origin: right center; }
     button:focus-visible { outline: 2px solid #10a37f; outline-offset: -1px; border-radius: 4px; }
     .marks { position: absolute; inset: 0; pointer-events: none; }
     .bdot { position: absolute; top: 0; right: 6px; border-radius: 50%; background: var(--dot); pointer-events: none; }

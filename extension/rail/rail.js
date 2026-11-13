@@ -439,13 +439,14 @@
     }
     while (ticks.length > n) ticks.pop().remove();
     bars = ticks.map((b) => b.firstChild);
-    const l = model.layout(innerWidth);
+    const l = model.layout(innerWidth, devicePixelRatio);
     ticks.forEach((b, i) => {
       b.classList.toggle('busy', l.busy[i]);
     });
     l.bars.forEach(([transform, opacity], j) => {
       bars[j].style.transform = transform;
       bars[j].style.opacity = opacity;
+      bars[j].style.top = l.nudges[j] ? `${l.nudges[j]}px` : ''; // onto the device-pixel grid
     });
     drawMarks();
     more.hidden = l.moreHidden;

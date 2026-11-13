@@ -21,6 +21,8 @@
   after a jump from the question rail.
 - Fixed a jump from the question rail to the next question sometimes running for seconds and then
   showing the question you started from.
+- Fixed one tick on the rail looking thinner and fainter than the others at some browser zoom
+  levels.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 

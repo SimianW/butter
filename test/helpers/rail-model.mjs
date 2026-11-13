@@ -18,8 +18,9 @@ export const box = (height = 900, gutter = 0) => ({
   width: 1000,
 });
 
-// A rail over `count` questions q0…, rendered and settled, as rail.js would leave it.
-export function rail({ count = 5, hasPrev = false, height = 900, gutter = 0 } = {}) {
+// A rail over `count` questions q0…, rendered and settled, as rail.js would leave it, at device
+// pixel ratio `dpr`.
+export function rail({ count = 5, hasPrev = false, height = 900, gutter = 0, dpr = 1 } = {}) {
   const m = RailModel();
   let now = 10_000,
     due = false,
@@ -60,7 +61,7 @@ export function rail({ count = 5, hasPrev = false, height = 900, gutter = 0 } = 
     render(off = false) {
       m.questions();
       if (!m.shows(off)) return void m.hide();
-      const l = m.layout(1200);
+      const l = m.layout(1200, dpr);
       styles = l.bars.map((x) => [...x]);
       r.decorate();
       r.kick();

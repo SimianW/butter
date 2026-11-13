@@ -1,0 +1,86 @@
+CONTROL device=1 without Butter: host=0 brightness=0
+MEASURE device=1 native: sums=9496,1516,1516,1516 rows=2,2,2,2 lengths=21,12,12,12
+MEASURE device=1 equal: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE device=1 no-transform: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE device=1 square: sums=1584,1584,1584,1584 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE device=1 layer: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+CONTROL device=0.9 without Butter: host=0 brightness=0
+MEASURE device=0.9 native: sums=7725,1222,1180,1180 rows=3,2,2,2 lengths=20,10,10,10
+MEASURE device=0.9 equal: sums=1214,1222,1180,1180 rows=2,2,2,2 lengths=10,10,10,10
+MEASURE device=0.9 no-transform: sums=1214,1222,1180,1180 rows=2,2,2,2 lengths=10,10,10,10
+MEASURE device=0.9 square: sums=1268,1278,1235,1235 rows=2,2,2,2 lengths=11,11,11,11
+MEASURE device=0.9 layer: sums=1214,1225,1215,1215 rows=3,2,2,2 lengths=10,10,10,10
+MEASURE device=0.9 phase: sums=1180,1265,1214,1222 rows=2,2,2,2 lengths=10,10,10,10
+CONTROL device=1.1 without Butter: host=0 brightness=0
+MEASURE device=1.1 native: sums=11746,1830,1644,1846 rows=3,2,2,3 lengths=24,13,12,13
+MEASURE device=1.1 equal: sums=1852,1830,1644,1846 rows=3,2,2,3 lengths=13,13,12,13
+MEASURE device=1.1 no-transform: sums=1852,1830,1644,1846 rows=3,2,2,3 lengths=13,13,12,13
+MEASURE device=1.1 square: sums=1884,1881,1870,1884 rows=3,2,2,3 lengths=14,14,14,14
+MEASURE device=1.1 layer: sums=1869,1844,1882,1856 rows=3,2,3,3 lengths=13,13,13,13
+CONTROL device=1.25 without Butter: host=0 brightness=0
+MEASURE device=1.25 native: sums=14847,2347,2347,2347 rows=4,3,3,3 lengths=27,15,15,15
+MEASURE device=1.25 equal: sums=2347,2347,2347,2347 rows=3,3,3,3 lengths=15,15,15,15
+MEASURE device=1.25 no-transform: sums=2347,2347,2347,2347 rows=3,3,3,3 lengths=15,15,15,15
+MEASURE device=1.25 square: sums=2436,2428,2436,2428 rows=3,3,3,3 lengths=15,15,15,15
+MEASURE device=1.25 layer: sums=2387,2376,2387,2376 rows=3,3,3,3 lengths=15,15,15,15
+CONTROL device=1.5 without Butter: host=0 brightness=0
+MEASURE device=1.5 native: sums=21377,3376,3376,3376 rows=5,3,3,3 lengths=33,19,19,19
+MEASURE device=1.5 equal: sums=3376,3376,3376,3376 rows=3,3,3,3 lengths=19,19,19,19
+MEASURE device=1.5 no-transform: sums=3376,3376,3376,3376 rows=3,3,3,3 lengths=19,19,19,19
+MEASURE device=1.5 square: sums=3526,3526,3526,3526 rows=3,3,3,3 lengths=19,19,19,19
+MEASURE device=1.5 layer: sums=3412,3412,3412,3412 rows=3,3,3,3 lengths=19,19,19,19
+CONTROL device=1.75 without Butter: host=0 brightness=0
+MEASURE device=1.75 native: sums=29247,4587,4560,4587 rows=5,4,4,4 lengths=38,21,21,21
+MEASURE device=1.75 equal: sums=4560,4587,4560,4587 rows=4,4,4,4 lengths=21,21,21,21
+MEASURE device=1.75 no-transform: sums=4560,4587,4560,4587 rows=4,4,4,4 lengths=21,21,21,21
+MEASURE device=1.75 square: sums=4784,4798,4784,4798 rows=4,4,4,4 lengths=21,21,21,21
+MEASURE device=1.75 layer: sums=4628,4609,4628,4609 rows=4,4,4,4 lengths=21,21,21,21
+MEASURE zoom=1 native: sums=9496,1516,1516,1516 rows=2,2,2,2 lengths=21,12,12,12
+MEASURE zoom=1 equal: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE zoom=1 no-transform: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE zoom=1 square: sums=1584,1584,1584,1584 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE zoom=1 layer: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE zoom=0.9 native: sums=7839,1242,634,1242 rows=3,2,1,2 lengths=18,10,10,10
+MEASURE zoom=0.9 equal: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 no-transform: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 square: sums=1310,1310,650,1310 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 layer: sums=1382,1382,1382,1382 rows=2,2,2,2 lengths=11,11,11,11
+MEASURE zoom=0.9 phase: sums=1242,1242,1242,1242 rows=2,2,2,2 lengths=10,10,10,10
+MEASURE zoom=1.1 native: sums=11117,1763,2599,1763 rows=3,2,3,2 lengths=25,14,14,14
+MEASURE zoom=1.1 equal: sums=1763,1763,2599,1763 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 no-transform: sums=1763,1763,2599,1763 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 square: sums=1833,1833,2756,1833 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 layer: sums=1643,1643,1643,1643 rows=2,2,2,2 lengths=13,13,13,13
+MEASURE zoom=1.25 native: sums=17671,1912,2818,1912 rows=3,2,3,2 lengths=27,15,15,15
+MEASURE zoom=1.25 equal: sums=2818,1912,2818,1912 rows=3,2,3,2 lengths=15,15,15,15
+MEASURE zoom=1.25 no-transform: sums=2818,1912,2818,1912 rows=3,2,3,2 lengths=15,15,15,15
+MEASURE zoom=1.25 square: sums=2970,1980,2970,1980 rows=3,2,3,2 lengths=15,15,15,15
+MEASURE zoom=1.25 layer: sums=2820,2820,2820,2820 rows=3,3,3,3 lengths=15,15,15,15
+MEASURE zoom=1.5 native: sums=21386,3412,3412,3412 rows=3,3,3,3 lengths=32,18,18,18
+MEASURE zoom=1.5 equal: sums=3412,3412,3412,3412 rows=3,3,3,3 lengths=18,18,18,18
+MEASURE zoom=1.5 no-transform: sums=3412,3412,3412,3412 rows=3,3,3,3 lengths=18,18,18,18
+MEASURE zoom=1.5 square: sums=3564,3564,3564,3564 rows=3,3,3,3 lengths=18,18,18,18
+MEASURE zoom=1.5 layer: sums=3414,3414,3414,3414 rows=3,3,3,3 lengths=18,18,18,18
+MEASURE zoom=1.75 native: sums=33458,4000,5270,4000 rows=4,3,4,3 lengths=38,21,21,21
+MEASURE zoom=1.75 equal: sums=5270,4000,5270,4000 rows=4,3,4,3 lengths=21,21,21,21
+MEASURE zoom=1.75 no-transform: sums=5270,4000,5270,4000 rows=4,3,4,3 lengths=21,21,21,21
+MEASURE zoom=1.75 square: sums=5540,4155,5540,4155 rows=4,3,4,3 lengths=21,21,21,21
+MEASURE zoom=1.75 layer: sums=5280,5280,5280,5280 rows=4,4,4,4 lengths=21,21,21,21
+FAIL device=1.1 native bar 3: brightness 1644 vs 1846, deficit 10.9% > 10%
+FAIL device=1.1 equal bar 3: brightness 1644 vs 1852, deficit 11.2% > 10%
+FAIL zoom=0.9 native bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+FAIL zoom=0.9 equal bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+FAIL zoom=1.1 native bar 2: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 native bar 4: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 1: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 2: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 4: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.25 native bar 2: brightness 1912 vs 2818, deficit 32.2% > 10%
+FAIL zoom=1.25 native bar 4: brightness 1912 vs 2818, deficit 32.2% > 10%
+FAIL zoom=1.25 equal bar 2: brightness 1912 vs 2818, deficit 32.2% > 10%
+FAIL zoom=1.25 equal bar 4: brightness 1912 vs 2818, deficit 32.2% > 10%
+FAIL zoom=1.75 native bar 2: brightness 4000 vs 5270, deficit 24.1% > 10%
+FAIL zoom=1.75 native bar 4: brightness 4000 vs 5270, deficit 24.1% > 10%
+FAIL zoom=1.75 equal bar 2: brightness 4000 vs 5270, deficit 24.1% > 10%
+FAIL zoom=1.75 equal bar 4: brightness 4000 vs 5270, deficit 24.1% > 10%
+RED: 17 unequal-rest-bar comparisons; tolerance=10%; browser=158.0.8127.18
