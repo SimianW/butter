@@ -18,9 +18,10 @@ const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
 export const conversation = '12345678-1234-1234-1234-123456789abc';
 
 // `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
-// than straight in the scroller.
+// than straight in the scroller. `width`: the scroller's width (the rail needs 560 px).
 export function setup({
   count = 5,
+  width = 1000,
   hasPrev = false,
   height = 900,
   gutter = 0,
@@ -93,7 +94,7 @@ export function setup({
     clientHeight: height,
     clientWidth: 1000 - gutter,
     offsetWidth: 1000,
-    getBoundingClientRect: () => ({ top: 0, bottom: height, left: 0, right: 1000, width: 1000 }),
+    getBoundingClientRect: () => ({ top: 0, bottom: height, left: 0, right: width, width }),
     scrollTo({ top }) {
       this.scrollTop = top;
     },

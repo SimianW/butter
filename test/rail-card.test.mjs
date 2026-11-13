@@ -237,3 +237,42 @@ test('unshow forgets the card shown, so the next hover fills it afresh', () => {
   assert.equal(r.m.shown, -2);
   assert.equal(r.m.hover(1).text, 'Question 1');
 });
+
+test('one question: its card says 1 / 1, its bookmark card lists the bookmark, seek and keys stay on the one tick', () => {
+  const r = rail({ count: 1 });
+  const tip = r.point(0);
+  assert.deepEqual(
+    [tip.meta, tip.text, tip.cy, tip.inert, tip.question],
+    ['1 / 1', 'Question 0', r.m.tickY(0), true, null],
+  );
+  r.m.leave();
+  r.m.hover(-2);
+  r.marks({ q0: [false] });
+  const bm = r.point(0);
+  assert.equal(bm.meta, '1 / 1');
+  assert.equal(bm.inert, false, 'it takes the pointer, for its row and ×');
+  assert.equal(bm.question.id, 'q0');
+  assert.equal(bm.question.group, 'Bookmark · question 1 of 1');
+  assert.deepEqual(
+    bm.question.card.rows.map((b) => b.key),
+    ['q0-0'],
+  );
+  assert.equal(bm.cy, r.m.tickY(0));
+  // Removed with its ×: the card goes back to the tick.
+  r.m.setMarks(r.m.rev, groups({}));
+  assert.deepEqual(r.m.refill(0), { back: 0 });
+  // The keyboard: one stop, so the arrows stay on it; ArrowLeft enters the card.
+  r.marks({ q0: [false] });
+  assert.deepEqual(r.m.railKey('ArrowDown', 0, 0, 1), { stop: 0 });
+  assert.deepEqual(r.m.railKey('ArrowUp', 0, 0, 1), { stop: 0 });
+  assert.deepEqual(r.m.railKey('ArrowLeft', 0, 0, 1), { card: 0 });
+  // The seek card on the one tick.
+  r.m.seek({ state: 'dragging', id: 'q0', n: 1, total: 1 });
+  assert.deepEqual(r.m.seekCard(), {
+    meta: 'Question 1 of 1',
+    loading: false,
+    text: 'Question 0',
+    cy: r.m.tickY(0),
+    busy: -1,
+  });
+});

@@ -236,8 +236,7 @@
         return qs.length;
       },
       shows(off) {
-        const n = qs.length;
-        return !off && !!box && box.width >= 560 && n >= 1 && n + (convs.hasPrev ? 1 : 0) >= 2;
+        return !off && !!box && box.width >= 560 && qs.length >= 1;
       },
       hide() {
         geo = null;

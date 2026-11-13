@@ -204,7 +204,8 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
 - Review tier: `python3 scripts/review-tier.py [base]` (default `origin/main`) prints the tier from the changed files. A `.js`, `.mjs`, `.cjs` or `.css` file changed only in comments and whitespace is tier 0 (CSS holding a backslash or `url(` is never treated so), and a manifest `content_scripts` change that only edits the entries' `js` and `css` lists (no file moved between entries) is tier 1. The JavaScript comparison runs `scripts/same-code.mjs` with espree, so run `npm ci` first. Its tests run with `python3 -m unittest discover -s scripts -p 'test_*.py'`.
 - PR body: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py [base]` runs CI's `pr-body` check locally: the Review section's `- **Tier:** N` item, its `- **Verdict:** approved at <sha>` item (or `overridden by <user> at <sha>`, when the user ships a stuck review-loop) for tiers 1 and 2, and no tier 1 or 2 change after the reviewed commit, by the same rules (so a comment-only fix after the approval passes).
 - History rail: the rail presentation model runs under `node --test` with no DOM, through its
-  interface: `test/rail-model.test.mjs` (the inset and when the rail shows, history prepended during
+  interface: `test/rail-model.test.mjs` (the inset and when the rail shows, from one question; the
+  one-question rail's single lit tick and its dot; history prepended during
   a wave keeping each tick with its question, what lights a tick — seek over opening over a flying jump
   over the lit band and pinned —, the opening snap, the rail turned off between frames, a frame older
   than the last kick, convergence and quiet at rest, the dots through every wave frame, dense and
@@ -213,7 +214,7 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   preview and the active question), `test/rail-card.test.mjs` (the card's kinds, contents
   and place, holding and leaving, the seek card, keys into and in a card, the card following a
   deletion, the earlier wait on the marks' items revision and `placed`, the 400-character cuts,
-  `unshow`), both over
+  `unshow`, a one-question chat's "1 / 1" card, its seek card and its single stop), both over
   `test/helpers/rail-model.mjs`, which drives the model as `rail.js` does;
   `test/rail-conversations.test.mjs` (pages, sends, reconciliation, revisions) and
   `test/rail-wave.test.mjs` (ticks keyed by question, the interval clamp, convergence).
@@ -225,8 +226,8 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
   cancellation, the jump's wiring (a far trip's busy tick, a remounted target followed, card rows'
   bookmark and earlier jumps with the three dots' blink, an earlier trip that finds its bookmark
   putting the dots' card away, held after a pointer trip, focus on its tick after a keyboard one),
-  the seek card's wiring, the dots' fade-out timer, keyboard focus, and the card's leave grace and
-  the page's Escape through the rail. The rail's
+  the seek card's wiring, the dots' fade-out timer, keyboard focus (the arrows on a one-question
+  rail's only tick), and the card's leave grace and the page's Escape through the rail. The rail's
   modules run alone over the same fake DOM (`test/helpers/rail-dom.mjs`, with recording observers):
   `test/rail-turns.test.mjs` (the turn tracker: a hidden copy's scroller taking over, the lit band,
   `estimate`, `measure`, `retarget` dropping only unseen records, scroll detection and the scroll

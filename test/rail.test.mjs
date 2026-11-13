@@ -301,9 +301,43 @@ test('a seek ending with the pointer on the rail: the seek look goes and the tic
 });
 
 test("the page's Escape before the rail is built does nothing", () => {
-  const nav = setup({ count: 1 });
-  assert.equal(nav.host, undefined, 'a one-question chat: no rail');
+  const nav = setup({ count: 1, width: 559 });
+  assert.equal(nav.host, undefined, 'a chat narrower than 560 px: no rail');
   assert.doesNotThrow(() => nav.window.emit('keydown', { key: 'Escape' }, 'capture'));
+});
+
+test('one question: one tick and its dot; the arrows keep focus on it; its card lists the bookmark; a click jumps', () => {
+  const nav = setup({ count: 1 });
+  assert.equal(nav.host.getAttribute('data-on'), '', 'the rail shows');
+  assert.equal(nav.ticks().length, 1);
+  assert.equal(nav.select('.more').hidden, true);
+  assert.equal(nav.host.style['--y'], '389px');
+  nav.setMarks({ q0: [false] });
+  nav.flush();
+  assert.deepEqual(
+    nav.dots().map(({ q, center, d }) => [q, center, d]),
+    [[0, 17, 4]],
+  );
+  const rail = nav.select('.rail'),
+    [tick] = nav.ticks(),
+    key = (el, k, target) => el.emit('keydown', { key: k, target, preventDefault() {} });
+  tick.focus();
+  rail.emit('focusin', { target: tick });
+  assert.equal(nav.select('.meta').textContent, '1 / 1');
+  for (const k of ['ArrowDown', 'ArrowUp']) {
+    assert.doesNotThrow(() => key(rail, k, tick));
+    assert.equal(FakeElement.focused, tick, `${k} stays on the only tick`);
+  }
+  key(rail, 'ArrowLeft', tick);
+  const card = nav.select('.card');
+  assert.ok(card.classList.contains('show'));
+  assert.equal(card.getAttribute('aria-label'), 'Bookmark · question 1 of 1');
+  const [go] = nav.select('.bmc').querySelectorAll('.go');
+  assert.equal(FakeElement.focused, go, 'its one row');
+  key(card, 'ArrowRight', go);
+  assert.equal(FakeElement.focused, tick);
+  rail.emit('click', { detail: 0, target: tick });
+  assert.equal(nav.scroller.scrollTop, nav.turns[0].top - 64, 'the jump to the question');
 });
 
 test("card rows jump: a tick's bookmark lands on it; the dots' bookmark blinks the dots until stopped", () => {
