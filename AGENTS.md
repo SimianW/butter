@@ -76,9 +76,23 @@ Each bullet is one change the user can notice, opening with a past-tense verb ("
 the bullet short, and give the measured number for a performance change when there is one. Leave out changes only developers see (tests, dev
 build, CI).
 
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as GitHub issues in `SimianW/butter` (`gh`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default triage labels, each named after its role. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/agents/domain.md`.
+
 ## Workflow
 
-- Every change reaches `main` through a PR. Before merging, run
+- PRs: every change reaches `main` through a PR. Before merging, run
   `python3 scripts/review-tier.py origin/main` and put the tier it prints in the PR body's
   `## Review` section as `- **Tier:** N` (the `pr` skill); after an APPROVE, `review-loop` adds
   the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items (the Verdict reads
@@ -89,22 +103,28 @@ build, CI).
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
   final diff, at the round budget the tier sets. Do not wait for the Codex GitHub bot's review
   before merging: if it has already posted when CI is green, handle its comments first; comments
-  that arrive after the merge become a follow-up issue. Every gate review before merge,
-  including when the user asks to review a PR or branch, runs `review-loop`; only `implement` and
-  `implement-spec` work adds a `code-review` pass before it (see Features).
+  that arrive after the merge become a follow-up issue.
+- Reviews: every gate review before merge, including when the user asks to review a PR or branch,
+  runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
+  it (see New features).
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.
+- Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams. The `tdd`,
+  `to-spec` and `diagnosing-bugs` skills use them without asking the user.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
-- Features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
+- New features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
   `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
-  into tickets and `implement-spec <spec>` builds them. In Butter their test seams are the ones
-  in docs/bugfix.md step 2. Their review runs `code-review` against the spec issue; sort its
-  findings into fix now / follow-up issue / drop, one line of reason each, and stop for the user
-  to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`. After the
+  into tickets and `implement-spec <spec>` builds them. Their review runs `code-review` against
+  the spec issue; sort its findings into fix now / follow-up issue / drop, one line of reason
+  each, and stop for the user to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`. After the
   fixes, `review-loop` gates the final diff at its tier, with the approved refactors listed in
   its Intent. The work ends in a PR whose body carries `Closes #<issue>` and the Review section's
   `- **Tier:** N` item. These four skills are user-only, so the user starts each one: when the work reaches a
   step, tell the user it is time and give the command to type, such as `/to-spec`.
+- Subagents: when a skill calls for a subagent, choose its model by the work it does, from the
+  delegation table in your global instructions: an implementer or merger is Build, a reviewer is
+  Hunt, an explorer is Chore. A brief for delegated `implement` work names the `tdd` skill and the
+  seams file.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
