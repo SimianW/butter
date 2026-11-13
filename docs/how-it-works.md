@@ -153,7 +153,9 @@ The quote is the selected text. A selection may include formulas: ChatGPT render
 and keeps each one's LaTeX source in `annotation[encoding="application/x-tex"]`, so the quote
 writes each formula it touches, even partly, as its whole source: `$…$` inline, `$$…$$` on its own
 line for display math, in document order with the text around it (`ButterBranch.quoteOf`; the
-question box shows the same quote on one line). A formula without a source, images and other
+question box shows the same quote on one line). The quote leaves out ChatGPT's citation tags (the
+source name and "+N" pill after a sentence), so a selection across or into one quotes the text
+around it; their favicons don't count as images. A formula without a source, images and other
 non-text regions, editable controls, and selections spanning more than one reply get no button.
 
 There is no button where ChatGPT can't make a branch (`ButterBranch.hiddenReason`, facts from

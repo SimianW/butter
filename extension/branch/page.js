@@ -87,6 +87,11 @@
   // .katex inline, .katex-display > .katex for display math, each keeping its LaTeX source in
   // annotation[encoding="application/x-tex"]; the wrapper's data-math-source holds it too.
   const FORMULA = '.katex';
+  // A citation tag: the source pill after a sentence, inside a user-select: none wrapper, holding
+  // an icon <svg>, a favicon <img> and the truncated source name (live, 2026-11-11:
+  // test/fixtures/page/live-snapshot.html), and a "+N" count when it cites more than one source.
+  // It is not the reply's text: the quote leaves it out, and its images don't exclude a selection.
+  const CITATION = '[data-testid="chatgpt-citation"]';
   const quoteDom = {
     formula(el) {
       const display = el.matches('.katex-display');
@@ -99,6 +104,7 @@
       return { tex, display };
     },
     layout(el) {
+      if (el.closest(CITATION)) return 'hidden';
       const { display } = getComputedStyle(el);
       if (display === 'none') return 'hidden';
       if (display === 'table-cell') return 'cell';
@@ -245,7 +251,8 @@
     facts,
     quoteDom,
     FORMULA,
-    // A selection may not start or end in these, nor touch NON_TEXT, outside a formula.
+    CITATION,
+    // A selection may not start or end in these, nor touch NON_TEXT, outside a formula or citation.
     EXCLUDED: 'textarea, input, [contenteditable="true"], math, img, svg',
     NON_TEXT: 'math, img, video, canvas, iframe',
   };

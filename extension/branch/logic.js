@@ -115,7 +115,7 @@
   // the page's nodes, so this runs on any tree with nodeType, nodeName, data, childNodes and
   // parentNode:
   //   formula(el) → { tex, display } for a formula's element, else null;
-  //   layout(el) → 'inline', 'line', 'paragraph', 'cell' or 'hidden';
+  //   layout(el) → 'inline', 'line', 'paragraph', 'cell' or 'hidden' (left out of the quote);
   //   pre(el) → true when whitespace inside it is kept.
   // Returns null when a touched formula has no LaTeX source.
   const quoteOf = (range, dom) => {
@@ -134,7 +134,11 @@
     const outer = formulaOf(root);
     if (outer) root = outer.parentNode || outer;
     let pre = false;
-    for (let n = root; n; n = n.parentNode) if (n.nodeType === 1 && dom.pre(n)) pre = true;
+    for (let n = root; n; n = n.parentNode)
+      if (n.nodeType === 1) {
+        if (dom.layout(n) === 'hidden') return ''; // all of it is inside a hidden element
+        if (dom.pre(n)) pre = true;
+      }
 
     // The subtree in document order: text, formulas, and line gaps where blocks start and end.
     const items = [],
@@ -163,10 +167,14 @@
     };
     walk(root, pre);
 
-    // A boundary inside a formula moves out to take the whole formula.
+    // A boundary inside a formula moves out to take the whole formula; one inside a hidden
+    // element (never walked) moves out to that element's place.
     const point = (container, offset, end) => {
       const formula = formulaOf(container);
       if (formula) return { i: startOf.get(formula), off: end ? Infinity : 0 };
+      let walked = container;
+      while (!startOf.has(walked)) walked = walked.parentNode;
+      if (walked !== container) return { i: startOf.get(walked), off: 0 };
       if (container.nodeType === 3) return { i: startOf.get(container), off: offset };
       const child = container.childNodes[offset];
       return { i: child ? startOf.get(child) : endOf.get(container), off: 0 };
