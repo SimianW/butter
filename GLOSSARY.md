@@ -109,7 +109,7 @@ tick's identity, the rail's geometry, the hover wave, which ticks are lit, the c
 feeds it measured boxes), patches the shadow DOM from what the model returns (the card through its
 own adapter, `rail/card.js`), and schedules frames only while the model says something moves.
 _Avoid_: rail state, view model
-_Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`
+_Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`, `rail/grid.js`
 
 **Turn tracker**:
 What the rail knows of ChatGPT's turns on the page: the visible scroller (following a hidden chat
@@ -131,6 +131,13 @@ The ticks around the pointer swelling and easing back, each tick's progress kept
 and stepped frame by frame; frames run only while some tick still moves.
 _Avoid_: animation
 _Where_: `rail/wave.js`, `rail/model.js`
+
+**Device-pixel nudge**:
+How far, at most half a device pixel, a tick's resting line moves in layout so that its top falls
+where Chrome draws it as many device rows thick as every other tick (#115). Recomputed on each
+layout, never per wave frame.
+_Avoid_: snap, offset
+_Where_: `rail/grid.js`, `rail/model.js`
 
 **Three dots**:
 The rail's control above the first tick that stands for earlier history; clicking it loads earlier

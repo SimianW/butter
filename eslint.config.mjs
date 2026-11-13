@@ -205,6 +205,7 @@ export default [
       'extension/bookmarks/session.js',
       'extension/rail/conversations.js',
       'extension/rail/wave.js',
+      'extension/rail/grid.js',
       'extension/rail/model.js',
       'extension/rail/turns.js',
       'extension/rail/trip.js',

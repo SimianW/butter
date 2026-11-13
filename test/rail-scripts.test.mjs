@@ -10,6 +10,7 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
     'bookmarks/model.js',
     'rail/conversations.js',
     'rail/wave.js',
+    'rail/grid.js',
     'rail/model.js',
     'rail/turns.js',
     'rail/trip.js',

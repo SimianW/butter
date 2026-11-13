@@ -350,10 +350,11 @@ test('the busy tick follows the jump; the rail turns on at a 560 px chat', () =>
   assert.equal(r.m.shows(false), true);
 });
 
-test('geometry: the ticks take 85% of the free height when they are dense; the rail top is a whole pixel', () => {
+test('geometry: the ticks take 85% of the free height when they are dense, in whole 1/64 px; the rail top is a whole pixel', () => {
   const r = rail({ count: 60 });
   const css = Object.fromEntries(r.m.layout(1200).css);
-  const pitch = ((900 - 140 - 52 - 20) * 0.85) / 60;
+  // 85% of 900 - 140 - 52 - 2 × 10 px over 60 is 9.74667 px; layout keeps 623/64 px of it.
+  const pitch = 9.734375;
   assert.equal(css['--pitch'], `${pitch}px`);
   assert.equal(css['--y'], `${Math.round(406 - (20 + 60 * pitch) / 2)}px`);
   assert.notEqual(406 - (20 + 60 * pitch) / 2, Math.round(406 - (20 + 60 * pitch) / 2));
@@ -375,4 +376,47 @@ test('opening another chat forgets the seek preview and the active question', ()
   s.render();
   s.settle();
   assert.deepEqual(s.lit(), [], 'nothing pinned in the new chat');
+});
+
+test('at a fractional device pixel ratio every resting bar is drawn as thick as the others (#115)', () => {
+  // Chrome draws a bar round(bottom) - round(top) device pixels thick, its edges in device px at
+  // its layout position. A 2 px bar is H = 2 × dpr device px high, and should be drawn round(H)
+  // rows thick: its top's offset from the nearest device pixel, in [-0.5, 0.5), sits in the middle
+  // of the offsets that draw it so (worked by hand per ratio).
+  const phase = { 0.9: 0.1, 1.1: -0.1, 1.25: 0.25, 1.5: 0, 1.75: 0.25 };
+  const offset = (x) => x - Math.round(x); // in (-0.5, 0.5]; Math.round rounds a half up
+  for (const [dpr, want] of Object.entries(phase).map(([k, v]) => [Number(k), v]))
+    for (const count of [5, 200]) {
+      const r = rail({ count, dpr }),
+        l = r.render(),
+        H = 2 * dpr,
+        pitch = r.m.tickY(1) - r.m.tickY(0),
+        at = `dpr ${dpr}, ${count} questions`;
+      // Layout keeps each tick's height in 1/64 device px, so the bars' places add up.
+      assert.ok(Math.abs(pitch * dpr * 64 - Math.round(pitch * dpr * 64)) < 1e-6, at);
+      assert.equal(l.nudges.length, count, at);
+      l.nudges.forEach((dy, i) => {
+        const t = r.m.tickY(i) - 1 + dy; // the bar's nudged top, CSS px
+        const f = offset(t * dpr);
+        assert.ok(Math.abs((f === -0.5 ? 0.5 : f) - want) < 1e-6, `${at}, bar ${i}: phase ${f}`);
+        assert.ok(Math.abs(dy) <= 0.5 / dpr + 1e-9, `${at}, bar ${i}: nudge ${dy}`);
+        for (const e of [-1 / 64, 0, 1 / 64]) {
+          const top = (t + e) * dpr;
+          assert.equal(Math.round(top + H) - Math.round(top), Math.round(H), `${at}, bar ${i}${e}`);
+        }
+      });
+    }
+  // At 100% with a whole-pixel pitch every bar already sits on the grid: no nudge, main's styles.
+  const r = rail({ dpr: 1 });
+  r.kick(['q2']);
+  r.settle();
+  const l = r.render();
+  assert.deepEqual(l.nudges, [0, 0, 0, 0, 0]);
+  assert.deepEqual(l.bars, [
+    ['scale(1.000, 1.000)', '0.280'],
+    ['scale(1.000, 1.000)', '0.280'],
+    ['scale(1.750, 1.000)', '1.000'],
+    ['scale(1.000, 1.000)', '0.280'],
+    ['scale(1.000, 1.000)', '0.280'],
+  ]);
 });

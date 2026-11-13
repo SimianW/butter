@@ -162,3 +162,177 @@ The full matrix was run repeatedly with the same 17 failures; narrower 90% and 1
 - The task deliberately stops after Control and Red. No Green fix, mockup/product UI change, issue/PR action, push, review gate or release was performed.
 
 `npm run format:check` and `npm run lint` both exit 0. Their actual output is in [format-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/format-output.txt) and [lint-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/lint-output.txt). Commands, outputs, pilot limitations and local commit/done checks are recorded in [commands.md](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/commands.md).
+
+## Step 3 — Green
+
+Three mechanisms were tried. The first two were rejected; the third, a nudge of each bar in
+layout, is the fix.
+
+### Attempt 1: a layer per bar (rejected for its memory)
+
+`will-change: transform` on `.bar` made every resting tick equal at every real zoom (native sums,
+ticks 2–4: 90% `1382,1382,1330`; 110% `1643,1643,1646`; 125% `2820,2820,2836`; 175%
+`5280,5280,5345`; 100% `1516,1516,1516`; [layer-output.txt](layer-output.txt)). On a 200-tick rail
+it cost about one compositor layer and 40 KiB per tick ([layer-cost.json](layer-cost.json),
+[layer-cost-output.txt](layer-cost-output.txt)):
+
+| Zoom | Build         | Layers at rest | Peak in sweep | cc tile memory   | tile + resource memory, rest / after sweep | rAF median / p95 |
+| ---- | ------------- | -------------- | ------------- | ---------------- | ------------------------------------------ | ---------------- |
+| 100% | before        | 8              | 10            | 17.0 MiB         | 25.8 / 28.5 MiB                            | 16.7 / 16.8 ms   |
+| 100% | layer per bar | 209            | 270           | 22.2 MiB (+5.25) | 33.7 / 36.6 MiB (+7.9 / +8.1)              | 16.7 / 16.8 ms   |
+| 90%  | before        | 8              | 10            | 17.2 MiB         | 26.0 / 28.3 MiB                            | 16.7 / 16.8 ms   |
+| 90%  | layer per bar | 235            | 318           | 22.9 MiB (+5.75) | 34.6 / 36.9 MiB (+8.6 / +8.6)              | 16.7 / 16.8 ms   |
+
+A bar with its own layer also keeps the raster scale it was first drawn at: at 100% the active
+tick's three end pixels per side changed (`144,224,236` → `177,195,228`).
+
+### Attempt 2: a nudge in the bar's transform (rejected: it cannot change thickness)
+
+Each bar's inline transform became `translateY(dy) scale(x, y)`, with `dy` putting its resting top
+on a whole device pixel. `getBoundingClientRect` put every nudged top on a whole device pixel (at
+125%: 480, 498, 515, 533), yet the bars stayed unequal
+([transform-nudge-measurements.json](transform-nudge-measurements.json)):
+
+| Zoom | Equal-arm sums, bars 1–4 | Nudge (CSS px), bars 1–4  |
+| ---- | ------------------------ | ------------------------- |
+| 90%  | 1252, 1252, 644, 1377    | −0.444, 0, +0.444, −0.222 |
+| 110% | 1774, 1776, 2606, 1633   | +0.364, 0, −0.364, +0.182 |
+| 125% | 2818, 1912, 2818, 1912   | 0, +0.4, 0, +0.4          |
+| 175% | 5270, 3994, 5270, 3994   | 0, +0.286, 0, +0.286      |
+
+Chrome rounds a box's edges to device pixels at its layout position, before its transform: a bar
+is drawn `round(bottom) − round(top)` device rows thick, and a transform only moves the rows already
+chosen. A fixture-only probe that applied the same `dy` as `position: relative; top: dy` made all
+four bars equal at 90%, 110% and 125%, but not at 175%, where the 3.5-device-px bar aimed exactly at
+a pixel edge put its bottom on a rounding boundary and two bars fell 1/64 px short
+([layout-nudge-probe-measurements.json](layout-nudge-probe-measurements.json)).
+
+### The fix: each bar nudged in layout to a safe phase
+
+- `extension/rail/grid.js` (new, loaded before `rail/model.js`; `model.js` is at its 500-line cap)
+  holds the pure functions. With `H = 2 × dpr` the bar's height in device px and `T = round(H)`, a
+  bar is drawn `T` rows thick when its top's offset `f` from the nearest device pixel, in
+  `[−0.5, 0.5)`, satisfies `T − 0.5 ≤ f + H < T + 0.5`. The target phase `f*` is the middle of
+  that range within `[−0.5, 0.5)`: 0 at 100% and 150%, 0.1 at 90%, −0.1 at 110%, 0.25 at 125% and
+  175%. A bar's nudge is the smallest move, at most half a device pixel, that brings its resting
+  top to `f*`.
+- `layout(innerWidth, dpr)` in `rail/model.js` keeps the pitch in whole 1/64 **device** px
+  (rounded down), keeps the rail's top on a device pixel, and returns one nudge per bar.
+  `rail/rail.js` writes it as the bar's inline `top` on layout only, never per wave frame, and
+  writes no `top` when the nudge is 0. `.bar` gets `position: relative`. The bars' inline
+  `transform` strings are exactly what they are on main.
+- Layout re-runs on zoom through the scroller's ResizeObserver; no listener was added. Both
+  harnesses now draw the rail at 100% and then zoom, so every real-zoom result below comes from
+  that re-layout.
+
+#### Fixture harness: red without the fix, green with it
+
+`OUT=/tmp/rtt-green xvfb-run -a node lab/harness/rail-tick-thin.mjs` with the fix: exit **0**,
+`RED: 0 real-zoom failures, 25 device-scale reports`
+([green-output.txt](green-output.txt), [green-measurements.json](green-measurements.json)).
+With the product files reverted (`git stash push -u -- extension`):
+`OUT=/tmp/rtt-red ...`: exit **1**, `RED: 37 real-zoom failures, 10 device-scale reports`
+([without-fix-output.txt](without-fix-output.txt)).
+
+The harness asserts on real zoom only:
+
+- brightness: no resting tick more than 10% below the brightest resting tick (unchanged);
+- thickness: each resting tick has `round(2 × dpr)` full-strength rows. A row is full-strength
+  when its brightest pixel is more than half of the full-coverage value, which is the brightest
+  pixel of any resting bar in that capture (66 of 255: `#ececec` at opacity 0.28 on black). An
+  antialiased edge row that is half covered or less reaches at most half of that and does not count
+  (the 33 rows in the layout probe);
+- place: each bar's `getBoundingClientRect().top` is within 1/64 CSS px of the model's top,
+  which is the rail's `--y`, its 10 px padding, the three dots' 16 px row when shown, `i` pitches,
+  the 2 px bar centred in its tick and the bar's inline `top`. No constant offset showed up.
+
+Real zoom, all-at-rest `equal` arm (native arm in brackets for ticks 2–4):
+
+| Zoom | Target rows | Without the fix: sums, full rows                   | With the fix: sums, full rows | Top vs model, 1/64 device px |
+| ---- | ----------- | -------------------------------------------------- | ----------------------------- | ---------------------------- |
+| 90%  | 2           | 1242, 1242, **634**, 1242; 2, 2, **1**, 2          | 1252 ×4 (1252 ×3); 2 ×4       | 0.6, −0.4, 0.6, 0.6          |
+| 100% | 2           | 1516 ×4; 2 ×4                                      | 1516 ×4 (1516 ×3); 2 ×4       | 0 ×4                         |
+| 110% | 2           | 1763, 1763, **2599**, 1763; 2, 2, **3**, 2         | 1776 ×4 (1776 ×3); 2 ×4       | −0.6, 0.4, 0.4, −0.6         |
+| 125% | 3           | 2818, **1912**, 2818, **1912**; 3, **2**, 3, **2** | 2818 ×4 (2818 ×3); 3 ×4       | 0 ×4                         |
+| 150% | 3           | 3412 ×4; 3 ×4                                      | 3412 ×4 (3412 ×3); 3 ×4       | 0 ×4                         |
+| 175% | 4           | 5270, **4000**, 5270, **4000**; 4, **3**, 4, **3** | 5270 ×4 (5270 ×3); 4 ×4       | −1, 1, −1, 1                 |
+
+Device-scale emulation (Playwright `deviceScaleFactor`) is not reached by the fix, and the harness
+now prints it as `REPORT` lines instead of failing on it. Under emulation Chrome lays out in 1/64
+**CSS** px: Step 2's bar tops there are whole CSS px. It also antialiases a bar's rows instead of
+snapping them. Equal-arm sums, before → after: 0.9 `1214,1222,1180,1180` →
+`1180,1265,1180,1222`; 1.1 `1852,1830,1644,1846` → `1862,1832,1653,1849` (bar 3 still 11.2% low,
+was 11.2% in Step 2's equal arm); 1.25 `2347 ×4` both; 1.5 `3376 ×4` both; 1.75
+`4560,4587,4560,4587` both. Bar tops there drift from the model by up to 3.1/64 device px, because
+the model's pitch is in device units.
+
+#### Unchanged at 100%
+
+With the fix, `zoom-1-native.png` and `device-1-native.png` from the green run are byte-identical
+to Step 2's (SHA-256 `c53ea151…91e6` each), and so are both `*-1-equal.png`
+(`3e8d992e…1ec5`).
+
+#### Model seam
+
+`node --test test/rail-model.test.mjs`, test "at a fractional device pixel ratio every resting bar
+is drawn as thick as the others (#115)". For `dpr` 0.9, 1.1, 1.25, 1.5 and 1.75, on a 5-question
+rail (pitch 14) and a 200-question rail, it checks the following. The pitch is a whole number of
+1/64 device px. Every bar's nudged top has the hand-worked phase (within 1e-6), and `|dy| ≤ 0.5 /
+dpr`. `round(top + H) − round(top) = round(H)` still holds with the top moved by ±1/64 CSS px. At
+`dpr` 1 with pitch 14, every nudge is 0 and the bars' styles are exactly main's
+(`scale(1.000, 1.000)` / `0.280`, the active one `scale(1.750, 1.000)` / `1.000`). On the code
+before the fix it fails at its first assertion: `dpr 0.9, 5 questions`, a pitch of 12.6 device px
+([unit-red-output.txt](unit-red-output.txt)). The dense-geometry test now expects the pitch in
+whole 1/64 px (`9.734375px` for 60 questions, was `9.746666…px`).
+
+#### Dense rail: cost and brightness
+
+`OUT=… xvfb-run -a node lab/harness/rail-tick-cost.mjs`: 200 questions, main `549aeb5` against
+this fix, 100% and 90%, 3 alternating reps each ([dense-rail.json](dense-rail.json),
+[dense-rail-output.txt](dense-rail-output.txt)). Pitch 2.924 px before, 2.921875 px (100%) and
+2.9167 px (90%) after. The brightness bands are the 12 px tick column, split halfway between bar
+centres, leaving out the bars next to a lit one (197 bars counted).
+
+| Zoom | Build | Layers at rest (drawing) / peak | tile + resource memory, rest / after sweep | rAF median / p95 | Resting bars: brightness min–max (spread) | Max top vs model, 1/64 device px |
+| ---- | ----- | ------------------------------- | ------------------------------------------ | ---------------- | ----------------------------------------- | -------------------------------- |
+| 100% | main  | 8 (4) / 10                      | 26418 / 29186 KiB                          | 16.7 / 16.7 ms   | 1516–1516 (0%)                            | 27.63                            |
+| 100% | fix   | 8 (4) / 10                      | 26418 / 29186 KiB                          | 16.7 / 16.8 ms   | 1516–1516 (0%)                            | 1                                |
+| 90%  | main  | 8 (4) / 10                      | 26658 / 27730 KiB                          | 16.7 / 16.7 ms   | 634–1480 (57.2%)                          | 84.67                            |
+| 90%  | fix   | 8 (4) / 10                      | 26914 / 27730 KiB                          | 16.7 / 16.7 ms   | 1252–1252 (0%)                            | 0.6                              |
+
+Every value was the same in all three reps. Layer counts are identical. At 90% the fix's rest tile
+memory was one 256 KiB tile higher in this run. A rerun of 90% (`ZOOMS=0.9 REPS=2`,
+[dense-rail-90-rerun.txt](dense-rail-90-rerun.txt)) gave main 26658 / 27730 and 26658 / 27986 KiB,
+and the fix 26402 / 27730 and 26914 / 27730 KiB. Both builds move by one tile between runs, so the
+difference is tile-allocation noise, not a cost of the fix. At 100% the dense rail has a fractional
+pitch, so all 200 bars get a nudge of up to half a pixel. Their brightness is unchanged (all 1516),
+as main's already was, because a bar exactly 2 device px high is drawn 2 rows at any phase. At 90%
+the nudge was re-applied on zoom (`reNudgedOnZoom: true`).
+
+#### Screenshots (harness `equal` arm, all four ticks at rest, synthetic fixture, real zoom)
+
+| z90                | z110                | z125                | z175                | z100                |
+| ------------------ | ------------------- | ------------------- | ------------------- | ------------------- |
+| ![](after-z90.png) | ![](after-z110.png) | ![](after-z125.png) | ![](after-z175.png) | ![](after-z100.png) |
+
+Every pixel that differs from the mockup's After image (the rejected layer probe) is listed in
+[mockup-diff.json](mockup-diff.json); per panel:
+
+| Panel | Mockup After sum (per bar) | Real sum (per bar) | Pixels that differ | What differs                                                                                                                                                                     |
+| ----- | -------------------------- | ------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| z90   | 5528 (1382 ×4)             | 5008 (1252 ×4)     | 96                 | The mockup smears each bar over 3 rows (53 / 66 / 13). The real bar is 2 full rows (66 / 66, ends 49): the lower two of those rows for bars 1, 2 and 4, the upper two for bar 3. |
+| z110  | 6572 (1643 ×4)             | 7104 (1776 ×4)     | 128                | The mockup's 3 rows are 13 / 66 / 53. The real bar's are 0 / 66 / 66: 2 full rows and no faint top row.                                                                          |
+| z125  | 11280 (2820 ×4)            | 11272 (2818 ×4)    | 80                 | Bars 2 and 4 sit one row higher. Bars 1 and 3 differ only in their two end pixels (63 → 62).                                                                                     |
+| z175  | 21120 (5280 ×4)            | 21080 (5270 ×4)    | 138                | Bars 2 and 4 sit one row higher. Every bar's end pixels are 1 grey level darker.                                                                                                 |
+| z100  | 6064 (1516 ×4)             | 6064 (1516 ×4)     | 0                  | None.                                                                                                                                                                            |
+
+### Limits
+
+- A `devicePixelRatio` change with an unchanged CSS size, such as moving the window to a monitor
+  with another scale, does not re-run layout, so the nudges stay those of the old ratio until the
+  next render. Out of scope.
+- Device-scale emulation keeps the 1.1 deficit (above). A real OS display scale was not tested.
+  Whether Chrome lays it out in device units like browser zoom, which this fix assumes, is
+  unverified here.
+- No live ChatGPT page, Windows browser or GPU compositor was tested. All runs are headed Chromium
+  158.0.8127.18 under Xvfb on Linux/WSL with the synthetic fixture.

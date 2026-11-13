@@ -27,6 +27,7 @@
         "bookmarks/session.js",
         "rail/conversations.js",
         "rail/wave.js",
+        "rail/grid.js",
         "rail/model.js",
         "rail/turns.js",
         "rail/trip.js",

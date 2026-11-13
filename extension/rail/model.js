@@ -10,6 +10,7 @@
 // test/rail-model.test.mjs and test/rail-card.test.mjs drive it through this interface.
 (() => {
   const B = () => globalThis.ButterBookmarks || require('../bookmarks/model.js');
+  const grid = globalThis.ButterRailGrid || require('./grid.js');
   const seekMeta = (...a) => (globalThis.ButterSeekMeta || require('../seek/seek-meta.js'))(...a);
   const strings = (zh) =>
     zh
@@ -32,7 +33,8 @@
   const PITCH_MAX = 14,
     PAD = 10,
     MORE_H = 16,
-    RAIL_W = 52;
+    RAIL_W = 52,
+    BAR_H = 2; // a tick's bar is BAR_H px high (.bar in rail/style.js)
   const HEADER = 52,
     COMPOSER = 140; // ChatGPT's fixed header and composer overlap the scroller
   const OVERLAY_SCROLLBAR_GAP = 8; // overlay thumbs have no measured gutter; keep their strip clear
@@ -80,7 +82,6 @@
     let marks = new Map(),
       marksRev = -1;
     const dotIds = new Set();
-
     const tickY = (i) => geo.top + (i + 0.5) * geo.pitch;
     const inset = (innerWidth) =>
       box ? Math.round(innerWidth - box.right + 4 + (box.gutter ? 0 : OVERLAY_SCROLLBAR_GAP)) : 0;
@@ -97,7 +98,6 @@
     const markAt = (id) => (id === EARLIER ? (convs.hasPrev ? EARLIER : null) : idxOf.get(id));
     // Whether index `i` (a tick, or EARLIER for the three dots) holds bookmarks.
     const holds = (i) => (i === EARLIER ? markAt(EARLIER) != null : i >= 0) && marks.has(idAt(i));
-
     // Whether tick j is lit: a seek preview's, the opening prediction, a jump's target, the band.
     const lit = (j) =>
       seek
@@ -232,7 +232,7 @@
       inset,
 
       // ---- Render, in the adapter's order: `questions()`, then whether it `shows(off)`; then
-      // `hide()`, or `layout(innerWidth)` once the DOM is built.
+      // `hide()`, or `layout(innerWidth, devicePixelRatio)` once the DOM is built.
       questions() {
         qs = Object.freeze(convs.items.filter((x) => x.q != null));
         idxOf = new Map(qs.map((x, i) => [x.id, i]));
@@ -244,9 +244,9 @@
       hide() {
         geo = null;
       },
-      // The ticks for the questions now: per bar its style (`[transform, opacity]`) and whether it
-      // is busy, whether the three dots are hidden, and the host's CSS values.
-      layout(innerWidth) {
+      // The ticks now at device pixel ratio `dpr` (rail/grid.js): per bar its style (`[transform,
+      // opacity]`), nudge (CSS px down) and whether it is busy; the three dots hidden; the host's CSS.
+      layout(innerWidth, dpr = 1) {
         const n = qs.length;
         // While a chat is opening the bars show the prediction at once, in step with the ticks
         // moving; new bars start at rest.
@@ -261,14 +261,16 @@
         // Centered in the part of the chat that isn't under the header or the composer.
         const top = box.top + HEADER,
           bottom = box.bottom - COMPOSER,
-          moreH = convs.hasPrev ? MORE_H : 0;
-        const pitch = Math.min(PITCH_MAX, ((bottom - top - 2 * PAD - moreH) * 0.85) / n);
+          moreH = convs.hasPrev ? MORE_H : 0,
+          fit = Math.min(PITCH_MAX, ((bottom - top - 2 * PAD - moreH) * 0.85) / n);
+        const pitch = grid.snap(fit, dpr); // as layout keeps it, so the ticks are where it puts them
         const h = 2 * PAD + moreH + n * pitch;
-        const y = Math.round((top + bottom) / 2 - h / 2);
+        const y = Math.round(((top + bottom) / 2 - h / 2) * dpr) / dpr; // on a device pixel
         geo = { y, top: y + PAD + moreH, pitch };
         const colW = Math.min(760, box.width - 96); // the text column, for the travel placeholder
         return {
           bars,
+          nudges: qs.map((_, i) => grid.nudge(tickY(i) - BAR_H / 2, BAR_H, dpr)),
           busy: qs.map((x) => x.id === busyId),
           moreHidden: !convs.hasPrev,
           css: [
@@ -492,7 +494,7 @@
     for (const [name, get] of Object.entries(published)) Object.defineProperty(api, name, { get });
     return api;
   }
-  Object.assign(ButterRailModel, { RAIL_W, PAD, MORE_H, HEADER, COMPOSER, REST, EARLIER });
+  Object.assign(ButterRailModel, { RAIL_W, BAR_H, PAD, MORE_H, HEADER, COMPOSER, REST, EARLIER });
   globalThis.ButterRailModel = ButterRailModel;
   if (typeof module !== 'undefined') module.exports = ButterRailModel;
 })();
