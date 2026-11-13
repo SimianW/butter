@@ -257,6 +257,28 @@ test('quote: a multi-line display formula keeps its lines, each quoted with "> "
   );
 });
 
+test('quote: a hidden element is left out, also when a boundary is inside it', () => {
+  // As a citation tag after a sentence, which page.js's quoteDom calls hidden.
+  const before = t('Lasts all day.'),
+    label = t('Apple Supp…'),
+    after = t(' It charges.');
+  const tag = el('hidden', el('inline', label), el('inline', t('+1')));
+  tree(para(before, tag, after));
+  assert.equal(branch.quoteOf(range(before, 0, after, 12), dom), 'Lasts all day. It charges.');
+  // Ending in it, starting in it, or wholly inside it.
+  assert.equal(branch.quoteOf(range(before, 6, label, 4), dom), 'all day.');
+  assert.equal(branch.quoteOf(range(label, 4, after, 12), dom), 'It charges.');
+  assert.equal(branch.quoteOf(range(label, 1, label, 4), dom), '');
+  // A boundary on the hidden element itself, before or between its children.
+  assert.equal(branch.quoteOf(range(before, 6, tag, 0), dom), 'all day.');
+  assert.equal(branch.quoteOf(range(tag, 1, after, 12), dom), 'It charges.');
+  // With a formula, which is still quoted as LaTeX.
+  const wiki = t('Wiki');
+  const q = tree(para(t('Rate '), formula('O(1/k)', 'O(1/k)'), el('hidden', wiki), t(' ok')));
+  assert.equal(branch.quoteOf(range(q, 0, q, 4), dom), 'Rate $O(1/k)$ ok');
+  assert.equal(branch.quoteOf(range(q.childNodes[0], 0, wiki, 2), dom), 'Rate $O(1/k)$');
+});
+
 test('quote: a formula without its LaTeX source makes the selection unquotable', () => {
   const p = tree(para(t('See '), formula(null, 'x'), t('.')));
   assert.equal(branch.quoteOf(range(p, 0, p, 3), dom), null);

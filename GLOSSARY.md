@@ -301,9 +301,16 @@ pill hidden.
 _Where_: `selection/pill.js`
 
 **Quote**:
-The selected text Ask in branch carries, each formula it touches written as its whole LaTeX source.
+The selected text Ask in branch carries, each formula it touches written as its whole LaTeX source,
+and citation tags left out.
 _Avoid_: excerpt (a bookmark's word)
 _Where_: `branch/logic.js`
+
+**Citation tag**:
+ChatGPT's small source pill after a sentence of an answer (a favicon, the truncated source name, a
+"+N" count); not the answer's text, so a quote leaves it out.
+_Avoid_: citation pill, source chip (the pill is Butter's)
+_Where_: `branch/page.js`
 
 **Branch**:
 The new conversation ChatGPT's "Branch in new chat" makes; Butter counts it only once the tab shows

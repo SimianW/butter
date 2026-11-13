@@ -8,6 +8,7 @@
 import button from './scenarios/button.mjs';
 import cancelSending from './scenarios/cancel-sending.mjs';
 import cancel from './scenarios/cancel.mjs';
+import citations from './scenarios/citations.mjs';
 import chineseMenus from './scenarios/chinese-menus.mjs';
 import failureShots from './scenarios/failure-shots.mjs';
 import failures from './scenarios/failures.mjs';
@@ -30,6 +31,7 @@ export const scenarios = [
   button,
   questionBox,
   formulas,
+  citations,
   newTab,
   lines,
   reply,

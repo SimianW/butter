@@ -41,11 +41,12 @@
     const range = s.getRangeAt(0);
     const start = R.replyOf(range.startContainer),
       end = R.replyOf(range.endContainer);
-    // Formulas are fine (quoted as LaTeX); editable controls, images and other non-text regions
-    // are not.
+    // Formulas are fine (quoted as LaTeX), and so are citation tags (left out of the quote);
+    // editable controls, images and other non-text regions are not.
+    const selectable = (el) => !!el.closest(`${P.FORMULA}, ${P.CITATION}`);
     const inside = (node, selector) => {
       const el = elementOf(node)?.closest(selector);
-      return !!el && !el.closest(P.FORMULA);
+      return !!el && !selectable(el);
     };
     const touching = (selector) =>
       !!start && [...start.querySelectorAll(selector)].some((el) => range.intersectsNode(el));
@@ -54,10 +55,14 @@
       inside(range.endContainer, P.EXCLUDED) ||
       (!!start &&
         [...start.querySelectorAll(P.NON_TEXT)].some(
-          (el) => !el.closest(P.FORMULA) && range.intersectsNode(el),
+          (el) => !selectable(el) && range.intersectsNode(el),
         ));
     const identity = B.identity(location.href),
-      text = touching(P.FORMULA) ? B.quoteOf(range, P.quoteDom) || '' : s.toString();
+      // Chrome's own text skips a citation tag's label but puts a line break in its place.
+      text =
+        touching(P.FORMULA) || touching(P.CITATION)
+          ? B.quoteOf(range, P.quoteDom) || ''
+          : s.toString();
     if (!B.qualifies({ text, start, end, identity, excluded, page: P.facts() })) return null;
     return { range: range.cloneRange(), quote: text.trim(), identity };
   };
