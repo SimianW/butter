@@ -1,0 +1,20 @@
+MEASURE zoom=0.9 native: sums=7839,1242,634,1242 rows=3,2,1,2 lengths=18,10,10,10
+MEASURE zoom=0.9 equal: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 no-transform: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 square: sums=1310,1310,650,1310 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 layer: sums=1382,1382,1382,1382 rows=2,2,2,2 lengths=11,11,11,11
+MEASURE zoom=0.9 3d: sums=1382,1382,1382,1382 rows=2,2,2,2 lengths=11,11,11,11
+MEASURE zoom=1.1 native: sums=11117,1763,2599,1763 rows=3,2,3,2 lengths=25,14,14,14
+MEASURE zoom=1.1 equal: sums=1763,1763,2599,1763 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 no-transform: sums=1763,1763,2599,1763 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 square: sums=1833,1833,2756,1833 rows=2,2,3,2 lengths=14,14,14,14
+MEASURE zoom=1.1 layer: sums=1643,1643,1643,1643 rows=2,2,2,2 lengths=13,13,13,13
+MEASURE zoom=1.1 3d: sums=1643,1643,1643,1643 rows=2,2,2,2 lengths=13,13,13,13
+FAIL zoom=0.9 native bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+FAIL zoom=0.9 equal bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+FAIL zoom=1.1 native bar 2: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 native bar 4: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 1: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 2: brightness 1763 vs 2599, deficit 32.2% > 10%
+FAIL zoom=1.1 equal bar 4: brightness 1763 vs 2599, deficit 32.2% > 10%
+RED: 7 unequal-rest-bar comparisons; tolerance=10%; browser=158.0.8127.18

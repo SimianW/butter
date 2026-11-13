@@ -1,0 +1,7 @@
+MEASURE zoom=0.9 native: sums=7839,1242,634,1242 rows=3,2,1,2 lengths=18,10,10,10
+MEASURE zoom=0.9 equal: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 no-transform: sums=1242,1242,634,1242 rows=2,2,1,2 lengths=10,10,10,10
+MEASURE zoom=0.9 square: sums=1310,1310,650,1310 rows=2,2,1,2 lengths=10,10,10,10
+FAIL zoom=0.9 native bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+FAIL zoom=0.9 equal bar 3: brightness 634 vs 1242, deficit 49.0% > 10%
+RED: 2 unequal-rest-bar comparisons; tolerance=10%; browser=158.0.8127.18

@@ -1,0 +1,11 @@
+CONTROL device=1 without Butter: host=0 brightness=0
+MEASURE device=1 native: sums=9496,1516,1516,1516 rows=2,2,2,2 lengths=21,12,12,12
+MEASURE device=1 equal: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE device=1 no-transform: sums=1516,1516,1516,1516 rows=2,2,2,2 lengths=12,12,12,12
+MEASURE device=1 square: sums=1584,1584,1584,1584 rows=2,2,2,2 lengths=12,12,12,12
+CONTROL device=0.9 without Butter: host=0 brightness=0
+MEASURE device=0.9 native: sums=7716,1222,1180,1180 rows=3,2,2,2 lengths=20,10,10,10
+MEASURE device=0.9 equal: sums=1214,1222,1180,1180 rows=2,2,2,2 lengths=10,10,10,10
+MEASURE device=0.9 no-transform: sums=1214,1222,1180,1180 rows=2,2,2,2 lengths=10,10,10,10
+MEASURE device=0.9 square: sums=1268,1278,1235,1235 rows=2,2,2,2 lengths=11,11,11,11
+RED: 0 unequal-rest-bar comparisons; tolerance=10%; browser=158.0.8127.18
