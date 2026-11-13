@@ -8,7 +8,6 @@
 // snapshot reply: the recorder compares them with ChatGPT's turn order and never stores them.
 // test/dev-rail-trace.test.mjs drives it over the whole rail.
 (() => {
-  const TRIES = 8; // the jump's mount tries (rail/jump.js)
   const round = (x) => (Number.isFinite(x) ? Math.round(x) : null);
   const num = (x) => (Number.isFinite(x) ? x : null);
   // A bar's style as the rail model set it: `scale(<x>, <y>)` and an opacity.
@@ -69,13 +68,16 @@
     };
 
     const outcome = (j, { landed, expired, el, pinned }) => {
-      // The jump marks itself landed before the chat slides in and settles: one stopped during
-      // that did not land.
+      // The chat stopped on the target: what the user does while it settles there, a few px at
+      // most, does not undo that.
+      if (j.arrived) return 'landed';
+      // The jump marks itself landed before the chat slides in: one stopped during that did not.
       if (j.cause) return 'cancelled';
       if (latest > j.tok) return 'superseded';
-      if (landed) return 'landed';
+      if (landed) return 'landed'; // at its deadline, mounted and aligned
       if (expired) return 'expired';
-      if (!j.mounted && !el) return j.tries >= TRIES ? 'never-mounted' : 'no-question';
+      if (!j.mounted && !el)
+        return rail.model.index(j.id) == null ? 'no-question' : 'never-mounted';
       if (!el?.isConnected) return 'lost';
       if (pinned === false) return 'unpinned';
       return 'error'; // an exception ended it
@@ -98,6 +100,7 @@
           { mountedFrom, mountedTo } = range();
         jumps.set(tok, {
           tok,
+          id, // to see whether its question left the rail; never recorded
           at: now(),
           tries: 0,
           mounted: !!el,
@@ -166,6 +169,11 @@
         j.waited = now();
         emit('rail-wait', { jump: tok, wait, durationMs: round(j.waited - start), live, pending });
       },
+      // The chat stopped on the target (a trip slid in, a glide's smooth scroll ended).
+      arrived({ tok }) {
+        const j = jumps.get(tok);
+        if (j) j.arrived = true;
+      },
       // cancel() runs on every user scroll; only one that stops a jump not ended yet is recorded.
       cancel({ tok, cause }) {
         const j = jumps.get(tok);
@@ -182,7 +190,7 @@
           jump: j.tok,
           outcome: out,
           path: j.path ?? null,
-          cause: out === 'cancelled' ? j.cause : undefined,
+          cause: j.cause,
           elapsedMs: round(now() - j.at),
           tries: j.tries,
           expired: !!fields.expired,

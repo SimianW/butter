@@ -346,6 +346,7 @@
         if (tok === jumpTok) {
           landedAt(); // stopped moving; settle only nudges by a few px
           washAt(el);
+          trace('arrived', () => ({ tok }));
         }
         await settle(el, live);
       } finally {
@@ -393,7 +394,10 @@
         sc().scrollTo({ top, behavior: 'smooth' });
         await done;
       }
-      if (live()) washAt(el);
+      if (live()) {
+        washAt(el);
+        trace('arrived', () => ({ tok: jumpTok }));
+      }
       await settle(el, live);
     };
     // A few quiet frames don't mean neighbouring answers have finished mounting/typesetting. Keep

@@ -15,14 +15,16 @@ const { createRecorder } = require('../extension/dev/recorder.js');
 // Three turns in a virtualizer that reserves each row's height and mounts only the rows within the
 // viewport + 200 px (`mounts(i)` false: row i never mounts). `trace`: 'none', 'throws', or the
 // dev trace, whose events come back with their times. The user's wheel comes `wheelAfterMs` after
-// the click, or once `wheelWhen(events)` holds, and then scrolls 600 px.
+// the click, or once `wheelWhen(events, steps)` holds (`steps`: the hook's steps so far), and then
+// scrolls 600 px.
 async function clickSecondQuestion({
   trace = 'dev',
   mounts = () => true,
   wheelAfterMs = null,
   wheelWhen = null,
 }) {
-  const events = [];
+  const events = [],
+    steps = new Set();
   let nav;
   const tracer = createRailTrace({
     emit: (type, fields) => events.push({ type, t: nav.now(), ...fields }),
@@ -34,7 +36,10 @@ async function clickSecondQuestion({
     throws: () => {
       throw new Error('a broken hook');
     },
-    dev: tracer.trace,
+    dev: (step, fields) => {
+      steps.add(step);
+      tracer.trace(step, fields);
+    },
   }[trace];
   nav = setup({ count: 3, nested: true, trace: hook });
   const tops = [100, 11917, 26713];
@@ -86,7 +91,7 @@ async function clickSecondQuestion({
   nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[1] });
   for (let i = 0; i < 800; i++) {
     if (wheelAfterMs != null && i * 16 === wheelAfterMs) nav.scroller.emit('wheel');
-    if (wheelWhen?.(events)) {
+    if (wheelWhen?.(events, steps)) {
       wheelWhen = null;
       nav.scroller.emit('wheel');
       nav.scroller.scrollTop += 600;
@@ -217,6 +222,16 @@ test('a wheel while the chat slides in on the target records "cancelled", not "l
   assert.equal(end.outcome, 'cancelled');
   assert.equal(end.cause, 'wheel');
   assert.notEqual(end.targetTop, 64, 'the user scrolled away from the target');
+  assertAllowed(events);
+});
+
+test('a wheel once the chat has stopped on the target records "landed" with its cause', async () => {
+  const { events } = await clickSecondQuestion({ wheelWhen: (_, steps) => steps.has('arrived') });
+  const [end] = ofType(events, 'rail-end');
+  assert.equal(ofType(events, 'rail-cancel').length, 1);
+  assert.equal(end.outcome, 'landed');
+  assert.equal(end.cause, 'wheel');
+  assert.notEqual(end.targetTop, 64, 'the user scrolled away while it settled');
   assertAllowed(events);
 });
 
