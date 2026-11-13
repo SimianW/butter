@@ -1,4 +1,6 @@
-# Rail tick rendering diagnosis — Control and Red only
+# Rail tick rendering — diagnosis and fix (#115)
+
+**What shipped is in [Step 3](#step-3--green): each bar is nudged in layout onto a safe device-pixel phase, with a unit test.** The Findings and Steps 1–2 below are the diagnosis as it was written before the fix, on `91fc048`; they are kept as the record. Where they say no product code was changed, that no unit assertion or Green fix was made, or propose `will-change: transform` on `.bar` as the smallest fix, that was the state then: Step 3 measured that proposal and rejected it. The line numbers in their links to `extension/rail/` are `91fc048`'s.
 
 Baseline: `91fc048` (`main`), manifest `0.1.0-alpha.21`. The reported Windows build was `0.1.0-alpha.21+dev.3`; that packaged build was not available for execution. Local branch: `fix/rail-tick-thin`. No product code, settings defaults, shared lab configuration/profile, issue, PR, release or version was changed. Nothing was pushed.
 
@@ -35,7 +37,7 @@ The third tick has a 48.3% brightness deficit against ticks 2 and 4. The synthet
 
 ### Measurement definition
 
-Rows and lengths count grayscale values strictly greater than 25. Row numbers are zero-based within each synthetic crop. Length is the horizontal span of those pixels. Integrated brightness sums **all** grayscale values, including antialiased values at or below 25, in disjoint bands separated halfway between adjacent tick centers. Thus the brightness verdict is not an artifact of thresholding faint edge pixels. Crop bounds, dimensions, row peaks, DOM rectangles, inline/computed transforms, inline/computed opacity, animation name, rail opacity/class, three-dots visibility and bookmark-dot counts are retained in [measurements.json](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/measurements.json).
+Rows and lengths count grayscale values strictly greater than 25. Row numbers are zero-based within each synthetic crop. Length is the horizontal span of those pixels. Integrated brightness sums **all** grayscale values, including antialiased values at or below 25, in disjoint bands separated halfway between adjacent tick centers. Thus the brightness verdict is not an artifact of thresholding faint edge pixels. Crop bounds, dimensions, row peaks, DOM rectangles, inline/computed transforms, inline/computed opacity, animation name, rail opacity/class, three-dots visibility and bookmark-dot counts are retained in [measurements.json](measurements.json).
 
 The pass/fail tolerance is a **10%** deficit against the brightest equal-state rest tick in that capture. The active first tick is excluded in the native arm; every tick is compared in the forced-equal arm. This tolerance is deliberately well below the reported roughly half-bright defect and above small interpolation/8-bit rounding differences. It is not a pixel-perfect visual specification.
 
@@ -83,19 +85,19 @@ These images contain only the artificial rail, never the supplied screenshot.
 
 | Normal scale 1 | Real zoom 90%, native | Real zoom 90%, forced equal | Real zoom 90%, proposed layer probe |
 | --- | --- | --- | --- |
-| ![Synthetic scale 1](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/zoom-1-native.png) | ![Synthetic 90% native](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/zoom-0.9-native.png) | ![Synthetic 90% equal](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/zoom-0.9-equal.png) | ![Synthetic 90% layer probe](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/zoom-0.9-layer.png) |
+| ![Synthetic scale 1](zoom-1-native.png) | ![Synthetic 90% native](zoom-0.9-native.png) | ![Synthetic 90% equal](zoom-0.9-equal.png) | ![Synthetic 90% layer probe](zoom-0.9-layer.png) |
 
 ## Cause and alternatives
 
 The relevant product paths and lines are:
 
-- [extension/rail/style.js:16](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:16): the rail is translated and already has `will-change:transform`. Its child ticks do not each have that hint.
-- [extension/rail/style.js:24](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:24): tick buttons use flex centering. [extension/rail/style.js:33](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:33) gives their pitch; [extension/rail/style.js:37](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:37) paints the 12-by-2 CSS-pixel rounded `.bar`, with `transform-origin:right center`.
-- [extension/rail/model.js:32](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/model.js:32) fixes the short-rail maximum pitch at 14 CSS pixels. [extension/rail/model.js:262](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/model.js:262) calculates the pitch; line 264 rounds the rail origin to a **CSS** pixel, which need not be a device pixel under scaling. Different tick positions therefore have different device-pixel phases.
-- [extension/rail/model.js:41](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/model.js:41) defines rest width scale 1 and opacity 0.28. [extension/rail/model.js:101](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/model.js:101) derives the targets; vertical scale starts at 1 and the pointer only increases it. There is no target below 1 in this policy.
-- [extension/rail/wave.js:14](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/wave.js:14) serializes scale and opacity; [extension/rail/wave.js:54](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/wave.js:54) eases/snaps to those targets. [extension/rail/rail.js:381](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/rail.js:381) applies the frame's inline values; [extension/rail/rail.js:434](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/rail.js:434) also applies them on layout.
-- [extension/rail/style.js:34](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:34) applies the busy blink **only** to a `.tick.busy .bar`. The native measured parents are plain `tick`, animations are `none`, and rest opacity is `0.28`. Forcing animations off still reproduces it, so the blink is unnecessary for this failure.
-- [extension/rail/style.js:43](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/style.js:43) applies `faint` only to `.bdot.faint`; [extension/rail/rail.js:280](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/rail.js:280) creates/decorates those separate bookmark dots. The measured elements are `SPAN` children of tick buttons, created at [extension/rail/rail.js:420](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/extension/rail/rail.js:420), not bookmark dots, the three dots, or a scrollbar.
+- [extension/rail/style.js:16](../../../extension/rail/style.js): the rail is translated and already has `will-change:transform`. Its child ticks do not each have that hint.
+- [extension/rail/style.js:24](../../../extension/rail/style.js): tick buttons use flex centering. [extension/rail/style.js:33](../../../extension/rail/style.js) gives their pitch; [extension/rail/style.js:37](../../../extension/rail/style.js) paints the 12-by-2 CSS-pixel rounded `.bar`, with `transform-origin:right center`.
+- [extension/rail/model.js:32](../../../extension/rail/model.js) fixes the short-rail maximum pitch at 14 CSS pixels. [extension/rail/model.js:262](../../../extension/rail/model.js) calculates the pitch; line 264 rounds the rail origin to a **CSS** pixel, which need not be a device pixel under scaling. Different tick positions therefore have different device-pixel phases.
+- [extension/rail/model.js:41](../../../extension/rail/model.js) defines rest width scale 1 and opacity 0.28. [extension/rail/model.js:101](../../../extension/rail/model.js) derives the targets; vertical scale starts at 1 and the pointer only increases it. There is no target below 1 in this policy.
+- [extension/rail/wave.js:14](../../../extension/rail/wave.js) serializes scale and opacity; [extension/rail/wave.js:54](../../../extension/rail/wave.js) eases/snaps to those targets. [extension/rail/rail.js:381](../../../extension/rail/rail.js) applies the frame's inline values; [extension/rail/rail.js:434](../../../extension/rail/rail.js) also applies them on layout.
+- [extension/rail/style.js:34](../../../extension/rail/style.js) applies the busy blink **only** to a `.tick.busy .bar`. The native measured parents are plain `tick`, animations are `none`, and rest opacity is `0.28`. Forcing animations off still reproduces it, so the blink is unnecessary for this failure.
+- [extension/rail/style.js:43](../../../extension/rail/style.js) applies `faint` only to `.bdot.faint`; [extension/rail/rail.js:280](../../../extension/rail/rail.js) creates/decorates those separate bookmark dots. The measured elements are `SPAN` children of tick buttons, created at [extension/rail/rail.js:420](../../../extension/rail/rail.js), not bookmark dots, the three dots, or a scrollbar.
 
 At real zoom 0.9, native rest ticks 2–4 all report `scale(1, 1)`, `matrix(1, 0, 0, 1, 0, 0)`, opacity `0.28`, animation `none`, and equal rectangles approximately 11.99653 by 1.99653 CSS pixels. Their top positions are approximately 397.98264, 411.97571 and 425.96875 CSS pixels. The source dimensions remain equal while coverage changes.
 
@@ -140,7 +142,7 @@ From the repository root, after `npm ci`:
 xvfb-run -a node lab/harness/rail-tick-thin.mjs
 ```
 
-Actual exit status: **1**. The complete stdout/stderr is [red-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/red-output.txt). Relevant actual lines:
+Actual exit status: **1**. The complete stdout/stderr is [red-output.txt](red-output.txt). Relevant actual lines:
 
 ```text
 FAIL device=1.1 native bar 3: brightness 1644 vs 1846, deficit 10.9% > 10%
@@ -161,7 +163,7 @@ The full matrix was run repeatedly with the same 17 failures; narrower 90% and 1
 - The crops reproduce reduced vertical coverage and brightness at 90%, and reduced length at device scale 1.1; exact Windows screenshot pixel identity was not reached.
 - The task deliberately stops after Control and Red. No Green fix, mockup/product UI change, issue/PR action, push, review gate or release was performed.
 
-`npm run format:check` and `npm run lint` both exit 0. Their actual output is in [format-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/format-output.txt) and [lint-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/lint-output.txt). Commands, outputs, pilot limitations and local commit/done checks are recorded in [commands.md](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/commands.md).
+`npm run format:check` and `npm run lint` both exit 0. Their actual output is in [format-output.txt](format-output.txt) and [lint-output.txt](lint-output.txt). Commands, outputs, pilot limitations and local commit/done checks are recorded in [commands.md](commands.md).
 
 ## Step 3 — Green
 

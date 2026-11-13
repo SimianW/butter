@@ -384,7 +384,7 @@ test('at a fractional device pixel ratio every resting bar is drawn as thick as 
   // rows thick: its top's offset from the nearest device pixel, in [-0.5, 0.5), sits in the middle
   // of the offsets that draw it so (worked by hand per ratio).
   const phase = { 0.9: 0.1, 1.1: -0.1, 1.25: 0.25, 1.5: 0, 1.75: 0.25 };
-  const offset = (x) => x - Math.round(x); // in (-0.5, 0.5]; Math.round rounds a half up
+  const offset = (x) => x - Math.round(x); // in [-0.5, 0.5): Math.round rounds a half up
   for (const [dpr, want] of Object.entries(phase).map(([k, v]) => [Number(k), v]))
     for (const count of [5, 200]) {
       const r = rail({ count, dpr }),
@@ -398,7 +398,7 @@ test('at a fractional device pixel ratio every resting bar is drawn as thick as 
       l.nudges.forEach((dy, i) => {
         const t = r.m.tickY(i) - 1 + dy; // the bar's nudged top, CSS px
         const f = offset(t * dpr);
-        assert.ok(Math.abs((f === -0.5 ? 0.5 : f) - want) < 1e-6, `${at}, bar ${i}: phase ${f}`);
+        assert.ok(Math.abs(f - want) < 1e-6, `${at}, bar ${i}: phase ${f}`);
         assert.ok(Math.abs(dy) <= 0.5 / dpr + 1e-9, `${at}, bar ${i}: nudge ${dy}`);
         for (const e of [-1 / 64, 0, 1 / 64]) {
           const top = (t + e) * dpr;

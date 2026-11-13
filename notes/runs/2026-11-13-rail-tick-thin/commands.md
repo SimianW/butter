@@ -76,7 +76,7 @@ Created only `lab/harness/rail-tick-thin.mjs` and this run's artifact directory.
 SCALES=1,0.9 METHODS=device xvfb-run -a node lab/harness/rail-tick-thin.mjs
 ```
 
-Initial pilot exit **0**, correctly: scale 1 rest sums `1516,1516,1516`; device scale 0.9 rest sums `1222,1180,1180`, below the 10% failure threshold. Actual initial output is [pilot-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/pilot-output.txt) in this directory. This result did not confirm the proposed explanation; real zoom was tested next.
+Initial pilot exit **0**, correctly: scale 1 rest sums `1516,1516,1516`; device scale 0.9 rest sums `1222,1180,1180`, below the 10% failure threshold. Actual initial output is [pilot-output.txt](pilot-output.txt) in this directory. This result did not confirm the proposed explanation; real zoom was tested next.
 
 The first full attempt reached real zoom 0.9, then exited 1 with:
 
@@ -91,14 +91,14 @@ SCALES=0.9 METHODS=zoom xvfb-run -a node lab/harness/rail-tick-thin.mjs
 SCALES=0.9,1.1 METHODS=zoom xvfb-run -a node lab/harness/rail-tick-thin.mjs
 ```
 
-Both exit **1**. Retained outputs: [zoom-pilot-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/zoom-pilot-output.txt) and [probe-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/probe-output.txt). The 0.9 run fails two native/equal comparisons, each naming bar 3 and a 49.0% deficit. The 0.9/1.1 run fails seven native/equal comparisons. The preliminary 3D-transform probe in [probe-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/probe-output.txt) equalizes both samples; its superseded images were removed, and the final harness retains the smaller `will-change` proposal instead.
+Both exit **1**. Retained outputs: [zoom-pilot-output.txt](zoom-pilot-output.txt) and [probe-output.txt](probe-output.txt). The 0.9 run fails two native/equal comparisons, each naming bar 3 and a 49.0% deficit. The 0.9/1.1 run fails seven native/equal comparisons. The preliminary 3D-transform probe in [probe-output.txt](probe-output.txt) equalizes both samples; its superseded images were removed, and the final harness retains the smaller `will-change` proposal instead.
 
 ```sh
 xvfb-run -a node lab/harness/rail-tick-thin.mjs \
   > notes/runs/2026-11-13-rail-tick-thin/red-output.txt 2>&1
 ```
 
-Final full command exit **1**, run repeatedly with the same **17** failures. The latest run includes all final state metadata and formatted harness source. Full actual stdout/stderr: [red-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/red-output.txt); all numeric geometry/pixels/state: [measurements.json](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/measurements.json). Relevant output:
+Final full command exit **1**, run repeatedly with the same **17** failures. The latest run includes all final state metadata and formatted harness source. Full actual stdout/stderr: [red-output.txt](red-output.txt); all numeric geometry/pixels/state: [measurements.json](measurements.json). Relevant output:
 
 ```text
 CONTROL device=1 without Butter: host=0 brightness=0
@@ -141,7 +141,7 @@ npm run format:check
 npm run lint
 ```
 
-Both exit **0**. Actual output retained in [format-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/format-output.txt) and [lint-output.txt](/home/Simian/.t3/worktrees/butter/t3-f26a38db-fe28de0bff619ca6/notes/runs/2026-11-13-rail-tick-thin/lint-output.txt):
+Both exit **0**. Actual output retained in [format-output.txt](format-output.txt) and [lint-output.txt](lint-output.txt):
 
 ```text
 npm notice run format:check
