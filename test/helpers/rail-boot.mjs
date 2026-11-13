@@ -29,6 +29,7 @@ export function setup({
   nested = false,
   trace,
 } = {}) {
+  let clockReads = 0; // how often the rail read performance.now()
   let now = 10_000,
     nextId = 1,
     rendered = null; // the items revision of the last render
@@ -58,7 +59,7 @@ export function setup({
     getComputedStyle: () => ({ colorScheme: 'light' }),
     matchMedia: () => ({ matches: false, addEventListener() {} }),
     innerWidth: 1200,
-    performance: { now: () => now },
+    performance: { now: () => (clockReads++, now) },
     addEventListener: window.addEventListener.bind(window),
     removeEventListener: window.removeEventListener.bind(window),
     requestAnimationFrame(callback) {
@@ -238,5 +239,6 @@ export function setup({
       now += ms;
     },
     now: () => now,
+    clockReads: () => clockReads,
   };
 }

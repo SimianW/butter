@@ -105,6 +105,7 @@ async function clickSecondQuestion({
   };
 }
 
+const CLOCK_READS = 162;
 const ofType = (events, type) => events.filter((e) => e.type === type);
 const meta = { bug: 1, round: 1, version: '0.1.0', trigger: 'shortcut' };
 
@@ -217,6 +218,14 @@ test('a wheel while the chat slides in on the target records "cancelled", not "l
   assert.equal(end.cause, 'wheel');
   assert.notEqual(end.targetTop, 64, 'the user scrolled away from the target');
   assertAllowed(events);
+});
+
+test('with no hook the rail reads the clock no more often than before the trace', async () => {
+  // A landing jump over this fixture, counted on the rail before it had a trace (91fc048). A wait's
+  // start time is the dev trace's to take, from its own clock; a higher count means a call site
+  // reads the clock for the trace in every build.
+  const { nav } = await clickSecondQuestion({ trace: 'none' });
+  assert.equal(nav.clockReads(), CLOCK_READS);
 });
 
 test('wheel scrolling with no jump in progress records nothing', async () => {
