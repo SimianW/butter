@@ -2,7 +2,7 @@
 // handles the save-bug shortcut: ask the active ChatGPT chat for a snapshot and download it to
 // Downloads/butter-diag/round-<N>/bug-<NN>_<HH-MM-SS>.json with no Save As prompt.
 // importScripts paths resolve against this file, which sits at the same depth as storage/.
-importScripts('../storage/layout-worker.js', 'recorder.js');
+importScripts('../storage/layout-worker.js', 'allowlist.js', 'recorder.js');
 (() => {
   // Round state survives popup closes, tab switches and browser restarts.
   const KEY = 'butterDev';

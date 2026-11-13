@@ -157,7 +157,7 @@ box and get a flagged formula estimate instead (cache items carry `approx: true`
 ## Bug files from the dev build
 
 The dev build saves everything the four snippets above report, plus the last 30 s of seek, press
-and preview decisions, as one JSON file per bug. A tester never needs to paste a snippet into a dev
+and preview decisions and of rail jumps, as one JSON file per bug. A tester never needs to paste a snippet into a dev
 build. The snippets stay for store builds.
 
 ### Build and install
@@ -177,48 +177,65 @@ build. The snippets stay for store builds.
 The file is JSON with two-space indentation. Every list of objects (events, readiness rows,
 structure nodes, cache items) has one object per line.
 
-| Field | What |
-|---|---|
-| `kind` | Always `"butter-diag"`. |
-| `formatVersion` | `1`. It stands in for the snippets' `schema: 1`. |
-| `bug`, `round` | The bug number in this round, and the round. They match the file path. |
-| `savedAt` | The save time, ISO 8601 in UTC. Event times are relative to it. |
-| `version` | The manifest's `version_name`, for example `0.1.0-alpha.15+dev.10`. |
-| `trigger` | `shortcut` or `button`. |
-| `pointerHeld` | Whether the left button was down when the snapshot was taken (a drag in progress). |
-| `settings` | Butter's normalized settings (`shared/status.js`). |
-| `events` | The last 30 s of events, oldest first (see below). |
-| `eventsDropped` | Only present when the whole-file cap dropped the oldest events: how many. |
+| Field           | What                                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`          | Always `"butter-diag"`.                                                                                                                                                                  |
+| `formatVersion` | `1`. It stands in for the snippets' `schema: 1`.                                                                                                                                         |
+| `bug`, `round`  | The bug number in this round, and the round. They match the file path.                                                                                                                   |
+| `savedAt`       | The save time, ISO 8601 in UTC. Event times are relative to it.                                                                                                                          |
+| `version`       | The manifest's `version_name`, for example `0.1.0-alpha.15+dev.10`.                                                                                                                      |
+| `trigger`       | `shortcut` or `button`.                                                                                                                                                                  |
+| `pointerHeld`   | Whether the left button was down when the snapshot was taken (a drag in progress).                                                                                                       |
+| `settings`      | Butter's normalized settings (`shared/status.js`).                                                                                                                                       |
+| `events`        | The last 30 s of events, oldest first (see below).                                                                                                                                       |
+| `eventsDropped` | Only present when the whole-file cap dropped the oldest events: how many.                                                                                                                |
 | `pressDecision` | `__seekDump.pressDecision`: the last qualifying press's summary (capture-press-decision.js). `{ "unavailable": "conversation-changed" }` when that press was in an earlier conversation. |
-| `turns` | `order`, `active`, `readiness`, `math` (see below). |
-| `failures` | `chrome.storage.session.butterFailures`, the popup's session failures. |
-| `usage` | `saved`, `store`, `cache` (see below). |
-| `redacted` | How many values the privacy filter dropped. |
+| `turns`         | `order`, `active`, `readiness`, `math` (see below).                                                                                                                                      |
+| `rail`          | `order`, `state`, `ticks`: the rail's questions against ChatGPT's turn order, what is lit and pinned, and every tick's style and box (see below).                                        |
+| `failures`      | `chrome.storage.session.butterFailures`, the popup's session failures.                                                                                                                   |
+| `usage`         | `saved`, `store`, `cache` (see below).                                                                                                                                                   |
+| `redacted`      | How many values the privacy filter dropped.                                                                                                                                              |
 
 A part that could not be read is `{ "unavailable": <reason> }`, and the rest of the file still
-saves. The reasons are `missing` (no such source in this build), `error` (it threw), `redacted`
-(nothing allowed was left), `no-scroller` (no visible conversation scroller), `too-large` (cut
+saves. The reasons are `missing` (no such source in this build; for `rail`, no rail trace
+answered or the rail has not started), `error` (it threw), `redacted` (nothing allowed was left),
+`no-scroller` (no visible conversation scroller), `too-large` (cut
 by the whole-file cap) and `conversation-changed` (`pressDecision` only: the press was in an
 earlier conversation, see below).
 
 **Events.** Every event has `t`, in ms before the save (negative, rounded), and a `type`.
 Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtualizer's order.
 
-| `type` | Emitted when | Fields |
-|---|---|---|
-| `press` | A pointer press lands on the conversation scroller. | `kind` (`classic`, `overlay`, or null when it doesn't qualify), `reason` (the `classifyPress` rejection), `sequence` and `modelLength` (the press decision's), `layoutTurns`, `prepMs`, `scrollTop` |
-| `activation-reject` | A qualifying press doesn't become a drag. | `reason`: `wheel`, `key`, `not-held`, `selection` |
-| `seek` | Every seek update during a drag and its release. | `top`, `turn`, `offset`, `layout`, `known`, `items`, `textFallback`, `renderMs`, `jsMs` |
-| `preview` | The previewed question or the way it is shown changes. | `turn`, `mode` (`layout`, `estimate`, `text-fallback`, `unseen`), `layout`, `unseen`, `items` (rendered preview items), `estimate` (estimate surface shown), `textFallback` |
-| `preview-miss` | Along with a `preview` whose mode isn't `layout`. | `turn` (the turn the estimate or excerpt stands in for), `reason` (the mode), `layoutReason` (the press decision's reason for that turn) |
-| `release` | The drag ends, or a press ends without one. | `reason` (`pointerup`, `wheel`, `blur`, `chat-switch` and the other `finish()` reasons), `commit`, `top`, `durationMs` |
-| `commit` | The destination is handed to ChatGPT. | `turn`, `top`, `layout`, `retarget` (moved after an application adjustment) |
-| `retarget` | Landing corrects the scroll position. | `kind` (`drift`, `semantic`, `question`, `history-block`), `to`, `error` |
-| `reveal` | The real page is shown again. | `durationMs` (after the release), `error` (landing error in px), `timedOut`, `matched`, `fallback` (semantic anchor) |
-| `record` | The layout cache records a turn. | `turn`, `items`, `blocks`, `refresh` (replaces a record), `approx` (has estimated formula boxes) |
-| `rejection` | The layout cache rejects a turn's snapshot. | `turn`, `reason` (`core.validateSnapshot` reasons such as `math-pending`, `placeholder`, `zero-block`, and `estimated`) |
-| `restore` | Remount restore gives a turn its recorded sizes. | `turn`, `blocks` |
-| `conversation` | The page is on a different conversation than before, without a page load (ChatGPT switches chats in place). | `conversation`: the new conversation's ordinal on this page. The one the page loaded on is 0, and each switch adds 1, also back to an earlier chat or to a new-chat page. |
+| `type`              | Emitted when                                                                                                       | Fields                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `press`             | A pointer press lands on the conversation scroller.                                                                | `kind` (`classic`, `overlay`, or null when it doesn't qualify), `reason` (the `classifyPress` rejection), `sequence` and `modelLength` (the press decision's), `layoutTurns`, `prepMs`, `scrollTop`                                                                                                                                                                                                                                                                                                                                                      |
+| `activation-reject` | A qualifying press doesn't become a drag.                                                                          | `reason`: `wheel`, `key`, `not-held`, `selection`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `seek`              | Every seek update during a drag and its release.                                                                   | `top`, `turn`, `offset`, `layout`, `known`, `items`, `textFallback`, `renderMs`, `jsMs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `preview`           | The previewed question or the way it is shown changes.                                                             | `turn`, `mode` (`layout`, `estimate`, `text-fallback`, `unseen`), `layout`, `unseen`, `items` (rendered preview items), `estimate` (estimate surface shown), `textFallback`                                                                                                                                                                                                                                                                                                                                                                              |
+| `preview-miss`      | Along with a `preview` whose mode isn't `layout`.                                                                  | `turn` (the turn the estimate or excerpt stands in for), `reason` (the mode), `layoutReason` (the press decision's reason for that turn)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `release`           | The drag ends, or a press ends without one.                                                                        | `reason` (`pointerup`, `wheel`, `blur`, `chat-switch` and the other `finish()` reasons), `commit`, `top`, `durationMs`                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `commit`            | The destination is handed to ChatGPT.                                                                              | `turn`, `top`, `layout`, `retarget` (moved after an application adjustment)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `retarget`          | Landing corrects the scroll position.                                                                              | `kind` (`drift`, `semantic`, `question`, `history-block`), `to`, `error`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `reveal`            | The real page is shown again.                                                                                      | `durationMs` (after the release), `error` (landing error in px), `timedOut`, `matched`, `fallback` (semantic anchor)                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `record`            | The layout cache records a turn.                                                                                   | `turn`, `items`, `blocks`, `refresh` (replaces a record), `approx` (has estimated formula boxes)                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `rejection`         | The layout cache rejects a turn's snapshot.                                                                        | `turn`, `reason` (`core.validateSnapshot` reasons such as `math-pending`, `placeholder`, `zero-block`, and `estimated`)                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `restore`           | Remount restore gives a turn its recorded sizes.                                                                   | `turn`, `blocks`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `conversation`      | The page is on a different conversation than before, without a page load (ChatGPT switches chats in place).        | `conversation`: the new conversation's ordinal on this page. The one the page loaded on is 0, and each switch adds 1, also back to an earlier chat or to a new-chat page.                                                                                                                                                                                                                                                                                                                                                                                |
+| `rail-jump`         | A rail click (or a bookmark row) starts a jump and it picks its path.                                              | `jump` (the jump's number on this page; every `rail-*` event of one jump has it), `target` and `activeBefore` (rail question indexes; -1 for none), `scrollTop`, `scrollHeight`, `clientHeight`, `mountedFrom` and `mountedTo` (the mounted turns' range in the rail's questions, as `measure` finds it), `mounted` (the target was), `earlier` (an earlier-history trip), `path` (`glide`, `trip`, `takeover` of a trip in flight, or `repeat`: a click on the tick whose trip is under way, ignored), `direction` (`up` or `down`)                     |
+| `rail-try`          | Each mount try (at most 8): the jump scrolled to where it expects the unmounted target and waited up to 30 frames. | `jump`, `try` (1–8), `estimate` (the target's expected top, scroll px), `written` (`estimate - 64`, at least 0), `scrollTopRead` (read back right after the write: a clamped or refused write differs from `written`), `scrollHeight` (then), `frames` and `waitMs` (the wait), `scrollTopAfter`, `mountedFrom`, `mountedTo`, `mounted` (the target mounted), `live` (the jump was still current), and for the last mounted turn `lastBottom`, `lastWrapperBottom` (scroll px) and `lastWrapperInline` (its wrapper has the virtualizer's inline height) |
+| `rail-wait`         | A readiness wait after the target mounted ends.                                                                    | `jump`, `wait` (`page`: ChatGPT's earlier page near the top; `math`: formulas typesetting; `quiet`: three frames under 40 ms; `steady`: the target's top still for 150 ms; `recheck`: `steady` again after both), `durationMs`, `live` (false: the jump stopped being current during the wait), and for `math`, `pending` (formulas still untypeset: it timed out)                                                                                                                                                                                       |
+| `rail-cancel`       | Something stops a jump that has not ended. Cancels with no jump in progress (every wheel tick) are not recorded.   | `jump`, `cause`: the user's input (`wheel`, `touch`, `scrollbar`, `middle` for a middle-button press, `key`), or the rail's reason (`send`, `pre-jump`, `seek`: a scrollbar drag began, `conversation`: another chat opened, `off`: the rail was switched off, `other`)                                                                                                                                                                                                                                                                                  |
+| `rail-end`          | The jump ends.                                                                                                     | `jump`, `outcome` (below), `path`, `cause` (the `rail-cancel` before it, if any), `elapsedMs`, `tries` (mount tries used), `expired` (its deadline, 12 s, or 60 s for an earlier trip, had passed), `scrollTop`, `targetTop` (the target's top below the scroller's top, 64 when landed; null while unmounted)                                                                                                                                                                                                                                           |
+
+**Rail jump outcomes.** `landed`: the chat stopped on the target (also at the deadline, if the
+target was mounted and aligned then: `expired: true`); with a `cause`, something stopped
+it while it settled there (see the `rail-cancel` before it); after the user's input, `targetTop` is
+no longer 64; `never-mounted`: the target did not mount in 8 tries;
+`expired`: the deadline passed first; `cancelled`: see the `rail-cancel` before it, also when it
+came while the chat was sliding in on the target, before it stopped there; `superseded`: another click started a jump (a
+`takeover` if this one was a trip), likewise; `lost`: the target mounted,
+then was unmounted before it could land; `unpinned`: the jump was no longer pinned;
+`no-question`: its question left the rail; `error`: an exception ended it.
 
 **Conversation changes.** The recorder asks the seek code which conversation it is on
 (`__seekDump.conv`, the same URL check that ends a drag with `chat-switch`) before each event,
@@ -244,6 +261,20 @@ turn in the order.
 
 **`turns.math`**: one row per mounted turn.
 
+**`rail`**: read from the rail in the isolated world (`dev/rail-trace.js`), after `turns`.
+
+- `order`: `questions` (the rail's questions), `count` and `fiberFound` (ChatGPT's turn order, as
+  `turns.order`), `missing` (the indexes of rail questions that order lacks). The questions' ids
+  are compared inside the page and never stored.
+- `state`: `questions`, `active` (the active tick's index, -1 for none), `lit` (the lit ticks'
+  indexes), `busy` (the jump's busy tick, or null), `pinned`, `flying` (a jump travels) and
+  `hasPrev` (earlier history is not loaded yet).
+- `ticks`: `shown` (the rail is on screen), `pitch` (the tick pitch, px), `devicePixelRatio`,
+  `viewportScale` (`visualViewport.scale`), and `bars`, one row per tick: `index`, the style the
+  rail model set (`scaleX`, `scaleY`, `opacity`), the bar's measured box (`top`, `height`, `width`,
+  unrounded) and its tick's (`tickTop`, `tickHeight`). A bar thinner than the others at a
+  fractional `devicePixelRatio` shows as a different `height` with the same `scaleY`.
+
 **`usage`**:
 
 - `saved` is the popup's layout usage across accounts (`conversations`, `bytes`), from the worker's
@@ -259,27 +290,27 @@ turn in the order.
 
 capture-preview-record.js:
 
-| Snippet field | In the bug file |
-|---|---|
-| `schema` | `formatVersion` |
-| `turnIndex` | `turns.active.turnIndex` |
-| `selection` | `turns.active.selection`. `explicit-index` has no counterpart: a shortcut can't take an index. |
-| `preview.active`, `updateTurnIndex`, `offset`, `layout`, `known`, `textFallback` | `turns.active.preview`, from the last `seek` event (the same values as `__seekDump`'s last update) |
-| `preview.estimateVisible` | `turns.active.preview.estimateVisible` |
-| `preview.renderedItems[]` | `turns.active.preview.renderedItems[]`. Only the preview's own classes (`it`, `math`, `display`) are kept, and `height` is rounded to 0.01 px. |
-| `memory.*` | `turns.active.memory.*`, same names. `recordedAt` is in ms before the save on the events' clock, or null for a stored record (the snippet gives the raw `performance.now()` time). |
-| `dom.mounted`, `dom.itemCount` | `turns.active.dom.mounted`, `turns.active.dom.itemCount` |
-| `dom.turn[]` | `turns.active.dom.turn[]`. `index`, `parent` and `contentVisibility` are the same. `tag` is `other` outside the HTML, SVG and MathML tags `dev/recorder.js` lists. `classes` and `dataAttributeNames` keep only the names it lists, with `classCount` for the total (a hashed `AdaptiveStreaming-…` class reads `adaptive-streaming`). `height` and `top` are rounded to 0.01 px. A `.katex` element is one node with `collapsed` (its descendant count). The tree stops at 1,000 nodes, marked `truncated: true`. |
-| `persisted` | Left out. Reading saved variants is an asynchronous storage load through the page bridge, up to 10 s, and the load updates expiry and access times. A snapshot is taken synchronously while the thumb may be held. `memory.source: "restored"` and the readiness rows' `fromStorage` show whether stored geometry is in use. Paste the snippet when the saved variants themselves matter. |
+| Snippet field                                                                    | In the bug file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`                                                                         | `formatVersion`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `turnIndex`                                                                      | `turns.active.turnIndex`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `selection`                                                                      | `turns.active.selection`. `explicit-index` has no counterpart: a shortcut can't take an index.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `preview.active`, `updateTurnIndex`, `offset`, `layout`, `known`, `textFallback` | `turns.active.preview`, from the last `seek` event (the same values as `__seekDump`'s last update)                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `preview.estimateVisible`                                                        | `turns.active.preview.estimateVisible`                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `preview.renderedItems[]`                                                        | `turns.active.preview.renderedItems[]`. Only the preview's own classes (`it`, `math`, `display`) are kept, and `height` is rounded to 0.01 px.                                                                                                                                                                                                                                                                                                                                                                      |
+| `memory.*`                                                                       | `turns.active.memory.*`, same names. `recordedAt` is in ms before the save on the events' clock, or null for a stored record (the snippet gives the raw `performance.now()` time).                                                                                                                                                                                                                                                                                                                                  |
+| `dom.mounted`, `dom.itemCount`                                                   | `turns.active.dom.mounted`, `turns.active.dom.itemCount`                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `dom.turn[]`                                                                     | `turns.active.dom.turn[]`. `index`, `parent` and `contentVisibility` are the same. `tag` is `other` outside the HTML, SVG and MathML tags `dev/allowlist.js` lists. `classes` and `dataAttributeNames` keep only the names it lists, with `classCount` for the total (a hashed `AdaptiveStreaming-…` class reads `adaptive-streaming`). `height` and `top` are rounded to 0.01 px. A `.katex` element is one node with `collapsed` (its descendant count). The tree stops at 1,000 nodes, marked `truncated: true`. |
+| `persisted`                                                                      | Left out. Reading saved variants is an asynchronous storage load through the page bridge, up to 10 s, and the load updates expiry and access times. A snapshot is taken synchronously while the thumb may be held. `memory.source: "restored"` and the readiness rows' `fromStorage` show whether stored geometry is in use. Paste the snippet when the saved variants themselves matter.                                                                                                                           |
 
 capture-record-readiness.js:
 
-| Snippet field | In the bug file |
-|---|---|
-| `schema` | `formatVersion` |
-| `rejectionDiagnosticsAvailable` | `turns.readiness.rejectionDiagnosticsAvailable` |
-| `turns[].currentSw` | `turns.readiness.currentSw`, once (it is the same on every row) |
-| `turns[]`, every other field | `turns.readiness.turns[]`, same names and the same `layoutReason` codes. `rowHeightNow` is rounded to 0.01 px. |
+| Snippet field                   | In the bug file                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `schema`                        | `formatVersion`                                                                                                |
+| `rejectionDiagnosticsAvailable` | `turns.readiness.rejectionDiagnosticsAvailable`                                                                |
+| `turns[].currentSw`             | `turns.readiness.currentSw`, once (it is the same on every row)                                                |
+| `turns[]`, every other field    | `turns.readiness.turns[]`, same names and the same `layoutReason` codes. `rowHeightNow` is rounded to 0.01 px. |
 
 The snippet refuses to run during a hold. The bug file reads readiness during a hold too, because
 the memory is copied first and the rows are only measured.
@@ -289,16 +320,17 @@ press was in an earlier conversation (`conversation-changed`).
 
 capture-math-pending.js:
 
-| Snippet field | In the bug file |
-|---|---|
-| `schema` | `formatVersion` |
-| `turns[].index` | `turns.math[].index`. It is the turn's index in the virtualizer's order, where the snippet counts mounted turns. It is null for a mounted turn outside the order. |
-| `formulas`, `withoutKatex`, `missingInsideCvBlock`, `displayMissing` | Same names in `turns.math[]` |
-| `kinds` | Separate counts: `katexError`, `mathmlOnly`, `partsNoRoot` (`katex-parts-no-root`), `rawText`, `empty`, and `other` (the snippet's `other:<tags>`, without the tag list) |
+| Snippet field                                                        | In the bug file                                                                                                                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema`                                                             | `formatVersion`                                                                                                                                                          |
+| `turns[].index`                                                      | `turns.math[].index`. It is the turn's index in the virtualizer's order, where the snippet counts mounted turns. It is null for a mounted turn outside the order.        |
+| `formulas`, `withoutKatex`, `missingInsideCvBlock`, `displayMissing` | Same names in `turns.math[]`                                                                                                                                             |
+| `kinds`                                                              | Separate counts: `katexError`, `mathmlOnly`, `partsNoRoot` (`katex-parts-no-root`), `rawText`, `empty`, and `other` (the snippet's `other:<tags>`, without the tag list) |
 
 ### Privacy rules
 
-- Keys must be on the allowlist in `extension/dev/recorder.js` (`KEYS`).
+- Keys must be on the allowlist in `extension/dev/allowlist.js` (`KEYS`), which
+  `extension/dev/recorder.js` filters with.
 - Values must be numbers, booleans, null, or strings from its closed list (`CODES`). That list holds
   event types, reason codes and the known tag, class and data-attribute names.
 - Anything else is dropped, a key with its value, and counted in `redacted`. The filter applies to
@@ -321,7 +353,13 @@ has only passive hooks, each one null check while no dev listener is set:
 
 - `seek/preview-main.js`: `__seekDump.tap`, and the getter `__seekDump.conv` (the current
   conversation, read by the recorder only to notice a switch);
-- `seek/layout-cache-main.js`: `__butterLayoutCache.tap`.
+- `seek/layout-cache-main.js`: `__butterLayoutCache.tap`;
+- `rail/rail.js`: the rail trace hook `__butterRailTrace`, which `dev/rail-trace.js` defines in the
+  isolated world. Its fields are built only when the hook exists, and a hook that throws is ignored.
+  Its events reach the MAIN-world recorder as `butter-dev-rail` document events; the snapshot asks
+  for the `rail` part with `butter-dev-rail-snapshot-request` and gets it back, synchronously, as
+  `butter-dev-rail-snapshot-response`. In the dev build the trace reads layout at a jump's steps
+  (the scroller's numbers, the mounted turns' boxes), which the jump mostly reads there anyway.
 
 ### Caps and cost
 
@@ -329,20 +367,20 @@ These are measured with `xvfb-run -a node lab/harness/dev-capture-qa.mjs` (Chrom
 156.0.8078.4, a 140-turn fixture chat, dev build `0.1.0-alpha.15+dev.10`). The results are in
 [the run report](../runs/2026-11-08-full-snapshot-44/report.md) and its `summary.json`.
 
-| | Measured | Cap |
-|---|---|---|
-| Event size | 146 bytes mean, 185 at most (seek events are the largest) | |
-| Event rate | 7.4 a second in a busy 29 s session (wheel reading and 11 drags). Of these, 3.4 a second were not seeks. | |
-| Seek rate | 3.9–6.7 a second under Xvfb, where the thumb drag scrolls at that rate even with 228 mouse moves and 60 frames a second. Scroll events come at most once a frame, so the bound is 120 a second at 120 Hz. | |
-| Events | about 3,700 in 30 s at 120 Hz | `MAX_EVENTS` 4,000 |
-| Event bytes | 3,700 × 185 ≈ 690 KB | `MAX_BYTES` 750,000 |
-| `pressDecision` | 74 KB for 140 turns (about 530 bytes a turn) | |
-| `turns.readiness` | 48 KB for 140 turns (about 340 bytes a turn) | |
-| `turns.math` | 20 KB for 120 mounted turns (about 165 bytes a turn; ChatGPT mounts only the turns near the viewport) | |
-| `turns.active` | 6 KB; structure rows average 170 bytes, at most 1,000 rows ≈ 170 KB | 1,000 nodes |
-| Whole file | 184 KB for the busy session | `MAX_FILE_BYTES` 1,400,000 |
-| Snapshot | 5.4 ms median, 7.4 ms at most to build and serialize in the page | |
-| Recording | 2.5 µs per `record()` call. A seek update's script time was 0.8 ms median and 1.0 ms p95, both with and without the listener. The same scroll positions previewed the same turns the same way, and every release landed with 0 px error. | |
+|                   | Measured                                                                                                                                                                                                                                 | Cap                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| Event size        | 146 bytes mean, 185 at most (seek events are the largest)                                                                                                                                                                                |                            |
+| Event rate        | 7.4 a second in a busy 29 s session (wheel reading and 11 drags). Of these, 3.4 a second were not seeks.                                                                                                                                 |                            |
+| Seek rate         | 3.9–6.7 a second under Xvfb, where the thumb drag scrolls at that rate even with 228 mouse moves and 60 frames a second. Scroll events come at most once a frame, so the bound is 120 a second at 120 Hz.                                |                            |
+| Events            | about 3,700 in 30 s at 120 Hz                                                                                                                                                                                                            | `MAX_EVENTS` 4,000         |
+| Event bytes       | 3,700 × 185 ≈ 690 KB                                                                                                                                                                                                                     | `MAX_BYTES` 750,000        |
+| `pressDecision`   | 74 KB for 140 turns (about 530 bytes a turn)                                                                                                                                                                                             |                            |
+| `turns.readiness` | 48 KB for 140 turns (about 340 bytes a turn)                                                                                                                                                                                             |                            |
+| `turns.math`      | 20 KB for 120 mounted turns (about 165 bytes a turn; ChatGPT mounts only the turns near the viewport)                                                                                                                                    |                            |
+| `turns.active`    | 6 KB; structure rows average 170 bytes, at most 1,000 rows ≈ 170 KB                                                                                                                                                                      | 1,000 nodes                |
+| Whole file        | 184 KB for the busy session                                                                                                                                                                                                              | `MAX_FILE_BYTES` 1,400,000 |
+| Snapshot          | 5.4 ms median, 7.4 ms at most to build and serialize in the page                                                                                                                                                                         |                            |
+| Recording         | 2.5 µs per `record()` call. A seek update's script time was 0.8 ms median and 1.0 ms p95, both with and without the listener. The same scroll positions previewed the same turns the same way, and every release landed with 0 px error. |                            |
 
 Over `MAX_FILE_BYTES`, the snapshot drops whole parts first, largest first, as
 `{ "unavailable": "too-large" }`, until the rest fits without events. Then it drops the oldest

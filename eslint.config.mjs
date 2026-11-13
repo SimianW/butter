@@ -7,7 +7,6 @@ export const maxLines = 500;
 // Raising a cap needs the reason in the PR body; prefer splitting the file along a seam.
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 552,
-  'extension/dev/recorder.js': 574,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
@@ -170,8 +169,9 @@ export default [
     languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
   },
   {
-    files: ['extension/dev/sources.js'],
-    languageOptions: { globals: { require: 'readonly' } }, // falls back to recorder.js under node
+    // Fall back to allowlist.js under node.
+    files: ['extension/dev/sources.js', 'extension/dev/recorder.js'],
+    languageOptions: { globals: { require: 'readonly' } },
   },
   {
     // Dev build only (extension/dev/, left out of the store package).
@@ -214,8 +214,10 @@ export default [
       'extension/rail/card.js',
       'extension/page/reader.js',
       'extension/page/reader-main.js',
+      'extension/dev/allowlist.js',
       'extension/dev/recorder.js',
       'extension/dev/sources.js',
+      'extension/dev/rail-trace.js',
     ],
     languageOptions: { globals: { module: 'readonly' } },
   },

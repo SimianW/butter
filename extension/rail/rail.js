@@ -29,7 +29,7 @@
       host.inert = !!railOff();
     }
     if (railOff()) {
-      cancelJump();
+      cancelJump('off');
       card?.show(-2);
       model.leave();
       rail?.classList.remove('hot');
@@ -37,6 +37,18 @@
     if (model.seeking) showSeek();
     changed();
   });
+  // The dev build's trace hook (dev/rail-trace.js), which records a jump's steps in its bug file;
+  // undefined in a store build. `fields()` runs only when the hook is there, so the store build
+  // reads nothing for it. A hook that throws is ignored.
+  const trace = (type, fields) => {
+    const hook = globalThis.__butterRailTrace;
+    if (!hook) return;
+    try {
+      hook(type, fields());
+    } catch {
+      // the rail goes on
+    }
+  };
   const convOfPath = () => /\/c\/([0-9a-f-]{36})/.exec(location.pathname)?.[1] ?? null;
 
   // ---- Messages per conversation: rail/conversations.js, inside the model.
@@ -54,7 +66,7 @@
       if (m.before && m.conv === model.conv) turns.forget();
     } else if (m.type === 'send') {
       model.send(m);
-      cancelJump();
+      cancelJump('send');
     } // ChatGPT scrolls to the new question
     changed();
   });
@@ -65,7 +77,7 @@
     clearTimeout(seekTimer);
     turns.forget();
     turns.reband();
-    cancelJump();
+    cancelJump('conversation');
     card?.show(-2);
     if (c) {
       opening = { end: performance.now() + 8000, sc: null, top: -1, height: -1, since: 0 };
@@ -130,7 +142,7 @@
 
   // The send pre-jump (rail/pre-jump.js) belongs to the "smoother scrolling" switch, not to the
   // rail's: it runs with the rail off.
-  ButterPreJump({ scroller: sc, cancel: cancelJump });
+  ButterPreJump({ scroller: sc, cancel: () => cancelJump('pre-jump') });
 
   // ---- Rail. Its look: rail/style.js; its card: rail/card.js.
   let host = null,
@@ -367,7 +379,7 @@
         kick();
       }, 1000);
     } else {
-      if (!model.seeking) cancelJump();
+      if (!model.seeking) cancelJump('seek');
       model.seek(m);
       showSeek();
     }
@@ -462,10 +474,13 @@
         model.hold(!keyboard);
       }
     },
+    trace,
   });
-  // Stops a jump in progress and shows the chat again at once.
-  function cancelJump() {
+  trace('rail', () => ({ model, turns, host: () => host, bars: () => bars }));
+  // Stops a jump in progress and shows the chat again at once. `cause`, for the dev build's trace:
+  // the user's input (rail/turns.js `scrolled`), `off`, `send`, `pre-jump`, `conversation` or `seek`.
+  function cancelJump(cause) {
     endOpening();
-    jump.cancel();
+    jump.cancel(cause);
   }
 })();

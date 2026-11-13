@@ -6,9 +6,7 @@
 // snippets it never calls prepare(), flushes measurements, hydrates or clears storage.
 // Page objects are passed in, so node --test runs it against planted state.
 (() => {
-  const names =
-    globalThis.ButterDevRecorder?.names ??
-    (typeof module !== 'undefined' ? require('./recorder.js').names : null);
+  const names = globalThis.ButterDevAllowlist ?? require('./allowlist.js');
   const TAGS = new Set(names.TAGS),
     CLASSES = new Set(names.CLASSES),
     DATA_ATTRIBUTES = new Set(names.DATA_ATTRIBUTES);

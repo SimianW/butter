@@ -36,10 +36,19 @@ def dev_manifest(manifest):
         raise ValueError("expected the isolated content scripts first, then the MAIN-world ones")
     isolated, main = scripts
     # After the store scripts: the content script relays to the MAIN-world recorder, which
-    # listens to the seek and layout-cache hooks (sources.js reads the turns and usage it saves);
-    # the toast confirms a save on the page.
+    # listens to the seek and layout-cache hooks and the rail trace (sources.js reads the turns and
+    # usage it saves; allowlist.js is its privacy filter's lists); the toast confirms a save.
     isolated["js"] += [f"{DEV_DIR}/content.js", f"{DEV_DIR}/toast.js"]
-    main["js"] += [f"{DEV_DIR}/recorder.js", f"{DEV_DIR}/sources.js", f"{DEV_DIR}/recorder-main.js"]
+    # The rail trace defines the rail's trace hook, which rail/rail.js reads as it starts.
+    if "rail/rail.js" not in isolated["js"]:
+        raise ValueError("expected rail/rail.js among the isolated content scripts")
+    isolated["js"].insert(isolated["js"].index("rail/rail.js"), f"{DEV_DIR}/rail-trace.js")
+    main["js"] += [
+        f"{DEV_DIR}/allowlist.js",
+        f"{DEV_DIR}/recorder.js",
+        f"{DEV_DIR}/sources.js",
+        f"{DEV_DIR}/recorder-main.js",
+    ]
     # dev/worker.js imports the store worker, then adds the shortcut handling.
     manifest["background"]["service_worker"] = f"{DEV_DIR}/worker.js"
     manifest["permissions"] = [*manifest.get("permissions", []), "downloads"]

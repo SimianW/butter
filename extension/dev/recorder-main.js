@@ -1,6 +1,6 @@
 // Dev build only. MAIN world, after seek/preview-main.js, dev/recorder.js and dev/sources.js:
-// records the seek and layout-cache hooks' summaries for 30 s, and builds a snapshot when
-// dev/content.js asks. Reads only Butter's own diagnostics and the page structure the
+// records the seek and layout-cache hooks' summaries and the rail trace's events
+// (dev/rail-trace.js) for 30 s, and builds a snapshot when dev/content.js asks. Reads only Butter's own diagnostics and the page structure the
 // diagnostics snippets read; no page text, no requests.
 (() => {
   const dump = globalThis.__seekDump,
@@ -63,6 +63,59 @@
   };
   if (dump) dump.tap = listen;
   if (cache) cache.tap = listen;
+  // The rail trace's events, from the isolated world (dev/rail-trace.js).
+  document.addEventListener('butter-dev-rail', (e) => {
+    let m;
+    try {
+      m = JSON.parse(e.detail);
+    } catch {
+      return;
+    }
+    if (typeof m?.type === 'string') listen(m.type, m.fields);
+  });
+
+  // The snapshot's `rail` part: the rail trace answers inside this dispatch, once per snapshot
+  // (read on its first part). The questions' ids are compared with ChatGPT's turn order here and
+  // never stored: `order.missing` lists the rail questions the order lacks, by rail index.
+  const railPart = () => {
+    let reply = null;
+    const ask = () => {
+      if (reply) return reply;
+      let detail = null;
+      const receive = (e) => {
+        if (typeof e.detail === 'string') detail = e.detail;
+      };
+      document.addEventListener('butter-dev-rail-snapshot-response', receive);
+      document.dispatchEvent(new CustomEvent('butter-dev-rail-snapshot-request'));
+      document.removeEventListener('butter-dev-rail-snapshot-response', receive);
+      try {
+        reply = detail === null ? { unavailable: 'missing' } : JSON.parse(detail);
+      } catch {
+        reply = { unavailable: 'error' };
+      }
+      return reply;
+    };
+    const part = (fn) => () => {
+      const r = ask();
+      return r.unavailable ? { unavailable: r.unavailable } : fn(r);
+    };
+    return {
+      order: part(({ ids }) => {
+        const sc = ButterDevSources.scrollerOf(document);
+        if (!sc) return { unavailable: 'no-scroller' };
+        const order = ButterDevSources.turnOrder(sc),
+          known = new Set(order.ids);
+        return {
+          questions: ids.length,
+          count: order.ids.length,
+          fiberFound: order.fiberFound,
+          missing: ids.flatMap((id, i) => (known.has(id) ? [] : [i])),
+        };
+      }),
+      state: part((r) => r.state),
+      ticks: part((r) => r.ticks),
+    };
+  };
 
   document.addEventListener('butter-dev-snapshot-request', (e) => {
     let request;
@@ -110,6 +163,7 @@
             : decision;
         },
         turns: page.turns,
+        rail: railPart(),
         failures: () => request.failures,
         usage: { saved: () => request.usage, ...page.usage },
       },
