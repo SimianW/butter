@@ -246,6 +246,29 @@ test('a retried clear with the same request id deletes nothing saved since', asy
   assert.deepEqual(await excerpts(f), ['saved after the clear']);
 });
 
+test('a retried clear whose first token write failed still tells the tabs', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const id = crypto.randomUUID();
+  f.failStorageWrites(1);
+  assert.deepEqual(await clearAll(f, id), { error: 'bookmark-storage' });
+  assert.equal(f.marks.size, 0);
+  assert.deepEqual(await clearAll(f, id), { count: 0, bytes: 0 });
+  assert.equal(f.changes.filter((c) => 'butterBookmarksCleared' in c).length, 1);
+});
+
+test('a retry after a failed token write keeps a bookmark saved in between', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const id = crypto.randomUUID();
+  f.failStorageWrites(1);
+  await clearAll(f, id);
+  await create(f, mark({ excerpt: 'saved between the tries' }));
+  assert.equal((await clearAll(f, id)).count, 1);
+  assert.deepEqual(await excerpts(f), ['saved between the tries']);
+  assert.equal(f.changes.filter((c) => 'butterBookmarksCleared' in c).length, 1);
+});
+
 test('usage and clear are refused from a tab, from another extension and without a valid request', async () => {
   const f = workerFixture();
   await create(f, mark());

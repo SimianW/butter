@@ -39,7 +39,7 @@ The `state` object store contains three non-content control values:
 |---|---|---|
 | `generation` | Integer, initially absent/zero | Incremented on a new clear; rejects delayed pre-clear puts. Retained through clear, layout-off and worker restarts, until uninstall/removing extension storage. |
 | `clears` | `[{"id":"a random UUID","time":1793740001000}]` | Most recent 64 public clear request ids and local timestamps, for durable retry deduplication. Contains no account or chat identity. Kept until displaced by newer clear requests or extension storage removal. |
-| `bookmarkClears` | Same shape as `clears` | The same for the popup's bookmark Clear (`butter-bookmark-clear`): a retried request clears once. |
+| `bookmarkClears` | Same shape as `clears` | The same for the popup's bookmark Clear (`butter-bookmark-clear`): a retried request clears once, and writes the cleared token again. |
 
 Geometry expires 30 days after `time`, even if recently used. Expired rows are physically pruned
 on geometry operations (usage/load/write); an idle extension does not run an alarm solely to delete

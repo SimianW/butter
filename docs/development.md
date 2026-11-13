@@ -355,8 +355,10 @@ the layout setting, `layoutConsent` or layout Clear.
 
 Usage and clear need no identity, so only extension pages may send them: a sender without a tab
 (the popup) or one of Butter's own pages open in a tab; a content script gets
-`{ error: 'bookmark-sender' }`. Clear runs on the same queue as the other writes and then writes
-`chrome.storage.local.butterBookmarksCleared` (a fresh UUID): each tab's store client
+`{ error: 'bookmark-sender' }`. Clear runs on the same queue as the other writes, empties the
+store once per `requestId`, and then writes `chrome.storage.local.butterBookmarksCleared` (a fresh
+UUID) on every accepted request, a retry of an applied id included, so a retry after a failed
+token write still tells the tabs: each tab's store client
 (`ButterBookmarkStore.cleared`) hands it to its bookmark session, which drops its lists and
 republishes, and the popup reads usage again. Bookmarks show on the page only while Butter, the
 `rail` key and the `bookmark` key are on (`ButterStatus.bookmarksOn`; in a tab, neither `rail` nor

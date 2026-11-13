@@ -21,6 +21,7 @@ function workerFixture({
     commandListeners = [],
     tabMessages = [];
   const counters = { opens: 0, reads: 0, writes: 0 };
+  let storageFailures = 0; // chrome.storage.local.set calls still to fail
   const database = {
     transaction() {
       const tx = {};
@@ -91,6 +92,7 @@ function workerFixture({
       local: {
         get: async () => structuredClone(settings),
         set: async (value) => {
+          if (storageFailures > 0 && storageFailures--) throw new Error('storage write failed');
           Object.assign(settings, value);
           changes.push(value);
           for (const fn of events)
@@ -180,6 +182,8 @@ function workerFixture({
     command: (name, tab) => commandListeners.forEach((fn) => fn(name, tab)),
     tabMessages,
     setShortcut: (key) => (shortcut = key),
+    // The next `n` chrome.storage.local writes fail, as when the worker stops mid-request.
+    failStorageWrites: (n = 1) => (storageFailures = n),
   };
 }
 function attachStorage(ctx, events, worker = workerFixture()) {

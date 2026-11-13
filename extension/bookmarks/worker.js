@@ -30,8 +30,9 @@
   });
   const usage = () => bookmarks(async (rows) => measure(await request(rows.getAll())));
   // Clear empties the store once per request id: the popup retries the identical request, which
-  // must not delete a bookmark saved after the first try went through. Then every tab hears the
-  // token and drops its lists.
+  // must not delete a bookmark saved after the first try went through. Every accepted request,
+  // a retry included, then writes the token, so tabs hear it even when the first try stopped
+  // between the two steps; a tab that hears it twice just reads its lists again.
   async function clear(requestId) {
     const result = await bookmarks(
       async (rows, state) => {
@@ -39,13 +40,12 @@
         if (clears.some((x) => x.id === requestId)) return measure(await request(rows.getAll()));
         state.put([...clears, { id: requestId, time: Date.now() }].slice(-64), 'bookmarkClears');
         rows.clear();
-        return { count: 0, bytes: 0, cleared: true };
+        return { count: 0, bytes: 0 };
       },
       ['bookmarks', 'state'],
     );
-    if (!result.cleared) return result;
     await chrome.storage.local.set({ butterBookmarksCleared: crypto.randomUUID() });
-    return { count: 0, bytes: 0 };
+    return result;
   }
   const row = (x) => {
     const b = B.clean(x);
