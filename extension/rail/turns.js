@@ -169,8 +169,8 @@
 
     // Records where the mounted turns are now, adds them to `seen`, and returns their range in `qs`
     // ([Infinity, -1] if none). The turn after them starts where the last one ends, which keeps an
-    // estimate below a tall turn from landing inside it again. The last one ends where its row does:
-    // ChatGPT's virtualizer keeps each turn in a row of the height it reserved, and a turn whose
+    // estimate below a tall turn from landing inside it again. The last one ends where its wrapper
+    // does: ChatGPT's virtualizer gives each turn's wrapper the height it reserved, and a turn whose
     // blocks have not rendered since it mounted is shorter than that.
     const measure = (seen) => {
       const qs = model.qs;
@@ -188,8 +188,8 @@
           a = Math.min(a, j);
           if (j > b) {
             b = j;
-            const row = el.parentElement;
-            bottom = (row?.style.height ? row.getBoundingClientRect() : r).bottom - top;
+            const wrapper = el.parentElement;
+            bottom = (wrapper?.style.height ? wrapper.getBoundingClientRect() : r).bottom - top;
           }
         }
       }
