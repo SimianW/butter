@@ -69,6 +69,19 @@ Butter's main switch off: every feature stops, though the fetch wrapper stays in
 _Avoid_: disabled
 _Where_: `popup/popup.js`
 
+**Storage row**:
+A popup row whose second line says what a store holds, then its Clear: Bookmarks ("12 saved, about
+7 KB") and Remember long-chat layouts ("14 chats, about 3.4 MB").
+_Avoid_: storage line, usage bar (the separate line and bar it replaced)
+_Where_: `popup/popup.js`, `popup/model.js`
+
+**Clear**:
+A storage row's text button that empties its whole store, every account, after asking with the count
+("Clear 12 bookmarks?"). Each row has its own clear machine; the bookmark Clear never touches layouts
+and the layout Clear never touches bookmarks.
+_Avoid_: reset, delete all
+_Where_: `popup/popup.js`, `bookmarks/worker.js`, `storage/layout-worker.js`
+
 ## Streaming
 
 **Seen block**:
@@ -210,6 +223,12 @@ The mark beside a tick (or the three dots) that holds bookmarks: one per questio
 holds, hollow when all are stale.
 _Avoid_: badge, indicator
 _Where_: `rail/model.js`, `rail/rail.js`
+
+**Bookmarks switch**:
+The popup's Bookmarks row (the `bookmark` key, group `bookmarks`). Bookmarks show only while Butter,
+the rail and this switch are on; off hides them and keeps the saved ones.
+_Avoid_: bookmark toggle
+_Where_: `shared/status.js` (`bookmarksOn`), `popup/popup.js`
 
 **Bookmark session**:
 A tab's bookmarks over time: the account and conversation in view, the list read from the store,

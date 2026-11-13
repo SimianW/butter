@@ -62,13 +62,17 @@ A slim rail on the right has one tick per question. Hover to preview a question,
 
 ![Question rail and its hover card](docs/media/store/screenshot-3-1280x800.png)
 
+### Bookmarks
+
+Select text in an answer and click Bookmark, or press the shortcut, to mark the spot; a dot on the rail takes you back. Butter keeps the first three lines of each bookmark on this computer. The popup shows how many bookmarks it holds and their size, switches bookmarks off (keeping the saved ones) and clears them all.
+
 ### Remember long-chat layouts
 
 Optional, and Butter asks first. Saved layouts help when you return to a long chat: layout numbers and formatting with one-way hashes, never chat text. They expire after 30 days, take at most 50 MB, and can be cleared in the popup. Turning this off deletes saved layouts and stops saving new ones.
 
 ### The popup and its settings
 
-Click Butter's toolbar icon to pause Butter, switch streaming, scrolling, the question rail or saved layouts on and off, clear saved layouts, or choose English or Chinese. Changes apply to open ChatGPT tabs immediately.
+Click Butter's toolbar icon to pause Butter, switch streaming, scrolling, the question rail, Ask in branch, bookmarks or saved layouts on and off, see how much is saved and clear bookmarks or saved layouts, or choose English or Chinese. Changes apply to open ChatGPT tabs immediately.
 
 ![Butter's popup with its feature switches and privacy summary](docs/media/store/screenshot-5-1280x800.png)
 

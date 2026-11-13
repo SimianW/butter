@@ -3,7 +3,8 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 360 px popup, bundled fonts, inline SVGs and translations. |
+| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 360 px popup, bundled fonts, inline SVGs and translations: the master card and one card of six rows. The two storage rows, Bookmarks and Remember long-chat layouts, show what their store holds and a Clear button on their second line, each with its own clear machine. |
+| `extension/popup/model.js` | The popup's pure parts (`ButterPopup`): size and saved-line formatting (a non-zero size under 1 KB reads 1 KB), the confirm question, a storage row's second line in priority order (`storageLine`), the clear machine (`clearFlow`) and the retried store request (`storeRequest`). |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
 | `extension/branch/logic.js` | Ask in branch, pure: message format, conversation identity, selection rule, one-time handoff jobs. |
@@ -12,7 +13,7 @@
 | `extension/page/reader-main.js` | The page reader's MAIN-world adapter (`__butterPageReader`) for seek: the same contract as `page/reader.js` for the facts seek reads, with its own copy of the answer-root rule and the message-id attributes (no code is shared across worlds). Seek's blocks (`blocksIn`: an answer root's children except wide blocks, table frames and `hr`), the preview's items (`previewItemsIn`: question bubbles and every answer-root child), the markdown columns (`firstColumn`, `columnsIn`, `hasAnswer`) and a turn's message id (`turnMessageId`). Each runs the same queries on the element it is given as seek ran inline (one; `turnMessageId` up to two); none reads layout. Loads before `seek/core-main.js`. |
 | `extension/branch/page.js` | ChatGPT DOM for Ask in branch: latest reply menu, composer, disclaimer row, reply keys; the real page adapter. |
 | `extension/branch/ui.js`, `extension/branch/content.js` | Shadow-root UI (question box, overlay, line) and the glue for both tabs; the original tab's Ask in branch cell in the selection pill. |
-| `extension/selection/pill.js` | The selection pill (`ButterPill`, #77): follows ChatGPT's "Ask ChatGPT" every frame (4 px right of it, flipped left without room, hidden with it and in Work mode, its resting look copied) and draws the registered cells in one pill, Ask in branch then Bookmark, with each cell's label 8 px below after 300 ms of hover. `register({ id, feature, icon, label, keys, shortcut, wants, activate, reset })`, `update()`, `hold(range, { place, lost })` (Ask in branch's question box anchors where ChatGPT's button last was), `release()`, `hide()`. Loads before both features' scripts. |
+| `extension/selection/pill.js` | The selection pill (`ButterPill`, #77): follows ChatGPT's "Ask ChatGPT" every frame (4 px right of it, flipped left without room, hidden with it and in Work mode, its resting look copied) and draws the registered cells in one pill, Ask in branch then Bookmark, with each cell's label 8 px below after 300 ms of hover. `register({ id, feature, icon, label, keys, shortcut, wants, activate, reset })` (`feature`: the switch in `data-butter-off`, or a list that must all be on; the Bookmark cell's is `['rail', 'bookmark']`), `update()`, `hold(range, { place, lost })` (Ask in branch's question box anchors where ChatGPT's button last was), `release()`, `hide()`. Loads before both features' scripts. |
 | `extension/branch/worker.js` | Loaded by the service worker: handoff jobs in `chrome.storage.session`. |
 | `extension/rail/conversations.js` | The rail's conversations (`ButterRailConversations`), pure: each conversation's messages oldest first, pages merged (`page`), sends (`send`), the list policy against the mounted turns (`reconcile`), and the items revision every new list takes. Loads before `rail/model.js`. |
 | `extension/rail/wave.js` | The hover wave's progress (`ButterRailWave`), pure: each tick's scale and opacity kept with its question, one frame's easing toward the model's targets (the interval clamped to 0–64 ms), and whether a frame is still due. Loads before `rail/model.js`. |
@@ -26,8 +27,8 @@
 | `extension/rail/rail.js` | The rail's DOM adapter: the shadow DOM built (its CSS from `rail/style.js`), the rail, ticks, three dots and dots patched from the model, frames only while the model says something moves, focus, and the rail switch and opening checks before a jump. It installs the turn tracker, the send pre-jump, the trip, the jump and the card (`rail/card.js`, once built). `ButterRail` (`WIDTH`, `inset()`, `setMarks`) is its interface; `butterNavTurn` is the turn tracker's (`rail/turns.js`). |
 | `extension/bookmarks/model.js` | Bookmarks, pure: the excerpt rule, identity (`key`), the stored allowlist (`clean`), grouping by question in answer order (and the earlier, unloaded history's group `EARLIER`), a selection's anchor (`anchor`), the shortcut's top paragraph (`topParagraph`), the tooltip's key hint (`keyHint`), resolution to live or stale (`resolve`, `matches`, `pale`), the rail's bookmark dot (`dotSize` from the pitch, `dotRight` from the tick's scale, `dotLook`: solid, hollow or faint), what the rail's hover card lists (`card`), what a tick's card holds when its question has bookmarks (`questionCard`), the bookmarks' accessible label (`label`), a tick's accessible name (`tickLabel`), the excerpt's first-line length (`firstLine`) and the Bookmark cell's `aria-keyshortcuts` (`ariaKeys`). |
 | `extension/bookmarks/wash.js` | The landing wash, pure (`ButterWash`): one box per rendered line from a range's rectangles (`boxes`), a code block's or a table's one box (`blockBox`), and the sweep or a block's fade-in, the hold and the fade (`plan`). |
-| `extension/bookmarks/client.js` | The store client (`ButterBookmarkStore.send`), which `content.js` hands to the bookmark session: one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port. |
-| `extension/bookmarks/session.js` | The bookmark session (`ButterBookmarkSession`), isolated world, no DOM or `chrome.*`: a factory over injected adapters (the store, the hash, page facts, the rail-off check, the account request, `publish` toward the rail and `outcome` toward the notification). It owns the account and conversation in view, the list read once per (account, conversation) and again only after it was unavailable, the raw ids behind hashed ones (kept across unmounts), staleness last seen in the tab, fresh dots and the earlier-to-loaded transfer, the supersession serial, seek deferral, the quiet re-check, and create, remove and their Undo. It publishes `{ revision, groups }` to `ButterRail.setMarks`. Loads after `client.js`. |
+| `extension/bookmarks/client.js` | The bookmark worker's client (`ButterBookmarkStore`): `send`, which `content.js` hands to the bookmark session (one version-1 runtime message, retried up to three times on `bookmark-storage` or a closed port); `cleared(fn)`, called on the popup's Clear token; and `readKey`/`key`, the Bookmark command's key Chrome reports. |
+| `extension/bookmarks/session.js` | The bookmark session (`ButterBookmarkSession`), isolated world, no DOM or `chrome.*`: a factory over injected adapters (the store, the hash, page facts, the bookmarks-off check (the rail or Bookmarks off, or Butter paused), the account request, `publish` toward the rail and `outcome` toward the notification). It owns the account and conversation in view, the list read once per (account, conversation) and again after it was unavailable, after bookmarks were off and after the popup's Clear (`cleared`), the raw ids behind hashed ones (kept across unmounts), staleness last seen in the tab, fresh dots and the earlier-to-loaded transfer, the supersession serial, seek deferral, the quiet re-check, and create, remove and their Undo. It publishes `{ revision, groups }` to `ButterRail.setMarks`. Loads after `client.js`. |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the Bookmark cell of the selection pill, the shortcut, the landing wash in its own layer, and the DOM the bookmark session works from: text nodes, line measuring, the selection's anchor, the top paragraph and `locate`. It builds the session over the page reader and `ButterBookmarkStore`, and turns page events (`butter-account`, `butter-seek-state`, `butter-settings`, clicks, the pointer or focus reaching the rail) into session calls. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages, and the `bookmark` command relayed to its tab. |
 | `extension/bookmarks/notice.js` | The bookmark notification (#77), top right: "Bookmark saved", "Bookmark removed" or "Already bookmarked", the first words and Undo, which runs the action the bookmark session handed over (a save's deletes it, a remove's stores it again); it never writes the store itself; 4 s, held by the pointer or focus; the first save ever expands it with the privacy text and Got it, which sets `bookmarkNotice: 'acknowledged'` in settings. |
@@ -55,12 +56,13 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
 - Page reader contract: `test/page-reader-contract.test.mjs` loads every `test/fixtures/page/*.html` in headless Chromium (Playwright, one browser for the file), injects each adapter listed in its `ADAPTERS` (`extension/page/reader.js`, isolated; `extension/page/reader-main.js`, MAIN) and runs each check written for a fact the adapter implements: message identity for both; answer roots, questions, paragraphs, replies, loose turns and every text node for the isolated reader; seek's blocks, preview items and markdown columns for the MAIN reader; all against the page's `data-expect-*` marks ([test/fixtures/page/README.md](../test/fixtures/page/README.md)). Run it alone with `node --test test/page-reader-contract.test.mjs`.
 - Streaming style cost: `test/stream-style-cost.test.mjs` streams blocks into the last answer of a synthetic long chat (nine 300-block history answers) in headless Chromium, one per frame, with the real `extension/stream/containment.css` and `stream/offscreen.js`, and counts the elements restyled per update (the `elementCount` of `UpdateLayoutTree` trace events, a count that does not vary between runs). A containment selector that restyles a whole answer per insertion fails it ([notes/runs/2026-11-11-replay-blocking](../notes/runs/2026-11-11-replay-blocking/report.md)).
 - Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 22 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
+- Popup storage rows (#108): `node lab/harness/popup-bookmarks-shots.mjs` shoots the real popup at 360 px for each panel of `mockups/popup-bookmarks.html` (plus paused and needs-rail), seeding synthetic bookmarks and layouts through the worker, and records each state's height in English and Chinese; `MOCKUP=mockups/popup-bookmarks.html` also compares every box with the mockup's (1 px tolerance). `OUT=<dir>` overrides the default `notes/runs/2026-11-13-popup-bookmarks/`.
   `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
   (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
   (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,
   branch off, branch fault, dark and Chinese, where that side has them. Each panel must match its
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
-  version label and the storage line masked; the run prints every panel's height and diff ratio,
+  version label and the storage rows' saved lines masked; the run prints every panel's height and diff ratio,
   then fails with a summary if any differ.
   The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
   it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
@@ -323,7 +325,7 @@ unless consent is `granted` and the saved layout option is not false. Persisted 
 require both. The in-page card asks first; the popup switch also records consent. While pending,
 usage reports zero and no layout data is saved. Setting layout false deletes layouts for all
 accounts and stops reads/writes; it is independent of the master optimization switch.
-The popup shows usage below Remember long-chat layouts and confirms Clear inline.
+The popup shows usage on the second line of Remember long-chat layouts, with Clear, and asks before it clears.
 Clear preserves settings, the migration marker and bounded non-content control metadata
 (generation and the latest 64 clear-operation ids). Clear retires disk-backed memory in open tabs; newly measured geometry can
 save again while the setting is on. Set the option false for a persistent opt-out.
@@ -343,11 +345,23 @@ stored ones also carry their `key`.
 | `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
 | `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
 | `butter-bookmark-key` | None (version 1 like the others) | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
+| `butter-bookmark-usage` | None | `{ count, bytes }` over the whole store (every account and conversation); `bytes` sums each stored row's UTF-8 JSON length |
+| `butter-bookmark-clear` | `requestId`: random UUID, reused on retry | `{ count: 0, bytes: 0 }`; a retried id clears nothing again and returns the current usage |
 
 Unknown or raw account/conversation ids get `{ error: 'bookmark-identity' }`, a malformed bookmark or
 another protocol version `{ error: 'bookmark-protocol' }`, a storage failure
 `{ error: 'bookmark-storage' }` (retry the same request up to three times). None of these depend on
 the layout setting, `layoutConsent` or layout Clear.
+
+Usage and clear need no identity, so only extension pages may send them: a sender without a tab
+(the popup) or one of Butter's own pages open in a tab; a content script gets
+`{ error: 'bookmark-sender' }`. Clear runs on the same queue as the other writes and then writes
+`chrome.storage.local.butterBookmarksCleared` (a fresh UUID): each tab's store client
+(`ButterBookmarkStore.cleared`) hands it to its bookmark session, which drops its lists and
+republishes, and the popup reads usage again. Bookmarks show on the page only while Butter, the
+`rail` key and the `bookmark` key are on (`ButterStatus.bookmarksOn`; in a tab, neither `rail` nor
+`bookmark` in `data-butter-off`); off hides the cell, the shortcut's effect, the dots and the wash
+and keeps the store.
 
 The `bookmark` command (manifest `commands`, suggested key Alt+Shift+M, Option+Shift+M on a Mac,
 rebindable in `chrome://extensions/shortcuts`) makes the worker send `{ version: 1, type:

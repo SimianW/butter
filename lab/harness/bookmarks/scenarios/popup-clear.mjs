@@ -25,7 +25,7 @@ export default {
     const line = () => p.locator('[data-store="bookmarks"]').first().evaluate((el) => el.closest('.row').querySelector('.d').textContent);
     await p.waitForFunction(() => /3 saved/.test(document.querySelector('label[for="sw-bookmarks"] .d')?.textContent));
     const saved = await line();
-    check('the Bookmarks row says how many are saved, every account, then Clear', /^3 saved, about \d+ KBClear$/.test(saved), { saved });
+    check('the Bookmarks row says how many are saved, every account, then Clear', /^3 saved, about \d+ KB Clear$/.test(saved), { saved });
 
     await p.locator('button.lk[data-store="bookmarks"]').click();
     const asked = await p.evaluate(() => {

@@ -42,8 +42,10 @@ hollow dot, a 1 px ring (solid at 45 % opacity under 4 px, too small for a ring)
 dot grows in over 180 ms and pulses one 600 ms halo; a question's last bookmark deleted fades its dot
 out over 160 ms; under reduced motion neither moves. The dot is no target: it takes no pointer
 events, is not focusable and is hidden from screen readers, so the pointer over it is over its tick's
-row, and the tick's name says what the question holds. No dots show while the rail is off or Butter
-is paused. Hovering or focusing a tick that holds bookmarks shows the question's
+row, and the tick's name says what the question holds. No dots show while the rail or Bookmarks is
+off or Butter is paused; switching Bookmarks back on brings them back without a reload. Clear on the
+popup's Bookmarks row empties the store for every account, and every open tab drops its bookmarks
+at once, so its dots and card rows go. Hovering or focusing a tick that holds bookmarks shows the question's
 usual card with its bookmarks under the question: the meta line, the question clamped to two lines,
 a divider, then one row per bookmark in answer order, each starting with a 5 px dot (`#d39e10` in
 light theme, `#e3c766` in dark; a hollow ring when the bookmark is stale, whose row is grey and says

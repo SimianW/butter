@@ -33,12 +33,13 @@ Each row in object store `geometry` has exactly the following fields:
 An index named `conversation` indexes `[account,conv]`; its values are the same hashes already
 listed. No text is stored in the index.
 
-The `state` object store contains two non-content control values:
+The `state` object store contains three non-content control values:
 
 | Key | Shape | Purpose/retention |
 |---|---|---|
 | `generation` | Integer, initially absent/zero | Incremented on a new clear; rejects delayed pre-clear puts. Retained through clear, layout-off and worker restarts, until uninstall/removing extension storage. |
 | `clears` | `[{"id":"a random UUID","time":1793740001000}]` | Most recent 64 public clear request ids and local timestamps, for durable retry deduplication. Contains no account or chat identity. Kept until displaced by newer clear requests or extension storage removal. |
+| `bookmarkClears` | Same shape as `clears` | The same for the popup's bookmark Clear (`butter-bookmark-clear`): a retried request clears once. |
 
 Geometry expires 30 days after `time`, even if recently used. Expired rows are physically pruned
 on geometry operations (usage/load/write); an idle extension does not run an alarm solely to delete
@@ -85,8 +86,10 @@ from chat text. Pending usage returns zero.
 
 ## Object store `bookmarks` (database version 2)
 
-Written only when the user bookmarks a paragraph, and deleted only by the user or by uninstalling.
-Independent of the layout setting, `layoutConsent`, TTL, the byte cap, eviction and layout Clear.
+Written only when the user bookmarks a paragraph, and deleted only by the user (× on a rail card, or
+the popup's bookmark Clear, which empties the store for every account) or by uninstalling.
+Independent of the layout setting, `layoutConsent`, TTL, the byte cap, eviction and layout Clear;
+the Bookmarks switch (`opts.bookmark`) hides bookmarks and stops new ones but deletes nothing.
 `storage/layout-worker.js` imports `bookmarks/worker.js`, which owns this store; each row is
 rebuilt through the allowlist in `bookmarks/model.js` (`ButterBookmarks.clean`) before it is written
 or returned.
