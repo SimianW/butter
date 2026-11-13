@@ -1,0 +1,167 @@
+{
+  "kind": "butter-diag",
+  "formatVersion": 1,
+  "version": "0.1.0-alpha.21+dev.2",
+  "trigger": "button",
+  "pointerHeld": false,
+  "settings": {
+    "enabled": true,
+    "lang": "en",
+    "layoutConsent": "granted",
+    "opts": {
+      "branch": true,
+      "container": true,
+      "cv": true,
+      "layout": true,
+      "older": true,
+      "rail": true,
+      "seek": true,
+      "throttle": true
+    }
+  },
+  "failures": {},
+  "order": {
+    "count": 3,
+    "mounted": 1,
+    "fiberFound": true,
+    "idsFromFallback": false,
+    "idsReason": null
+  },
+  "readiness": {
+    "rejectionDiagnosticsAvailable": true,
+    "currentSw": 1760,
+    "turns": [
+      {
+        "index": 0,
+        "mounted": true,
+        "hasRecord": true,
+        "items": 181,
+        "blocks": 179,
+        "recorder": {
+          "observed": true,
+          "generating": false,
+          "queued": false,
+          "measuring": false,
+          "attempted": true,
+          "lastRejection": "estimated"
+        },
+        "recordValidation": null,
+        "rowH": 11816.6669921875,
+        "measuredHeight": 0,
+        "rowHeightNow": 11815.56,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      },
+      {
+        "index": 1,
+        "mounted": false,
+        "hasRecord": true,
+        "items": 237,
+        "blocks": 236,
+        "recorder": null,
+        "recordValidation": null,
+        "rowH": 14795.556640625,
+        "measuredHeight": 0,
+        "rowHeightNow": null,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      },
+      {
+        "index": 2,
+        "mounted": false,
+        "hasRecord": true,
+        "items": 28,
+        "blocks": 24,
+        "recorder": null,
+        "recordValidation": null,
+        "rowH": 2776.666748046875,
+        "measuredHeight": 0,
+        "rowHeightNow": null,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      }
+    ]
+  },
+  "scrollerAtEarlierScrollbarPress": {
+    "matchesThreadScroller": true,
+    "threadScrollerCount": 2,
+    "threadScrollerSw": 1760,
+    "swBefore": 1760,
+    "sw": 1760,
+    "clientHeight": 1092,
+    "scrollHeight": 27033
+  },
+  "eventCount": 141,
+  "eventTypes": {
+    "rejection": 32,
+    "press": 1,
+    "preview": 1,
+    "seek": 104,
+    "release": 1,
+    "commit": 1,
+    "reveal": 1
+  },
+  "rejections": [
+    {
+      "turn": 0,
+      "reason": "estimated",
+      "count": 20
+    },
+    {
+      "turn": 1,
+      "reason": "estimated",
+      "count": 12
+    }
+  ],
+  "earlierScrollbarRelease": [
+    {
+      "t": -25953,
+      "type": "release",
+      "reason": "pointerup",
+      "commit": true,
+      "top": 23377.779296875,
+      "durationMs": 692.6999999880791
+    },
+    {
+      "t": -25945,
+      "type": "commit",
+      "turn": 1,
+      "top": 23377.779296875,
+      "layout": true,
+      "retarget": false
+    },
+    {
+      "t": -25837,
+      "type": "reveal",
+      "durationMs": 112.59999999403954,
+      "error": -0.1996612548828125,
+      "timedOut": false,
+      "matched": true,
+      "fallback": null
+    }
+  ],
+  "math": [
+    {
+      "index": 0,
+      "formulas": 0,
+      "withoutKatex": 0,
+      "katexError": 0,
+      "mathmlOnly": 0,
+      "partsNoRoot": 0,
+      "rawText": 0,
+      "empty": 0,
+      "other": 0,
+      "missingInsideCvBlock": 0,
+      "displayMissing": 0
+    }
+  ]
+}

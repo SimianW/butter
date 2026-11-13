@@ -1,0 +1,63 @@
+import { pathToFileURL } from 'node:url';
+const root = process.env.REPO_ROOT || process.cwd();
+const { chromium } = await import(pathToFileURL(root + '/node_modules/playwright/index.mjs'));
+import fs from 'node:fs/promises';
+const out = root + '/notes/runs/2026-11-13-rail-jump-returns';
+const html = `<!doctype html><style>
+body{margin:0;background:#222;color:white}.thread-scroll-container{height:900px;overflow:auto;overflow-anchor:none}
+.content{height:29400px;position:relative;container-type:inline-size}.window{position:relative}
+.row{position:absolute;left:0;right:0;contain:size}article{box-sizing:border-box;padding:20px 200px}button#native{position:fixed;left:10px;top:10px;z-index:2}
+</style><button id="native">Go to question 2</button><div class="thread-scroll-container"><div class="content"><div class="wrapper"><div class="window"></div></div></div></div>
+<script>
+const qs = new URLSearchParams(location.search), warm=qs.has('warm');
+const heights=[11817,14796,2777], tops=[100,11917,26713];
+const sc=document.querySelector('.thread-scroll-container'),win=document.querySelector('.window');
+window.fixture={samples:[],warm,heights,tops};
+function update(){
+ for(let i=0;i<3;i++){
+  const inWindow=tops[i]<sc.scrollTop+sc.clientHeight+200 && tops[i]+heights[i]>sc.scrollTop-200;
+  let row=win.querySelector('[data-row="'+i+'"]');
+  if(!inWindow){row?.remove();continue;}
+  if(row)continue;
+  row=document.createElement('div');row.className='row';row.dataset.row=i;row.style.cssText='top:'+tops[i]+'px;height:'+heights[i]+'px';
+  row.innerHTML='<article data-turn-key="q'+i+'" style="height:'+(i===0&&!warm?800:heights[i])+'px"><div data-talvt-turn-state="complete"><div data-user-message-bubble>Fixture question '+i+'</div><div data-message-author-role="assistant"><div data-markdown-text-style="assistant-message"><p>Artificial content</p></div></div></div></article>';
+  win.append(row);
+ }
+ fixture.samples.push({t:Math.round(performance.now()),top:sc.scrollTop,mounted:[...win.querySelectorAll('article')].map(e=>Number(e.dataset.turnKey.slice(1)))});
+}
+sc.addEventListener('scroll',update);update();
+document.querySelector('#native').onclick=()=>{sc.scrollTop=tops[1]-64;update()};
+setTimeout(()=>document.dispatchEvent(new CustomEvent('butter-nav',{detail:JSON.stringify({type:'page',conv:'00000000-0000-0000-0000-000000000001',before:null,hasPrev:false,items:tops.map((_,i)=>({id:'q'+i,q:'Fixture question '+i}))})})),300);
+</script>`;
+const results=[];
+let browserVersion;
+for(const useExtension of [false,true]){
+ const profile=await fs.mkdtemp('/tmp/butter-rail-jump-profile-');
+ const ext=root+'/extension';
+ const cx=await chromium.launchPersistentContext(profile,{headless:false,viewport:{width:1400,height:950},args:useExtension?[`--disable-extensions-except=${ext}`,`--load-extension=${ext}`]:[]});
+ try{
+  browserVersion = cx.browser().version();
+  await cx.route('**/*',r=>r.request().isNavigationRequest()?r.fulfill({contentType:'text/html',body:html}):r.abort());
+  const p=cx.pages()[0];
+  for(const warm of [false,true]){
+   await p.goto('https://chatgpt.com/c/00000000-0000-0000-0000-000000000001'+(warm?'?warm':''));
+   if(useExtension){const w=cx.serviceWorkers()[0]||await cx.waitForEvent('serviceworker');await w.evaluate(()=>chrome.storage.local.set({butter:{enabled:true,layoutConsent:'granted',opts:{container:true,cv:true,throttle:true,older:true,rail:true,seek:true,layout:true,branch:true,bookmark:true}}}));}
+   await p.waitForTimeout(1300);
+   const before=await p.evaluate(()=>({top:document.querySelector('.thread-scroll-container').scrollTop,mounted:[...document.querySelectorAll('article')].map(e=>Number(e.dataset.turnKey.slice(1)))}));
+   await p.evaluate(() => {
+    fixture.clickedAt = performance.now();
+    const warp = document.querySelector('chatgpt-butter-nav')?.shadowRoot.querySelector('.warp');
+    if (warp) new MutationObserver(() => {
+     if (warp.style.visibility === 'hidden' && fixture.releasedAfterMs == null)
+      fixture.releasedAfterMs = Math.round(performance.now() - fixture.clickedAt);
+    }).observe(warp, {attributes:true, attributeFilter:['style']});
+   });
+   if(useExtension)await p.locator('chatgpt-butter-nav .tick').nth(1).evaluate(e=>e.click());
+   else await p.locator('#native').click();
+   await p.waitForTimeout(6000);
+   const after=await p.evaluate(()=>{const sc=document.querySelector('.thread-scroll-container'),target=sc.querySelector('[data-turn-key="q1"]'),r=document.querySelector('chatgpt-butter-nav')?.shadowRoot;return{releasedAfterMs:fixture.releasedAfterMs??null,top:sc.scrollTop,targetTop:target?target.getBoundingClientRect().top-sc.getBoundingClientRect().top:null,busy:!!r?.querySelector('.tick.busy'),warp:r?.querySelector('.warp').style.visibility??null,mounted:[...sc.querySelectorAll('article')].map(e=>Number(e.dataset.turnKey.slice(1))),samples:fixture.samples}});
+   const result={extension:useExtension,warm,before,...after};results.push(result);console.log(JSON.stringify(result));
+  }
+ }finally{await cx.close();await fs.rm(profile,{recursive:true,force:true})}
+}
+await fs.writeFile(out+'/browser-control.json',JSON.stringify({browser:'Playwright headed Chromium under Xvfb',browserVersion,results},null,2));

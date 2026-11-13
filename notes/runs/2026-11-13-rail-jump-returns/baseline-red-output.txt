@@ -1,0 +1,30 @@
+{"scenario":"fully rendered","releasedAfterMs":448,"mounted":true,"targetTop":64,"scrollTop":11853,"busy":false,"warp":"hidden","writes":[450,11853,11853,11493,11853]}
+✔ a rail click lands on the unmounted next question with fully rendered source content (19.239404ms)
+{"scenario":"partial, then rendered after 1200 ms","releasedAfterMs":1408,"mounted":true,"targetTop":64,"scrollTop":11853,"busy":false,"warp":"hidden","writes":[450,836,836,11853,11853,11493,11853]}
+✔ a rail click lands on the unmounted next question with partial, then rendered after 1200 ms source content (6.951986ms)
+{"scenario":"partial","releasedAfterMs":4128,"mounted":false,"targetTop":null,"scrollTop":836,"busy":false,"warp":"hidden","writes":[450,836,836,836,836,836,836,836,836]}
+✖ a rail click lands on the unmounted next question with partial source content (7.456807ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.377475
+
+✖ failing tests:
+
+test at ../../../../../../tmp/butter-rail-jump-baseline-Q49wRC/test/rail-jump-returns.test.mjs:91:3
+✖ a rail click lands on the unmounted next question with partial source content (7.456807ms)
+  AssertionError [ERR_ASSERTION]: jump did not land on clicked question 2 within 12.8 seconds: mounted=false, targetTop=null, scrollTop=836
+      at TestContext.<anonymous> (file:///tmp/butter-rail-jump-baseline-Q49wRC/test/rail-jump-returns.test.mjs:94:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
