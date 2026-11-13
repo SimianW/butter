@@ -33,15 +33,65 @@ test('the rail inset keeps overlay scrollbars clear and follows a gutter that co
   assert.equal(RailModel().inset(1200), 0, 'before a box');
 });
 
-test('the rail shows for two or more stops in a wide enough chat; the three dots show for unloaded history', () => {
+test('the rail shows from one question in a wide enough chat; the three dots show for unloaded history', () => {
   const r = rail({ count: 1 });
-  assert.equal(r.m.shows(false), false, 'one question: no rail');
+  assert.equal(r.m.shows(false), true, 'one question: a rail of one tick');
+  assert.equal(rail({ count: 0 }).m.shows(false), false, 'no question: no rail');
   const e = rail({ count: 1, hasPrev: true });
   assert.equal(e.m.shows(false), true, 'one question and the three dots');
   assert.equal(e.m.layout(1200).moreHidden, false);
   assert.equal(e.m.shows(true), false, 'the rail switched off');
   e.m.measure({ ...box(), width: 559 });
   assert.equal(e.m.shows(false), false, 'narrower than 560 px');
+});
+
+test('one question: one tick lit at the active scale, no three dots, the rail centred and 34 px high', () => {
+  const r = rail({ count: 1 });
+  const l = r.m.layout(1200),
+    css = Object.fromEntries(l.css);
+  assert.equal(l.bars.length, 1);
+  assert.equal(l.moreHidden, true);
+  assert.equal(css['--pitch'], '14px');
+  // The reading region runs 52..760 px; the rail is 2 × 10 px padding and one 14 px pitch.
+  assert.equal(css['--y'], `${406 - 34 / 2}px`);
+  assert.equal(r.m.tickY(0), 406, "the tick on the reading region's centre");
+  r.kick(['q0']); // the question on screen: the lit band
+  r.settle();
+  assert.deepEqual(r.bars(), [[1.75, 1, 1]], 'ACTIVE: 21 px');
+  // Opening shows the prediction, the latest question, which is the only one.
+  r.m.opening(true);
+  r.render();
+  assert.deepEqual(r.bars(), [[1.75, 1, 1]]);
+  r.m.opening(false);
+  // The wave under the pointer, and back.
+  r.point(0);
+  r.settle();
+  assert.deepEqual(r.bars(), [[2.6, 1, 1.6]]);
+  r.m.leave();
+  r.kick();
+  r.settle();
+  assert.deepEqual(r.bars(), [[1.75, 1, 1]]);
+  // Any y over the rail is the one tick; there are no three dots above it.
+  const t = top(r.m);
+  assert.deepEqual(
+    [t - 16, t - 1, t, t + 13, t + 1000].map((y) => r.m.indexAt(y)),
+    [0, 0, 0, 0, 0],
+  );
+});
+
+test("one question's bookmark: its dot 4 px left of the single tick, on its row", () => {
+  const r = rail({ count: 1 });
+  r.kick(['q0']);
+  r.settle();
+  const d = r.marks({ q0: [false] });
+  assert.deepEqual(
+    d.dots.map((x) => [x.id, x.create, x.q, x.size, x.look]),
+    [['q0', true, 0, 4, 'solid']],
+  );
+  assert.deepEqual(d.labels, ['Question 0 · Bookmark: B0']);
+  // Right edge: the 21 px lit tick and the 4 px gap; centre: 10 px padding and half a pitch.
+  assert.deepEqual(dotAt(r.dots.get('q0'), 4), { right: 25, center: 17 });
+  assert.deepEqual(r.marks({}).drop, [['q0', true]], 'removed: it fades out');
 });
 
 test('history prepended during a wave keeps each tick with its question; new ones start at rest', () => {

@@ -402,9 +402,9 @@
   const render = () => {
     renderQueued = false;
     const n = model.questions();
-    // Bookmarks follow the conversation in view whether or not the rail shows: a one-question chat's
-    // filled button and its remove work, and leaving a chat (for the home page, say) clears what
-    // bookmarks/content.js last sent, so coming Back sends its marks again.
+    // Bookmarks follow the conversation in view whether or not the rail shows: in a chat narrower
+    // than 560 px the filled button and its remove work, and leaving a chat (for the home page, say)
+    // clears what bookmarks/content.js last sent, so coming Back sends its marks again.
     globalThis.ButterBookmarkPage?.sync(model.conv, model.items, !model.hasPrev, model.rev);
     if (!model.shows(railOff())) {
       host?.removeAttribute('data-on');

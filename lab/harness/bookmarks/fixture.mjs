@@ -10,7 +10,7 @@
 //   earlier messages come two questions per page from /messages?before=<first> when the chat is
 //   scrolled near its top (#51 addendum). Each page is answered after `pageDelay` ms; `pages`
 //   counts them.
-// - `turns`: the chat holds only its first `turns` questions (1: a one-question chat, no rail).
+// - `turns`: the chat holds only its first `turns` questions (1: a one-question chat, one tick).
 // - `tail`: filler paragraphs after every answer, so that one turn fills the view (#71); `css` is
 //   added to the page's style.
 // - `asked` (Map or object, question -> text) gives some questions other text, as the mockup's
