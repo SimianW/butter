@@ -26,8 +26,8 @@ On a version change, update together:
 
 - both manifest fields;
 - "Current version" in `README.md` and "当前版本" in `README.zh-CN.md`;
-- a `## [<version_name>] - YYYY-MM-DD` entry at the top of `CHANGELOG.md`, written by the rules in
-  [Changelog](#changelog);
+- `CHANGELOG.md`: rename `## [Unreleased]` to `## [<version_name>] - YYYY-MM-DD` and leave a new,
+  empty `## [Unreleased]` above it (see [Changelog](#changelog));
 - the package: `python3 scripts/package.py` names the zip after `version_name`.
 
 `python3 scripts/check-version.py` verifies the manifest, README, and changelog version sites.
@@ -43,10 +43,20 @@ the old names: 0.0.1-alpha is now 0.1.0-alpha, 0.0.2-alpha is 0.1.0-alpha.1, and
 ## Changelog
 
 `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): one entry per
-build, newest first, its changes grouped under `###` category headings. Add the entry in the PR
-that changes the version.
+build, newest first, below a standing `## [Unreleased]` heading; changes are grouped under `###`
+category headings.
+
+Every PR with a change the user can notice adds its bullet under `## [Unreleased]`, in that same
+PR. The PR that changes the version renames that heading to the version and date, and leaves a
+new, empty `## [Unreleased]` above it.
 
 ```markdown
+## [Unreleased]
+
+### Fixed
+
+- Fixed a crash when opening settings.
+
 ## [0.1.0-alpha.16] - 2026-11-08
 
 ### Changed
