@@ -1,5 +1,5 @@
 // First seam: actual rail modules over the shared fake DOM. Models compositor autoscroll
-// between layout notifications after a completed rail jump. No product code is changed.
+// between layout notifications after a completed rail jump.
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { setup } from './helpers/rail-boot.mjs';

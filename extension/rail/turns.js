@@ -111,11 +111,13 @@
         s.addEventListener(
           'pointerdown',
           (e) => {
+            if (s !== sc) return;
             const box = model.box;
-            if (s === sc && e.target === s && box && e.clientX >= box.right) scrolled();
+            // The scrollbar, or a middle press anywhere in the chat: Chrome's autoscroll.
+            if (e.button === 1 || (e.target === s && box && e.clientX >= box.right)) scrolled();
           },
           { passive: true },
-        ); // scrollbar
+        );
       }
       mounted.set(el.getAttribute('data-turn-key'), el);
       if (s === sc) {

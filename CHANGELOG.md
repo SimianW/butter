@@ -15,6 +15,11 @@
   shows on its own row, and its Clear asks first with the number of chats, like bookmarks.
 - Changed the first-bookmark notice to say you can clear all bookmarks in the popup.
 
+### Fixed
+
+- Fixed the chat shaking and refusing to scroll when you hold the middle mouse button to scroll
+  after a jump from the question rail.
+
 ## [0.1.0-alpha.21] - 2026-11-12
 
 ### Fixed
