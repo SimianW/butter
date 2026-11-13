@@ -18,15 +18,8 @@ state going wrong.
 
 ## 2. Red
 
-Build the feedback loop with the `diagnosing-bugs` skill (Phase 1). In Butter, the loop is one of
-these, in order of preference:
-
-1. a unit test under `test/` (`node --test`), when the logic runs without a page;
-2. a fixture harness under `lab/harness/` that sends no ChatGPT requests (like `nav-earlier.mjs`
-   or `nav-takeovers.mjs`);
-3. a live lab script, only when the bug needs a real ChatGPT page; the PR names it and the steps.
-
-These are the agreed seams for the `tdd` skill; no need to ask the user for them.
+Build the feedback loop with the `diagnosing-bugs` skill (Phase 1), at the first seam in
+[docs/agents/seams.md](agents/seams.md) that reaches the bug.
 
 Done when: one command goes **red** on this bug, and you have run it and seen it fail.
 
