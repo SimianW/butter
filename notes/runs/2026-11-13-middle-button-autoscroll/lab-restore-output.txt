@@ -1,0 +1,2 @@
+restore lab 1: restarting browser (now null, cdp down, want {"extensions":["<default-extension>"],"flags":[]})
+chromium: started (pid 1185049)

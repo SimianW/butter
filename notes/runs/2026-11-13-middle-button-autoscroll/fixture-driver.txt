@@ -1,0 +1,43 @@
+import { chromium } from '/home/Simian/.t3/worktrees/butter/t3-b2200121-830474b87dd0fee6/node_modules/playwright/index.mjs';
+import fs from 'node:fs/promises';
+const out='/home/Simian/.t3/worktrees/butter/t3-b2200121-830474b87dd0fee6/notes/runs/2026-11-13-middle-button-autoscroll';
+const root='/home/Simian/snap/chromium/common/butter-middle-diagnosis';
+const keys=['container','cv','throttle','older','rail','seek','layout','branch','bookmark'];
+const html=`<!doctype html><style>body{margin:0}.thread-scroll-container{width:100vw;height:100vh;overflow:auto;overflow-anchor:none}.min-h-full{min-height:100%;container-type:inline-size}article{padding:30px 250px}p{line-height:24px;margin:20px 0}</style><div class="thread-scroll-container"><div class="[container-type:inline-size] min-h-full">${Array.from({length:4},(_,t)=>`<div><article data-turn-key="turn-${t}" data-testid="conversation-turn-${t}"><div data-talvt-turn-state="complete"><div data-user-message-bubble>Fixture question ${t}</div><div data-message-author-role="assistant" data-message-id="answer-${t}"><div data-markdown-text-style="assistant-message">${Array.from({length:90},(_,i)=>`<p>Fixture block ${i}. ${'Synthetic paragraph for scrolling and layout. '.repeat(8)}</p>`).join('')}</div></div></div></article></div>`).join('')}</div></div>`;
+const results=[];
+for(const build of ['branch','main','none']) {
+ const profile=await fs.mkdtemp('/tmp/butter-middle-profile-');
+ const ext=build==='none'?null:`${root}/${build}`;
+ const cx=await chromium.launchPersistentContext(profile,{headless:false,viewport:{width:1400,height:950},args:['--enable-blink-features=MiddleClickAutoscroll',...(ext?[`--disable-extensions-except=${ext}`,`--load-extension=${ext}`]:[])]});
+ try {
+ await cx.route('**/*',r=>r.request().isNavigationRequest()?r.fulfill({contentType:'text/html',body:html}):r.abort());
+ const p=cx.pages()[0];
+ const cases=[{label:'plain',pin:false,resize:false},{label:'resize-without-pin',pin:false,resize:true},{label:'pin-without-resize',pin:true,resize:false},{label:'pin-resize',pin:true,resize:true},...(build==='branch'?keys.map(disable=>({label:`off-${disable}`,pin:true,resize:true,disable})):[]),...(build!=='none'?[{label:'wheel-after-pin',pin:true,resize:true,wheel:true}]:[])];
+ for(const c of cases){
+  await p.goto('https://chatgpt.com/c/00000000-0000-0000-0000-000000000001');
+  if(ext){const w=cx.serviceWorkers()[0]||await cx.waitForEvent('serviceworker');await w.evaluate(({keys,disable})=>chrome.storage.local.set({butter:{enabled:true,layoutConsent:'granted',opts:Object.fromEntries(keys.map(k=>[k,k!==disable]))}}),{keys,disable:c.disable});}
+  await p.waitForTimeout(1250);
+  await p.evaluate(()=>{const sc=document.querySelector('.thread-scroll-container');window.sc=sc;sc.scrollTop=document.querySelectorAll('article')[1].offsetTop-64;});
+  await p.waitForTimeout(100);
+  const pinned=c.pin&&ext&&c.disable!=='rail';
+  if(pinned){await p.locator('chatgpt-butter-nav .tick').nth(1).evaluate(e=>e.click());await p.waitForTimeout(700);}
+  await p.evaluate(resize=>{
+    window.events=[];window.samples=[];const start=performance.now();
+    const sample=(kind)=>{samples.push({t:Math.round(performance.now()-start),kind,top:sc.scrollTop,height:sc.scrollHeight})};window.sample=sample;
+    for(const type of ['pointerdown','mousedown','pointermove','mousemove','wheel'])addEventListener(type,e=>events.push({type,t:Math.round(performance.now()-start),button:e.button??null,buttons:e.buttons??null}),true);
+    sc.addEventListener('scroll',()=>sample('scroll')); sample('start');
+    if(resize){let n=0;window.resizeTimer=setInterval(()=>document.querySelector('article').style.paddingTop=(30+(++n%2))+'px',32)}
+  },c.resize);
+  await p.mouse.move(700,300);
+  if(c.wheel){await p.mouse.wheel(0,1800);await p.waitForTimeout(1600);}
+  else {await p.mouse.down({button:'middle'});await p.mouse.move(700,600,{steps:20});await p.waitForTimeout(1600);}
+  const data=await p.evaluate(()=>{clearInterval(window.resizeTimer);sample('end');const seek=typeof __seekDump==='function'?__seekDump():null;return {samples,events,off:document.documentElement.getAttribute('data-butter-off'),seek:seek?{active:seek.active,pending:seek.pending,sessions:seek.sessions.length,presses:seek.presses.map(({kind,reason,onScroller})=>({kind,reason,onScroller}))}:null}});
+  if(!c.wheel)await p.mouse.up({button:'middle'});
+  await p.keyboard.press('Escape');
+  const tops=data.samples.map(s=>s.top),start=tops[0],end=tops.at(-1),backwards=tops.slice(1).filter((t,i)=>t<tops[i]-3).length;
+  const result={build,case:c.label,pinned:!!pinned,start,end,progress:end-start,backwards,...data};results.push(result);
+  console.log(JSON.stringify({build,case:c.label,start,end,progress:result.progress,backwards,seek:data.seek}));
+  await fs.writeFile(`${out}/matrix.json`,JSON.stringify({chromium:cx.browser().version(),input:'Playwright trusted mouse.down(middle), mouse.move(700,600,steps=20); MiddleClickAutoscroll explicitly enabled',fixture:'4 turns, 90 synthetic paragraphs each; optional 1px height changes every 32ms',results},null,2));
+ }
+ }finally{await cx.close();await fs.rm(profile,{recursive:true,force:true});}
+}

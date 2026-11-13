@@ -1,0 +1,11 @@
+{
+  "temporaryMainWorktreeRemoved": true,
+  "copiedExtensionsRemoved": true,
+  "labLockReleased": true,
+  "perfLockReleased": true,
+  "labHomeTabRestored": false,
+  "labLeftStoppedAsFound": true,
+  "restoreFailure": "configured Chromium executable absent; restore attempt timed out with exit 124",
+  "privateScreenshotsSavedInRepo": false,
+  "privacyScanPassed": true
+}

@@ -1,0 +1,28 @@
+wheel: [{"before":316,"after":316},{"before":396,"after":396},{"before":476,"after":476},{"before":556,"after":556},{"before":636,"after":636},{"before":716,"after":716}]
+middle: [{"before":316,"after":236},{"before":316,"after":236},{"before":316,"after":236},{"before":316,"after":236},{"before":316,"after":236},{"before":316,"after":236}]
+✔ wheel scrolling after a rail jump keeps downward progress through resize notifications (14.449973ms)
+✖ middle scrolling after a rail jump keeps downward progress through resize notifications (3.776438ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.158074
+
+✖ failing tests:
+
+test at ../../../../../../tmp/butter-middle-main/test/middle-button-autoscroll.test.mjs:8:3
+✖ middle scrolling after a rail jump keeps downward progress through resize notifications (3.776438ms)
+  AssertionError [ERR_ASSERTION]: downward scrolling must not be reset by the old rail pin; start=236, final=236
+      at TestContext.<anonymous> (file:///tmp/butter-middle-main/test/middle-button-autoscroll.test.mjs:36:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
