@@ -1,0 +1,90 @@
+[
+  {
+    "id": "after",
+    "state": "Everything on; 12 bookmarks and 14 chats of layouts saved",
+    "en": 524,
+    "enLine": "12 saved, about 7 KB Clear",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "after-empty",
+    "state": "Everything on; nothing saved",
+    "en": 524,
+    "enLine": "Select text, mark the spot to jump back",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "选中文字，标记位置，随时跳回"
+  },
+  {
+    "id": "after-confirm",
+    "state": "Clear on Bookmarks clicked: the question",
+    "en": 524,
+    "enLine": "Clear 12 bookmarks?",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "清除 12 个书签？"
+  },
+  {
+    "id": "after-confirm-layouts",
+    "state": "Clear on layouts clicked: the question",
+    "en": 524,
+    "enLine": "12 saved, about 7 KB Clear",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "after-cleared",
+    "state": "Bookmarks just cleared (held at \"Cleared\")",
+    "en": 524,
+    "enLine": "Cleared",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "已清除"
+  },
+  {
+    "id": "after-off",
+    "state": "Bookmarks switched off, 12 still saved",
+    "en": 524,
+    "enLine": "12 saved, about 7 KB Clear",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "after-dark",
+    "state": "As `after`, dark theme",
+    "en": 524,
+    "enLine": "12 saved, about 7 KB Clear",
+    "mockup": "match",
+    "zh": 524,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "after-tallest",
+    "state": "Layout consent pending (its note shows), 12 bookmarks saved",
+    "en": 594,
+    "enLine": "12 saved, about 7 KB Clear",
+    "mockup": "match",
+    "zh": 577,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "extra-paused",
+    "state": "Butter paused: the whole card greys, Clear and switches still usable",
+    "en": 524,
+    "enLine": "12 saved, about 7 KB Clear",
+    "zh": 524,
+    "zhLine": "已保存 12 个，约 7 KB 清除"
+  },
+  {
+    "id": "extra-needs-rail",
+    "state": "Question rail off, Bookmarks on, nothing saved",
+    "en": 524,
+    "enLine": "Needs the question rail",
+    "zh": 524,
+    "zhLine": "需要先打开问题导航条"
+  }
+]

@@ -35,7 +35,7 @@ test('both storage rows show what is saved, then Clear, in both languages', asyn
   // The saved line is a live region; Clear is a real button outside it.
   assert.match(
     f.html(),
-    /<div class="d"><span role="status">12 saved, about 4 KB<\/span><button type="button" class="lk" data-clear="ask" data-store="bookmarks">Clear<\/button><\/div>/,
+    /<div class="d"><span role="status">12 saved, about 4 KB<\/span> <button type="button" class="lk" data-clear="ask" data-store="bookmarks">Clear<\/button><\/div>/,
   );
   f.changed({ butter: { newValue: { layoutConsent: 'granted', lang: 'zh' } } }, 'local');
   await tick();

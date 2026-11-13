@@ -87,9 +87,9 @@ function popup(answers = {}) {
 
 // Each row's switch, name and description, in display order. A row is a label that wraps its
 // switch, so the regex only matches a switch found before the row's closing tag.
-// The description is the second line's text; a storage row's Clear button shows as " [Clear]".
+// The description is the second line's text; a storage row's Clear button shows as "[Clear]".
 const text = (html) =>
-  html.replace(/<button [^>]*>(.*?)<\/button>/g, ' [$1]').replace(/<[^>]+>/g, '');
+  html.replace(/<button [^>]*>(.*?)<\/button>/g, '[$1]').replace(/<[^>]+>/g, '');
 const rows = (html) =>
   [
     ...html.matchAll(

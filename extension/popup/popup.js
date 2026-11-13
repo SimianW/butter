@@ -130,7 +130,7 @@ const repo = 'https://github.com/SimianW/butter';
 const switchButton = (key, on, name) =>
   `<button class="tg ${on ? 'on' : ''}" id="sw-${key}" role="switch" aria-checked="${on}" aria-label="${name}" data-switch="${key}"></button>`;
 // A storage row's second line: the saved line and Clear, or what ButterPopup.storageLine picks.
-// The text is a live region; Clear is a real button beside it, outside the region.
+// The text is a live region; Clear is a real button after it (a space and 8 px), outside the region.
 function storageLine(t, name, description) {
   const st = stores[name],
     shown = st.shown(),
@@ -151,7 +151,7 @@ function storageLine(t, name, description) {
   }[kind];
   // A failed clear offers Clear again while there is a count to name.
   const retry = kind === 'saved' || (kind === 'unavailable' && count > 0);
-  return `<div class="d"><span role="status">${text}</span>${retry ? clear : ''}</div>`;
+  return `<div class="d"><span role="status">${text}</span>${retry ? ` ${clear}` : ''}</div>`;
 }
 // While a storage row asks, the question replaces the whole row: no icon, no switch.
 function askRow(t, name) {
