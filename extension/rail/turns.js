@@ -8,7 +8,7 @@
 // - `changed()`: what the rail shows may have changed (scroller box, reconciled questions);
 // - `kick()`: the lit band changed (not called while a jump travels);
 // - `sync()`: check which conversation is open (a newly visible scroller or turn can precede the URL poll);
-// - `scrolled()`: the user scrolls (wheel, touch, scrollbar, scroll keys): a jump in progress stops;
+// - `scrolled()`: the user scrolls (wheel, touch, scrollbar, a middle-button press, scroll keys): a jump in progress stops;
 // - `mounted(el)`: a turn mounted in the visible scroller;
 // - `ignore(target)`: a scroll key aimed here is not the chat's (the rail's own host).
 // test/rail-turns.test.mjs drives it directly.
