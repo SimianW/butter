@@ -19,6 +19,8 @@
 
 - Fixed the chat shaking and refusing to scroll when you hold the middle mouse button to scroll
   after a jump from the question rail.
+- Fixed a jump from the question rail to the next question sometimes running for seconds and then
+  showing the question you started from.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 

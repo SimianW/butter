@@ -1,0 +1,512 @@
+{
+  "browser": "Playwright headed Chromium under Xvfb",
+  "browserVersion": "158.0.8127.18",
+  "results": [
+    {
+      "extension": false,
+      "warm": false,
+      "before": {
+        "top": 0,
+        "mounted": [
+          0
+        ]
+      },
+      "releasedAfterMs": null,
+      "top": 11853,
+      "targetTop": 64,
+      "busy": false,
+      "warp": null,
+      "mounted": [
+        0,
+        1
+      ],
+      "samples": [
+        {
+          "t": 20,
+          "top": 0,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1377,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1387,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "extension": false,
+      "warm": true,
+      "before": {
+        "top": 0,
+        "mounted": [
+          0
+        ]
+      },
+      "releasedAfterMs": null,
+      "top": 11853,
+      "targetTop": 64,
+      "busy": false,
+      "warp": null,
+      "mounted": [
+        0,
+        1
+      ],
+      "samples": [
+        {
+          "t": 13,
+          "top": 0,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1370,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1382,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "extension": true,
+      "warm": false,
+      "before": {
+        "top": 0,
+        "mounted": [
+          0
+        ]
+      },
+      "releasedAfterMs": 4541,
+      "top": 836,
+      "targetTop": null,
+      "busy": false,
+      "warp": "hidden",
+      "mounted": [
+        0
+      ],
+      "samples": [
+        {
+          "t": 35,
+          "top": 0,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1423,
+          "top": 2,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1440,
+          "top": 11,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1456,
+          "top": 32,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1473,
+          "top": 76,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1489,
+          "top": 156,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1506,
+          "top": 236,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1522,
+          "top": 290,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1539,
+          "top": 328,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1556,
+          "top": 356,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1572,
+          "top": 377,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1590,
+          "top": 394,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1606,
+          "top": 407,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1622,
+          "top": 418,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1639,
+          "top": 427,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1656,
+          "top": 836,
+          "mounted": [
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "extension": true,
+      "warm": true,
+      "before": {
+        "top": 0,
+        "mounted": [
+          0
+        ]
+      },
+      "releasedAfterMs": 722,
+      "top": 11853,
+      "targetTop": 64,
+      "busy": false,
+      "warp": "hidden",
+      "mounted": [
+        0,
+        1
+      ],
+      "samples": [
+        {
+          "t": 18,
+          "top": 0,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1398,
+          "top": 2,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1415,
+          "top": 11,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1431,
+          "top": 32,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1448,
+          "top": 76,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1464,
+          "top": 156,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1481,
+          "top": 236,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1498,
+          "top": 290,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1514,
+          "top": 328,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1531,
+          "top": 356,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1548,
+          "top": 377,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1564,
+          "top": 394,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1582,
+          "top": 407,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1598,
+          "top": 418,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1614,
+          "top": 427,
+          "mounted": [
+            0
+          ]
+        },
+        {
+          "t": 1632,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1647,
+          "top": 11493,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1848,
+          "top": 11495,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1865,
+          "top": 11505,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1882,
+          "top": 11528,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1898,
+          "top": 11581,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1915,
+          "top": 11659,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1931,
+          "top": 11714,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1947,
+          "top": 11751,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1965,
+          "top": 11777,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1981,
+          "top": 11796,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 1998,
+          "top": 11810,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2014,
+          "top": 11822,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2031,
+          "top": 11830,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2048,
+          "top": 11837,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2064,
+          "top": 11843,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2082,
+          "top": 11847,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2097,
+          "top": 11850,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2114,
+          "top": 11852,
+          "mounted": [
+            0,
+            1
+          ]
+        },
+        {
+          "t": 2131,
+          "top": 11853,
+          "mounted": [
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  ]
+}
