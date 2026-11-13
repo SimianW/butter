@@ -32,6 +32,15 @@ const katex = (tex, glyphs, display) => {
     ? `<span class="math-display" data-math-display="true" data-math-source="${esc(tex)}"><span class="katex-display">${inner}</span></span>`
     : `<span data-math-display="false" data-math-source="${esc(tex)}">${inner}</span>`;
 };
+// Citation tags (?cite): ChatGPT's source pill after a sentence, markup and classes as in
+// test/fixtures/page/live-snapshot.html (search chatgpt-citation): a `contents` span holding a
+// select-none inline-flex wrapper around a[data-testid="chatgpt-citation"], which holds an <svg>
+// icon, a favicon <img> and the truncated source name. The "+N" count of a tag with more sources
+// sits in the same pill (the user's recording); its exact markup wasn't captured.
+export const CITE = { name: 'Apple Supp…', more: '+1' };
+const GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+const citation = (name, more = '') =>
+  `<span class="contents" data-chatgpt-copy-reference="0" data-markdown-copy="contents"><span class="ms-1 inline-flex max-w-full items-center font-sans select-none relative" data-search-result-target=""><a data-testid="chatgpt-citation" aria-label="${esc(name)}" type="button" aria-haspopup="dialog" aria-expanded="false" data-state="closed" class="no-underline! group flex h-4.5 max-w-[15rem] overflow-hidden rounded-xl pe-2 ps-1 text-[9px] leading-none font-medium select-none" rel="noopener noreferrer" target="_blank" href="#"><span class="relative start-0 bottom-0 flex h-full w-full items-center"><span class="flex min-w-0 flex-1 items-center gap-1"><span class="Favicon-xZwQNw inline-block shrink-0 rounded-2xs size-3 overflow-hidden rounded-full"><span class="absolute inset-0 flex items-center justify-center"><svg aria-hidden="true" focusable="false" height="12" viewBox="0 0 12 12" width="12" xmlns="http://www.w3.org/2000/svg"><use href="#" fill="currentColor"></use></svg></span><img alt="" class="absolute inset-0 h-full w-full rounded-2xs object-contain opacity-0" decoding="async" draggable="false" referrerpolicy="no-referrer" src="${GIF}"></span><span class="max-w-[15ch] min-w-0 grow truncate overflow-hidden text-center">${esc(name)}</span>${more ? `<span class="more">${more}</span>` : ''}</span></span></a></span></span>`;
 // Live English text; the Chinese UI's wording wasn't checked, so the fixture uses this for both.
 const DISCLAIMER = 'ChatGPT can make mistakes. Check important info.';
 // ChatGPT's own labels per UI language (live, 2026-11-07).
@@ -87,6 +96,8 @@ export function fixtureHtml(url) {
   // once; the reply's text then fills it.
   const placeholder = q.has('placeholder');
   const math = q.has('math'); // a paragraph with inline and display formulas below the quote
+  // Paragraphs with citation tags, one of them after a formula, and one with a plain image.
+  const cite = q.has('cite');
   // Failure types: no More actions button, no "Branch conversation" item, no "Branch in new chat"
   // item, a "Branch in new chat" that leaves the route alone, a composer that never shows.
   const fail = q.get('fail') || '';
@@ -134,6 +145,11 @@ header .t{font-size:15px;color:var(--fg2)}
 .katex{font:1.15em/1.2 "Times New Roman",serif;white-space:nowrap}
 .katex-mathml{position:absolute;clip:rect(1px,1px,1px,1px);padding:0;border:0;height:1px;width:1px;overflow:hidden}
 .math-display{display:block;margin:0 0 14px}.katex-display{display:block;text-align:center}
+/* Tailwind's rules for the citation tag's classes, as ChatGPT's stylesheet has them. */
+.contents{display:contents}.inline-flex{display:inline-flex}.flex{display:flex}.inline-block{display:inline-block}
+.select-none{user-select:none}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.opacity-0{opacity:0}.size-3{width:12px;height:12px}
+[data-testid=chatgpt-citation]{border-radius:12px;padding:0 8px 0 4px;font-size:9px;line-height:18px;height:18px;gap:4px;background:var(--bubble);color:var(--fg2);text-decoration:none}
 [role=menu]{position:fixed;background:var(--pop);border:1px solid var(--hair);border-radius:14px;padding:6px;z-index:60;min-width:220px;font-size:14px}
 [role=menuitem]{padding:7px 10px;border-radius:8px;cursor:pointer;display:flex;gap:8px;align-items:center}
 </style></head><body>
@@ -149,6 +165,13 @@ header .t{font-size:15px;color:var(--fg2)}
    <p id="math-before">Gradient descent with step ${katex(MATH.inline, '1/L', false)}:</p>
    ${katex(MATH.display, 'xk+1=xk−∇f(xk)/L', true)}
    <p id="math-after">converges at rate ${katex(MATH.rate, 'O(1/k)', false)}.</p>`
+       : ''
+   }${
+     cite
+       ? `
+   <p id="cite"><span>The battery lasts all day.</span>${citation(CITE.name, CITE.more)}<span> It charges in an hour.</span>${citation('Wikipedia')}<span> Sources vary.</span></p>
+   <p id="cite-math"><span>Its error falls as </span>${katex(MATH.rate, 'O(1/k)', false)}<span> per step.</span>${citation(CITE.name, CITE.more)}<span> Then it stops.</span></p>
+   <p id="image"><span>The chart </span><img alt="chart" width="16" height="16" src="${GIF}"><span> shows it.</span></p>`
        : ''
    }
   </div>
