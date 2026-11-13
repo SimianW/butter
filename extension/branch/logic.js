@@ -177,7 +177,7 @@
       if (walked !== container) return { i: startOf.get(walked), off: 0 };
       if (container.nodeType === 3) return { i: startOf.get(container), off: offset };
       const child = container.childNodes[offset];
-      return { i: child ? startOf.get(child) : endOf.get(container), off: 0 };
+      return { i: startOf.get(child) ?? endOf.get(container), off: 0 }; // no child there, or a hidden element's own
     };
     const a = point(range.startContainer, range.startOffset, false),
       b = point(range.endContainer, range.endOffset, true);
