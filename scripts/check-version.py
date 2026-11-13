@@ -71,7 +71,15 @@ def check(root):
 
     changelog = read("CHANGELOG.md")
     if changelog is not None:
-        first = next((line for line in changelog.splitlines() if line.startswith("## ")), None)
+        # A standing Unreleased heading first (AGENTS.md, Changelog), then the current build's entry.
+        headings = [line for line in changelog.splitlines() if line.startswith("## ")]
+        if not headings or headings[0] != "## [Unreleased]":
+            errors.append(
+                f"CHANGELOG.md: first ## heading is {headings[0] if headings else None!r}; expected '## [Unreleased]'"
+            )
+        else:
+            headings = headings[1:]
+        first = headings[0] if headings else None
         heading = re.fullmatch(r"## \[(.+)\] - ([0-9]{4}-[0-9]{2}-[0-9]{2})", first or "")
         valid_date = False
         if heading:
@@ -81,7 +89,9 @@ def check(root):
             except ValueError:
                 pass
         if not heading or heading[1] != name or not valid_date:
-            errors.append(f"CHANGELOG.md: first ## heading is {first!r}; expected '## [{name}] - YYYY-MM-DD' with a valid date")
+            errors.append(
+                f"CHANGELOG.md: first version heading is {first!r}; expected '## [{name}] - YYYY-MM-DD' with a valid date"
+            )
 
     return name, version, errors
 

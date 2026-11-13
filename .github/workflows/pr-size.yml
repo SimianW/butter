@@ -2,11 +2,17 @@ name: PR size
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    # `edited` covers a change of the PR's base branch, which moves the merge base.
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read
   pull-requests: write
+
+# One run per PR at a time: two overlapping runs could each leave a label.
+concurrency:
+  group: pr-size-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   pr-size:

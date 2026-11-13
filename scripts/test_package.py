@@ -37,7 +37,10 @@ class PackageTests(unittest.TestCase):
         (self.extension / "manifest.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
         (self.root / "README.md").write_text(f"Current version: **{name}**\n", encoding="utf-8")
         (self.root / "README.zh-CN.md").write_text(f"当前版本：**{name}**\n", encoding="utf-8")
-        (self.root / "CHANGELOG.md").write_text(f"## [{name}] - 2026-11-04\n", encoding="utf-8")
+        (self.root / "CHANGELOG.md").write_text(
+            f"# Changelog\n\n## [Unreleased]\n\n### Fixed\n\n- Fixed a thing.\n\n## [{name}] - 2026-11-04\n",
+            encoding="utf-8",
+        )
 
     def run_script(self, script, *args):
         return subprocess.run(
@@ -263,6 +266,20 @@ class PackageTests(unittest.TestCase):
                 path, _ = self.package("--test", "demo")
                 self.assertEqual(self.archive_manifest(path)["version"], numeric)
                 self.assertEqual(self.run_script("check-version.py").returncode, 0)
+
+    def test_version_check_requires_the_unreleased_heading_first(self):
+        (self.root / "CHANGELOG.md").write_text("## [0.1.0-alpha.10] - 2026-11-04\n", encoding="utf-8")
+        result = self.run_script("check-version.py")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("expected '## [Unreleased]'", result.stderr)
+
+    def test_version_check_reads_the_version_entry_below_unreleased(self):
+        for entry in ("## [0.1.0-alpha.9] - 2026-11-04", "## [0.1.0-alpha.10] - 2026-13-40", ""):
+            with self.subTest(entry=entry):
+                (self.root / "CHANGELOG.md").write_text(f"## [Unreleased]\n\n{entry}\n", encoding="utf-8")
+                result = self.run_script("check-version.py")
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("expected '## [0.1.0-alpha.10] - YYYY-MM-DD'", result.stderr)
 
 
 if __name__ == "__main__":

@@ -115,7 +115,10 @@ def changed_lines(base_rev, root):
         if not raw:
             continue
         path = raw.decode("utf-8", "replace")
-        data = Path(root, path).read_bytes()
+        try:
+            data = Path(root, path).read_bytes()
+        except OSError:  # A nested repo's folder or a dangling symlink: nothing to count.
+            data = b""
         result.append((path, 0 if b"\0" in data else len(data.splitlines())))
     return result
 
