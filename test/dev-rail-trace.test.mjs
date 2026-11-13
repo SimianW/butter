@@ -14,8 +14,14 @@ const { createRecorder } = require('../extension/dev/recorder.js');
 
 // Three turns in a virtualizer that reserves each row's height and mounts only the rows within the
 // viewport + 200 px (`mounts(i)` false: row i never mounts). `trace`: 'none', 'throws', or the
-// dev trace, whose events come back with their times.
-async function clickSecondQuestion({ trace = 'dev', mounts = () => true, wheelAfterMs = null }) {
+// dev trace, whose events come back with their times. The user's wheel comes `wheelAfterMs` after
+// the click, or once `wheelWhen(events)` holds, and then scrolls 600 px.
+async function clickSecondQuestion({
+  trace = 'dev',
+  mounts = () => true,
+  wheelAfterMs = null,
+  wheelWhen = null,
+}) {
   const events = [];
   let nav;
   const tracer = createRailTrace({
@@ -80,6 +86,11 @@ async function clickSecondQuestion({ trace = 'dev', mounts = () => true, wheelAf
   nav.select('.rail').emit('click', { detail: 0, target: nav.ticks()[1] });
   for (let i = 0; i < 800; i++) {
     if (wheelAfterMs != null && i * 16 === wheelAfterMs) nav.scroller.emit('wheel');
+    if (wheelWhen?.(events)) {
+      wheelWhen = null;
+      nav.scroller.emit('wheel');
+      nav.scroller.scrollTop += 600;
+    }
     nav.runTimers();
     nav.frame();
     await new Promise((resolve) => setImmediate(resolve));
@@ -192,6 +203,19 @@ test('the user\'s wheel during a trip records the input and "cancelled"', async 
   const [end] = ofType(events, 'rail-end');
   assert.equal(end.outcome, 'cancelled');
   assert.equal(end.cause, 'wheel');
+  assertAllowed(events);
+});
+
+test('a wheel while the chat slides in on the target records "cancelled", not "landed"', async () => {
+  // The readiness waits are over: the jump has marked itself landed and is arriving or settling.
+  const { events } = await clickSecondQuestion({
+    wheelWhen: (events) => events.some((e) => e.type === 'rail-wait' && e.wait === 'recheck'),
+  });
+  const [end] = ofType(events, 'rail-end');
+  assert.equal(ofType(events, 'rail-cancel').length, 1);
+  assert.equal(end.outcome, 'cancelled');
+  assert.equal(end.cause, 'wheel');
+  assert.notEqual(end.targetTop, 64, 'the user scrolled away from the target');
   assertAllowed(events);
 });
 

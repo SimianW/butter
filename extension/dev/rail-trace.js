@@ -69,9 +69,11 @@
     };
 
     const outcome = (j, { landed, expired, el, pinned }) => {
-      if (landed) return 'landed';
+      // The jump marks itself landed before the chat slides in and settles: one stopped during
+      // that did not land.
       if (j.cause) return 'cancelled';
       if (latest > j.tok) return 'superseded';
+      if (landed) return 'landed';
       if (expired) return 'expired';
       if (!j.mounted && !el) return j.tries >= TRIES ? 'never-mounted' : 'no-question';
       if (!el?.isConnected) return 'lost';
@@ -150,12 +152,17 @@
           live,
         });
       },
-      wait({ tok, wait, since, live, pending }) {
+      // A readiness wait starts (quiet and steady start together).
+      waiting({ tok }) {
+        const j = jumps.get(tok);
+        if (j) j.since = now();
+      },
+      wait({ tok, wait, live, pending }) {
         const j = jumps.get(tok);
         if (!j) return;
         j.mounted = true; // the readiness waits come after the target mounted
         // The recheck starts when the last of quiet and steady ended.
-        const start = wait === 'recheck' ? j.waited : since;
+        const start = wait === 'recheck' ? j.waited : j.since;
         j.waited = now();
         emit('rail-wait', { jump: tok, wait, durationMs: round(j.waited - start), live, pending });
       },

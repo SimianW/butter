@@ -229,8 +229,9 @@ Numbers are CSS pixels or ms; `turn` is the zero-based turn index in the virtual
 
 **Rail jump outcomes.** `landed`: it arrived (also at the deadline, if the target was mounted and
 aligned then: `expired: true`); `never-mounted`: the target did not mount in 8 tries;
-`expired`: the deadline passed first; `cancelled`: see the `rail-cancel` before it; `superseded`:
-another click started a jump (a `takeover` if this one was a trip); `lost`: the target mounted,
+`expired`: the deadline passed first; `cancelled`: see the `rail-cancel` before it, also when it
+came while the chat was sliding in on the target; `superseded`: another click started a jump (a
+`takeover` if this one was a trip), likewise; `lost`: the target mounted,
 then was unmounted before it could land; `unpinned`: the jump was no longer pinned;
 `no-question`: its question left the rail; `error`: an exception ended it.
 

@@ -297,10 +297,10 @@
         }
         if (!ready.page) {
           if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
-            const since = performance.now();
+            trace('waiting', () => ({ tok }));
             await nextPage(4000, live);
             await new Promise((r) => setTimeout(r, 150));
-            trace('wait', () => ({ tok, wait: 'page', since, live: live() }));
+            trace('wait', () => ({ tok, wait: 'page', live: live() }));
           }
           if (!live()) return;
           ready.page = true;
@@ -311,14 +311,14 @@
             (x) => !x.querySelector('.katex'),
           );
         if (!ready.math || pendingMath()) {
-          const since = performance.now();
+          trace('waiting', () => ({ tok }));
           for (
             const end = performance.now() + 3000;
             live() && performance.now() < end && pendingMath();
 
           )
             await frame();
-          trace('wait', () => ({ tok, wait: 'math', since, live: live(), pending: pendingMath() }));
+          trace('wait', () => ({ tok, wait: 'math', live: live(), pending: pendingMath() }));
           if (!live()) return;
           ready.math = !pendingMath();
         }
@@ -328,8 +328,8 @@
         follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
         // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
         // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
-        const since = performance.now(),
-          waited = (wait) => () => trace('wait', () => ({ tok, wait, since, live: live() }));
+        trace('waiting', () => ({ tok }));
+        const waited = (wait) => () => trace('wait', () => ({ tok, wait, live: live() }));
         await Promise.all([
           ready.quiet ? null : quiet(live, 4000).then(waited('quiet')),
           steady(el, live, lead, 3000, 150, ready.geometry).then(waited('steady')),
