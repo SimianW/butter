@@ -192,7 +192,7 @@ button {
   opacity: 0.45;
 }
 
-/* Feature and layout cards: flat sheets with hairline rows. */
+/* The feature card: a flat sheet with hairline rows. */
 .card {
   margin: 0 16px 10px;
   background: var(--card);
@@ -208,7 +208,6 @@ button {
   cursor: pointer;
 }
 .row + .row,
-.use,
 .note {
   border-top: 1px solid var(--hair);
 }
@@ -317,36 +316,22 @@ button {
   text-underline-offset: 2px;
 }
 
-/* Saved layouts: the storage line and its Clear button. */
-.use {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 14px 9px 44px;
-  font-size: 12px;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.jar {
-  height: 6px;
-  width: 52px;
-  border-radius: 3px;
-  background: var(--track);
-  overflow: hidden;
-  flex: none;
-}
-.jar i {
-  display: block;
-  height: 100%;
-  background: var(--butter-deep);
-}
-.use.confirm {
-  padding-left: 14px;
-  color: var(--ink);
+/* Storage rows (Bookmarks, layouts): Clear after the saved line, styled as the note's link but a
+   real button; the confirm row replaces the whole row with its question and two pills 8 px apart. */
+.lk {
+  margin-left: 8px;
   font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--butter-deep);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
-.use .sp {
-  flex: 1;
+.row.ask {
+  cursor: default;
+}
+.row.ask .btn + .btn {
+  margin-left: -4px;
 }
 .btn {
   font-size: 12px;

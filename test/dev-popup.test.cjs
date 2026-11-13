@@ -161,7 +161,8 @@ test('without a dev renderer the slot renders nothing: no DEV tag, no dev card',
   await settle();
   const html = popup.html();
   assert.match(html, /<div class="word">Butter<\/div><a class="ver"/);
-  assert.match(html, /<\/label><div class="use[^"]*">.*?<\/div><\/div>\s*<div class="ft">/s);
+  // The feature card's last row closes it, and the footer follows.
+  assert.match(html, /data-switch="layout"><\/button><\/label><\/div>\s*<div class="ft">/s);
   assert.doesNotMatch(html, /devtag|card dev|DEV|Round 2/);
 });
 
