@@ -106,8 +106,9 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   before merging: if it has already posted when CI is green, handle its comments first; comments
   that arrive after the merge become a follow-up issue.
 - PR size: CI labels each PR from `size/XS` to `size/XXL` by the lines of code it changes; prose,
-  lock files, binary files and the docs and assets folders do not count.
-  `python3 scripts/pr-size.py` prints the label locally. The label is CI's to set.
+  lock files, binary files and the folders in the script's `SKIP_PREFIXES` (docs, assets and
+  `lab/variants/`) do not count. `python3 scripts/pr-size.py` prints the label locally. The label
+  is CI's to set.
 - Reviews: every gate review before merge, including when the user asks to review a PR or branch,
   runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
   it (see New features).
