@@ -18,7 +18,8 @@ const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
 export const conversation = '12345678-1234-1234-1234-123456789abc';
 
 // `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
-// than straight in the scroller. `width`: the scroller's width (the rail needs 560 px).
+// than straight in the scroller. `width`: the scroller's width (the rail needs 560 px). `trace`:
+// the dev build's trace hook (`__butterRailTrace`), defined before the rail starts.
 export function setup({
   count = 5,
   width = 1000,
@@ -26,6 +27,7 @@ export function setup({
   height = 900,
   gutter = 0,
   nested = false,
+  trace,
 } = {}) {
   let now = 10_000,
     nextId = 1,
@@ -72,6 +74,7 @@ export function setup({
     },
     clearTimeout: (id) => timers.delete(id),
     setInterval: (callback) => intervals.push(callback),
+    ...(trace ? { __butterRailTrace: trace } : {}),
   });
   for (const [filename, source] of sources) vm.runInContext(source, ctx, { filename });
   const frame = (timestamp = now + 16) => {
@@ -234,5 +237,6 @@ export function setup({
     advanceClock: (ms) => {
       now += ms;
     },
+    now: () => now,
   };
 }

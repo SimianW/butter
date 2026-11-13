@@ -15,7 +15,9 @@
 // - `wait(on)`: an earlier trip loads pages for a bookmark (the three dots blink, their card
 //   refills);
 // - `found(i, keyboard)`: that bookmark is under question `i` now: focus follows a keyboard trip to
-//   its tick, and the dots' card goes away.
+//   its tick, and the dots' card goes away;
+// - `trace(step, fields)` (optional): the dev build's trace hook, given each step of a jump
+//   (dev/rail-trace.js); `fields()` runs only in the dev build.
 // test/rail-jump.test.mjs drives it directly.
 (() => {
   const TOP_INSET = 64; // a jumped-to question lands this far below the scroller's top
@@ -27,6 +29,7 @@
   // `model`: the rail presentation model (rail/model.js); `turns`: the turn tracker (rail/turns.js).
   function ButterRailJump(model, turns, trip, view) {
     const sc = () => turns.scroller;
+    const trace = view.trace ?? (() => {});
     const setActive = (id) => {
       if (model.setActive(id)) view.kick();
     };
@@ -53,8 +56,9 @@
       model.journey({ flying: false });
       view.kick();
     };
-    // Stops a jump in progress and shows the chat again at once.
-    const cancel = () => {
+    // Stops a jump in progress and shows the chat again at once. `cause`: why (the dev build's trace).
+    const cancel = (cause) => {
+      trace('cancel', () => ({ tok: jumpTok, cause }));
       jumpTok++;
       journey = null;
       model.journey({ flying: false });
@@ -132,7 +136,8 @@
       globalThis.ButterBookmarkPage?.unwash(); // a new jump puts the last wash away at once
       // Repeated input for the current destination keeps its in-progress readiness work.
       // (Not during an earlier-dots trip: its target moves to older questions as pages arrive.)
-      if (!earlier && trip().active && !journey?.earlier && model.busy === model.qs[i].id) return;
+      if (!earlier && trip().active && !journey?.earlier && model.busy === model.qs[i].id)
+        return trace('repeat', () => ({ i }));
       const flight = journey ?? {
         end: performance.now() + (earlier ? 60000 : MAX_TRIP),
         ready: new Map(),
@@ -148,6 +153,7 @@
       // A click during a trip takes the trip over (its jump is no longer live). Ending it would fade the
       // chat in and out again while the page is busy, showing whatever half-rendered part it is at.
       const relay = trip().take(tok);
+      trace('jump', () => ({ tok, i, earlier }));
       setBusy(null);
       model.journey({ flying: true });
       setActive(id);
@@ -163,7 +169,9 @@
         !(model.hasPrev && targetTop(el) < PAGE_AT)
       ) {
         journey = null;
+        trace('path', () => ({ tok, path: 'glide' }));
         await glide(el, live);
+        trace('end', () => ({ tok, landed: tok === jumpTok, el: turns.el(id) }));
         if (tok === jumpTok) landedAt();
         if (live() && model.pinned) follow(id, tok);
         else if (tok === jumpTok) unpin();
@@ -191,6 +199,7 @@
                   : i - b,
             ) || 1
           );
+      trace('path', () => ({ tok, path: relay ? 'takeover' : 'trip', m }));
       setBusy(want ? null : id, tok); // a bookmark's trip blinks the dots instead
       let landed = false,
         target = want && model.placed(want);
@@ -269,8 +278,13 @@
           if (i == null) return;
           // Where the records put the target, it didn't mount: measure again and move toward it.
           if (tries) turns.retarget(i, seen);
-          sc().scrollTop = Math.max(0, turns.estimate(i) - TOP_INSET);
-          for (let f = 0; f < 30 && live() && !(el = turns.el(id)); f++) await frame();
+          const estimate = turns.estimate(i),
+            written = Math.max(0, estimate - TOP_INSET);
+          sc().scrollTop = written;
+          trace('write', () => ({ tok, tries, estimate, written }));
+          let f = 0;
+          for (; f < 30 && live() && !(el = turns.el(id)); f++) await frame();
+          trace('mount', () => ({ tok, frames: f, el, live: live() }));
         }
         if (!el || !live()) return;
         sc().scrollTop = targetTop(el);
@@ -283,8 +297,10 @@
         }
         if (!ready.page) {
           if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
+            const since = performance.now();
             await nextPage(4000, live);
             await new Promise((r) => setTimeout(r, 150));
+            trace('wait', () => ({ tok, wait: 'page', since, live: live() }));
           }
           if (!live()) return;
           ready.page = true;
@@ -295,12 +311,14 @@
             (x) => !x.querySelector('.katex'),
           );
         if (!ready.math || pendingMath()) {
+          const since = performance.now();
           for (
             const end = performance.now() + 3000;
             live() && performance.now() < end && pendingMath();
 
           )
             await frame();
+          trace('wait', () => ({ tok, wait: 'math', since, live: live(), pending: pendingMath() }));
           if (!live()) return;
           ready.math = !pendingMath();
         }
@@ -310,13 +328,16 @@
         follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
         // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
         // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
+        const since = performance.now(),
+          waited = (wait) => () => trace('wait', () => ({ tok, wait, since, live: live() }));
         await Promise.all([
-          ready.quiet ? null : quiet(live, 4000),
-          steady(el, live, lead, 3000, 150, ready.geometry),
+          ready.quiet ? null : quiet(live, 4000).then(waited('quiet')),
+          steady(el, live, lead, 3000, 150, ready.geometry).then(waited('steady')),
         ]);
         if (!live()) return;
         ready.quiet = true;
         el = await steady(el, live, lead, 3000, 150, ready.geometry);
+        trace('wait', () => ({ tok, wait: 'recheck', live: live() })); // since quiet and steady
         if (!live() || !el?.isConnected || !model.pinned) return;
         flash(el);
         landed = true;
@@ -344,6 +365,7 @@
             }
           }
         }
+        trace('end', () => ({ tok, landed, expired, el: turns.el(id), pinned: model.pinned }));
         trip().end(tok);
         if (busyTok === tok) setBusy(null);
         if (wait?.tok === tok) setWait(null);

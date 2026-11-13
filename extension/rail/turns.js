@@ -8,7 +8,8 @@
 // - `changed()`: what the rail shows may have changed (scroller box, reconciled questions);
 // - `kick()`: the lit band changed (not called while a jump travels);
 // - `sync()`: check which conversation is open (a newly visible scroller or turn can precede the URL poll);
-// - `scrolled()`: the user scrolls (wheel, touch, scrollbar, a middle-button press, scroll keys): a jump in progress stops;
+// - `scrolled(input)`: the user scrolls by `input` (`wheel`, `touch`, `scrollbar`, `middle` for a
+//   middle-button press, `key`): a jump in progress stops;
 // - `mounted(el)`: a turn mounted in the visible scroller;
 // - `ignore(target)`: a scroll key aimed here is not the chat's (the rail's own host).
 // test/rail-turns.test.mjs drives it directly.
@@ -106,15 +107,16 @@
         scrollers.add(s);
         ro.observe(s);
         // Any user scroll cancels a jump in progress.
-        s.addEventListener('wheel', scrolled, { passive: true });
-        s.addEventListener('touchstart', scrolled, { passive: true });
+        s.addEventListener('wheel', () => scrolled('wheel'), { passive: true });
+        s.addEventListener('touchstart', () => scrolled('touch'), { passive: true });
         s.addEventListener(
           'pointerdown',
           (e) => {
             if (s !== sc) return;
             const box = model.box;
             // The scrollbar, or a middle press anywhere in the chat: Chrome's autoscroll.
-            if (e.button === 1 || (e.target === s && box && e.clientX >= box.right)) scrolled();
+            if (e.button === 1) scrolled('middle');
+            else if (e.target === s && box && e.clientX >= box.right) scrolled('scrollbar');
           },
           { passive: true },
         );
@@ -149,7 +151,7 @@
           (e.key === ' ' && t.closest('button, a, [role="button"]'))
         )
           return;
-        scrolled();
+        scrolled('key');
       },
       { capture: true, passive: true },
     );

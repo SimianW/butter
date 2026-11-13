@@ -9,7 +9,7 @@ const core = require('../extension/seek/core-main.js');
 const { el, getComputedStyle } = require('./helpers/fake-dom.cjs');
 
 // The page's dev scripts, in manifest order, run in one realm as they do in the page.
-const SCRIPTS = ['recorder.js', 'sources.js', 'recorder-main.js'].map((name) =>
+const SCRIPTS = ['allowlist.js', 'recorder.js', 'sources.js', 'recorder-main.js'].map((name) =>
   fs.readFileSync(path.join(__dirname, '../extension/dev', name), 'utf8'),
 );
 const CONV_A = '6a1f0c2e-8b7d-4c3e-9f10-2d4b6a8c0e12',
@@ -67,6 +67,8 @@ function load() {
     querySelector: (s) => page().root.querySelector(s),
     querySelectorAll: (s) => page().root.querySelectorAll(s),
     addEventListener: (type, fn) => (listeners[type] ??= []).push(fn),
+    removeEventListener: (type, fn) =>
+      (listeners[type] = (listeners[type] || []).filter((x) => x !== fn)),
     dispatchEvent: (e) => (listeners[e.type] || []).forEach((fn) => fn(e)),
   };
   const context = vm.createContext({
@@ -94,6 +96,17 @@ function load() {
       intervals.forEach((fn) => fn());
     },
     switchTo: (c) => (conv = c),
+    // dev/rail-trace.js in the isolated world: its events, and its answer to the part request.
+    railEvent: (type, fields) =>
+      document.dispatchEvent({ type: 'butter-dev-rail', detail: JSON.stringify({ type, fields }) }),
+    railAnswers: (part) =>
+      (listeners['butter-dev-rail-snapshot-request'] = [
+        () =>
+          document.dispatchEvent({
+            type: 'butter-dev-rail-snapshot-response',
+            detail: JSON.stringify(part),
+          }),
+      ]),
     seek: (turn) => dump.listen('seek', { top: turn * 300, turn, offset: 12, layout: true }),
     press: (sequence) => {
       pressDecision = {
@@ -176,4 +189,36 @@ test('a switch detected only at save time still drops the old seek', () => {
     json.events.map((e) => e.type),
     ['seek', 'conversation'],
   );
+});
+
+test("the rail trace's events are recorded, and the rail part compares its questions with the order", () => {
+  const p = load();
+  p.railEvent('rail-end', { jump: 2, outcome: 'never-mounted', tries: 8 });
+  // Rail question 2 is not in the virtualizer's order (a-turn-0 … a-turn-5).
+  const ids = ['a-turn-0', 'a-turn-1', 'q-elsewhere', 'a-turn-3'];
+  p.railAnswers({
+    ids,
+    state: { questions: 4, active: 1, lit: [1], pinned: true },
+    ticks: { pitch: 9.6, devicePixelRatio: 1.25, bars: [{ index: 0, top: 300.4, height: 1.6 }] },
+  });
+  const { text, json } = p.save();
+  assert.deepEqual(
+    json.events.map(({ t: _t, ...e }) => e),
+    [{ type: 'rail-end', jump: 2, outcome: 'never-mounted', tries: 8 }],
+  );
+  assert.deepEqual(json.rail.order, { questions: 4, count: 6, fiberFound: true, missing: [2] });
+  assert.deepEqual(json.rail.state, { questions: 4, active: 1, lit: [1], pinned: true });
+  assert.equal(json.rail.ticks.bars[0].top, 300.4);
+  const keys = Object.keys(json);
+  assert.equal(keys[keys.indexOf('turns') + 1], 'rail', 'the rail part follows turns');
+  for (const id of ids) assert.ok(!text.includes(id), 'no turn key in the file');
+});
+
+test('without the rail trace the rail part is unavailable', () => {
+  const { json } = load().save();
+  assert.deepEqual(json.rail, {
+    order: { unavailable: 'missing' },
+    state: { unavailable: 'missing' },
+    ticks: { unavailable: 'missing' },
+  });
 });

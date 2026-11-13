@@ -13,6 +13,9 @@ export class FakeElement {
       setProperty(name, value) {
         this[name] = value;
       },
+      getPropertyValue(name) {
+        return this[name] ?? '';
+      },
     };
     const classes = new Set();
     this.classList = {
@@ -97,6 +100,9 @@ export class FakeElement {
   }
   getAttribute(name) {
     return this.attributes.get(name) ?? null;
+  }
+  hasAttribute(name) {
+    return this.attributes.has(name);
   }
   removeAttribute(name) {
     this.attributes.delete(name);

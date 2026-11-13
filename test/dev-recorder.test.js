@@ -358,3 +358,50 @@ test('serialized turns put each readiness row and structure node on its own line
   assert.ok(lines.includes('          {"index":0,"tag":"div","classes":[]}'), text);
   assert.ok(lines.includes('      "currentSw": 900,'), text);
 });
+
+test('the rail trace events are kept, and a key or string off the allowlist is dropped', () => {
+  const rec = createRecorder();
+  const events = [
+    ['rail-jump', { jump: 3, target: 7, activeBefore: 2, path: 'takeover', direction: 'up' }],
+    ['rail-try', { jump: 3, try: 1, estimate: 900, written: 836, scrollTopRead: 836 }],
+    ['rail-wait', { jump: 3, wait: 'math', durationMs: 40, live: true, pending: false }],
+    ['rail-cancel', { jump: 3, cause: 'scrollbar' }],
+    ['rail-end', { jump: 3, outcome: 'never-mounted', tries: 8, targetTop: null }],
+  ];
+  for (const [type, fields] of events) rec.record(type, fields, 1_000);
+  // A question's text, a turn key and an unknown code are dropped, each with its key.
+  rec.record('rail-end', { jump: 4, outcome: 'gone', turnKey: 'q1', question: 'Why?' }, 1_000);
+  rec.record('rail-try', { jump: 4, path: 'https://chatgpt.com/c/1' }, 1_000);
+  const snap = rec.snapshot(meta(2_000));
+  assert.deepEqual(
+    snap.events.map(({ t: _t, ...e }) => e),
+    [
+      ...events.map(([type, fields]) => ({ type, ...fields })),
+      { type: 'rail-end', jump: 4 },
+      { type: 'rail-try', jump: 4 },
+    ],
+  );
+  assert.equal(snap.redacted, 4);
+});
+
+test('the rail part is a group: each of its parts is read and filtered on its own', () => {
+  const snap = createRecorder().snapshot(
+    meta(0, {
+      sources: {
+        rail: {
+          order: () => ({ questions: 3, count: 2, fiberFound: true, missing: [2] }),
+          state: () => {
+            throw new Error('unreadable');
+          },
+          ticks: { pitch: 9.6, bars: [{ index: 0, scaleX: 1, label: 'Question' }] },
+        },
+      },
+    }),
+  );
+  assert.deepEqual(snap.rail, {
+    order: { questions: 3, count: 2, fiberFound: true, missing: [2] },
+    state: { unavailable: 'error' },
+    ticks: { pitch: 9.6, bars: [{ index: 0, scaleX: 1 }] },
+  });
+  assert.equal(snap.redacted, 1);
+});

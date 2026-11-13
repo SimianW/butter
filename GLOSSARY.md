@@ -181,6 +181,12 @@ target lit) or pinned, the question it opens, the busy tick and the bookmark an 
 pages for. The model decides what is lit from it.
 _Where_: `rail/jump.js`, `rail/model.js`
 
+**Rail trace**:
+The dev build's record of each jump in a bug file: its start and path, every mount try, the
+readiness waits, what cancelled it and its outcome, plus the rail's state and tick boxes in the
+snapshot. The rail only calls an optional hook; the dev build defines it.
+_Where_: `dev/rail-trace.js`, `rail/rail.js`, `rail/jump.js`
+
 **Send pre-jump**:
 On sending a question from more than 1.5 screens above the chat's end, the jump to one screen above
 the end, right after ChatGPT's own send handler, so ChatGPT's scroll to the new question passes no

@@ -98,14 +98,17 @@
     // Whether index `i` (a tick, or EARLIER for the three dots) holds bookmarks.
     const holds = (i) => (i === EARLIER ? markAt(EARLIER) != null : i >= 0) && marks.has(idAt(i));
 
-    const targetOf = (j) => {
-      const on = seek
+    // Whether tick j is lit: a seek preview's, the opening prediction, a jump's target, the band.
+    const lit = (j) =>
+      seek
         ? (seek.lit || [seek.id]).includes(qs[j].id)
         : opening
           ? j === qs.length - 1
           : flying
             ? j === active
             : litIds.has(qs[j].id) || (pinned && j === active);
+    const targetOf = (j) => {
+      const on = lit(j);
       let s = on ? ACTIVE.s : REST.s,
         o = on ? ACTIVE.o : REST.o,
         t = 1;
@@ -479,6 +482,8 @@
       flying: () => flying, // the jump's status as it published it
       pinned: () => pinned,
       busy: () => busyId,
+      active: () => active, // the active tick's index, -1 for none (the dev build's bug file)
+      lit: () => qs.flatMap((_, j) => (lit(j) ? [j] : [])), // the lit ticks' indexes (likewise)
       pointing: () => pointerY !== null, // the pointer is over the rail
       shown: () => shown, // the card's index (-2: none) and whether it lists bookmarks
       shownBm: () => shownBm,

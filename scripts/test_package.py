@@ -123,6 +123,8 @@ class PackageTests(unittest.TestCase):
         self.use_real_extension()
         dev_files = self.dev_files()
         self.assertIn("butter/dev/recorder.js", dev_files)
+        self.assertIn("butter/dev/allowlist.js", dev_files)
+        self.assertIn("butter/dev/rail-trace.js", dev_files)
         self.assertIn("butter/dev/sources.js", dev_files)
         self.assertIn("butter/dev/toast.js", dev_files)
         before = {path: path.read_bytes() for path in self.extension.rglob("*") if path.is_file()}
@@ -147,8 +149,15 @@ class PackageTests(unittest.TestCase):
             isolated, main = manifest["content_scripts"]
             self.assertEqual(isolated["js"][-2:], ["dev/content.js", "dev/toast.js"])
             self.assertLess(isolated["js"].index("shared/status.js"), isolated["js"].index("dev/toast.js"))
+            # The rail trace defines the hook before rail/rail.js starts, and after the modules it
+            # is handed.
             self.assertEqual(
-                main["js"][-3:], ["dev/recorder.js", "dev/sources.js", "dev/recorder-main.js"]
+                isolated["js"].index("dev/rail-trace.js"), isolated["js"].index("rail/rail.js") - 1
+            )
+            self.assertLess(isolated["js"].index("rail/jump.js"), isolated["js"].index("dev/rail-trace.js"))
+            self.assertEqual(
+                main["js"][-4:],
+                ["dev/allowlist.js", "dev/recorder.js", "dev/sources.js", "dev/recorder-main.js"],
             )
             # The recorder listens to both hook owners, so it runs after the last of them.
             for hooked in ("seek/layout-cache-main.js", "seek/preview-main.js"):
@@ -200,7 +209,11 @@ class PackageTests(unittest.TestCase):
                 with zipfile.ZipFile(path) as archive:
                     names = archive.namelist()
                     manifest = json.loads(archive.read("butter/manifest.json"))
+                    contents = b"".join(archive.read(name) for name in names)
                 self.assertEqual([name for name in names if name.startswith("butter/dev/")], [])
+                # The rail only reads its trace hook; nothing defines it or relays its events.
+                self.assertNotIn(b"butter-dev-rail", contents)
+                self.assertNotIn(b"__butterRailTrace =", contents)
                 self.assertNotIn("butter/dev/toast.js", names)
                 self.assertEqual(manifest["commands"], source["commands"])
                 self.assertNotIn("downloads", manifest["permissions"])
