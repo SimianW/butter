@@ -307,6 +307,14 @@ test('user scrolling: wheel, touch and the scrollbar on the visible scroller; sc
   kept.emit('wheel');
   assert.equal(t.calls.scrolled, 4);
   assert.equal(s.listeners.get('wheel').length, 1, 'listeners added once per scroller');
+  // A middle press starts Chrome's autoscroll, wherever in the chat it lands.
+  s.emit('pointerdown', { button: 1, clientX: 500, target: els[0] });
+  assert.equal(t.calls.scrolled, 5, 'a middle press on answer content');
+  s.emit('pointerdown', { button: 0, clientX: 500, target: els[0] });
+  s.emit('pointerdown', { button: 2, clientX: 500, target: els[0] });
+  assert.equal(t.calls.scrolled, 5, 'a left or right press on answer content is no scroll');
+  kept.emit('pointerdown', { button: 1, clientX: 500 });
+  assert.equal(t.calls.scrolled, 5, "a middle press in a hidden copy's content");
 
   const key = (k, target, more = {}) => {
     const before = t.calls.scrolled;

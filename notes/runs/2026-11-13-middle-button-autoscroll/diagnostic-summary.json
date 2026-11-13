@@ -1,0 +1,214 @@
+{
+  "kind": "butter-diag",
+  "formatVersion": 1,
+  "version": "0.1.0-alpha.21+dev.8",
+  "trigger": "button",
+  "pointerHeld": false,
+  "settings": {
+    "enabled": true,
+    "lang": "en",
+    "layoutConsent": "granted",
+    "opts": {
+      "branch": true,
+      "container": true,
+      "cv": true,
+      "layout": true,
+      "older": true,
+      "rail": true,
+      "seek": true,
+      "throttle": true
+    }
+  },
+  "events": [
+    {
+      "t": -28474,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -13293,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -12186,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -11542,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -10975,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -4809,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -4803,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 0
+    },
+    {
+      "t": -3835,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 1
+    },
+    {
+      "t": -3832,
+      "type": "rejection",
+      "reason": "estimated",
+      "turn": 0
+    }
+  ],
+  "failures": {},
+  "order": {
+    "count": 4,
+    "mounted": 2,
+    "fiberFound": true,
+    "idsFromFallback": false,
+    "idsReason": null
+  },
+  "active": {
+    "turnIndex": 1,
+    "selection": "last-seek-update",
+    "preview": {
+      "active": false,
+      "updateTurnIndex": 1,
+      "offset": 13522,
+      "layout": true,
+      "known": true,
+      "textFallback": false,
+      "estimateVisible": false,
+      "renderedItems": []
+    }
+  },
+  "scroller": {
+    "matchesThreadScroller": true,
+    "threadScrollerCount": 1,
+    "threadScrollerSw": 1760,
+    "swBefore": 1760,
+    "sw": 1760,
+    "clientHeight": 1092,
+    "scrollHeight": 27605
+  },
+  "readiness": {
+    "rejectionDiagnosticsAvailable": true,
+    "currentSw": 1760,
+    "turns": [
+      {
+        "index": 0,
+        "mounted": true,
+        "hasRecord": true,
+        "items": 181,
+        "blocks": 179,
+        "recorder": {
+          "observed": true,
+          "generating": false,
+          "queued": false,
+          "measuring": false,
+          "attempted": true,
+          "lastRejection": "estimated"
+        },
+        "recordValidation": null,
+        "rowH": 11816.6669921875,
+        "measuredHeight": 0,
+        "rowHeightNow": 11815.56,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      },
+      {
+        "index": 1,
+        "mounted": true,
+        "hasRecord": true,
+        "items": 237,
+        "blocks": 236,
+        "recorder": {
+          "observed": true,
+          "generating": false,
+          "queued": false,
+          "measuring": false,
+          "attempted": true,
+          "lastRejection": "estimated"
+        },
+        "recordValidation": null,
+        "rowH": 14795.556640625,
+        "measuredHeight": 0,
+        "rowHeightNow": 14795.56,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      },
+      {
+        "index": 2,
+        "mounted": false,
+        "hasRecord": true,
+        "items": 28,
+        "blocks": 24,
+        "recorder": null,
+        "recordValidation": null,
+        "rowH": 2816.666748046875,
+        "measuredHeight": 0,
+        "rowHeightNow": null,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      },
+      {
+        "index": 3,
+        "mounted": false,
+        "hasRecord": true,
+        "items": 3,
+        "blocks": 2,
+        "recorder": null,
+        "recordValidation": null,
+        "rowH": 588.888916015625,
+        "measuredHeight": 0,
+        "rowHeightNow": null,
+        "rowHeightDelta": null,
+        "sw": 1760,
+        "fromStorage": false,
+        "layout": false,
+        "layoutReason": "unmeasured-row"
+      }
+    ]
+  },
+  "press": {
+    "sequence": 1,
+    "phase": "press",
+    "modelLength": 4,
+    "mountedTurns": 1,
+    "recordCount": 4,
+    "render": {
+      "prepareSequence": 1,
+      "modelLength": 4,
+      "turnIndex": 1,
+      "layout": true,
+      "unseen": false,
+      "top": 25433.333984375,
+      "insetTop": 52,
+      "previewTop": 23699.26311089295
+    }
+  }
+}

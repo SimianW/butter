@@ -115,8 +115,8 @@ _Where_: `rail/model.js`, `rail/conversations.js`, `rail/wave.js`
 What the rail knows of ChatGPT's turns on the page: the visible scroller (following a hidden chat
 shown again), the turns mounted in it, which show in the lit band, where each question's turn was
 last seen and where an unmounted one should be, and the user's own scrolling (wheel, touch, the
-scrollbar, scroll keys), which stops a jump. It owns all of that; `rail/rail.js` and `rail/jump.js`
-read it, and `rail/rail.js` is told through callbacks.
+scrollbar, a middle-button press, scroll keys), which stops a jump. It owns all of that;
+`rail/rail.js` and `rail/jump.js` read it, and `rail/rail.js` is told through callbacks.
 _Avoid_: turn cache, DOM tracker
 _Where_: `rail/turns.js`
 

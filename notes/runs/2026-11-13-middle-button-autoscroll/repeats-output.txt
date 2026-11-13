@@ -1,0 +1,6 @@
+{"build":"branch","case":"pin-resize","start":8314,"end":8502,"progress":188,"backwards":52,"seek":{"active":false,"pending":false,"sessions":0,"presses":[{"kind":null,"reason":"target","onScroller":false}]}}
+{"build":"main","case":"pin-resize","start":8314,"end":8501,"progress":187,"backwards":52,"seek":{"active":false,"pending":false,"sessions":0,"presses":[{"kind":null,"reason":"target","onScroller":false}]}}
+{"build":"none","case":"pin-resize","start":8314,"end":27593,"progress":19279,"backwards":0,"seek":null}
+{"build":"branch","case":"pin-resize","start":8314,"end":8502,"progress":188,"backwards":52,"seek":{"active":false,"pending":false,"sessions":0,"presses":[{"kind":null,"reason":"target","onScroller":false}]}}
+{"build":"main","case":"pin-resize","start":8314,"end":8502,"progress":188,"backwards":52,"seek":{"active":false,"pending":false,"sessions":0,"presses":[{"kind":null,"reason":"target","onScroller":false}]}}
+{"build":"none","case":"pin-resize","start":8314,"end":27601,"progress":19287,"backwards":0,"seek":null}

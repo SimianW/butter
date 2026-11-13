@@ -1,0 +1,48 @@
+✔ native scrollbar hold defers earlier pages, preserving init, receiver and page parsing (35.42436ms)
+✔ release on window mouseup flushes once (1.627874ms)
+✔ release on window pointerup flushes once (1.127112ms)
+✔ release on window pointercancel flushes once (1.095973ms)
+✔ release on window blur flushes once (1.385654ms)
+✔ hidden document releases; visible document and element blur do not (1.089322ms)
+✔ safety timeout releases a missed up event (0.966762ms)
+✔ a move with no button releases a missed up event (0.916042ms)
+✔ deferred AbortSignal rejects without starting fetch, including already aborted and Request signals (6.499874ms)
+✔ init signal overrides a Request signal and custom abort reasons survive (1.694854ms)
+✔ older off prevents a hold and switching off flushes a pending hold (1.167143ms)
+✔ off marker releases pending work even before the settings notification (0.855982ms)
+✔ other requests and sends are untouched during a hold (1.865734ms)
+✔ wheel, keyboard and programmatic history loads start without a scrollbar hold (1.101893ms)
+✔ aborting one queued request leaves the others ready for release (1.083803ms)
+✔ content, other scrollers, non-left buttons, touch and non-scrollable threads never hold (4.421209ms)
+✔ scrollbar geometry rtl=false, overlay=false (1.032183ms)
+✔ scrollbar geometry rtl=false, overlay=true (0.812891ms)
+✔ scrollbar geometry rtl=true, overlay=false (0.853441ms)
+✔ scrollbar geometry rtl=true, overlay=true (0.762602ms)
+✔ overlay: the Mac thumb presses (x 761, 762 of 766) are candidates (4.873627ms)
+✔ overlay: band is 15 px from the inline-end edge (0.186231ms)
+✔ overlay RTL: band is at the left edge (0.18826ms)
+✔ presses that are not on the scroller itself, not primary, not mouse, or untrusted never qualify (0.21624ms)
+✔ classic: only a press on the computed thumb qualifies (0.251481ms)
+✔ classic RTL gutter sits on the left (0.17905ms)
+✔ thumb drag: activates on the first moving scroll while held, then continues and releases (0.319251ms)
+✔ false positive: a click near the edge never scrolls, so it never activates (0.143591ms)
+✔ false positive: a text-selection drag near the edge (selection moved) is rejected even when autoscroll scrolls (0.22568ms)
+✔ false positive: trackpad/wheel scroll while a button is down never activates (0.267641ms)
+✔ a key press while held (e.g. PageDown) rejects the candidate (0.244901ms)
+✔ a scroll after the button is up is not thumb evidence (0.10972ms)
+✔ wheel during an active drag ends the session (handed back to ChatGPT) (0.09239ms)
+✔ a move without the button during an active drag means the release was lost (0.200881ms)
+✔ no candidate when the press is not a thumb candidate (0.12895ms)
+✔ sameSelection compares node identity and offsets (0.232871ms)
+✔ classic stable both-edges: the reserved start gutter is not the native bar (0.12805ms)
+✔ release coalescer keeps the final native update and freezes when height/history changes (0.191161ms)
+✔ late native motion remains valid after sizing changes; an opposite application adjustment does not (0.894472ms)
+✔ preview host leaves the overlay thumb strip uncovered and keeps classic widths (0.846742ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 135.790455
