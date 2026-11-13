@@ -462,14 +462,10 @@ async function devPopup() {
       await page.locator('#popup').screenshot({ path: file }); files.push(file);
       heights[state] = await page.locator('#popup').evaluate(e => e.offsetHeight);
       liveRects[state] = await page.evaluate(liveRegions);
-      // The dev card adds 46 px, so since the Bookmarks row (#108) the dev build's two tallest states
-      // (every fault, consent pending) pass Chromium's 600 px cap and scroll: accepted for the dev
-      // build only. Every store state still fits (above), and so does every other dev state.
       if (!name.endsWith('-tallest')) assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);
       if (panel) panels.push([panel, state]);
     }
-    // Measured heights: the store popup's (523 px by default, 594 px at its tallest) plus the dev
-    // card's 46 px.
+    // The store popup's 523 and 594 px plus the dev card's 46: since #108 the dev build's two tallest states pass the 600 px cap and scroll, accepted for the dev build only.
     assert.equal(heights['d1-en-recording-light'], 569);
     assert.equal(heights['d4-en-tallest-light'], 640);
     console.log('Dev states:');
