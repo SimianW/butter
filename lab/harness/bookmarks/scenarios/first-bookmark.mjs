@@ -25,13 +25,13 @@ export default {
     const COPY = {
       en: {
         title: 'Bookmark saved',
-        body: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.Privacy policy',
+        body: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove one with the × on its card in the rail, or clear them all in the Butter popup.Privacy policy',
         href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.md',
         buttons: ['Undo', 'Got it'],
       },
       zh: {
         title: '书签已保存',
-        body: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。隐私政策',
+        body: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 可删除一个，也可以在 Butter 弹窗里全部清除。隐私政策',
         href: 'https://github.com/SimianW/butter/blob/main/PRIVACY.zh-CN.md',
         buttons: ['撤销', '知道了'],
       },

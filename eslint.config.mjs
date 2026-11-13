@@ -6,14 +6,13 @@ export const maxLines = 500;
 
 // Raising a cap needs the reason in the PR body; prefer splitting the file along a seam.
 export const maxLinesCaps = {
-  'extension/bookmarks/content.js': 566,
+  'extension/bookmarks/content.js': 552,
   'extension/dev/recorder.js': 574,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
   'lab/harness/dev-capture-qa.mjs': 802,
   'lab/harness/popup-qa.mjs': 548,
-  'test/bookmark-notice.test.js': 537,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,
   'test/height-cache-dom.test.js': 1463,

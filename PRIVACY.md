@@ -69,7 +69,8 @@ can keep expired layouts until then. All saved layouts together are limited to 5
 reached, the ones used least recently are deleted first.
 
 Butter also keeps a few small bookkeeping values that contain no chat or account information, such
-as a counter and the ids of recent "clear" requests, so that a clear is never undone by a late write.
+as a counter and the ids of recent "clear" requests (for layouts and for bookmarks), so that a clear
+is never undone by a late write or done twice by a retry.
 
 **3. Feature status,** in Chrome's session storage (`chrome.storage.session`): which of the four
 feature groups recently failed to work, so the popup can warn you. It contains no chat or account
@@ -94,9 +95,16 @@ apart from saved layouts. For each bookmark, Butter saves:
   character range you selected and the length of its first line;
 - when you made it.
 
-Bookmarks stay until you delete them (the × on a bookmark in the rail's card) or remove Butter.
-They do not expire, are not counted in the 50 MB layout limit, and are not deleted by **Clear** or
-by turning off "Remember long-chat layouts", which only concern layouts. They are never uploaded.
+Bookmarks stay until you delete them (the × on a bookmark in the rail's card, or **Clear** on the
+Bookmarks row in Butter's popup) or remove Butter. They do not expire, are not counted in the 50 MB
+layout limit, and are not deleted by the layouts row's **Clear** or by turning off "Remember
+long-chat layouts", which only concern layouts. They are never uploaded.
+
+The **Bookmarks** switch in the popup turns bookmarks off: the Bookmark button, the shortcut and the
+bookmarks in the question rail go, and nothing new is saved, but the bookmarks you already made are
+kept and come back when you switch it on again. The Bookmarks row shows how many bookmarks Butter
+holds and about how much space they take, for every ChatGPT account in this browser, whether the
+switch is on or off; its **Clear** deletes all of them, for every account in this browser.
 Butter also remembers in its settings that you dismissed the first-bookmark notice.
 
 **6. Earlier test builds** kept saved layouts in ChatGPT's site storage. Butter deletes that old
@@ -116,7 +124,10 @@ Turning Butter off in its popup also turns Ask in branch off; then the button do
 
 ## How to delete saved data
 
-- **Clear** next to the storage use in Butter's popup deletes all saved layouts, for all accounts.
+- **Clear** on the "Remember long-chat layouts" row in Butter's popup deletes all saved layouts, for
+  all accounts.
+- **Clear** on the Bookmarks row in Butter's popup deletes all bookmarks, for every account in this
+  browser. Switching Bookmarks off does not delete them.
 - **Turning off "Remember long-chat layouts"** deletes all saved layouts and stops saving new ones.
 - **The × on a bookmark** in the question rail's card deletes that bookmark.
 - **Removing Butter** from Chrome deletes everything it saved, including bookmarks.
@@ -147,4 +158,4 @@ the extension before the new practice starts.
 
 Questions: open an issue at <https://github.com/SimianW/butter/issues>.
 
-Last updated: 2026-11-08.
+Last updated: 2026-11-13.

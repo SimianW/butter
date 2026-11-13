@@ -1,68 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const vm = require('node:vm');
-const fs = require('node:fs');
-const path = require('node:path');
-const status = require('../extension/shared/status.js');
-const tick = () => new Promise(setImmediate);
-
-// Loads the real popup with startup storage reads the test resolves by hand.
-function popup() {
-  let changed, resolveLocal, resolveSession, click, html;
-  const saved = [];
-  const context = vm.createContext({
-    ButterStatus: status,
-    ButterPopup: require('../extension/popup/model.js'),
-    structuredClone,
-    chrome: {
-      storage: {
-        local: {
-          get: () => new Promise((resolve) => (resolveLocal = resolve)),
-          set: async (value) => saved.push(structuredClone(value)),
-        },
-        session: { get: () => new Promise((resolve) => (resolveSession = resolve)) },
-        onChanged: { addListener: (fn) => (changed = fn) },
-      },
-      runtime: {
-        getManifest: () => ({ version_name: '0.1.0-alpha.10' }),
-        sendMessage: async () => ({ conversations: 0, bytes: 0 }),
-      },
-      tabs: { query: async () => [] },
-    },
-    document: {
-      getElementById: () => ({
-        classList: { toggle() {} },
-        addEventListener: (type, fn) => (click = fn),
-        append() {},
-      }),
-      documentElement: { classList: { toggle() {} } },
-      createElement: () => ({
-        set innerHTML(value) {
-          html = value;
-        },
-        content: {},
-      }),
-    },
-    matchMedia: () => ({ matches: false, addEventListener() {} }),
-    setInterval() {},
-    clearInterval() {},
-    clearTimeout() {},
-    addEventListener() {},
-  });
-  const source = path.join(__dirname, '../extension/popup/popup.js');
-  vm.runInContext(fs.readFileSync(source, 'utf8'), context);
-  return {
-    changed: (...args) => changed(...args),
-    finish: (local, session) => {
-      resolveLocal(local);
-      resolveSession(session);
-    },
-    html: () => html,
-    saved,
-    toggle: (key) => click({ target: { closest: () => ({ dataset: { switch: key } }) } }),
-    read: (expression) => JSON.parse(vm.runInContext(`JSON.stringify(${expression})`, context)),
-  };
-}
+const { popup, rows, descriptions, tick } = require('./helpers/popup-fixture.cjs');
 
 test('a stale startup session read cannot bring back a failure that was already cleared', async () => {
   const f = popup();
@@ -72,15 +10,6 @@ test('a stale startup session read cannot bring back a failure that was already 
   assert.deepEqual(f.read('failures'), {});
   assert.doesNotMatch(f.html(), /class="row bad"|Unavailable for now/);
 });
-
-// Each row's switch, name and description, in display order. A row is a label that wraps its
-// switch, so the regex only matches a switch found before the row's closing tag.
-const rows = (html) =>
-  [
-    ...html.matchAll(
-      /<label class="row[^"]*">(?:(?!<\/label>).)*?<div class="n">(.*?)<\/div><div class="d"[^>]*>(.*?)<\/div>(?:(?!<\/label>).)*?<button [^>]*role="switch" aria-checked="(\w+)"[^>]*data-switch="(\w+)"[^>]*><\/button><\/label>/g,
-    ),
-  ].map(([, name, description, on, key]) => ({ key, name, description, on: on === 'true' }));
 
 test('rows are labels wrapping their switches, in order, with the new copy in both languages', async () => {
   const f = popup();
@@ -112,6 +41,12 @@ test('rows are labels wrapping their switches, in order, with the new copy in bo
       on: true,
     },
     {
+      key: 'bookmarks',
+      name: 'Bookmarks',
+      description: 'Select text, mark the spot to jump back',
+      on: true,
+    },
+    {
       key: 'layout',
       name: 'Remember long-chat layouts',
       description: 'Faster jumps when you come back',
@@ -137,6 +72,7 @@ test('rows are labels wrapping their switches, in order, with the new copy in bo
       on: true,
     },
     { key: 'branch', name: '在分支中问', description: '选中文字，在新分支里提问', on: false },
+    { key: 'bookmarks', name: '书签', description: '选中文字，标记位置，随时跳回', on: true },
     { key: 'layout', name: '记住长对话的布局', description: '再次打开时跳转更快', on: true },
   ]);
 });
@@ -171,8 +107,11 @@ test('pending consent shows the note with the privacy link for the language, and
   const f = popup();
   f.finish({ butter: { lang: 'en', opts: { layout: true } } }, {});
   await tick();
-  // The note follows the layouts row's label, inside the layouts card, and nothing else does.
-  const note = (html) => html.match(/<\/label><div class="note">(.*?)<\/div><\/div>/)?.[1];
+  // The note follows the layouts row's label and closes the card.
+  const note = (html) =>
+    html.match(
+      /data-switch="layout"[^>]*><\/button><\/label><div class="note">(.*?)<\/div><\/div>/,
+    )?.[1];
   assert.equal(
     note(f.html()),
     'Off until you turn it on. Butter saves layout numbers only, never chat text, and deletes them after 30 days. <a target="_blank" rel="noopener" href="https://github.com/SimianW/butter/blob/main/PRIVACY.md">Privacy policy</a>',
@@ -207,9 +146,8 @@ test('the branch switch writes only the branch setting', async () => {
 const faultEn =
   'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
 const faultZh = '暂时不可用。ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。';
-const descriptions = (html) => Object.fromEntries(rows(html).map((r) => [r.key, r.description]));
 const faulted = (html) =>
-  [...html.matchAll(/<label class="row bad">(?:(?!<\/label>).)*?data-switch="(\w+)"/g)].map(
+  [...html.matchAll(/<label class="row bad"[^>]*>(?:(?!<\/label>).)*?data-switch="(\w+)"/g)].map(
     ([, key]) => key,
   );
 
@@ -271,7 +209,7 @@ test('paused marks the features card paused, keeps every switch as set, and show
   const cards = [...f.html().matchAll(/<div class="card( [^"]*)?">/g)].map(([, c]) =>
     (c || '').trim(),
   );
-  assert.deepEqual(cards, ['paused', '']);
+  assert.deepEqual(cards, ['paused']);
   assert.deepEqual(
     rows(f.html()).map(({ key, on }) => [key, on]),
     [
@@ -279,6 +217,7 @@ test('paused marks the features card paused, keeps every switch as set, and show
       ['scrolling', true],
       ['rail', false],
       ['branch', true],
+      ['bookmarks', true],
       ['layout', true],
     ],
   );

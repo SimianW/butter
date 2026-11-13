@@ -2,19 +2,49 @@
 // the `serial` queue). Bookmarks live in the extension-origin database that saved layouts use, in
 // their own object store, keyed by ButterBookmarks.key and indexed by account and hashed
 // conversation. They share nothing else with layouts: no "Remember long-chat layouts" switch, no
-// consent, no expiry, no byte cap or eviction, and the layout Clear never touches them.
+// consent, no expiry, no byte cap or eviction; the layout Clear never touches them and the
+// bookmark Clear never touches layouts.
+// The popup's usage and Clear cover the whole store (every account and conversation), so they
+// are taken only from extension pages (no tab, or Butter's own URL), never from a content script.
 (() => {
   const B = ButterBookmarks;
   const TYPES = ['butter-bookmark-list', 'butter-bookmark-create', 'butter-bookmark-delete'];
-  async function bookmarks(work) {
+  const POPUP = ['butter-bookmark-usage', 'butter-bookmark-clear'];
+  async function bookmarks(work, stores = ['bookmarks']) {
     const db = await database(),
-      tx = db.transaction(['bookmarks'], 'readwrite');
+      tx = db.transaction(stores, 'readwrite');
     const done = new Promise((ok, no) => {
       tx.oncomplete = ok;
       tx.onabort = tx.onerror = () => no(tx.error);
     });
-    const result = await work(tx.objectStore('bookmarks'));
+    const result = await work(...stores.map((name) => tx.objectStore(name)));
     await done;
+    return result;
+  }
+  // The store's size as the popup shows it: the count, and the UTF-8 length of each row as JSON,
+  // summed (an estimate: "about").
+  const encoder = new TextEncoder();
+  const measure = (all) => ({
+    count: all.length,
+    bytes: all.reduce((sum, x) => sum + encoder.encode(JSON.stringify(x)).length, 0),
+  });
+  const usage = () => bookmarks(async (rows) => measure(await request(rows.getAll())));
+  // Clear empties the store once per request id: the popup retries the identical request, which
+  // must not delete a bookmark saved after the first try went through. Every accepted request,
+  // a retry included, then writes the token, so tabs hear it even when the first try stopped
+  // between the two steps; a tab that hears it twice just reads its lists again.
+  async function clear(requestId) {
+    const result = await bookmarks(
+      async (rows, state) => {
+        const clears = (await request(state.get('bookmarkClears'))) || [];
+        if (clears.some((x) => x.id === requestId)) return measure(await request(rows.getAll()));
+        state.put([...clears, { id: requestId, time: Date.now() }].slice(-64), 'bookmarkClears');
+        rows.clear();
+        return { count: 0, bytes: 0 };
+      },
+      ['bookmarks', 'state'],
+    );
+    await chrome.storage.local.set({ butterBookmarksCleared: crypto.randomUUID() });
     return result;
   }
   const row = (x) => {
@@ -64,6 +94,24 @@
     (await chrome.commands.getAll()).find((c) => c.name === 'bookmark')?.shortcut ?? '';
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender.id !== chrome.runtime.id) return;
+    if (POPUP.includes(message?.type)) {
+      // An extension page: the popup (no tab), or one of Butter's pages open in a tab.
+      if (sender.tab && !sender.url?.startsWith(chrome.runtime.getURL('')))
+        respond({ error: 'bookmark-sender' });
+      else if (
+        message.version !== 1 ||
+        (message.type === 'butter-bookmark-clear' &&
+          (typeof message.requestId !== 'string' || !/^[a-f0-9-]{36}$/.test(message.requestId)))
+      )
+        respond({ error: 'bookmark-protocol' });
+      else {
+        const work =
+          message.type === 'butter-bookmark-usage' ? usage : () => clear(message.requestId);
+        serial(work).then(respond, () => respond({ error: 'bookmark-storage' }));
+        return true;
+      }
+      return;
+    }
     if (!TYPES.includes(message?.type) && message?.type !== 'butter-bookmark-key') return;
     if (message.version !== 1) {
       respond({ error: 'bookmark-protocol' });

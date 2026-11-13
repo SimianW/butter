@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added a Bookmarks switch to the popup. Off hides the Bookmark button, the shortcut and the dots;
+  your saved bookmarks are kept and come back when you switch it on.
+- Added how many bookmarks Butter holds and about how much space they take to the popup, with a
+  Clear that deletes them all, for every account in this browser, after asking first.
+
+### Changed
+
+- Moved "Remember long-chat layouts" into the same card as the other features. Its saved size now
+  shows on its own row, and its Clear asks first with the number of chats, like bookmarks.
+- Changed the first-bookmark notice to say you can clear all bookmarks in the popup.
+
 ## [0.1.0-alpha.21] - 2026-11-12
 
 ### Fixed

@@ -156,7 +156,7 @@ function page({ width = 1400 } = {}) {
     ...extra,
   });
   fake.branch = cell('branch', 'branch', 'Ask in branch');
-  fake.bookmark = cell('bookmark', 'rail', 'Bookmark selection', {
+  fake.bookmark = cell('bookmark', ['rail', 'bookmark'], 'Bookmark selection', {
     keys: () => '⌥⇧M',
     shortcut: () => 'Alt+Shift+M',
   });
@@ -256,6 +256,7 @@ test('each cell’s label is its accessible name; the key hint is in aria-keysho
 for (const [name, setup, expected] of [
   ['Ask in branch off', (p) => p.off('branch'), ['Bookmark selection']],
   ['the rail (bookmarks) off', (p) => p.off('rail'), ['Ask in branch']],
+  ['Bookmarks off', (p) => p.off('bookmark'), ['Ask in branch']],
   ['both off', (p) => p.off('branch', 'rail'), []],
   ['Butter paused', (p) => p.html.setAttribute('data-butter-disabled', ''), []],
   ['no bookmark range (a question)', (p) => (p.bookmark.wants = () => false), ['Ask in branch']],

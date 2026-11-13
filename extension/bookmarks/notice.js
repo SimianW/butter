@@ -9,7 +9,8 @@
 // The first save ever (#56) shows the card expanded with what Butter keeps, the privacy link and
 // Got it, until Got it, which is kept in settings as `bookmarkNotice: 'acknowledged'`, once per
 // browser profile. Undo leaves it unacknowledged, so the next save expands again. Independent of
-// the layout switch and `layoutConsent`; shown only while Butter and the rail (bookmarks) are on.
+// the layout switch and `layoutConsent`; shown only while bookmarks are on (Butter, the rail and
+// Bookmarks).
 // The card is consent/card.js's shell, placed top right.
 (() => {
   const T = {
@@ -17,7 +18,7 @@
       saved: '书签已保存',
       removed: '已移除书签',
       already: '已有此书签',
-      d: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 即可删除。',
+      d: 'Butter 只保存你标记内容的前三行，存在这台电脑上，不上传任何东西。在导航条的书签卡片上点 × 可删除一个，也可以在 Butter 弹窗里全部清除。',
       link: '隐私政策',
       undo: '撤销',
       ok: '知道了',
@@ -26,7 +27,7 @@
       saved: 'Bookmark saved',
       removed: 'Bookmark removed',
       already: 'Already bookmarked',
-      d: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove a bookmark with the × on its card in the rail.',
+      d: 'Butter keeps the first three lines of what you bookmark, on this computer only. Nothing is uploaded. Remove one with the × on its card in the rail, or clear them all in the Butter popup.',
       link: 'Privacy policy',
       undo: 'Undo',
       ok: 'Got it',
@@ -135,7 +136,7 @@
     butter = changes.butter.newValue;
     const s = settings();
     // Got it in another tab puts the expanded card away; small cards keep their time.
-    if (!s.enabled || !s.opts.rail || (seen() && current?.first)) leave();
+    if (!ButterStatus.bookmarksOn(s) || (seen() && current?.first)) leave();
   });
   const loaded = chrome.storage.local.get('butter').then((r) => {
     if (butter === undefined) butter = r.butter;
@@ -144,7 +145,7 @@
   async function show(kind, bookmark, undo) {
     await loaded;
     const s = settings();
-    if (!s.enabled || !s.opts.rail || !document.documentElement) return;
+    if (!ButterStatus.bookmarksOn(s) || !document.documentElement) return;
     const t = T[s.lang],
       first = kind === 'saved' && !seen(),
       id = ++serial;

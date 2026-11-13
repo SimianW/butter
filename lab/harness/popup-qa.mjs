@@ -31,8 +31,8 @@ const redesignStates = {
 };
 // Panels that cannot match, with the reason; they are still measured and reported.
 const redesignExcluded = {};
-// The header version label and the storage line show live data; both comparisons mask them.
-const liveRegions = () => [...document.querySelectorAll('.ver, .use')].map(e => {
+// The header version label and the storage rows' saved lines show live data; both comparisons mask them.
+const liveRegions = () => [...document.querySelectorAll('.ver, .row .d > [role="status"]')].map(e => {
   const r = e.getBoundingClientRect();
   return [Math.floor(r.left), Math.floor(r.top), Math.ceil(r.right), Math.ceil(r.bottom)];
 });
@@ -114,23 +114,23 @@ try {
   });
   async function seed() {
     await worker.evaluate(async () => {
-      // Synthetic numeric-free padding is test data, never a real conversation record.
+      // Synthetic geometry (one valid row per fixture chat) is test data, never a real conversation record.
       const db = await new Promise((resolve, reject) => {
         const r = indexedDB.open('butter-layouts-v1'); // the worker's current version
         r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error);
       });
       const tx = db.transaction('geometry', 'readwrite'), rows = tx.objectStore('geometry');
       rows.clear();
-      for (let i = 0; i < 12; i++) rows.put({ key: `fixture-${i}`, account: 'fixture', conv: String(i), time: Date.now(), used: Date.now(), padding: '0'.repeat(699800), bytes: 0 });
+      for (let i = 0; i < 12; i++) { const h = (c) => (c + i.toString(16)).padEnd(64, c), x = ButterLayoutCodec.clean({ schema: 4, account: 'e'.repeat(64), conv: h('f'), turn: h('1'), msg: h('2'), digest: h('3'), layout: h('4'), time: Date.now(), metrics: [0, 0, 0, 0, 0, 0, 0], blocks: Array.from({ length: 20000 }, (_, k) => 9e6 + k + 0.125), styles: [], items: [] }); rows.put({ ...x, key: ButterLayoutCodec.key(x), used: Date.now(), bytes: 0 }); }
       await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = () => reject(tx.error); });
       db.close();
     });
-    await page.evaluate(() => refreshUsage());
+    await page.evaluate(() => refreshAll());
   }
   // Initialize the database through its public API before seeding.
   await page.evaluate(async () => {
     await chrome.storage.local.set({ butter: { layoutConsent: 'granted' } });
-    await refreshUsage();
+    await refreshAll();
   });
   let cases = [
     ['01-normal', {}], ['02-problem', { broken: true }], ['03-away', { away: true }],
@@ -167,23 +167,23 @@ try {
     await page.emulateMedia({ colorScheme: color, reducedMotion: 'no-preference' });
     await seed();
     await page.evaluate(async config => {
-      clearTimeout(clearTimer); clearState = 'idle';
+      for (const st of Object.values(stores)) { clearTimeout(st.timer); st.clear = 'idle'; }
       fixtureConnected = !config.away;
       const value = ButterStatus.normalize({ layoutConsent: config.consent || 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false, branch: config.branch !== false } });
       const broken = config.broken === true ? ['rail'] : [config.broken || []].flat();
       await chrome.storage.session.set({ butterFailures: Object.fromEntries(broken.map(k => [k, { [k]: true }])) });
       await chrome.storage.local.set({ butter: value });
       await poll();
-      await refreshUsage();
+      await refreshAll();
       document.activeElement?.blur();
     }, config);
     if (config.clear) {
-      await page.locator('[data-clear="ask"]').click();
+      await page.locator('[data-store="layouts"][data-clear="ask"]').click();
       if (config.clear === 'done') {
-        await page.locator('[data-clear="confirm"]').click();
-        await page.waitForFunction(() => clearState === 'done');
+        await page.locator('[data-store="layouts"][data-clear="confirm"]').click();
+        await page.waitForFunction(() => stores.layouts.clear === 'done');
         // Hold the transient success state only for its design screenshot. The live smoke checks the real 2s timeout.
-        await page.evaluate(() => clearTimeout(clearTimer));
+        await page.evaluate(() => clearTimeout(stores.layouts.timer));
         assert.equal((await page.evaluate(() => chrome.runtime.sendMessage({ version: 1, type: 'butter-layout-usage' })) ).bytes, 0);
       }
     }
@@ -191,7 +191,7 @@ try {
     await page.evaluate(() => document.getAnimations().forEach(a => a.finish()));
     await page.evaluate(() => document.activeElement?.blur());
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
-    assert.equal(await page.locator('[role="switch"]').count(), 6);
+    assert.equal(await page.locator('[role="switch"]').count(), config.clear === 'confirm' ? 6 : 7); // the question replaces its row
     // The store popup has no dev script, so its slot renders nothing.
     assert.equal(await page.locator('.devtag, .card.dev').count(), 0, `${name}-${color} shows the dev card`);
     assert.equal(await page.locator('[data-switch="branch"]').getAttribute('aria-checked'), String(config.branch !== false));
@@ -200,7 +200,7 @@ try {
     // With two or more faults, every faulted row's short text fits on one line.
     if (Array.isArray(config.broken)) for (const [text, lines] of await page.locator('.row.bad .d').evaluateAll(list => list.map(e => [e.textContent, e.getClientRects().length && Math.round(e.getBoundingClientRect().height / parseFloat(getComputedStyle(e).lineHeight))])))
       assert.equal(lines, 1, `${name}-${color}: "${text}" wraps to ${lines} lines`);
-    const metrics = () => ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
+    const metrics = () => ['.hd', '.master', '.card', '.row', '.note', '.ft'].map(selector => {
       const e = document.querySelector(selector), r = e?.getBoundingClientRect();
       return { selector, top: r?.top, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
     });
@@ -238,7 +238,7 @@ try {
       await ref.locator('.popup').first().screenshot({ path: reference });
       const referenceMetrics = await ref.locator('.popup').first().evaluate(el => {
         const base = el.getBoundingClientRect().top;
-        return ['.hd', '.master', '.card', '.row', '.use', '.ft'].map(selector => {
+        return ['.hd', '.master', '.card', '.row', '.note', '.ft'].map(selector => {
           const e = el.querySelector(selector), r = e?.getBoundingClientRect();
           return { selector, top: r ? r.top - base : undefined, height: r?.height, font: e && getComputedStyle(e).font, lineHeight: e && getComputedStyle(e).lineHeight };
         });
@@ -253,7 +253,7 @@ try {
   await page.bringToFront();
   // The last case may leave the clear flow open; the live checks start from idle.
   await page.evaluate(async () => {
-    clearTimeout(clearTimer); clearState = 'idle';
+    for (const st of Object.values(stores)) { clearTimeout(st.timer); st.clear = 'idle'; }
     await chrome.storage.local.set({ butter: ButterStatus.normalize({ layoutConsent: 'granted', lang: 'en' }) });
   });
   await page.locator('[data-switch="branch"]').click();
@@ -319,8 +319,8 @@ try {
     failures = next; render();
   });
   assert.equal(await page.locator('.row.bad').count(), 0);
-  await page.locator('[data-clear="ask"]').click(); await page.locator('[data-clear="cancel"]').click();
-  assert.equal(await page.locator('[data-clear="ask"]').count(), 1);
+  await page.locator('[data-store="layouts"][data-clear="ask"]').click(); await page.locator('[data-store="layouts"][data-clear="cancel"]').click();
+  assert.equal(await page.locator('[data-store="layouts"][data-clear="ask"]').count(), 1);
   assert.deepEqual(errors, []);
   assert.deepEqual(requests.filter(url => /^https?:/.test(url)), []);
   await page.evaluate(async () => {
@@ -336,7 +336,7 @@ try {
   assert.equal(mismatched.length, 0, `${mismatched.length} of ${redesignRefs.length} ${redesignSide} panels differ from the redesign mockup: ${mismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
   const devMismatched = (dev?.refs ?? []).filter(r => r.ok === false && !r.excluded);
   assert.equal(devMismatched.length, 0, `${devMismatched.length} of ${dev?.refs.length} dev panels differ from the #32 mockup: ${devMismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches${dev ? `, ${dev.refs.filter(r => r.ok).length} dev-mockup matches, dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap but the dev build's two tallest, melt frames, branch switch, pause without layout shift, in-row faults, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches${dev ? `, ${dev.refs.filter(r => r.ok).length} dev-mockup matches, dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
   for (const dir of cleanup) await fs.rm(dir, { recursive: true, force: true });
@@ -392,7 +392,7 @@ async function devPopup() {
       chrome.downloads.showDefaultFolder = () => shown.push(['default']);
     });
     await fixtureTab();
-    // The storage line is live data; the mockup comparison masks it, so it is not seeded here.
+    // The saved lines are live data; the mockup comparison masks them, so they are not seeded here.
     const allFaults = ['streaming', 'scrolling', 'rail', 'branch'];
     // Name, config, colour scheme, and the #32 panel it must match (English and dark only).
     const devCases = [
@@ -420,7 +420,7 @@ async function devPopup() {
         await chrome.storage.session.set({ butterFailures: Object.fromEntries((config.broken || []).map(k => [k, { [k]: true }])) });
         await chrome.storage.local.set({ butter: value, butterDev: { round: 2, bugs: 3 } });
         await poll();
-        await refreshUsage();
+        await refreshAll();
       }, config);
       // The dev card polls its tab once a second.
       await page.waitForFunction(away => !!document.querySelector('.strip.idle') === away, !!config.away, { timeout: 3000 });
@@ -462,12 +462,12 @@ async function devPopup() {
       await page.locator('#popup').screenshot({ path: file }); files.push(file);
       heights[state] = await page.locator('#popup').evaluate(e => e.offsetHeight);
       liveRects[state] = await page.evaluate(liveRegions);
-      assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);
+      if (!name.endsWith('-tallest')) assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);
       if (panel) panels.push([panel, state]);
     }
-    // The mockup's measured heights: 568 px by default, 597 px for the tallest English state.
-    assert.equal(heights['d1-en-recording-light'], 568);
-    assert.equal(heights['d4-en-tallest-light'], 597);
+    // The store popup's 523 and 594 px plus the dev card's 46: since #108 the dev build's two tallest states pass the 600 px cap and scroll, accepted for the dev build only.
+    assert.equal(heights['d1-en-recording-light'], 569);
+    assert.equal(heights['d4-en-tallest-light'], 640);
     console.log('Dev states:');
     for (const [name, , color] of devCases) console.log(`  ${`${name}-${color}`.padEnd(24)} ${heights[`${name}-${color}`]} px  row "${rows[`${name}-${color}`].text}"`);
     const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels') : [];

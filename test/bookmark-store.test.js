@@ -188,3 +188,105 @@ test('a key request in another protocol version is refused, as the store request
       error: 'bookmark-protocol',
     });
 });
+
+// The popup's bookmark usage and Clear: whole-store requests from an extension page (no tab).
+const usage = (f, sender) => send(f, { type: 'butter-bookmark-usage' }, sender);
+const clearAll = (f, requestId = crypto.randomUUID(), sender) =>
+  send(f, { type: 'butter-bookmark-clear', requestId }, sender);
+const utf8 = (s) => new TextEncoder().encode(s).length;
+
+test('usage counts every bookmark of every account and conversation, and sums their bytes', async () => {
+  const f = workerFixture();
+  assert.deepEqual(await usage(f), { count: 0, bytes: 0 });
+  await create(f, mark());
+  await create(f, mark({ conv: h('d'), excerpt: 'another conversation' }));
+  await create(f, mark({ account: h('b'), excerpt: 'Ünïcödé in another account' }));
+  const rows = [...f.marks.values()];
+  assert.deepEqual(await usage(f), {
+    count: 3,
+    bytes: rows.reduce((sum, r) => sum + utf8(JSON.stringify(r)), 0),
+  });
+});
+
+test('clear empties the store for every account, returns zero usage and writes the cleared token', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  await create(f, mark({ account: h('b') }));
+  assert.deepEqual(await clearAll(f), { count: 0, bytes: 0 });
+  assert.equal(f.marks.size, 0);
+  assert.deepEqual(await usage(f), { count: 0, bytes: 0 });
+  const tokens = f.changes.filter((c) => 'butterBookmarksCleared' in c);
+  assert.equal(tokens.length, 1);
+  assert.match(tokens[0].butterBookmarksCleared, /^[a-f0-9-]{36}$/);
+  assert.equal(
+    f.changes.some((c) => 'butterLayoutCleared' in c),
+    false,
+  );
+});
+
+test('bookmark clear leaves saved layouts; layout clear leaves bookmarks', async () => {
+  const f = workerFixture();
+  f.disk.set('layout-row', { key: 'layout-row' });
+  await create(f, mark());
+  await clearAll(f);
+  assert.equal(f.disk.has('layout-row'), true);
+  await create(f, mark());
+  await send(f, { type: 'butter-layout-clear', requestId: crypto.randomUUID() });
+  assert.equal(f.disk.size, 0);
+  assert.deepEqual(await excerpts(f), [mark().excerpt]);
+});
+
+test('a retried clear with the same request id deletes nothing saved since', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const id = crypto.randomUUID();
+  await clearAll(f, id);
+  await create(f, mark({ excerpt: 'saved after the clear' }));
+  assert.deepEqual(await clearAll(f, id), { count: 1, bytes: (await usage(f)).bytes });
+  assert.deepEqual(await excerpts(f), ['saved after the clear']);
+});
+
+test('a retried clear whose first token write failed still tells the tabs', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const id = crypto.randomUUID();
+  f.failStorageWrites(1);
+  assert.deepEqual(await clearAll(f, id), { error: 'bookmark-storage' });
+  assert.equal(f.marks.size, 0);
+  assert.deepEqual(await clearAll(f, id), { count: 0, bytes: 0 });
+  assert.equal(f.changes.filter((c) => 'butterBookmarksCleared' in c).length, 1);
+});
+
+test('a retry after a failed token write keeps a bookmark saved in between', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const id = crypto.randomUUID();
+  f.failStorageWrites(1);
+  await clearAll(f, id);
+  await create(f, mark({ excerpt: 'saved between the tries' }));
+  assert.equal((await clearAll(f, id)).count, 1);
+  assert.deepEqual(await excerpts(f), ['saved between the tries']);
+  assert.equal(f.changes.filter((c) => 'butterBookmarksCleared' in c).length, 1);
+});
+
+test('usage and clear are refused from a tab, from another extension and without a valid request', async () => {
+  const f = workerFixture();
+  await create(f, mark());
+  const tab = { id: 'butter-test', tab: { id: 7 }, url: 'https://chatgpt.com/c/x' };
+  assert.deepEqual(await usage(f, tab), { error: 'bookmark-sender' });
+  assert.deepEqual(await clearAll(f, undefined, tab), { error: 'bookmark-sender' });
+  assert.equal(await usage(f, { id: 'other' }), undefined);
+  assert.equal(await clearAll(f, undefined, { id: 'other' }), undefined);
+  assert.deepEqual(await clearAll(f, 'not-an-id'), { error: 'bookmark-protocol' });
+  // The popup page open in a tab of its own is still an extension page.
+  const popupTab = {
+    id: 'butter-test',
+    tab: { id: 8 },
+    url: 'chrome-extension://butter-test/popup/popup.html',
+  };
+  assert.equal((await usage(f, popupTab)).count, 1);
+  assert.deepEqual(await send(f, { type: 'butter-bookmark-usage', version: 2 }), {
+    error: 'bookmark-protocol',
+  });
+  assert.equal(f.marks.size, 1);
+});

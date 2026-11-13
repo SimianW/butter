@@ -1,6 +1,16 @@
 // Shared, pure settings normalization and probe classification. No browser APIs here.
 (() => {
-  const keys = ['container', 'cv', 'throttle', 'older', 'rail', 'seek', 'layout', 'branch'];
+  const keys = [
+    'container',
+    'cv',
+    'throttle',
+    'older',
+    'rail',
+    'seek',
+    'layout',
+    'branch',
+    'bookmark',
+  ];
   const normalize = (value) => ({
     ...value,
     enabled: value?.enabled !== false,
@@ -37,9 +47,16 @@
     scrolling: ['older', 'seek'],
     rail: ['rail'],
     branch: ['branch'],
+    bookmarks: ['bookmark'],
     layout: ['layout'],
   };
   const groupOn = (value, group) => groups[group].every((k) => normalize(value).opts[k]);
+  // Bookmarks show on the page only while Butter, the question rail and Bookmarks are all on.
+  // Off hides them; the saved ones are kept.
+  const bookmarksOn = (value) => {
+    const s = normalize(value);
+    return s.enabled && s.opts.rail && s.opts.bookmark;
+  };
   const toggleGroup = (value, group) => {
     const next = normalize(value),
       on = !groupOn(value, group);
@@ -73,6 +90,7 @@
     normalize,
     classify,
     groupOn,
+    bookmarksOn,
     toggleGroup,
     chooseLayout,
     updateFailures,

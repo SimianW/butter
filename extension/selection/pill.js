@@ -6,7 +6,7 @@
 // Features register cells: Ask in branch (branch/content.js) and Bookmark (bookmarks/content.js).
 // Each has its own switch, so neither owns the pill. A cell is
 // `{ id, feature, icon, label(), keys(), shortcut(), wants(), activate(), reset() }`: `feature` is
-// its switch in `data-butter-off`; `label()` its accessible name and hover label; `keys()` the key
+// its switch in `data-butter-off`, or a list of switches that must all be on; `label()` its accessible name and hover label; `keys()` the key
 // hint shown in the label and `shortcut()` the same key for `aria-keyshortcuts` ('' for none);
 // `wants()` whether it shows for the current selection (read on selection change); `activate()`
 // runs on a primary pointerdown or a keyboard click; `reset()` (optional) when the pill goes. The
@@ -74,11 +74,12 @@ svg { display: block; width: 16px; height: 16px; }
     hovering = null; // the cell under the pointer
 
   const off = (feature) => {
-    const html = document.documentElement;
+    const html = document.documentElement,
+      offList = (html?.getAttribute('data-butter-off') || '').split(' ');
     return (
       !html ||
       html.hasAttribute('data-butter-disabled') ||
-      (html.getAttribute('data-butter-off') || '').split(' ').includes(feature)
+      [feature].flat().some((f) => offList.includes(f))
     );
   };
   const isDark = () => {
