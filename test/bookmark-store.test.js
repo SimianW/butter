@@ -255,6 +255,13 @@ test('usage and clear are refused from a tab, from another extension and without
   assert.equal(await usage(f, { id: 'other' }), undefined);
   assert.equal(await clearAll(f, undefined, { id: 'other' }), undefined);
   assert.deepEqual(await clearAll(f, 'not-an-id'), { error: 'bookmark-protocol' });
+  // The popup page open in a tab of its own is still an extension page.
+  const popupTab = {
+    id: 'butter-test',
+    tab: { id: 8 },
+    url: 'chrome-extension://butter-test/popup/popup.html',
+  };
+  assert.equal((await usage(f, popupTab)).count, 1);
   assert.deepEqual(await send(f, { type: 'butter-bookmark-usage', version: 2 }), {
     error: 'bookmark-protocol',
   });

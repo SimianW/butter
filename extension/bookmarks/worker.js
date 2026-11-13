@@ -5,7 +5,7 @@
 // consent, no expiry, no byte cap or eviction; the layout Clear never touches them and the
 // bookmark Clear never touches layouts.
 // The popup's usage and Clear cover the whole store (every account and conversation), so they
-// are taken only from extension pages, never from a tab's content script.
+// are taken only from extension pages (no tab, or Butter's own URL), never from a content script.
 (() => {
   const B = ButterBookmarks;
   const TYPES = ['butter-bookmark-list', 'butter-bookmark-create', 'butter-bookmark-delete'];
@@ -95,7 +95,9 @@
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender.id !== chrome.runtime.id) return;
     if (POPUP.includes(message?.type)) {
-      if (sender.tab) respond({ error: 'bookmark-sender' });
+      // An extension page: the popup (no tab), or one of Butter's pages open in a tab.
+      if (sender.tab && !sender.url?.startsWith(chrome.runtime.getURL('')))
+        respond({ error: 'bookmark-sender' });
       else if (
         message.version !== 1 ||
         (message.type === 'butter-bookmark-clear' &&

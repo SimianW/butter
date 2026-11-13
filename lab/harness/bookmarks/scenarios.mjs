@@ -3,6 +3,7 @@
 // does in a full run. `--list` prints each one's description: that is the reference for what it
 // checks, with the details in the scenario's own header.
 import cardList from './scenarios/card-list.mjs';
+import bookmarksSwitch from './scenarios/bookmarks-switch.mjs';
 import card from './scenarios/card.mjs';
 import dotCloseups from './scenarios/dot-closeups.mjs';
 import dotDense from './scenarios/dot-dense.mjs';
@@ -19,6 +20,7 @@ import listItems from './scenarios/list-items.mjs';
 import notice from './scenarios/notice.mjs';
 import one from './scenarios/one.mjs';
 import pillStates from './scenarios/pill-states.mjs';
+import popupClear from './scenarios/popup-clear.mjs';
 import railIdle from './scenarios/rail-idle.mjs';
 import railOff from './scenarios/rail-off.mjs';
 import save from './scenarios/save.mjs';
@@ -42,6 +44,8 @@ export const scenarios = [
   shortcutCleared,
   listItems,
   railOff,
+  bookmarksSwitch,
+  popupClear,
   cardList,
   firstBookmark,
   stale,

@@ -74,7 +74,11 @@ function workerFixture({
     },
   };
   const chrome = {
-    runtime: { id: 'butter-test', onMessage: { addListener: (fn) => listeners.push(fn) } },
+    runtime: {
+      id: 'butter-test',
+      getURL: (file = '') => `chrome-extension://butter-test/${file}`,
+      onMessage: { addListener: (fn) => listeners.push(fn) },
+    },
     commands: {
       getAll: async () => [
         { name: '_execute_action', shortcut: '' },

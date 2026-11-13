@@ -13,7 +13,8 @@
 // `start` opens a new page and closes every other one (the previous scenario's, and any it left
 // open), then builds that start, with the Bookmark command's key back on Alt+Shift+M (a scenario
 // may clear it in chrome://extensions/shortcuts) and the store's request counts at zero. It hands
-// the scenario `t`: the page, context and worker, `check`, `open(theme)`, `serve(changes)` for a
+// the scenario `t`: the page, context and worker, `check`, `open(theme)`, `popup()` (the popup
+// page in its own tab), `serve(changes)` for a
 // mid-scenario scene change, `pages()` (earlier-history pages served), the store and settings
 // helpers, the fixture's ids and text, and the Butter driver (driver.mjs).
 import fs from 'node:fs/promises';
@@ -157,6 +158,14 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       );
       await current.waitForTimeout(400);
     }
+    // The real popup page (popup/popup.html) in a tab of its own, as the toolbar button opens it.
+    async function popup() {
+      const p = await context.newPage();
+      await p.setViewportSize({ width: 360, height: 600 });
+      await p.goto(`chrome-extension://${new URL(worker.url()).host}/popup/popup.html`);
+      await p.waitForSelector('#sw-bookmarks');
+      return p;
+    }
     const { createFixture: _, ...ids } = fixture;
     // The scene is the fixture's: a scenario changes it only through `serve`.
     const { page$: _scene, reset: _reset, ...served } = fx;
@@ -174,6 +183,7 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       headed,
       LIVE,
       open,
+      popup,
       settings,
       requests,
       stored,
