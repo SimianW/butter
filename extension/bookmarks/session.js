@@ -184,12 +184,13 @@
       if (r.created) keep(list, r.bookmark);
       if (inView(owner, conv)) refresh();
       if (!r.created) return outcome('already', r.bookmark);
-      // Undo after the tab moved on still deletes from the bookmark's own conversation.
+      // Undo after the tab moved on still deletes from the bookmark's own conversation; its list
+      // is looked up again then, as a Clear since may have dropped the one read here.
       outcome('saved', r.bookmark, async () => {
         const { account: a, conv: c, key } = r.bookmark;
         const d = await store('butter-bookmark-delete', { account: a, conv: c, key });
         if (!d.deleted) return;
-        drop(list, key);
+        drop(await listOf(owner, conv), key);
         if (inView(owner, conv)) refresh();
       });
     }
@@ -208,11 +209,12 @@
       for (const key of done) if (key) drop(list, key);
       if (inView(owner, conv)) refresh();
       const gone = bookmarks.filter((b) => done.includes(b.key)).at(-1);
+      // The list is looked up again at Undo time: a Clear since then dropped the one read here.
       if (gone)
         outcome('removed', gone, async () => {
           const r = await store('butter-bookmark-create', { bookmark: gone });
           if (!r.bookmark) return;
-          keep(list, r.bookmark);
+          keep(await listOf(owner, conv), r.bookmark);
           if (inView(owner, conv)) refresh();
         });
     }

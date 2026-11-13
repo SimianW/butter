@@ -435,3 +435,39 @@ test('the cleared token drops the lists and republishes empty marks', async () =
   assert.deepEqual([t.last().revision, t.last().groups.size], [1, 0]);
   assert.equal(t.store.reads(), 2);
 });
+
+test('Undo of a removal still on screen after the Clear brings the bookmark and its dot back', async () => {
+  const t = await shown();
+  await t.save();
+  await settle();
+  const [b] = t.last().groups.get('q1').bookmarks;
+  await t.last().groups.get('q1').remove(b);
+  await settle();
+  const removed = t.outcomes.at(-1);
+  t.store.rows.clear(); // the popup's Clear emptied the store
+  t.session.cleared();
+  await settle();
+  assert.deepEqual(t.marks(), {});
+  await removed.undo();
+  await settle();
+  assert.deepEqual([...t.store.rows.keys()], [b.key]);
+  assert.deepEqual(Object.keys(t.marks()), ['q1']);
+  assert.equal(t.marks().q1[0][0], b.key);
+});
+
+test('Undo of a save still on screen after the Clear takes the dot away with the bookmark', async () => {
+  const t = await shown();
+  await t.save();
+  await settle();
+  const saved = t.outcomes.at(-1),
+    { key, ...b } = saved.bookmark;
+  t.store.rows.clear(); // the popup's Clear emptied the store
+  t.store.put(b); // and another tab saved the same passage again
+  t.session.cleared();
+  await settle();
+  assert.equal(t.marks().q1[0][0], key);
+  await saved.undo();
+  await settle();
+  assert.equal(t.store.rows.size, 0);
+  assert.deepEqual(t.marks(), {});
+});
