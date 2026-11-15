@@ -23,6 +23,8 @@
   showing the question you started from.
 - Fixed one tick on the rail looking thinner and fainter than the others at some browser zoom
   levels.
+- Fixed a jump from the question rail sometimes scrolling the chat the wrong way before heading to
+  the question.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 

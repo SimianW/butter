@@ -112,7 +112,11 @@ export function setup() {
     const el = new FakeElement('article');
     el.setAttribute('data-turn-key', `q${i}`);
     el.isConnected = false;
-    el.getBoundingClientRect = () => ({ top: t - top, bottom: t + HEIGHTS[i] - top });
+    el.getBoundingClientRect = () => ({
+      top: t - top,
+      bottom: t + HEIGHTS[i] - top,
+      height: HEIGHTS[i],
+    });
     el.querySelector = () => null;
     return el;
   });
@@ -139,7 +143,9 @@ export function setup() {
     if (!io) return;
     const entries = changed.map((el) => ({
       target: el,
-      boundingClientRect: el.isConnected ? el.getBoundingClientRect() : { top: 0, bottom: 0 },
+      boundingClientRect: el.isConnected
+        ? el.getBoundingClientRect()
+        : { top: 0, bottom: 0, height: 0 },
       rootBounds: { top: 0 },
       isIntersecting: false,
     }));

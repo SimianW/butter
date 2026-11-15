@@ -204,7 +204,11 @@ test('estimate: last seen, or interpolated between the nearest records and the c
     const el = new FakeElement();
     el.setAttribute('data-turn-key', id);
     pos.callback([
-      { target: el, boundingClientRect: { top: top - s.scrollTop }, rootBounds: { top: 0 } },
+      {
+        target: el,
+        boundingClientRect: { top: top - s.scrollTop, height: 100 },
+        rootBounds: { top: 0 },
+      },
     ]);
   };
   assert.equal(t.turns.estimate(3), 1500, 'nothing seen: by index over the chat height');
@@ -252,7 +256,9 @@ function scene(mounted) {
   for (let j = 0; j < 10; j++) {
     const el = new FakeElement();
     el.setAttribute('data-turn-key', `q${j}`);
-    pos.callback([{ target: el, boundingClientRect: { top: planted(j) }, rootBounds: { top: 0 } }]);
+    pos.callback([
+      { target: el, boundingClientRect: { top: planted(j), height: 100 }, rootBounds: { top: 0 } },
+    ]);
   }
   // The questions that still have a record: estimate gives exactly the planted one, or the one a
   // measure took (a mounted turn's top, or the bottom of the last one for the question after it).
