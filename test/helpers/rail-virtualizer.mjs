@@ -18,7 +18,7 @@ export const TOPS = [84, 1883, 3418, 5725],
   BOTTOM = SCROLL_HEIGHT - CLIENT,
   MARGIN = 1500;
 // The rail scripts a jump needs, in the manifest's order.
-const SCRIPTS = ['turns.js', 'jump.js'];
+const SCRIPTS = ['turns.js', 'readiness.js', 'jump.js'];
 
 // The chat opens at its top. Returns the tracker and the jump, the scroller, `writes` (every
 // scrollTop write the rail made, clamped as the browser does), the turn elements `els`, the journey
@@ -27,7 +27,9 @@ const SCRIPTS = ['turns.js', 'jump.js'];
 // - `mounted(fn)`: `fn(i)` runs each time turn `i` mounts;
 // - `frameMs`: the time between frames (16; more while the page is busy);
 // - `run(ms)`: runs timers and frames for `ms`; `now()`: the page's clock.
-export function setup() {
+// `trace(step, fields)`: the dev build's trace hook (dev/rail-trace.js), given the rail as rail.js
+// lends it.
+export function setup({ trace } = {}) {
   let now = 10_000,
     nextId = 1,
     top = 0;
@@ -199,11 +201,13 @@ export function setup() {
       if (tok === undefined || tok === this.tok) this.tok = null;
     },
   };
+  trace?.('rail', { model, turns, host: () => null, bars: () => [] });
   jump = ctx.ButterRailJump(model, turns, () => trip, {
     kick() {},
     busy() {},
     wait() {},
     found() {},
+    trace: trace && ((step, fields) => trace(step, fields())),
   });
 
   // The chat opens at its top: q0 and q1 mount and are recorded where they are; the tracker

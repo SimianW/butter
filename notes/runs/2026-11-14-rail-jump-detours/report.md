@@ -1,9 +1,10 @@
 # Rail jump detours: the chat is sent far away before it lands — 2026-11-14
 
-Diagnosis only: steps 1 (Control, from the user's capture) and 2 (Red) of `docs/bugfix.md`.
+Steps 1 (Control, from the user's capture) and 2 (Red) of `docs/bugfix.md`, then step 3 (Green)
+for Findings 1 and 3: see [Step 3 - Green](#step-3---green).
 Product base `main` 907297d (`0.1.0-alpha.21`); the user's build was `0.1.0-alpha.21+dev.5`
-(Windows Chrome, device pixel ratio 0.9, a 4-question chat). No product code was changed, and
-nothing was committed, pushed or filed.
+(Windows Chrome, device pixel ratio 0.9, a 4-question chat). The diagnosis changed no product
+code; step 3's changes are below.
 
 Evidence: six `butter-diag` bug files (bug 1 has no rail events; bugs 2–6 cover jumps 2–13) and
 a 7 s screen recording of one failed click. Both stay private and are not copied here. No chat
@@ -336,3 +337,73 @@ two files below.
 
 Files added: `test/rail-jump-detours.test.mjs` and this report. The run index in
 `notes/runs/README.md` was not updated, because the brief limited the files this run could touch.
+
+## Step 3 - Green
+
+Branch `fix/rail-jump-detours`, from `main` 907297d. Both bugs are fixed in Butter; Finding 2's
+snap to the bottom is ChatGPT's and stays open (see the table above).
+
+### Bug A: the empty-rect position record (Finding 1)
+
+`extension/rail/turns.js`, the position observer: an entry is recorded only when its turn is still
+connected and its box has a height. A turn that left keeps its last real position. The test fakes
+in `test/rail-turns.test.mjs` now give their planted rects a height, as Chrome's do.
+
+### Bug B: the target lost after it mounted (Finding 3)
+
+`extension/rail/jump.js` runs the mount tries and the readiness waits in rounds:
+
+- During the waits, a target unmounted for 250 ms in a row is lost. ChatGPT replacing the turn's
+  element in place takes less. The waits that are running stop at once, whichever they are.
+- The jump then measures the mounted turns and runs the mount tries and the readiness waits again,
+  from where things are now.
+- At most two more rounds, within the jump's existing deadline. Lost a third time, the jump ends
+  at once instead of waiting out its 3 s: the chat shows where ChatGPT left it, and the jump
+  unpins.
+- `settle` after arrival is unchanged. So is every jump whose target stays mounted.
+
+`jump.js` was at its 500-line cap, so the readiness waits moved out unchanged into a new module,
+`extension/rail/readiness.js` (`ButterRailReadiness`): `steady`, `quiet` and `nextPage`, plus
+`lost`. `steady` now takes its options as an object and aligns through the jump's `targetTop`,
+which computes the same value. `jump.js` is 470 lines. The module is wired the way
+`rail/grid.js` was: `extension/manifest.json`, `eslint.config.mjs`,
+`test/rail-scripts.test.mjs` and the script list in `lab/harness/rail-scripts.mjs`. Also the jump's
+own unit test, the module table in `docs/development.md` and a GLOSSARY entry, "Readiness waits".
+
+The rail trace (`extension/dev/rail-trace.js`, `notes/diagnostics/README.md`):
+
+- `rail-try`'s `try` now counts across the jump's rounds (8 at most per round), so a later round's
+  tries show as tries 2, 3, … in the bug file.
+- `rail-end`'s `tries` counts all of them.
+- `rail-wait` has a new `lost` field: true on the wait the loss stopped.
+
+`test/rail-jump-lost.test.mjs` gained a third test that checks these rows with the real trace.
+
+### Results
+
+| Command | Before the fix | After |
+|---|---|---|
+| `node --test test/rail-jump-detours.test.mjs` | exit 1, 2 of 2 fail | exit 0, 2 pass |
+| `node --test test/rail-jump-lost.test.mjs` | exit 1, 2 of 2 fail (`lost-red-output.txt`) | exit 0, 3 pass |
+
+The test scenes, after the fix:
+
+- Clicking question 0 from question 3 writes `20, 20, 420, 20`: the try, the alignment, the lead
+  hold and the landing. Before the fix it wrote `6463, 0, 20, 420, 20`.
+- With question 0 unmounted once, 250 ms after it mounted: it is mounted again at 822 ms and the
+  jump lands on it, the trip ending 1726 ms after the click. Before the fix the jump ended `lost`
+  at 3928 ms with Bug A fixed, and at 4408 ms without that fix.
+- With question 0 unmounted after every mount: three rounds, then the jump ends `lost` at 1922 ms,
+  in 9 scroll writes, with the chat shown and unpinned.
+
+Checks from `.github/workflows/check.yml`, run locally:
+
+- `npm run format:check`: all matched files use Prettier code style.
+- `npm run lint`: exit 0.
+- `node --test`: 822 tests, 822 pass.
+- `python3 -m unittest discover -s scripts -p 'test_*.py'`: 117 tests OK.
+- `python3 scripts/check-version.py`: `OK: 0.1.0-alpha.21 / 0.1.0.21`.
+
+Not run: the fixture harness and the live lab. The fake virtualizer copies the capture's geometry
+and timing; whether ChatGPT's real unmount-and-snap gives way on the second round is for the
+user's next bug file to show.

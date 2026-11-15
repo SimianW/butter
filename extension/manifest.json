@@ -31,6 +31,7 @@
         "rail/model.js",
         "rail/turns.js",
         "rail/trip.js",
+        "rail/readiness.js",
         "rail/jump.js",
         "rail/pre-jump.js",
         "rail/style.js",

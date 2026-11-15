@@ -25,6 +25,8 @@
   levels.
 - Fixed a jump from the question rail sometimes scrolling the chat the wrong way before heading to
   the question.
+- Fixed a jump from the question rail sometimes waiting about 4 seconds and then showing the end of
+  the chat instead of the question when ChatGPT briefly removed it.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 
