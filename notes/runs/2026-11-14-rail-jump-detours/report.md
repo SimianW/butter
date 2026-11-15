@@ -404,6 +404,27 @@ Checks from `.github/workflows/check.yml`, run locally:
 - `python3 -m unittest discover -s scripts -p 'test_*.py'`: 117 tests OK.
 - `python3 scripts/check-version.py`: `OK: 0.1.0-alpha.21 / 0.1.0.21`.
 
+### Review round 1
+
+Two findings from review, both fixed with a test that failed without the fix
+(`review1-red-output.txt`):
+
+- **R1: a loss during the page wait or the math wait was not retried.** Loss detection started at
+  the quiet and steady waits. With earlier pages left, question 0 unmounted during the page wait
+  ended the jump at the bottom, unpinned, 4440 ms after the click. Now the same rule (unmounted
+  250 ms in a row) runs from the page wait on: a loss there or in the math wait stops that wait
+  and goes through the same bounded rounds; a target missing right after them is waited for
+  until it is back or lost. Their `rail-wait` rows carry `lost` too. The new test in
+  `test/rail-jump-lost.test.mjs` (`hasPrev` added to the fake virtualizer) now lands on question
+  0, pinned, 5406 ms after the click: the second round waits for the page again, 4 s here
+  because the fake never loads one. Jumps whose target stays mounted are unchanged, down to their
+  clock reads (`test/dev-rail-trace.test.mjs`).
+- **R2: the bug file dropped `lost`.** `extension/dev/allowlist.js` now allows the key; a test in
+  `test/dev-recorder.test.js` checks it is kept and not counted as redacted.
+
+Checks after: `npm run format:check` and `npm run lint` pass; `node --test` 824 of 824 pass;
+the scripts' unittest 117 OK; `check-version.py` OK.
+
 Not run: the fixture harness and the live lab. The fake virtualizer copies the capture's geometry
 and timing; whether ChatGPT's real unmount-and-snap gives way on the second round is for the
 user's next bug file to show.

@@ -216,6 +216,7 @@
     'lastWrapperInline',
     'live',
     'wait',
+    'lost',
     'cause',
     'outcome',
     'elapsedMs',

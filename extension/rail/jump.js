@@ -314,37 +314,50 @@
             ready = { el, top, geometry: {} };
             flight.ready.set(id, ready);
           }
+          // `here()`: live, and the target not lost (`g.lost`), in every wait from here on.
+          const g = ready.geometry,
+            here = () => live() && !waits.lost(id, g);
           if (!ready.page) {
             if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
               trace('waiting', () => ({ tok }));
-              await waits.nextPage(4000, live);
-              await new Promise((r) => setTimeout(r, 150));
-              trace('wait', () => ({ tok, wait: 'page', live: live() }));
+              await waits.nextPage(4000, here);
+              if (!g.lost) await new Promise((r) => setTimeout(r, 150));
+              trace('wait', () => ({ tok, wait: 'page', live: live(), lost: g.lost }));
             }
             if (!live()) return;
-            ready.page = true;
+            ready.page = !g.lost;
           }
-          if (!ready.math || pendingMath()) {
+          if (!g.lost && (!ready.math || pendingMath())) {
             trace('waiting', () => ({ tok }));
             for (
               const end = performance.now() + 3000;
-              live() && performance.now() < end && pendingMath();
+              here() && performance.now() < end && pendingMath();
 
             )
               await frame();
-            trace('wait', () => ({ tok, wait: 'math', live: live(), pending: pendingMath() }));
+            trace('wait', () => ({
+              tok,
+              wait: 'math',
+              live: live(),
+              pending: pendingMath(),
+              lost: g.lost,
+            }));
             if (!live()) return;
             ready.math = !pendingMath();
           }
-          el = turns.el(id);
-          if (!el || !live()) return;
+          // Missing now, the target is being replaced (back within LOST ms) or lost.
+          while (!(el = turns.el(id)) && here()) await frame();
+          if (!live()) return;
+          if (g.lost) {
+            el = null; // the next round looks for it; after the last, the jump ends
+            if (round === 2 || !model.pinned) break;
+            continue;
+          }
           lead = reduced() ? 0 : m * Math.min(400, sc().clientHeight * 0.4);
           follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
           // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
           // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
-          const g = ready.geometry,
-            here = () => live() && !waits.lost(id, g),
-            hold = { off: lead, state: g };
+          const hold = { off: lead, state: g };
           trace('waiting', () => ({ tok }));
           const waited = (wait) => () =>
             trace('wait', () => ({ tok, wait, live: live(), lost: g.lost }));

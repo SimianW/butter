@@ -1,0 +1,69 @@
+✔ events older than the 30 s window are not in the snapshot (2.858976ms)
+✔ the count cap holds under a flood and keeps the newest events (22.351835ms)
+✔ the byte cap holds under a flood and keeps the newest events (24.973267ms)
+✔ snapshot events come oldest first with t in ms relative to the save (0.594187ms)
+✔ the snapshot carries the #32 top-level fields (0.387505ms)
+✔ a source that throws becomes unavailable and the rest of the snapshot still saves (0.596492ms)
+✔ the privacy filter drops text, ID-shaped strings and URLs and counts them in redacted (0.422555ms)
+✔ every createActivation rejection reason survives the filter (0.252037ms)
+✔ the privacy filter keeps only allowed value types and drops unknown keys (0.274866ms)
+✔ file names carry the bug number and local time; the path carries the round (0.305727ms)
+✔ a version or trigger outside the expected shapes is not copied into the snapshot (0.312386ms)
+✔ a serialized snapshot parses back to itself and puts each event on its own line (0.854031ms)
+✔ turns and usage are groups: each part is read alone and fails alone (0.854268ms)
+✔ text, IDs and URLs planted in turns and usage are dropped and counted (0.547219ms)
+✔ the whole file stays under its cap: oldest events go first, then the largest part (12.773281ms)
+✔ a snapshot under the file cap has no eventsDropped field (0.216057ms)
+✔ serialized turns put each readiness row and structure node on its own line (0.648732ms)
+✔ the rail trace events are kept, and a key or string off the allowlist is dropped (0.353836ms)
+✖ a readiness wait's lost field is kept in the bug file (1.294544ms)
+✔ the rail part is a group: each of its parts is read and filtered on its own (0.333506ms)
+✔ a target unmounted once after it mounted is mounted again, and the jump lands on it (19.550149ms)
+✖ a target unmounted once during the wait for an earlier page is mounted again, and the jump lands on it (13.340659ms)
+✔ a target unmounted every time it mounts ends the jump in bounded time, shown and unpinned (5.00038ms)
+✔ the bug file shows every round's mount tries and the wait each loss stopped (10.007639ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 22
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.883506
+
+✖ failing tests:
+
+test at test/dev-recorder.test.js:387:1
+✖ a readiness wait's lost field is kept in the bug file (1.294544ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      {
+        durationMs: 400,
+        jump: 3,
+        live: true,
+  -     lost: true,
+        type: 'rail-wait',
+        wait: 'steady'
+      }
+    ]
+  
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { type: 'rail-wait', jump: 3, wait: 'steady', durationMs: 400, live: true } ],
+    expected: [ { type: 'rail-wait', jump: 3, wait: 'steady', durationMs: 400, live: true, lost: true } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/rail-jump-lost.test.mjs:73:1
+✖ a target unmounted once during the wait for an earlier page is mounted again, and the jump lands on it (13.340659ms)
+  AssertionError [ERR_ASSERTION]: bug: question 0 was unmounted during the page wait and the jump never looked for it again: it ended 4440 ms after the click at scrollTop 6527 (question 0 unmounted, pinned false); writes: 20, 20
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

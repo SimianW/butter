@@ -16,14 +16,15 @@ const BUSY = 600, // ChatGPT renders a turn it mounted for this long: a frame ev
 // The chat at question 3 (5661), then a click on question 0. `snaps`: how many of question 0's
 // mounts ChatGPT answers by moving the chat to the bottom. Steps until the jump ends or `ms` pass;
 // returns when it ended (ms after the click, or null), and the dev build's rail trace `events`.
-async function clickQuestion0({ snaps, ms = 15000 }) {
+// `hasPrev`: the chat has earlier pages left, so the jump waits for one once question 0 mounts.
+async function clickQuestion0({ snaps, ms = 15000, hasPrev = false }) {
   const events = [];
   let now = () => 0;
   const tracer = createRailTrace({
     emit: (type, fields) => events.push({ type, ...fields }),
     now: () => now(),
   });
-  const t = setup({ trace: tracer.trace });
+  const t = setup({ trace: tracer.trace, hasPrev });
   now = t.now;
   t.scroller.scrollTop = TOPS[3] - 64;
   await t.run(500);
@@ -66,6 +67,23 @@ test('a target unmounted once after it mounted is mounted again, and the jump la
   assert.ok(
     ended != null && ended < 2500,
     `the jump landed ${ended} ms after the click: not before the old 3 s wait would have ended`,
+  );
+});
+
+test('a target unmounted once during the wait for an earlier page is mounted again, and the jump lands on it', async () => {
+  const { t, ended, events } = await clickQuestion0({ snaps: 1, hasPrev: true });
+  const q0 = t.els[0];
+  assert.ok(
+    q0.isConnected && q0.getBoundingClientRect().top === 64 && t.st.pinned,
+    `bug: question 0 was unmounted during the page wait and the jump never looked for it again: ` +
+      `it ended ${ended} ms after the click at scrollTop ${t.scroller.scrollTop} ` +
+      `(question 0 ${q0.isConnected ? 'mounted' : 'unmounted'}, pinned ${t.st.pinned}); ` +
+      `writes: ${t.writes.join(', ')}`,
+  );
+  assert.deepEqual(
+    events.filter((e) => e.type === 'rail-wait' && e.lost).map((e) => e.wait),
+    ['page'],
+    'the loss stopped the page wait',
   );
 });
 

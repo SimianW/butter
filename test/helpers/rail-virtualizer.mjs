@@ -28,8 +28,8 @@ const SCRIPTS = ['turns.js', 'readiness.js', 'jump.js'];
 // - `frameMs`: the time between frames (16; more while the page is busy);
 // - `run(ms)`: runs timers and frames for `ms`; `now()`: the page's clock.
 // `trace(step, fields)`: the dev build's trace hook (dev/rail-trace.js), given the rail as rail.js
-// lends it.
-export function setup({ trace } = {}) {
+// lends it. `hasPrev`: the chat has earlier pages left (they never load here).
+export function setup({ trace, hasPrev = false } = {}) {
   let now = 10_000,
     nextId = 1,
     top = 0;
@@ -62,7 +62,7 @@ export function setup({ trace } = {}) {
   const st = { flying: false, pinned: false, busy: null, active: null };
   const model = {
     items: TOPS.map((_, i) => ({ id: `q${i}`, q: `Question ${i}` })),
-    hasPrev: false,
+    hasPrev,
     box: null,
     get qs() {
       return this.items;

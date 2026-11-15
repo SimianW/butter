@@ -384,6 +384,18 @@ test('the rail trace events are kept, and a key or string off the allowlist is d
   assert.equal(snap.redacted, 4);
 });
 
+test("a readiness wait's lost field is kept in the bug file", () => {
+  const rec = createRecorder();
+  const fields = { jump: 3, wait: 'steady', durationMs: 400, live: true, lost: true };
+  rec.record('rail-wait', fields, 1_000);
+  const snap = rec.snapshot(meta(2_000));
+  assert.deepEqual(
+    snap.events.map(({ t: _t, ...e }) => e),
+    [{ type: 'rail-wait', ...fields }],
+  );
+  assert.equal(snap.redacted, 0);
+});
+
 test('the rail part is a group: each of its parts is read and filtered on its own', () => {
   const snap = createRecorder().snapshot(
     meta(0, {
