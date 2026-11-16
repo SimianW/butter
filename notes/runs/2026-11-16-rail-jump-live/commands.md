@@ -364,4 +364,15 @@ SUMMARY {"jumps":4,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postComple
 EXIT 0; evidence <local>/fix-recording.json
 $ python3 lab/harness/rail-jump-gif.py <local>/fix-recording.json /tmp/rail-gif/after.gif
 (after.gif: 800x715, 1716033 bytes, 9410 ms, 113 frames, 12 fps; storyboards watched, then deleted)
+$ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-fix/butter LABEL=lead-verify-fix OUT=<local>/lead-verify-fix.json node lab/harness/rail-jump-live.mjs
+SUMMARY {"jumps":54,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":43,"rawReversalCount":88,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":44}
+EXIT 0; evidence <local>/lead-verify-fix.json
+$ python3 scripts/package.py --dev     # the working tree that became c0178b7; unpacked at ~/snap/chromium/common/rail-jump-fix2/butter
+dist/butter-0.1.0-alpha.21+dev.3.zip
+$ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-fix2/butter LABEL=lead-verify-fix2 OUT=<local>/lead-verify-fix2.json node lab/harness/rail-jump-live.mjs
+SUMMARY {"jumps":54,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":43,"rawReversalCount":86,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":44}
+EXIT 0; evidence <local>/lead-verify-fix2.json
+$ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-head/butter LABEL=lead-verify-head2 OUT=<local>/lead-verify-head2.json node lab/harness/rail-jump-live.mjs
+SUMMARY {"jumps":54,"failed":4,"visibleDetour":10,"native":0,"gated":10,"postCompletion":5,"postCompletionEventMoves":4,"afterLanding":8,"rawReversal":45,"rawReversalCount":109,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":0}
+EXIT 1; evidence <local>/lead-verify-head2.json
 ```

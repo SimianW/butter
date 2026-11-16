@@ -27,8 +27,15 @@ without the attribute) also passed three 54-jump runs, but turned anchoring off 
 
 After review (F2) the rule also requires Smoother streaming's `cv` setting to be on
 (`:not([data-butter-off~='cv'])`, as the file's other `cv` rules): with `cv` off the move does not
-happen (the cv-off arm in cause.md), so anchoring stays on there. The last row of the table is the
-run on that rule.
+happen (the cv-off arm in cause.md), so anchoring stays on there. The `lead-verify-fix2` row of the
+table is the run on that rule.
+
+The page changed during the day (review F5). In the two last runs, `lead-verify-fix2` and
+`lead-verify-head2`, ChatGPT's scroller itself computes `overflow-anchor: auto`; in every earlier
+run it computed `none` (the `FIXTURE` lines of each log). Butter sets no style on the scroller, so
+the change is ChatGPT's or the lab's, and its cause is not established. On the changed page the
+head still fails (4 failed, 10 visible detours) and the fix still passes, so the comparison holds on
+both. cause.md's remark that the head's scroller computes `none` describes the earlier page.
 
 Live, lab 2, dev build `0.1.0-alpha.21+dev.2` unpacked at
 `~/snap/chromium/common/rail-jump-fix/butter`, the red command
@@ -46,6 +53,7 @@ other, non-turn child of the scroller computes `none` with or without Butter.
 | fix-3 | fix | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [fix-3.log](fix-3.log) |
 | lead-verify-fix | fix (the lead's own run) | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix.log](lead-verify-fix.log) |
 | lead-verify-fix2 | fix, rule scoped to `cv` (review F2), dev build `+dev.3` | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix2.log](lead-verify-fix2.log) |
+| lead-verify-head2 | head `d0d6b1b`, on the changed page (below) | 54 | 4 | 10 | 0 / 48 | 0 | 1 | [lead-verify-head2.log](lead-verify-head2.log) |
 | head-after-fix | head `d0d6b1b` | 54 | 3 | 9 | 0 / 48 | 0 | 1 | [head-after-fix.log](head-after-fix.log) |
 
 The head run, after the three fix runs on the same day, shows the check still goes red without

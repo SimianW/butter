@@ -69,9 +69,9 @@
       if (wait) setWait(null);
     };
     // From a click until the user scrolls, the clicked question stays the current one (`pinned`).
-    // Meanwhile the jump keeps it aligned itself, and the browser's scroll anchoring is off for the
-    // chat's content (`data-butter-pinned` on <html>, read by stream/containment.css): with
-    // content-visibility it moved a landed chat back to its start.
+    // Meanwhile the jump keeps it aligned itself, and with Smoother streaming's `cv` setting on the
+    // browser's scroll anchoring is off for the chat's content (`data-butter-pinned` on <html>, read
+    // by stream/containment.css): with content-visibility it moved a landed chat back to its start.
     let anchor = null;
     const pin = (on) => {
       model.journey({ pinned: on });

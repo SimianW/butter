@@ -187,8 +187,8 @@ _Where_: `rail/readiness.js`, `rail/jump.js`
 
 **Pinned**:
 The clicked question staying current and aligned after a jump until you scroll yourself. While
-pinned, the jump keeps it aligned itself and the browser's scroll anchoring on the chat's content
-is off (`data-butter-pinned` on `<html>`).
+pinned, the jump keeps it aligned itself and, with Smoother streaming's `cv` setting on, the
+browser's scroll anchoring on the chat's content is off (`data-butter-pinned` on `<html>`).
 _Avoid_: locked, sticky
 _Where_: `rail/model.js`, `rail/jump.js`, `stream/containment.css`
 
