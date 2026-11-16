@@ -53,6 +53,15 @@ html:not([data-butter-off~='container']) div.\[container-type\:inline-size\].min
   container-type: normal !important;
 }
 
+/* History rail (rail/jump.js): while a jump is pinned it keeps the clicked question aligned itself,
+   and the browser's scroll anchoring on the chat's content is off. With content-visibility on,
+   Chromium's anchoring moved a landed chat back to its start
+   (notes/runs/2026-11-16-rail-jump-live/cause.md). Outside a jump anchoring stays on: it keeps the
+   view still when skipped content above it renders. */
+html[data-butter-pinned] .thread-scroll-container > * {
+  overflow-anchor: none !important;
+}
+
 /* History rail (rail/jump.js): ring the question a click jumped to. Drawn inside the bubble: an
    outer ring is clipped where the bubble touches its turn's edge (top, and right for a user
    message), since content-visibility gives the turn paint containment. */

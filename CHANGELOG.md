@@ -27,6 +27,8 @@
   the question.
 - Fixed a jump from the question rail sometimes waiting about 4 seconds and then showing the end of
   the chat instead of the question when ChatGPT briefly removed it.
+- Fixed a jump from the question rail sometimes reaching the question and then showing the start of
+  the chat instead, or flicking away from the question and back, with Smoother streaming on.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 

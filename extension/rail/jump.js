@@ -69,7 +69,14 @@
       if (wait) setWait(null);
     };
     // From a click until the user scrolls, the clicked question stays the current one (`pinned`).
+    // Meanwhile the jump keeps it aligned itself, and the browser's scroll anchoring is off for the
+    // chat's content (`data-butter-pinned` on <html>, read by stream/containment.css): with
+    // content-visibility it moved a landed chat back to its start.
     let anchor = null;
+    const pin = (on) => {
+      model.journey({ pinned: on });
+      document.documentElement.toggleAttribute('data-butter-pinned', on);
+    };
     // Delayed KaTeX or a remounted neighbour can grow even after arrival. While the tick is pinned,
     // size changes keep its question aligned; no polling or layout reads while the chat is idle.
     const follow = (id, tok, off = 0) => {
@@ -96,7 +103,7 @@
       anchor?.ro.disconnect();
       anchor = null;
       if (!model.pinned) return;
-      model.journey({ pinned: false });
+      pin(false);
       view.kick(); // back to lighting what is on screen; the set kept up to date while pinned
     };
     // A bookmark jump lands on the bookmarked text instead of the question: px below the turn's top.
@@ -163,7 +170,7 @@
       setBusy(null);
       model.journey({ flying: true });
       setActive(id);
-      model.journey({ pinned: true });
+      pin(true);
       view.kick(); // setActive kicks only when the index changes
       let el = turns.el(id);
       // Close by: glide there.

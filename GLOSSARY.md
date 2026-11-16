@@ -186,9 +186,11 @@ _Avoid_: settle (that is after arrival)
 _Where_: `rail/readiness.js`, `rail/jump.js`
 
 **Pinned**:
-The clicked question staying current and aligned after a jump until you scroll yourself.
+The clicked question staying current and aligned after a jump until you scroll yourself. While
+pinned, the jump keeps it aligned itself and the browser's scroll anchoring on the chat's content
+is off (`data-butter-pinned` on `<html>`).
 _Avoid_: locked, sticky
-_Where_: `rail/model.js`, `rail/jump.js`
+_Where_: `rail/model.js`, `rail/jump.js`, `stream/containment.css`
 
 **Journey status**:
 What a jump tells the rail presentation model while it runs: whether it is travelling (only its
