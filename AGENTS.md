@@ -52,6 +52,8 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
 - Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams and the skills
   that test at them without asking the user.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
+- Recordings: a visible bug claim carries a GIF of the bug, and a PR with a visible change a before
+  and an after GIF; see [docs/agents/recordings.md](docs/agents/recordings.md).
 - Dev docs: [docs/development.md](docs/development.md) has the setup and test commands, and links
   out per topic (runtime API, releasing). `npm run check` runs every CI check locally.
   `test/agent-doc-size.test.mjs` holds docs/development.md within 46,000 bytes and this file
