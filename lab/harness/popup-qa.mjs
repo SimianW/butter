@@ -8,8 +8,8 @@ import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { fileURLToPath } from 'node:url';
-const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+import { repo } from './runner/chromium.mjs';
+import { evidenceShot } from './runner/shot.mjs';
 const shots = process.env.BUTTER_SHOTS || '/tmp/butter-popup-build';
 await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-qa-'));
@@ -70,7 +70,7 @@ async function compareMockup(mockupFile, panels, title) {
       document.querySelectorAll('.mk').forEach(e => { e.style.visibility = 'hidden'; });
     });
     const reference = `${shots}/reference-${name}.png`;
-    await panel.screenshot({ path: reference, clip: { x: 0, y: 0, width: 360, height: row.reference } });
+    await evidenceShot(panel, reference, { target: { x: 0, y: 0, width: 360, height: row.reference } });
     // Mask the live regions where either document draws them; their markup differs per side.
     const mask = [...liveRects[state], ...(await panel.evaluate(liveRegions))];
     // Share of unmasked pixels that differ by more than 24 in any channel. Each image is cut to
@@ -206,7 +206,7 @@ try {
     });
     const builtMetrics = await page.evaluate(metrics);
     const file = `${shots}/${name}-${color}.png`;
-    await page.locator('#popup').screenshot({ path: file }); files.push(file);
+    await evidenceShot(page, file, { target: page.locator('#popup') }); files.push(file);
     const height = await page.locator('#popup').evaluate(e => e.offsetHeight);
     heights[`${name}-${color}`] = height;
     liveRects[`${name}-${color}`] = await page.evaluate(liveRegions);
@@ -221,10 +221,10 @@ try {
         return { duration: a?.effect.getTiming().duration, transform: getComputedStyle(document.querySelector('.drip')).transform };
       });
       assert.equal(frame.duration, 300);
-      await page.locator('#popup').screenshot({ path: `${shots}/${name}-${color}-mid.png`, animations: 'allow' });
+      await evidenceShot(page, `${shots}/${name}-${color}-mid.png`, { target: page.locator('#popup'), animations: 'allow' });
       await page.evaluate(() => document.querySelector('.drip').getAnimations().forEach(a => a.finish()));
       await page.waitForTimeout(320);
-      await page.locator('#popup').screenshot({ path: `${shots}/${name}-${color}-on.png` });
+      await evidenceShot(page, `${shots}/${name}-${color}-on.png`, { target: page.locator('#popup') });
     }
     if (ref && Number(name.slice(0, 2)) <= 12) {
       const index = Number(name.slice(0, 2)) - 1;
@@ -235,7 +235,7 @@ try {
         document.getAnimations().forEach(a => a.finish());
       }, { index, color });
       const reference = `${shots}/reference-${name}-${color}.png`;
-      await ref.locator('.popup').first().screenshot({ path: reference });
+      await evidenceShot(ref, reference, { target: ref.locator('.popup').first() });
       const referenceMetrics = await ref.locator('.popup').first().evaluate(el => {
         const base = el.getBoundingClientRect().top;
         return ['.hd', '.master', '.card', '.row', '.note', '.ft'].map(selector => {
@@ -459,7 +459,7 @@ async function devPopup() {
       // innerText skips the visually hidden "Saved " only if it is clipped; compare accessible text.
       assert.equal(row.text.replace(/^Saved\s*/, config.saved ? 'Saved ' : ''), expected, state);
       const file = `${shots}/${state}.png`;
-      await page.locator('#popup').screenshot({ path: file }); files.push(file);
+      await evidenceShot(page, file, { target: page.locator('#popup') }); files.push(file);
       heights[state] = await page.locator('#popup').evaluate(e => e.offsetHeight);
       liveRects[state] = await page.evaluate(liveRegions);
       if (!name.endsWith('-tallest')) assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);

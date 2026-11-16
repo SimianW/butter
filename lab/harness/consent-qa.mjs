@@ -11,6 +11,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { evidenceShot } from './runner/shot.mjs';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const mockup = process.env.BUTTER_CONSENT_MOCKUP;
@@ -116,7 +117,7 @@ try {
     await ref.evaluate(() => document.fonts.ready.then(() => new Promise((r) => setTimeout(r, 300))));
     const reference = `${shots}/${panel}.png`;
     const height = await ref.evaluate(() => Math.ceil(document.body.getBoundingClientRect().height));
-    await ref.screenshot({ path: reference, clip: { x: 0, y: 0, width: 360, height } });
+    await evidenceShot(ref, reference, { target: { x: 0, y: 0, width: 360, height } });
     await ref.close();
 
     // Built: the real card on the fixture page, pending consent, in the panel's language.
@@ -141,9 +142,8 @@ try {
     box.y = Math.round(box.y);
     const built = `${shots}/consent-${theme}-${lang}-built.png`;
     // The panel's frame: 30 px beside the card, 20 px above it, and through the 52 px composer to 14 px below.
-    await page.screenshot({
-      path: built,
-      clip: { x: box.x - 30, y: box.y - 20, width: 360, height: Math.ceil(20 + box.height + 16 + 52 + 14) },
+    await evidenceShot(page, built, {
+      target: { x: box.x - 30, y: box.y - 20, width: 360, height: Math.ceil(20 + box.height + 16 + 52 + 14) },
     });
     const diff = await compare(page, built, reference);
     results.push({ panel, built, reference, ...diff });
