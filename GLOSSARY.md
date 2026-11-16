@@ -397,3 +397,11 @@ The shared code that drives Butter's pill and its cells and selects text in an a
 does, for any page; each harness binds it to its own page and keeps its feature's helpers apart.
 _Avoid_: page object
 _Where_: `driver/butter.mjs`
+
+**Evidence shot**:
+A screenshot a harness keeps as evidence of how something looks: cropped to the region under test,
+cut to the viewport, taken at device scale (one PNG pixel per device pixel), and saved with a
+`<file>.json` sidecar that records the page URL, viewport, devicePixelRatio, browser zoom, clip and
+the PNG's size in device pixels. A full-page or downscaled screenshot can hide or invent a 1 px fault.
+_Avoid_: screenshot (for one kept as evidence)
+_Where_: `runner/shot.mjs`
