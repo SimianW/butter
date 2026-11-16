@@ -25,6 +25,11 @@ skipped content above it renders. Unit seam: `test/rail-jump-anchoring.test.mjs`
 all fail on `d0d6b1b` and pass with the fix. The always-on prototype from cause.md (the same rule
 without the attribute) also passed three 54-jump runs, but turned anchoring off for good.
 
+After review (F2) the rule also requires Smoother streaming's `cv` setting to be on
+(`:not([data-butter-off~='cv'])`, as the file's other `cv` rules): with `cv` off the move does not
+happen (the cv-off arm in cause.md), so anchoring stays on there. The last row of the table is the
+run on that rule.
+
 Live, lab 2, dev build `0.1.0-alpha.21+dev.2` unpacked at
 `~/snap/chromium/common/rail-jump-fix/butter`, the red command
 `LAB_ID=2 EXT=<build> LABEL=<name> node lab/harness/rail-jump-live.mjs`. The harness now also
@@ -39,6 +44,8 @@ other, non-turn child of the scroller computes `none` with or without Butter.
 | fix-1 | fix | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [fix-1.log](fix-1.log) |
 | fix-2 | fix | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [fix-2.log](fix-2.log) |
 | fix-3 | fix | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [fix-3.log](fix-3.log) |
+| lead-verify-fix | fix (the lead's own run) | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix.log](lead-verify-fix.log) |
+| lead-verify-fix2 | fix, rule scoped to `cv` (review F2), dev build `+dev.3` | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix2.log](lead-verify-fix2.log) |
 | head-after-fix | head `d0d6b1b` | 54 | 3 | 9 | 0 / 48 | 0 | 1 | [head-after-fix.log](head-after-fix.log) |
 
 The head run, after the three fix runs on the same day, shows the check still goes red without

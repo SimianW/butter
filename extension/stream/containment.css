@@ -57,8 +57,9 @@ html:not([data-butter-off~='container']) div.\[container-type\:inline-size\].min
    and the browser's scroll anchoring on the chat's content is off. With content-visibility on,
    Chromium's anchoring moved a landed chat back to its start
    (notes/runs/2026-11-16-rail-jump-live/cause.md). Outside a jump anchoring stays on: it keeps the
-   view still when skipped content above it renders. */
-html[data-butter-pinned] .thread-scroll-container > * {
+   view still when skipped content above it renders. With content-visibility off the move does not
+   happen, so anchoring stays on there too. */
+html[data-butter-pinned]:not([data-butter-off~='cv']) .thread-scroll-container > * {
   overflow-anchor: none !important;
 }
 

@@ -17,7 +17,8 @@ In order of preference:
    run it.
 3. Live lab script: `lab/harness/`, run under the lab lock as [lab/README.md](../../lab/README.md)
    says (like `bookmarks-live.mjs`, or `rail-jump-live.mjs` for rail jumps: 54 tick clicks on two
-   math fixtures, exit 1 on a failed or visibly detoured jump). Only when the bug needs a real
+   math fixtures, exit 1 on a failed or visibly detoured jump, or when scroll anchoring is still
+   off after a wheel unpin). Only when the bug needs a real
    ChatGPT page; the PR names the script and the steps. Catches what only the real page shows.
    Slow, and CI does not run it.
 
