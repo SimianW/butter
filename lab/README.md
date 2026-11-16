@@ -49,6 +49,13 @@ Run `npm ci` from the repository root: it installs Playwright, pinned in the roo
 the lab browser with exactly those unpacked extensions (`EXT=` empty = no extensions); without
 `EXT` the scripts use the browser as it is.
 
+Screenshots kept as visual evidence go through `evidenceShot(page, file, { target, margin })` in
+`harness/runner/shot.mjs`: it crops to a locator or CSS rect (cut to the viewport), captures at
+device scale, never downscaled, and writes `<file>.json` with the URL, viewport, devicePixelRatio,
+browser zoom, clip and device-pixel size; check that sidecar before judging a 1 px difference.
+It needs an emulated viewport, so for now only scripts that start their own Chromium use it; a
+page reached over `connectOverCDP` (the live lab) has none, and main-frame locators are assumed.
+
 | Script | What it does |
 |---|---|
 | `dil-renderer.mjs` | Synthetic Dil-wrapper and direct-markdown regression: real recorder, formula sizing and resize, preview clamp, anchor indexes and containment. Separate headless browser; no ChatGPT requests or shared lab lock. |

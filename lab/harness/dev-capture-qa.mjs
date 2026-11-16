@@ -34,6 +34,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as fixture from './dev-capture-fixture.mjs';
+import { evidenceShot } from './runner/shot.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)),
   repo = path.resolve(here, '../..');
@@ -700,11 +701,7 @@ const compare = async (p, a, b) =>
   );
 // The panel's frame around a toast box: 16 px left and above, 8 px right (clear of the
 // scrollbar), down to the bottom of the page, where the toast sits 18 px up.
-const crop = (box, bottom) => {
-  const x = Math.floor(box.x) - 16,
-    y = Math.floor(box.y) - 16;
-  return { x, y, width: Math.ceil(box.x + box.width) + 8 - x, height: bottom - y };
-};
+const frame = (box, bottom) => ({ target: box, margin: { top: 16, left: 16, right: 8, bottom: bottom - box.y - box.height } });
 const mock = mockup ? await context.newPage() : null;
 if (mock) await mock.goto(`file://${path.resolve(mockup)}`);
 const toastShots = [];
@@ -725,7 +722,7 @@ for (const theme of ['light', 'dark']) {
   assertToast(now ?? lastToast, 4, 2);
   assert.ok(now, `${theme}: the toast is still showing for the screenshot`);
   const built = path.join(shots, `toast-${theme}-built.png`);
-  await page.screenshot({ path: built, clip: crop(now.box, page.viewportSize().height) });
+  await evidenceShot(page, built, frame(now.box, page.viewportSize().height));
   const result = { theme, built, box: now.box };
   if (mock) {
     const panel = `toast-${theme}`;
@@ -747,7 +744,7 @@ for (const theme of ['light', 'dark']) {
       return { x: r.x, y: r.y, width: r.width, height: r.height };
     });
     const reference = path.join(shots, `${panel}-mockup.png`);
-    await ref.screenshot({ path: reference, clip: crop(refBox, 250) });
+    await evidenceShot(ref, reference, frame(refBox, 250));
     await ref.close();
     Object.assign(result, { reference, mockupBox: refBox }, await compare(mock, built, reference));
   }

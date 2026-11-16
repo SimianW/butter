@@ -10,7 +10,7 @@ export const maxLinesCaps = {
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
   'extension/seek/preview-main.js': 1546,
-  'lab/harness/dev-capture-qa.mjs': 802,
+  'lab/harness/dev-capture-qa.mjs': 799,
   'lab/harness/popup-qa.mjs': 548,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,

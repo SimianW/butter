@@ -16,6 +16,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { launchButter, repo } from './runner/chromium.mjs';
+import { evidenceShot } from './runner/shot.mjs';
 
 const out = path.resolve(process.env.OUT || path.join(repo, 'notes/runs/2026-11-13-popup-bookmarks'));
 await fs.mkdir(out, { recursive: true });
@@ -174,7 +175,7 @@ try {
         failed = true;
         console.log(`FAIL ${panel.id} (${lang}): ${m.height} px${m.overflow.length ? `, overflowing: ${m.overflow.join(' | ')}` : ''}`);
       }
-      if (lang === 'en') await page.locator('#popup').screenshot({ path: path.join(out, `${panel.id}.png`) });
+      if (lang === 'en') await evidenceShot(page, path.join(out, `${panel.id}.png`), { target: page.locator('#popup') });
       if (lang === 'en' && mockup?.[panel.id]) {
         const built = await page.evaluate(geometry, '#popup'),
           ref = mockup[panel.id];
