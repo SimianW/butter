@@ -1,0 +1,31 @@
+Redesign mockup, after panels:
+  default-after            match  height 523/523 px  diff 0.004%
+  paused-after             match  height 523/523 px  diff 0.000%
+  rail-fault-after         match  height 556/556 px  diff 0.003%
+  layouts-pending-after    match  height 594/594 px  diff 0.000%
+  clear-confirm-after      match  height 523/523 px  diff 0.000%
+  branch-off-after         match  height 523/523 px  diff 0.003%
+  branch-fault-after       match  height 556/556 px  diff 0.003%
+  dark-after               match  height 523/523 px  diff 0.000%
+  zh-after                 match  height 523/523 px  diff 0.003%
+Dev states:
+  d1-en-recording-light    569 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d2-en-saved-light        569 px  row "Saved bug-04_21-14-03.json Alt+Shift+B"
+  d3-en-away-light         569 px  row "Not recording Alt+Shift+B"
+  d1-en-recording-dark     569 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d4-en-tallest-light      640 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d5-zh-recording-light    569 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d6-zh-tallest-light      623 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d2-en-saved-dark         569 px  row "Saved bug-04_21-14-03.json Alt+Shift+B"
+  d3-en-away-dark          569 px  row "Not recording Alt+Shift+B"
+  d4-en-tallest-dark       640 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d5-zh-recording-dark     569 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d6-zh-tallest-dark       623 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+Dev mockup (#32), dev-*-after panels:
+  dev-default-after        match  height 569/569 px  diff 0.000%
+  dev-saved-after          match  height 569/569 px  diff 0.000%
+  dev-away-after           match  height 569/569 px  diff 0.000%
+  dev-dark-after           match  height 569/569 px  diff 0.000%
+  dev-worst-after          match  height 640/640 px  diff 0.000%
+Dev actions: New round -> "Round 3 · 0 bugs" (kept after reload), save -> butter-diag/round-3/bug-01_<time>.json (download complete), then "Round 3 · 1 bug Alt+Shift+B"
+PASS: 60 full 360px state screenshots (24 store states × light/dark, 12 dev states), all under the 600px cap but the dev build's two tallest, melt frames, branch switch, pause without layout shift, in-row faults, 9 redesign-mockup matches, 5 dev-mockup matches, dev card actions, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.
