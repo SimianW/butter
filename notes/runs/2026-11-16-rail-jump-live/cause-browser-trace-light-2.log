@@ -1,0 +1,4 @@
+FIXTURE math9 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-browser-trace-light-2 math9 from=top to=1 phase=reload-setup class=failed positions=[[169,11],[183,32],[190,75],[299,381],[306,398],[515,456],[750,27693]] targetTop=75.609375 reversals=0
+SUMMARY {"jumps":1,"failed":1,"visibleDetour":0,"native":0,"gated":1,"postCompletion":0,"afterLanding":0,"rawReversal":0}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-browser-trace-light-2.json

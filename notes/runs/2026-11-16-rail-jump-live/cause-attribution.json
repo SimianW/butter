@@ -1,0 +1,1142 @@
+{
+  "fixture": "math9",
+  "from": "top",
+  "to": 1,
+  "events": [
+    {
+      "t": 71,
+      "type": "rail-jump",
+      "fields": {
+        "jump": 3,
+        "target": 1,
+        "activeBefore": -1,
+        "scrollTop": 0,
+        "scrollHeight": 291333,
+        "clientHeight": 912,
+        "mountedFrom": 0,
+        "mountedTo": 0,
+        "earlier": false,
+        "mounted": false,
+        "path": "trip",
+        "direction": "down"
+      }
+    },
+    {
+      "t": 1590,
+      "type": "rail-try",
+      "fields": {
+        "jump": 3,
+        "try": 1,
+        "estimate": 27756.609375,
+        "written": 27692.609375,
+        "scrollTopRead": 27693,
+        "scrollHeight": 291333,
+        "frames": 2,
+        "waitMs": 1248,
+        "scrollTopAfter": 27693,
+        "mountedFrom": 0,
+        "mountedTo": 1,
+        "lastBottom": 65102.359375,
+        "lastWrapperBottom": 65102.609375,
+        "lastWrapperInline": true,
+        "mounted": true,
+        "live": true
+      }
+    },
+    {
+      "t": 1592,
+      "type": "rail-wait",
+      "fields": {
+        "jump": 3,
+        "wait": "math",
+        "durationMs": 2,
+        "live": true,
+        "pending": false
+      }
+    },
+    {
+      "t": 1766,
+      "type": "rail-wait",
+      "fields": {
+        "jump": 3,
+        "wait": "steady",
+        "durationMs": 173,
+        "live": true
+      }
+    },
+    {
+      "t": 1866,
+      "type": "rail-wait",
+      "fields": {
+        "jump": 3,
+        "wait": "quiet",
+        "durationMs": 273,
+        "live": true
+      }
+    },
+    {
+      "t": 1866,
+      "type": "rail-wait",
+      "fields": {
+        "jump": 3,
+        "wait": "recheck",
+        "durationMs": 0,
+        "live": true
+      }
+    },
+    {
+      "t": 2797,
+      "type": "rail-end",
+      "fields": {
+        "jump": 3,
+        "outcome": "landed",
+        "path": "trip",
+        "elapsedMs": 2727,
+        "tries": 1,
+        "expired": false,
+        "scrollTop": 27705,
+        "targetTop": 63.609375
+      }
+    }
+  ],
+  "calls": [
+    {
+      "world": "MAIN",
+      "kind": "armed",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 0,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "armed",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTo:before",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "args": [
+        {
+          "top": 456,
+          "behavior": "smooth"
+        }
+      ],
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at proto.<computed> [as scrollTo] (<anonymous>:30:168)\n    at Object.depart (extension:/rail/trip.js:120:14)\n    at jump (extension:/rail/jump.js:216:22)\n    at Object.go (extension:/rail/jump.js:459:18)\n    at HTMLElement.<anonymous> (extension:/rail/rail.js:230:29)",
+      "t": 75,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTo:after",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 76,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 2,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 118,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 2,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 118,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 11,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 134,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 11,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 134,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 32,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 151,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 32,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 152,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 75,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 173,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 75,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 173,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 155,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 187,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 155,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 187,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 237,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 207,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 237,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 207,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 292,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 223,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 292,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 223,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 331,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 239,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 331,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 239,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 359,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 255,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 359,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 255,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 381,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 272,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 381,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 272,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 398,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 278,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 398,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 278,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 412,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 295,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 412,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 295,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 423,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 312,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 423,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 312,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 432,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 329,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 432,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 329,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:before",
+      "y": 439,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "value": 27692.609375,
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at HTMLDivElement.set [as scrollTop] (<anonymous>:20:52)\n    at jump (extension:/rail/jump.js:302:28)",
+      "t": 341,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:after",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "value": 27692.609375,
+      "t": 342,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 345,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 345,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scrollend",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 345,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollend",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 345,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:before",
+      "y": 27693,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27704.609375,
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at HTMLDivElement.set [as scrollTop] (<anonymous>:20:52)\n    at jump (extension:/rail/jump.js:309:26)",
+      "t": 1590,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:after",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27704.609375,
+      "t": 1590,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:before",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27339.809375,
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at HTMLDivElement.set [as scrollTop] (<anonymous>:20:52)\n    at Object.steady (extension:/rail/readiness.js:45:62)\n    at jump (extension:/rail/jump.js:366:19)",
+      "t": 1593,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:after",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27339.809375,
+      "t": 1593,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1700,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1700,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scrollend",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1700,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollend",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1700,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTo:before",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "args": [
+        {
+          "top": 27705,
+          "behavior": "smooth"
+        }
+      ],
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at proto.<computed> [as scrollTo] (<anonymous>:30:168)\n    at Object.arrive (extension:/rail/trip.js:94:10)\n    at jump (extension:/rail/jump.js:380:22)",
+      "t": 1867,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTo:after",
+      "y": 27340,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1867,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27342,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1910,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27342,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1910,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27352,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1929,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27352,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1929,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27375,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1946,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27375,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1946,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27427,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1969,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27427,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1969,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27505,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 1995,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27505,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 1995,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27563,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2020,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27563,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2020,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27626,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2050,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27626,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2050,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27646,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2075,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27646,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2075,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27672,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2088,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27672,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2088,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27681,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2113,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27681,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2113,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27689,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2121,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27689,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2121,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27694,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2138,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27694,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2138,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27698,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2155,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27698,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2155,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27701,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2166,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27701,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2166,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27703,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2178,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27703,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2178,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2194,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": true,
+      "t": 2194,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scrollend",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2265,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollend",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2266,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2665,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2665,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scrollend",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2665,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollend",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2665,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:before",
+      "y": 0,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27704.609375,
+      "stack": "Error\n    at stack (<anonymous>:15:23)\n    at HTMLDivElement.set [as scrollTop] (<anonymous>:20:52)\n    at Object.steady (extension:/rail/readiness.js:45:62)\n    at async jump (extension:/rail/jump.js:386:9)",
+      "t": 2797,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollTop:after",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "value": 27704.609375,
+      "t": 2797,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scroll",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2876,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scroll",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2876,
+      "scroller": 1
+    },
+    {
+      "world": "MAIN",
+      "kind": "scrollend",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2876,
+      "scroller": 1
+    },
+    {
+      "world": "ISOLATED",
+      "kind": "scrollend",
+      "y": 27705,
+      "h": 291333,
+      "vh": 912,
+      "connected": true,
+      "smoothPending": false,
+      "t": 2876,
+      "scroller": 1
+    }
+  ]
+}

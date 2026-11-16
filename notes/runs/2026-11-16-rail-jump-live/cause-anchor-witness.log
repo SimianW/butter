@@ -1,0 +1,8 @@
+FIXTURE math9 {"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-anchor-witness math9 from=top to=1 phase=reload-setup class=clean samples=177
+cause-anchor-witness math9 from=top to=5 phase=settled class=clean samples=190
+FIXTURE math12 {"questions":12,"hasPrev":false,"height":345032,"mathDisplay":231,"nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-anchor-witness math12 from=top to=1 phase=reload-setup class=clean samples=164
+cause-anchor-witness math12 from=top to=5 phase=settled class=clean samples=216
+SUMMARY {"jumps":4,"failed":0,"visibleDetour":0,"postCompletion":0,"rawReversal":4}
+EXIT 0; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-anchor-witness.json

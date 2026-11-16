@@ -1,0 +1,16 @@
+FIXTURE math9 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-arrive-instant math9 from=top to=1 phase=reload-setup class=detour positions=[[88,11],[103,32],[120,75],[138,155],[154,237],[172,292],[189,331],[206,359],[224,381],[242,398],[258,412],[264,423],[282,432],[298,439],[346,27693],[1684,27340],[1951,27705],[2718,0],[2812,27705]] targetTop=63.609375 reversals=4
+cause-arrive-instant math9 from=top to=5 phase=settled class=clean samples=153
+cause-arrive-instant math9 from=top to=1 phase=settled class=clean samples=170
+cause-arrive-instant math9 from=top to=5 phase=settled class=detour positions=[[82,11],[97,32],[115,75],[133,155],[149,237],[167,292],[183,331],[201,359],[218,381],[234,398],[250,412],[266,423],[284,432],[326,149454],[2833,149089],[3005,149454],[3685,0],[4968,149454]] targetTop=64 reversals=4
+cause-arrive-instant math9 from=top to=1 phase=settled class=clean samples=169
+cause-arrive-instant math9 from=top to=5 phase=settled class=detour positions=[[76,11],[93,32],[111,75],[129,155],[146,237],[164,292],[181,331],[197,359],[214,381],[231,398],[248,412],[266,423],[285,432],[327,149454],[2756,149089],[2929,149454],[3609,0],[4840,149454]] targetTop=64 reversals=4
+FIXTURE math12 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-arrive-instant math12 from=top to=1 phase=reload-setup class=detour positions=[[90,11],[108,32],[129,75],[145,155],[165,237],[192,331],[215,359],[251,412],[272,423],[292,432],[338,31790],[2015,31437],[2402,31802],[3072,0],[3194,31802]] targetTop=63.71875 reversals=4
+cause-arrive-instant math12 from=top to=5 phase=settled class=clean samples=198
+cause-arrive-instant math12 from=top to=1 phase=settled class=clean samples=166
+cause-arrive-instant math12 from=top to=5 phase=settled class=failed positions=[[89,11],[108,32],[115,75],[135,155],[155,237],[176,292],[204,359],[224,381],[243,398],[262,423],[283,432],[332,161549],[2648,161185],[2807,161550],[3623,0]] targetTop=null reversals=3
+cause-arrive-instant math12 from=top to=1 phase=settled class=detour positions=[[83,11],[102,32],[122,75],[144,155],[161,237],[178,292],[196,331],[214,359],[228,381],[248,412],[266,423],[336,31790],[1995,31437],[2301,31802],[3072,0],[3194,31802]] targetTop=63.71875 reversals=4
+cause-arrive-instant math12 from=top to=5 phase=settled class=failed positions=[[84,11],[102,32],[121,75],[143,155],[162,237],[202,359],[223,381],[243,398],[262,412],[284,432],[332,161550],[2564,161185],[2725,161550],[3556,0]] targetTop=null reversals=3
+SUMMARY {"jumps":12,"failed":2,"visibleDetour":7,"native":0,"gated":7,"postCompletion":7,"afterLanding":7,"rawReversal":12}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-arrive-instant.json

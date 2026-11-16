@@ -1,0 +1,32 @@
+cause-off-1 math9 from=top to=4 phase=reload class=clean samples=151
+cause-off-1 math9 from=bottom to=0 phase=reload class=clean samples=211
+FIXTURE math9 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"container cv throttle layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-off-1 math9 from=top to=0 phase=reload-setup class=clean samples=152
+cause-off-1 math9 from=top to=1 phase=settled class=clean samples=187
+cause-off-1 math9 from=top to=2 phase=settled class=clean samples=218
+cause-off-1 math9 from=top to=3 phase=settled class=clean samples=190
+cause-off-1 math9 from=top to=4 phase=settled class=clean samples=187
+cause-off-1 math9 from=top to=5 phase=settled class=clean samples=186
+cause-off-1 math9 from=top to=6 phase=settled class=clean samples=192
+cause-off-1 math9 from=top to=7 phase=settled class=clean samples=189
+cause-off-1 math9 from=top to=8 phase=settled class=clean samples=184
+cause-off-1 math9 from=bottom to=0 phase=settled class=clean samples=189
+cause-off-1 math9 from=bottom to=1 phase=settled class=clean samples=182
+cause-off-1 math9 from=bottom to=2 phase=settled class=clean samples=185
+cause-off-1 math9 from=bottom to=3 phase=settled class=clean samples=185
+cause-off-1 math9 from=bottom to=4 phase=settled class=clean samples=185
+cause-off-1 math9 from=bottom to=5 phase=settled class=clean samples=184
+cause-off-1 math9 from=bottom to=6 phase=settled class=clean samples=183
+cause-off-1 math9 from=bottom to=7 phase=settled class=clean samples=182
+cause-off-1 math9 from=bottom to=8 phase=settled class=clean samples=183
+cause-off-1 math9 from=previous to=0 phase=settled class=clean samples=186
+cause-off-1 math9 from=previous to=1 phase=settled class=clean samples=188
+cause-off-1 math9 from=previous to=8 phase=settled class=clean samples=181
+cause-off-1 math9 from=previous to=7 phase=settled class=clean samples=185
+HARNESS ERROR: page.evaluate: Error: ChatGPT virtualizer shape unavailable; refusing to guess target order
+    at nativeOrder (eval at evaluate (:370:30), <anonymous>:28:11)
+    at Object.prepare (eval at evaluate (:370:30), <anonymous>:92:42)
+    at eval (eval at evaluate (:370:30), <anonymous>:1:29)
+    at UtilityScript.evaluate (<anonymous>:372:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+EXIT 2; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-off-1.json

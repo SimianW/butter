@@ -1,0 +1,6 @@
+FIXTURE math12 {"questions":12,"hasPrev":null,"height":344869,"mathDisplay":231,"nativeQuestions":12,"measuredRows":0,"trace":false}
+native-witness math12 from=bottom to=10 phase=reload-setup class=failed positions=[[1461,347022]] targetTop=-17529 reversals=0
+native-witness math12 from=previous to=0 phase=settled class=clean samples=145
+native-witness math12 from=previous to=1 phase=settled class=clean samples=140
+SUMMARY {"math12":{"clean":2,"detour":0,"failed":1}}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/native-witness.json

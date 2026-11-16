@@ -1,0 +1,99 @@
+{
+  "head-3": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 1999,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "head-4": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 2000,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "head-5": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 2000,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "streaming-off": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 2000,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "main": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 2000,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "native": {
+    "jumps": 54,
+    "classificationMatches": true,
+    "minPostEndWindowRoundedMs": 2000,
+    "guardEnabled": true,
+    "blockedConversationOrPrepare": 4
+  },
+  "timestampNote": "Integer sample/end stamps can differ by one millisecond from the >=2000ms real-clock termination check after geometry reads.",
+  "lab2": {
+    "running": true,
+    "homeTab": true,
+    "composerEmpty": true,
+    "defaultExtensions": true,
+    "defaultFlags": true
+  },
+  "locks": [
+    {
+      "lab": 1,
+      "held": true,
+      "owner": "other"
+    },
+    {
+      "lab": 2,
+      "held": false,
+      "owner": null
+    },
+    {
+      "lab": "perf",
+      "held": false,
+      "owner": null
+    }
+  ],
+  "scratchWorktreeRemoved": true,
+  "head": "d0d6b1b38a09a1c679cd159b8f8b5257e9be6bd8",
+  "noTrackedChanges": true,
+  "media": {
+    "bug-detour.gif": {
+      "width": 800,
+      "height": 715,
+      "duration": "5.400000",
+      "nb_frames": "81",
+      "bytes": 1501049
+    },
+    "bug-failed.gif": {
+      "width": 800,
+      "height": 715,
+      "duration": "6.940000",
+      "nb_frames": "104",
+      "bytes": 1791060
+    },
+    "control-native.gif": {
+      "width": 800,
+      "height": 715,
+      "duration": "4.470000",
+      "nb_frames": "67",
+      "bytes": 127531
+    }
+  },
+  "loadedHeadMatchesDevZip": {
+    "files": 72,
+    "matched": true
+  }
+}

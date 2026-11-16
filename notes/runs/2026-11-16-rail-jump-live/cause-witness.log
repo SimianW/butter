@@ -1,0 +1,8 @@
+FIXTURE math9 {"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-witness math9 from=top to=1 phase=reload-setup class=detour positions=[[119,11],[135,32],[153,75],[175,155],[188,237],[208,292],[225,331],[240,359],[256,381],[273,398],[279,412],[296,423],[313,432],[330,439],[374,27693],[1765,27340],[1912,27352],[1931,27375],[1949,27427],[1972,27505],[1997,27563],[2023,27626],[2052,27646],[2077,27672],[2090,27681],[2115,27689],[2124,27694],[2141,27698],[2157,27701],[2180,27705],[2797,0],[2900,27705]] targetTop=63.609375 reversals=4
+cause-witness math9 from=top to=5 phase=settled class=clean samples=174
+FIXTURE math12 {"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-witness math12 from=top to=1 phase=reload-setup class=detour positions=[[115,11],[134,32],[140,75],[158,155],[180,237],[200,292],[239,381],[259,398],[278,412],[299,423],[317,432],[324,439],[369,31790],[2168,31437],[2474,31472],[2508,31524],[2525,31660],[2557,31697],[2590,31743],[2623,31769],[2655,31786],[2666,31791],[2687,31798],[2725,31802],[3207,0],[3323,31802]] targetTop=63.71875 reversals=4
+cause-witness math12 from=top to=5 phase=settled class=clean samples=216
+SUMMARY {"jumps":4,"failed":0,"visibleDetour":2,"postCompletion":1,"rawReversal":4}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-witness.json

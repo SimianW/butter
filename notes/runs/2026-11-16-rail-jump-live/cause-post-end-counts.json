@@ -1,0 +1,320 @@
+{
+  "head-1": {
+    "jumps": 54,
+    "eventMoves": 2,
+    "positionFlags": 4,
+    "cases": [
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 5,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 5452,
+            "tExact": 5452,
+            "from": 161578,
+            "to": 0,
+            "observedVia": "MAIN:scrollTo:after",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "previous",
+        "to": 11,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 2583,
+            "tExact": 2583,
+            "from": 347300,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      }
+    ]
+  },
+  "container-off": {
+    "jumps": 54,
+    "eventMoves": 4,
+    "positionFlags": 5,
+    "cases": [
+      {
+        "fixture": "math9",
+        "from": "bottom",
+        "to": 6,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 12750,
+            "tExact": 12750,
+            "from": 179495,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 6360,
+            "tExact": 6360,
+            "from": 31802,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "bottom",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 10344,
+            "tExact": 10344,
+            "from": 31802,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "previous",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 6082,
+            "tExact": 6082,
+            "from": 31802,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      }
+    ]
+  },
+  "cv-off": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "throttle-off": {
+    "jumps": 54,
+    "eventMoves": 4,
+    "positionFlags": 6,
+    "cases": [
+      {
+        "fixture": "math9",
+        "from": "bottom",
+        "to": 0,
+        "phase": "reload",
+        "moves": [
+          {
+            "t": 12829,
+            "tExact": 12829,
+            "from": 58857,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          },
+          {
+            "t": 17049,
+            "tExact": 17049,
+            "from": 230,
+            "to": 27623,
+            "observedVia": "MAIN:scrollTo:after",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 5,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 5301,
+            "tExact": 5301,
+            "from": 161578,
+            "to": 0,
+            "observedVia": "MAIN:scrollTo:after",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 7,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 5543,
+            "tExact": 5543,
+            "from": 229186,
+            "to": 0,
+            "observedVia": "MAIN:scrollTo:after",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "previous",
+        "to": 11,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 2663,
+            "tExact": 2663,
+            "from": 347300,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      }
+    ]
+  },
+  "container-only": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "cv-only": {
+    "jumps": 54,
+    "eventMoves": 5,
+    "positionFlags": 5,
+    "cases": [
+      {
+        "fixture": "math9",
+        "from": "bottom",
+        "to": 6,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 12864,
+            "tExact": 12864,
+            "from": 179495,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 6208,
+            "tExact": 6208,
+            "from": 31800,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "top",
+        "to": 4,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 15792,
+            "tExact": 15792,
+            "from": 129826,
+            "to": 0,
+            "observedVia": "MAIN:scrollTo:after",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "bottom",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 10352,
+            "tExact": 10352,
+            "from": 31802,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      },
+      {
+        "fixture": "math12",
+        "from": "previous",
+        "to": 1,
+        "phase": "settled",
+        "moves": [
+          {
+            "t": 6003,
+            "tExact": 6003,
+            "from": 31802,
+            "to": 0,
+            "observedVia": "MAIN:contentvisibilityautostatechange",
+            "scroller": 1
+          }
+        ]
+      }
+    ]
+  },
+  "throttle-only": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "off-1-retry": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "off-2": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "intervention-1": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  },
+  "intervention-2": {
+    "jumps": 54,
+    "eventMoves": 0,
+    "positionFlags": 0,
+    "cases": []
+  }
+}

@@ -1,0 +1,1332 @@
+{
+  "fullRuns": [
+    "head-3",
+    "head-4",
+    "head-5",
+    "streaming-off",
+    "main",
+    "native"
+  ],
+  "classification": "exclusive failed > detour > clean; 32px landing tolerance; 2px reversal noise threshold",
+  "runs": [
+    {
+      "label": "head-1",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:13:35.460Z",
+      "jumps": 50,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 19,
+          "failed": 0
+        },
+        "math12": {
+          "clean": 5,
+          "detour": 21,
+          "failed": 2
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 2,
+        "blockedMutations": 129
+      },
+      "cleanup": {},
+      "archive": "head-1.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 2,
+          "case": "math9",
+          "from": "top",
+          "to": 1,
+          "times": [
+            4189,
+            6617
+          ]
+        },
+        {
+          "jump": 9,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            4077,
+            9078
+          ]
+        },
+        {
+          "jump": 20,
+          "case": "math9",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            2707
+          ]
+        },
+        {
+          "jump": 21,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5319
+          ]
+        },
+        {
+          "jump": 24,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3249
+          ]
+        },
+        {
+          "jump": 30,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5582
+          ]
+        },
+        {
+          "jump": 36,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3290,
+            6423
+          ]
+        },
+        {
+          "jump": 48,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3098
+          ]
+        },
+        {
+          "jump": 49,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            3324
+          ]
+        }
+      ],
+      "sourceDrift": [],
+      "unmaskedPostEndMoves": [
+        2,
+        20,
+        21,
+        24,
+        30,
+        48,
+        49
+      ],
+      "maxFrameGapMs": 2793,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "head-2",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:23:17.719Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 20,
+          "failed": 1
+        },
+        "math12": {
+          "clean": 6,
+          "detour": 21,
+          "failed": 3
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 197
+      },
+      "cleanup": {},
+      "archive": "head-2.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 2,
+          "case": "math9",
+          "from": "bottom",
+          "to": 0,
+          "times": [
+            5959,
+            14087
+          ]
+        },
+        {
+          "jump": 11,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            4066,
+            8879
+          ]
+        },
+        {
+          "jump": 23,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5301
+          ]
+        },
+        {
+          "jump": 25,
+          "case": "math12",
+          "from": "top",
+          "to": 4,
+          "times": [
+            2873
+          ]
+        },
+        {
+          "jump": 28,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3227
+          ]
+        },
+        {
+          "jump": 32,
+          "case": "math12",
+          "from": "top",
+          "to": 5,
+          "times": [
+            5392
+          ]
+        },
+        {
+          "jump": 34,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5518
+          ]
+        },
+        {
+          "jump": 40,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3331,
+            6418
+          ]
+        },
+        {
+          "jump": 41,
+          "case": "math12",
+          "from": "bottom",
+          "to": 2,
+          "times": [
+            5883
+          ]
+        },
+        {
+          "jump": 52,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3119
+          ]
+        },
+        {
+          "jump": 53,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            3274
+          ]
+        }
+      ],
+      "sourceDrift": [
+        {
+          "jump": 1,
+          "case": "math9",
+          "from": "top",
+          "to": 4,
+          "actual": 34137,
+          "requested": 0
+        },
+        {
+          "jump": 25,
+          "case": "math12",
+          "from": "top",
+          "to": 4,
+          "actual": 47551,
+          "requested": 0
+        },
+        {
+          "jump": 41,
+          "case": "math12",
+          "from": "bottom",
+          "to": 2,
+          "actual": 0,
+          "requested": 347322
+        }
+      ],
+      "unmaskedPostEndMoves": [
+        2,
+        23,
+        28,
+        32,
+        34,
+        40,
+        52,
+        53
+      ],
+      "maxFrameGapMs": 3561,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "head-3",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T17:06:36.438Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 21,
+          "failed": 0
+        },
+        "math12": {
+          "clean": 6,
+          "detour": 21,
+          "failed": 3
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 196
+      },
+      "cleanup": {},
+      "archive": "head-3.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 4,
+          "case": "math9",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3004
+          ]
+        },
+        {
+          "jump": 11,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            4553
+          ]
+        },
+        {
+          "jump": 22,
+          "case": "math9",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            2808
+          ]
+        },
+        {
+          "jump": 23,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5665
+          ]
+        },
+        {
+          "jump": 28,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3297
+          ]
+        },
+        {
+          "jump": 32,
+          "case": "math12",
+          "from": "top",
+          "to": 5,
+          "times": [
+            5368
+          ]
+        },
+        {
+          "jump": 34,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5512
+          ]
+        },
+        {
+          "jump": 40,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3353,
+            6436
+          ]
+        },
+        {
+          "jump": 52,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3224
+          ]
+        },
+        {
+          "jump": 53,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            2499,
+            4756,
+            7095
+          ]
+        }
+      ],
+      "sourceDrift": [
+        {
+          "jump": 1,
+          "case": "math9",
+          "from": "top",
+          "to": 4,
+          "actual": 28649,
+          "requested": 0
+        },
+        {
+          "jump": 41,
+          "case": "math12",
+          "from": "bottom",
+          "to": 2,
+          "actual": 0,
+          "requested": 347322
+        }
+      ],
+      "unmaskedPostEndMoves": [
+        4,
+        22,
+        23,
+        40,
+        52
+      ],
+      "maxFrameGapMs": 3028,
+      "minPostEndWindowMs": 1999
+    },
+    {
+      "label": "head-4",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T17:14:31.475Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 20,
+          "failed": 1
+        },
+        "math12": {
+          "clean": 6,
+          "detour": 21,
+          "failed": 3
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 198
+      },
+      "cleanup": {},
+      "archive": "head-4.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 2,
+          "case": "math9",
+          "from": "bottom",
+          "to": 0,
+          "times": [
+            5144,
+            13744
+          ]
+        },
+        {
+          "jump": 4,
+          "case": "math9",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3079
+          ]
+        },
+        {
+          "jump": 11,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            4725
+          ]
+        },
+        {
+          "jump": 23,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5716
+          ]
+        },
+        {
+          "jump": 28,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3313
+          ]
+        },
+        {
+          "jump": 32,
+          "case": "math12",
+          "from": "top",
+          "to": 5,
+          "times": [
+            5961
+          ]
+        },
+        {
+          "jump": 34,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5813
+          ]
+        },
+        {
+          "jump": 40,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3558,
+            6703
+          ]
+        },
+        {
+          "jump": 52,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3638
+          ]
+        },
+        {
+          "jump": 53,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            2354,
+            4509,
+            6724
+          ]
+        }
+      ],
+      "sourceDrift": [
+        {
+          "jump": 25,
+          "case": "math12",
+          "from": "top",
+          "to": 4,
+          "actual": 33616,
+          "requested": 0
+        },
+        {
+          "jump": 41,
+          "case": "math12",
+          "from": "bottom",
+          "to": 2,
+          "actual": 0,
+          "requested": 347322
+        }
+      ],
+      "unmaskedPostEndMoves": [
+        2,
+        4,
+        23,
+        34,
+        40,
+        52
+      ],
+      "maxFrameGapMs": 3195,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "head-5",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T17:25:16.916Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 20,
+          "failed": 1
+        },
+        "math12": {
+          "clean": 6,
+          "detour": 21,
+          "failed": 3
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 197
+      },
+      "cleanup": {
+        "restored": true,
+        "released": {
+          "lab": 2,
+          "lab_released": true,
+          "perf_released": true
+        }
+      },
+      "archive": "head-5.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 2,
+          "case": "math9",
+          "from": "bottom",
+          "to": 0,
+          "times": [
+            5948,
+            15661
+          ]
+        },
+        {
+          "jump": 4,
+          "case": "math9",
+          "from": "top",
+          "to": 1,
+          "times": [
+            2875
+          ]
+        },
+        {
+          "jump": 11,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            4629,
+            9366
+          ]
+        },
+        {
+          "jump": 22,
+          "case": "math9",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            2866
+          ]
+        },
+        {
+          "jump": 23,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5679
+          ]
+        },
+        {
+          "jump": 28,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3310
+          ]
+        },
+        {
+          "jump": 32,
+          "case": "math12",
+          "from": "top",
+          "to": 5,
+          "times": [
+            5372
+          ]
+        },
+        {
+          "jump": 34,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5455
+          ]
+        },
+        {
+          "jump": 40,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3364,
+            6472
+          ]
+        },
+        {
+          "jump": 52,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3176
+          ]
+        },
+        {
+          "jump": 53,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            3183
+          ]
+        }
+      ],
+      "sourceDrift": [
+        {
+          "jump": 1,
+          "case": "math9",
+          "from": "top",
+          "to": 4,
+          "actual": 34137,
+          "requested": 0
+        }
+      ],
+      "unmaskedPostEndMoves": [
+        2,
+        4,
+        22,
+        23,
+        34,
+        53
+      ],
+      "maxFrameGapMs": 3386,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "main",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:58:20.024Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 4,
+          "detour": 19,
+          "failed": 1
+        },
+        "math12": {
+          "clean": 8,
+          "detour": 13,
+          "failed": 9
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 195
+      },
+      "cleanup": {},
+      "archive": "main.json.gz",
+      "targetLossAfterMount": [
+        {
+          "jump": 4,
+          "case": "math9",
+          "from": "top",
+          "to": 1,
+          "times": [
+            2999
+          ]
+        },
+        {
+          "jump": 11,
+          "case": "math9",
+          "from": "top",
+          "to": 8,
+          "times": [
+            3976
+          ]
+        },
+        {
+          "jump": 13,
+          "case": "math9",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            4381,
+            6772
+          ]
+        },
+        {
+          "jump": 14,
+          "case": "math9",
+          "from": "bottom",
+          "to": 2,
+          "times": [
+            4578
+          ]
+        },
+        {
+          "jump": 23,
+          "case": "math9",
+          "from": "previous",
+          "to": 8,
+          "times": [
+            5357
+          ]
+        },
+        {
+          "jump": 26,
+          "case": "math12",
+          "from": "bottom",
+          "to": 0,
+          "times": [
+            6910
+          ]
+        },
+        {
+          "jump": 28,
+          "case": "math12",
+          "from": "top",
+          "to": 1,
+          "times": [
+            3244
+          ]
+        },
+        {
+          "jump": 32,
+          "case": "math12",
+          "from": "top",
+          "to": 5,
+          "times": [
+            5300
+          ]
+        },
+        {
+          "jump": 34,
+          "case": "math12",
+          "from": "top",
+          "to": 7,
+          "times": [
+            5641
+          ]
+        },
+        {
+          "jump": 35,
+          "case": "math12",
+          "from": "top",
+          "to": 8,
+          "times": [
+            8142
+          ]
+        },
+        {
+          "jump": 36,
+          "case": "math12",
+          "from": "top",
+          "to": 9,
+          "times": [
+            8511
+          ]
+        },
+        {
+          "jump": 40,
+          "case": "math12",
+          "from": "bottom",
+          "to": 1,
+          "times": [
+            3288
+          ]
+        },
+        {
+          "jump": 47,
+          "case": "math12",
+          "from": "bottom",
+          "to": 8,
+          "times": [
+            6768
+          ]
+        },
+        {
+          "jump": 48,
+          "case": "math12",
+          "from": "bottom",
+          "to": 9,
+          "times": [
+            6074
+          ]
+        },
+        {
+          "jump": 52,
+          "case": "math12",
+          "from": "previous",
+          "to": 1,
+          "times": [
+            3300
+          ]
+        },
+        {
+          "jump": 53,
+          "case": "math12",
+          "from": "previous",
+          "to": 11,
+          "times": [
+            2573
+          ]
+        }
+      ],
+      "sourceDrift": [
+        {
+          "jump": 1,
+          "case": "math9",
+          "from": "top",
+          "to": 4,
+          "actual": 28649,
+          "requested": 0
+        },
+        {
+          "jump": 25,
+          "case": "math12",
+          "from": "top",
+          "to": 4,
+          "actual": 33616,
+          "requested": 0
+        }
+      ],
+      "unmaskedPostEndMoves": [
+        4,
+        13,
+        23,
+        28,
+        32,
+        35,
+        47,
+        52
+      ],
+      "maxFrameGapMs": 2987,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "native-math12-pilot",
+      "build": "no extension",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:45:39.310Z",
+      "jumps": 2,
+      "counts": {
+        "math12": {
+          "clean": 2,
+          "detour": 0,
+          "failed": 0
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": null,
+          "height": 344854,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": false
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 2,
+        "blockedMutations": 42
+      },
+      "cleanup": {},
+      "archive": "native-math12-pilot.json.gz",
+      "targetLossAfterMount": [],
+      "sourceDrift": [],
+      "unmaskedPostEndMoves": [],
+      "maxFrameGapMs": 4088,
+      "minPostEndWindowMs": 2016
+    },
+    {
+      "label": "native-pilot-2",
+      "build": "no extension",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:22:16.832Z",
+      "jumps": 2,
+      "counts": {
+        "math9": {
+          "clean": 2,
+          "detour": 0,
+          "failed": 0
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": null,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": false
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 0,
+        "blockedMutations": 36
+      },
+      "cleanup": {},
+      "archive": "native-pilot-2.json.gz",
+      "targetLossAfterMount": [],
+      "sourceDrift": [],
+      "unmaskedPostEndMoves": [
+        2
+      ],
+      "maxFrameGapMs": 2031,
+      "minPostEndWindowMs": 2007
+    },
+    {
+      "label": "native-witness",
+      "build": "no extension",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T17:24:07.706Z",
+      "jumps": 3,
+      "counts": {
+        "math12": {
+          "clean": 2,
+          "detour": 0,
+          "failed": 1
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": null,
+          "height": 344869,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": false
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 2,
+        "blockedMutations": 42
+      },
+      "cleanup": {},
+      "archive": "native-witness.json.gz",
+      "targetLossAfterMount": [],
+      "sourceDrift": [],
+      "unmaskedPostEndMoves": [],
+      "maxFrameGapMs": 1708,
+      "minPostEndWindowMs": 2002
+    },
+    {
+      "label": "native",
+      "build": "no extension",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:47:01.978Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 24,
+          "detour": 0,
+          "failed": 0
+        },
+        "math12": {
+          "clean": 21,
+          "detour": 6,
+          "failed": 3
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": null,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": false
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": null,
+          "height": 344993,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": false
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 233
+      },
+      "cleanup": {},
+      "archive": "native.json.gz",
+      "targetLossAfterMount": [],
+      "sourceDrift": [],
+      "unmaskedPostEndMoves": [],
+      "maxFrameGapMs": 4583,
+      "minPostEndWindowMs": 2000
+    },
+    {
+      "label": "streaming-off",
+      "build": "0.1.0-alpha.21+dev.1",
+      "chromium": "156.0.8078.47",
+      "at": "2026-11-16T16:30:55.513Z",
+      "jumps": 54,
+      "counts": {
+        "math9": {
+          "clean": 3,
+          "detour": 21,
+          "failed": 0
+        },
+        "math12": {
+          "clean": 8,
+          "detour": 22,
+          "failed": 0
+        }
+      },
+      "fixtures": [
+        {
+          "name": "math9",
+          "questions": 9,
+          "hasPrev": false,
+          "height": 291333,
+          "mathDisplay": 194,
+          "nativeQuestions": 9,
+          "measuredRows": 0,
+          "trace": true
+        },
+        {
+          "name": "math12",
+          "questions": 12,
+          "hasPrev": false,
+          "height": 345030,
+          "mathDisplay": 231,
+          "nativeQuestions": 12,
+          "measuredRows": 0,
+          "trace": true
+        }
+      ],
+      "guard": {
+        "enabled": true,
+        "sendAttempts": 4,
+        "blockedMutations": 201
+      },
+      "cleanup": {},
+      "archive": "streaming-off.json.gz",
+      "targetLossAfterMount": [],
+      "sourceDrift": [
+        {
+          "jump": 1,
+          "case": "math9",
+          "from": "top",
+          "to": 4,
+          "actual": 34137,
+          "requested": 0
+        },
+        {
+          "jump": 25,
+          "case": "math12",
+          "from": "top",
+          "to": 4,
+          "actual": 33616,
+          "requested": 0
+        }
+      ],
+      "unmaskedPostEndMoves": [],
+      "maxFrameGapMs": 3706,
+      "minPostEndWindowMs": 2000
+    }
+  ]
+}

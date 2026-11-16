@@ -1,0 +1,60 @@
+head-after-fix math9 from=top to=4 phase=reload class=clean samples=174
+head-after-fix math9 from=bottom to=0 phase=reload class=clean samples=196
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+head-after-fix math9 from=top to=0 phase=reload-setup class=clean samples=152
+head-after-fix math9 from=top to=1 phase=settled class=detour positions=[[70,11],[87,32],[104,75],[122,155],[138,237],[156,292],[173,331],[190,359],[206,381],[223,398],[239,412],[256,423],[275,432],[315,27693],[1633,27340],[1828,27427],[1853,27505],[1881,27600],[1906,27626],[1930,27661],[1954,27672],[1978,27689],[2001,27694],[2009,27698],[2021,27701],[2062,27705],[2670,0],[2767,27705]] targetTop=63.609375 reversals=4
+head-after-fix math9 from=top to=2 phase=settled class=clean samples=223
+head-after-fix math9 from=top to=3 phase=settled class=clean samples=188
+head-after-fix math9 from=top to=4 phase=settled class=clean samples=173
+head-after-fix math9 from=top to=5 phase=settled class=clean samples=189
+head-after-fix math9 from=top to=6 phase=settled class=clean samples=173
+head-after-fix math9 from=top to=7 phase=settled class=clean samples=176
+head-after-fix math9 from=top to=8 phase=settled class=clean samples=171
+head-after-fix math9 from=bottom to=0 phase=settled class=clean samples=185
+head-after-fix math9 from=bottom to=1 phase=settled class=clean samples=190
+head-after-fix math9 from=bottom to=2 phase=settled class=clean samples=193
+head-after-fix math9 from=bottom to=3 phase=settled class=clean samples=190
+head-after-fix math9 from=bottom to=4 phase=settled class=clean samples=187
+head-after-fix math9 from=bottom to=5 phase=settled class=clean samples=185
+head-after-fix math9 from=bottom to=6 phase=settled class=clean samples=193
+head-after-fix math9 from=bottom to=7 phase=settled class=clean samples=189
+head-after-fix math9 from=bottom to=8 phase=settled class=clean samples=190
+head-after-fix math9 from=previous to=0 phase=settled class=clean samples=178
+head-after-fix math9 from=previous to=1 phase=settled class=detour positions=[[70,11],[88,32],[106,75],[123,155],[140,237],[159,292],[176,331],[193,359],[210,381],[226,398],[242,412],[259,423],[277,432],[319,27693],[1620,27340],[1780,27352],[1789,27375],[1806,27427],[1824,27505],[1848,27563],[1873,27600],[1896,27646],[1909,27661],[1933,27672],[1958,27681],[1965,27689],[1976,27694],[1992,27698],[2009,27701],[2040,27705],[2648,0],[2743,27705]] targetTop=63.609375 reversals=4
+head-after-fix math9 from=previous to=8 phase=settled class=detour positions=[[112,27716],[122,27737],[134,27780],[160,27860],[187,27942],[213,28036],[239,28086],[265,28103],[290,28128],[315,28137],[325,28144],[417,255672],[3096,255307],[3203,255319],[3223,255342],[3244,255394],[3259,255472],[3275,255530],[3293,255567],[3310,255593],[3326,255613],[3344,255628],[3362,255639],[3378,255648],[3394,255656],[3412,255661],[3431,255665],[3447,255668],[3472,255672],[4071,0],[5308,255672]] targetTop=64 reversals=4
+head-after-fix math9 from=previous to=7 phase=settled class=clean samples=167
+head-after-fix math12 from=top to=4 phase=reload class=clean samples=230
+head-after-fix math12 from=bottom to=0 phase=reload class=clean samples=214
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+head-after-fix math12 from=top to=0 phase=reload-setup class=clean samples=152
+head-after-fix math12 from=top to=1 phase=settled class=detour positions=[[77,11],[96,32],[117,75],[138,237],[159,292],[181,331],[201,359],[207,381],[225,398],[242,412],[262,423],[280,432],[328,31790],[2084,31437],[2355,31449],[2383,31472],[2395,31524],[2414,31602],[2442,31660],[2480,31743],[2509,31758],[2561,31791],[2576,31795],[2592,31798],[2622,31802],[3116,0],[3231,31802]] targetTop=63.71875 reversals=4
+head-after-fix math12 from=top to=2 phase=settled class=clean samples=228
+head-after-fix math12 from=top to=3 phase=settled class=clean samples=176
+head-after-fix math12 from=top to=4 phase=settled class=clean samples=186
+head-after-fix math12 from=top to=5 phase=settled class=failed positions=[[132,11],[137,32],[155,75],[175,155],[195,237],[215,292],[234,331],[254,381],[273,398],[293,412],[312,423],[359,156719],[2247,161566],[3381,161213],[3525,161225],[3547,161248],[3567,161300],[3604,161473],[3629,161499],[3652,161519],[3674,161534],[3696,161554],[3711,161562],[3730,161567],[3745,161571],[3760,161574],[3789,161578],[4397,0]] targetTop=null reversals=3
+head-after-fix math12 from=top to=6 phase=settled class=clean samples=212
+head-after-fix math12 from=top to=7 phase=settled class=failed positions=[[108,11],[125,32],[145,75],[164,155],[185,237],[206,331],[226,359],[246,381],[266,398],[286,412],[291,423],[309,432],[357,220469],[1994,229174],[3546,228821],[3796,228833],[3843,228856],[3866,229044],[3889,229081],[3920,229127],[3964,229162],[3980,229170],[4005,229175],[4021,229179],[4035,229182],[4064,229186],[4594,0]] targetTop=null reversals=3
+head-after-fix math12 from=top to=8 phase=settled class=clean samples=219
+head-after-fix math12 from=top to=9 phase=settled class=clean samples=211
+head-after-fix math12 from=top to=10 phase=settled class=clean samples=186
+head-after-fix math12 from=top to=11 phase=settled class=clean samples=209
+head-after-fix math12 from=bottom to=0 phase=settled class=clean samples=176
+head-after-fix math12 from=bottom to=1 phase=settled class=detour positions=[[123,347336],[141,347315],[158,347272],[177,347192],[208,347110],[220,347055],[237,347016],[257,346966],[276,346949],[296,346935],[316,346924],[367,31790],[2719,31654],[2915,32031],[3307,0],[3770,31790],[5410,32167],[5675,32155],[5695,32132],[5715,32080],[5734,32002],[5753,31944],[5772,31907],[5791,31861],[5810,31846],[5853,31835],[5871,31818],[5915,31806],[5942,31802],[6452,0],[6576,31802]] targetTop=63.71875 reversals=5
+head-after-fix math12 from=bottom to=2 phase=settled class=clean samples=197
+head-after-fix math12 from=bottom to=3 phase=settled class=clean samples=187
+head-after-fix math12 from=bottom to=4 phase=settled class=clean samples=186
+head-after-fix math12 from=bottom to=5 phase=settled class=clean samples=189
+head-after-fix math12 from=bottom to=6 phase=settled class=clean samples=186
+head-after-fix math12 from=bottom to=7 phase=settled class=clean samples=184
+head-after-fix math12 from=bottom to=8 phase=settled class=clean samples=197
+head-after-fix math12 from=bottom to=9 phase=settled class=clean samples=185
+head-after-fix math12 from=bottom to=10 phase=settled class=clean samples=183
+head-after-fix math12 from=bottom to=11 phase=settled class=clean samples=144
+head-after-fix math12 from=previous to=0 phase=settled class=clean samples=175
+head-after-fix math12 from=previous to=1 phase=settled class=detour positions=[[78,11],[97,32],[117,75],[138,155],[159,237],[174,292],[198,359],[218,381],[237,398],[255,412],[293,439],[337,31790],[2001,31437],[2259,31449],[2280,31472],[2299,31524],[2320,31602],[2347,31660],[2376,31723],[2405,31758],[2444,31778],[2486,31795],[2498,31798],[2532,31802],[3042,0],[3153,31802]] targetTop=63.71875 reversals=4
+head-after-fix math12 from=previous to=11 phase=settled class=failed positions=[[557,31834],[579,31877],[598,31957],[639,32094],[667,32161],[700,32200],[739,32225],[757,32241],[1692,347301],[3618,0]] targetTop=null reversals=1
+head-after-fix math12 from=previous to=10 phase=settled class=clean samples=175
+SUMMARY {"jumps":54,"failed":3,"visibleDetour":9,"native":0,"gated":9,"postCompletion":6,"postCompletionEventMoves":3,"afterLanding":8,"rawReversal":45,"rawReversalCount":108,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":0}
+chromium: stopped
+chromium: started (pid 511742)
+EXIT 1; evidence /home/simon/.local/share/chatgpt-lab/captures/2026-11-16-rail-jump-live/head-after-fix.json

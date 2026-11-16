@@ -1,0 +1,16 @@
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-depart-opacity-off-repeat math9 from=top to=1 phase=reload-setup class=clean samples=63
+cause-depart-opacity-off-repeat math9 from=top to=5 phase=settled class=clean samples=111
+cause-depart-opacity-off-repeat math9 from=top to=1 phase=settled class=clean samples=144
+cause-depart-opacity-off-repeat math9 from=top to=5 phase=settled class=failed positions=[[78,11],[95,32],[111,75],[129,155],[145,237],[162,292],[179,331],[196,359],[213,381],[231,398],[245,412],[261,423],[280,432],[327,149454],[2744,149089],[2973,149454],[3615,0],[4863,149454]] targetTop=null reversals=4
+cause-depart-opacity-off-repeat math9 from=top to=1 phase=settled class=clean samples=145
+cause-depart-opacity-off-repeat math9 from=top to=5 phase=settled class=failed positions=[[88,11],[99,32],[143,75],[162,237],[169,292],[187,331],[203,359],[219,381],[234,398],[252,412],[269,423],[285,432],[330,149454],[2699,149089],[2915,149454],[3602,0],[4864,149454]] targetTop=null reversals=4
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345006,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-depart-opacity-off-repeat math12 from=top to=1 phase=reload-setup class=clean samples=48
+cause-depart-opacity-off-repeat math12 from=top to=5 phase=settled class=clean samples=171
+cause-depart-opacity-off-repeat math12 from=top to=1 phase=settled class=clean samples=142
+cause-depart-opacity-off-repeat math12 from=top to=5 phase=settled class=failed positions=[[89,11],[107,32],[123,75],[141,155],[159,237],[176,292],[194,331],[211,359],[227,381],[245,398],[260,412],[279,423],[294,432],[339,161549],[2818,161185],[3018,161550],[3793,0]] targetTop=null reversals=3
+cause-depart-opacity-off-repeat math12 from=top to=1 phase=settled class=clean samples=43
+cause-depart-opacity-off-repeat math12 from=top to=5 phase=settled class=failed positions=[[88,11],[105,32],[122,75],[141,155],[161,237],[179,292],[198,331],[216,359],[232,381],[248,398],[255,412],[273,423],[288,432],[338,161550],[2592,161185],[2821,161550],[3591,0]] targetTop=null reversals=3
+SUMMARY {"jumps":12,"failed":4,"visibleDetour":0,"native":0,"gated":4,"postCompletion":0,"afterLanding":0,"rawReversal":12,"rawReversalCount":36}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-depart-opacity-off-repeat.json

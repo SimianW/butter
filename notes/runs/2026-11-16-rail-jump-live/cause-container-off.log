@@ -1,0 +1,58 @@
+cause-container-off math9 from=top to=4 phase=reload class=clean samples=187
+cause-container-off math9 from=bottom to=0 phase=reload class=clean samples=243
+FIXTURE math9 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"container layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-container-off math9 from=top to=0 phase=reload-setup class=clean samples=152
+cause-container-off math9 from=top to=1 phase=settled class=detour positions=[[78,11],[93,32],[110,75],[131,155],[148,237],[171,292],[196,359],[217,381],[240,412],[257,423],[279,432],[296,439],[347,27693],[2042,27340],[2239,27352],[2257,27375],[2275,27427],[2290,27505],[2355,27626],[2420,27681],[2484,27701],[2593,27705],[3025,0],[3153,27705]] targetTop=63.609375 reversals=4
+cause-container-off math9 from=top to=2 phase=settled class=clean samples=211
+cause-container-off math9 from=top to=3 phase=settled class=clean samples=167
+cause-container-off math9 from=top to=4 phase=settled class=clean samples=160
+cause-container-off math9 from=top to=5 phase=settled class=clean samples=168
+cause-container-off math9 from=top to=6 phase=settled class=clean samples=183
+cause-container-off math9 from=top to=7 phase=settled class=clean samples=164
+cause-container-off math9 from=top to=8 phase=settled class=clean samples=130
+cause-container-off math9 from=bottom to=0 phase=settled class=clean samples=181
+cause-container-off math9 from=bottom to=1 phase=settled class=detour positions=[[202,297926],[211,297905],[228,297862],[245,297782],[282,297700],[295,297645],[302,297606],[315,297578],[331,297556],[347,297539],[363,297525],[380,297514],[532,27693],[3016,28070],[3466,0],[3654,28069],[5277,28057],[5295,28034],[5312,27982],[5328,27904],[5345,27847],[5362,27809],[5378,27783],[5395,27764],[5412,27749],[5496,27716],[5620,27705],[6202,0],[6336,27705]] targetTop=63.609375 reversals=5
+cause-container-off math9 from=bottom to=2 phase=settled class=clean samples=182
+cause-container-off math9 from=bottom to=3 phase=settled class=clean samples=183
+cause-container-off math9 from=bottom to=4 phase=settled class=clean samples=173
+cause-container-off math9 from=bottom to=5 phase=settled class=clean samples=169
+cause-container-off math9 from=bottom to=6 phase=settled class=detour positions=[[174,297824],[186,297803],[203,297760],[222,297680],[256,297598],[269,297543],[280,297504],[287,297476],[304,297454],[321,297437],[337,297423],[354,297412],[379,297403],[578,179598],[3652,179860],[3853,0],[5201,179860],[8398,179825],[9194,179773],[11699,179496],[12841,0],[14159,179495]] targetTop=64 reversals=5
+cause-container-off math9 from=bottom to=7 phase=settled class=clean samples=181
+cause-container-off math9 from=bottom to=8 phase=settled class=clean samples=183
+cause-container-off math9 from=previous to=0 phase=settled class=clean samples=181
+cause-container-off math9 from=previous to=1 phase=settled class=detour positions=[[85,31],[103,52],[134,175],[150,257],[173,312],[196,351],[219,401],[241,418],[251,432],[274,443],[284,452],[306,459],[363,27693],[1917,27340],[2114,27352],[2131,27375],[2152,27427],[2166,27505],[2239,27646],[2311,27689],[2385,27703],[3006,0],[3157,27705]] targetTop=63.609375 reversals=4
+cause-container-off math9 from=previous to=8 phase=settled class=detour positions=[[137,27716],[153,27737],[163,27780],[209,27997],[255,28064],[301,28117],[346,28144],[506,255672],[3428,255307],[3731,255342],[3751,255394],[3790,255567],[3819,255593],[3829,255613],[3850,255628],[3867,255639],[3885,255648],[3894,255656],[3910,255661],[3928,255665],[3944,255668],[3974,255672],[4626,0],[5996,255672]] targetTop=64 reversals=4
+cause-container-off math9 from=previous to=7 phase=settled class=clean samples=152
+cause-container-off math12 from=top to=4 phase=reload class=clean samples=230
+cause-container-off math12 from=bottom to=0 phase=reload class=clean samples=207
+FIXTURE math12 {"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"container layout","probe":true,"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-container-off math12 from=top to=0 phase=reload-setup class=clean samples=149
+cause-container-off math12 from=top to=1 phase=settled class=detour positions=[[90,32],[112,75],[139,155],[165,292],[187,331],[216,381],[234,398],[257,423],[280,432],[346,31790],[2644,31437],[3158,31449],[3179,31472],[3200,31524],[3239,31697],[3315,31769],[3399,31795],[3437,31802],[6595,0],[6760,31802]] targetTop=63.71875 reversals=4
+cause-container-off math12 from=top to=2 phase=settled class=clean samples=221
+cause-container-off math12 from=top to=3 phase=settled class=clean samples=161
+cause-container-off math12 from=top to=4 phase=settled class=clean samples=183
+cause-container-off math12 from=top to=5 phase=settled class=failed positions=[[152,11],[171,32],[191,75],[197,155],[212,237],[234,292],[255,331],[293,398],[313,412],[333,423],[454,156719],[2564,161566],[3948,161213],[4147,161225],[4168,161248],[4187,161300],[4207,161378],[4279,161519],[4364,161571],[4490,161578],[4988,0]] targetTop=null reversals=3
+cause-container-off math12 from=top to=6 phase=settled class=clean samples=208
+cause-container-off math12 from=top to=7 phase=settled class=failed positions=[[153,11],[173,32],[196,155],[220,237],[242,292],[249,331],[270,359],[291,381],[310,398],[329,423],[439,220469],[2156,229174],[4138,228821],[4751,228833],[4809,228986],[5858,0]] targetTop=null reversals=3
+cause-container-off math12 from=top to=8 phase=settled class=clean samples=209
+cause-container-off math12 from=top to=9 phase=settled class=clean samples=204
+cause-container-off math12 from=top to=10 phase=settled class=clean samples=183
+cause-container-off math12 from=top to=11 phase=settled class=clean samples=210
+cause-container-off math12 from=bottom to=0 phase=settled class=clean samples=184
+cause-container-off math12 from=bottom to=1 phase=settled class=detour positions=[[127,347336],[145,347315],[161,347272],[180,347192],[212,347110],[223,347055],[273,346966],[281,346949],[300,346935],[321,346924],[447,31790],[3212,31654],[3718,32031],[4252,0],[4777,31790],[6854,32167],[7446,32155],[7493,32080],[7604,31907],[9283,31802],[10573,0],[10729,31802]] targetTop=63.71875 reversals=5
+cause-container-off math12 from=bottom to=2 phase=settled class=clean samples=193
+cause-container-off math12 from=bottom to=3 phase=settled class=clean samples=181
+cause-container-off math12 from=bottom to=4 phase=settled class=failed positions=[[144,347311],[160,347290],[175,347247],[196,347167],[229,347085],[240,346991],[258,346963],[280,346941],[299,346924],[319,346899],[339,346890],[453,129826],[3455,130191],[3620,0],[5686,129826],[8532,129801],[9242,130191],[9435,0],[11575,129826],[14316,129801],[14667,129826],[14843,0]] targetTop=null reversals=10
+cause-container-off math12 from=bottom to=5 phase=settled class=clean samples=184
+cause-container-off math12 from=bottom to=6 phase=settled class=clean samples=182
+cause-container-off math12 from=bottom to=7 phase=settled class=clean samples=188
+cause-container-off math12 from=bottom to=8 phase=settled class=clean samples=196
+cause-container-off math12 from=bottom to=9 phase=settled class=clean samples=178
+cause-container-off math12 from=bottom to=10 phase=settled class=clean samples=183
+cause-container-off math12 from=bottom to=11 phase=settled class=clean samples=145
+cause-container-off math12 from=previous to=0 phase=settled class=clean samples=171
+cause-container-off math12 from=previous to=1 phase=settled class=detour positions=[[107,31],[125,52],[151,175],[169,257],[194,312],[230,401],[256,418],[288,443],[306,452],[376,31790],[2394,31437],[3105,31472],[3218,31602],[4954,31802],[6288,0],[6452,31802]] targetTop=63.71875 reversals=4
+cause-container-off math12 from=previous to=11 phase=settled class=failed positions=[[220,31813],[231,31834],[322,32133],[332,32161],[427,32234],[1399,347301],[2559,0],[3755,347301],[4961,0],[6188,347301],[7371,0]] targetTop=null reversals=5
+cause-container-off math12 from=previous to=10 phase=settled class=clean samples=172
+SUMMARY {"jumps":54,"failed":4,"visibleDetour":10,"native":0,"gated":12,"postCompletion":5,"afterLanding":9,"rawReversal":45,"rawReversalCount":135}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-container-off.json

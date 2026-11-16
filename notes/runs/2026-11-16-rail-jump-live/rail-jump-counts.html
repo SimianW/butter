@@ -1,0 +1,57 @@
+<div id="rail-jump-counts">
+  <h3>Rail jump classifications</h3>
+  <div class="rjc-legend" aria-label="Count order">
+    <span><i class="rjc-clean"></i>Clean</span>
+    <span><i class="rjc-detour"></i>Detour</span>
+    <span><i class="rjc-failed"></i>Failed</span>
+  </div>
+  <div id="rjc-rows"></div>
+  <div class="text-small rjc-caption">54 jumps per run · raw scroll classification</div>
+</div>
+<style>
+#rail-jump-counts { color: var(--foreground); font-family: var(--font-sans); }
+#rail-jump-counts h3 { margin: 0 0 16px; font-weight: 500; }
+#rail-jump-counts .rjc-legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+#rail-jump-counts .rjc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+#rail-jump-counts i { display: inline-block; width: 12px; height: 12px; }
+#rail-jump-counts .rjc-clean { background: var(--chart-1); }
+#rail-jump-counts .rjc-detour { background: var(--chart-2); }
+#rail-jump-counts .rjc-failed { background: var(--chart-3); }
+#rail-jump-counts .rjc-row { display: grid; grid-template-columns: 116px minmax(0,1fr) 96px; align-items: center; gap: 12px; margin-bottom: 14px; }
+#rail-jump-counts .rjc-stack { display: flex; height: 20px; background: var(--muted); }
+#rail-jump-counts .rjc-values { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#rail-jump-counts .rjc-caption { margin-top: 18px; color: var(--muted-foreground); }
+@media (max-width: 480px) {
+  #rail-jump-counts .rjc-row { grid-template-columns: 1fr 96px; gap: 8px; }
+  #rail-jump-counts .rjc-stack { grid-column: 1 / -1; grid-row: 2; }
+  #rail-jump-counts .rjc-values { grid-column: 2; grid-row: 1; }
+}
+</style>
+<script>
+(() => {
+  const root = document.getElementById('rail-jump-counts');
+  const data = [{"label": "Head run 1", "counts": [9, 42, 3]}, {"label": "Head run 2", "counts": [9, 41, 4]}, {"label": "Head run 3", "counts": [9, 41, 4]}, {"label": "Streaming off", "counts": [11, 43, 0]}, {"label": "Main", "counts": [12, 32, 10]}, {"label": "No extension", "counts": [45, 6, 3]}];
+  const rows = root.querySelector('#rjc-rows');
+  for (const row of data) {
+    const element = document.createElement('div');
+    element.className = 'rjc-row';
+    const label = document.createElement('span');
+    label.textContent = row.label;
+    const stack = document.createElement('div');
+    stack.className = 'rjc-stack';
+    stack.setAttribute('role', 'img');
+    stack.setAttribute('aria-label', `${row.label}: ${row.counts[0]} clean, ${row.counts[1]} detour, ${row.counts[2]} failed, out of 54 jumps`);
+    for (const [index, kind] of ['clean', 'detour', 'failed'].entries()) {
+      const bar = document.createElement('span');
+      bar.className = `rjc-${kind}`;
+      bar.style.width = `${100 * row.counts[index] / 54}%`;
+      stack.append(bar);
+    }
+    const values = document.createElement('span');
+    values.className = 'rjc-values';
+    values.textContent = row.counts.join(' · ');
+    element.append(label, stack, values);
+    rows.append(element);
+  }
+})();
+</script>

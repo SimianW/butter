@@ -1,0 +1,2 @@
+HARNESS ERROR: page.waitForFunction: Timeout 15000ms exceeded.
+EXIT 2; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-browser-trace-light.json

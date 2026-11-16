@@ -48,6 +48,7 @@ the lab browser with exactly those unpacked extensions (`EXT=` empty = no extens
 | `convcheck.mjs` | Lists the user turns the server has for `CHAT`, to confirm replays never reached it. |
 | `sb-config.mjs` | Applies Speed Booster Toolkit settings in the lab browser and reports the `num_turns` it requested. |
 | `run-matrix.sh`, `run-sb*.sh` | Batches used for the report. |
+| `rail-jump-live.mjs` | Live rail jumps under the lab lock (takes, restores and releases it itself): `LAB_ID=2 EXT=<unpacked dev build> LABEL=<name> node lab/harness/rail-jump-live.mjs` clicks ticks on the `math9` and `math12` fixtures (54 jumps, about 5 minutes), samples every frame and classifies each jump as clean, detour or failed; after each wheel unpin it checks the chat's scroll anchoring is back on. Exit 1 on a failed or visibly detoured jump, 2 on a setup error. `EXT=` is the no-extension control; `RECORD=1` keeps private MP4s; `OUT=` sets where its per-frame JSON goes (tens of MB; default `~/.local/share/chatgpt-lab/captures/rail-jump-live/<LABEL>.json`, out of the repo). Its page probe is `rail-jump-live-page.mjs` and `rail-jump-scroll-probe.mjs`; `node lab/harness/rail-jump-verdict-check.mjs` checks the classifier without the lab; `rail-jump-gif.py` turns two recorded jumps into a masked GIF. [notes/runs/2026-11-16-rail-jump-live](../notes/runs/2026-11-16-rail-jump-live/report.md). |
 
 `python3 lab/make-demo.py` edits the two `demo.mjs` recordings into the side-by-side video with
 captions (`dist/demo/chatgpt-butter-demo.mp4` and a GIF excerpt).
