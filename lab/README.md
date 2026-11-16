@@ -38,6 +38,8 @@ Screenshots kept as visual evidence go through `evidenceShot(page, file, { targe
 `harness/runner/shot.mjs`: it crops to a locator or CSS rect (cut to the viewport), captures at
 device scale, never downscaled, and writes `<file>.json` with the URL, viewport, devicePixelRatio,
 browser zoom, clip and device-pixel size; check that sidecar before judging a 1 px difference.
+It needs an emulated viewport, so for now only scripts that start their own Chromium use it; a
+page reached over `connectOverCDP` (the live lab) has none, and main-frame locators are assumed.
 
 | Script | What it does |
 |---|---|
