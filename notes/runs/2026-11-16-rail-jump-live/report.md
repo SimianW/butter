@@ -42,7 +42,8 @@ other, non-turn child of the scroller computes `none` with or without Butter.
 | head-after-fix | head `d0d6b1b` | 54 | 3 | 9 | 0 / 48 | 0 | 1 | [head-after-fix.log](head-after-fix.log) |
 
 The head run, after the three fix runs on the same day, shows the check still goes red without
-the change. Post-completion moves: 0 in every fix run, 3 on head.
+the change. The classifier now also counts an excursion that is still on screen when the placeholder goes
+(review R3); re-classifying these four runs with it changes no count in the table above. Post-completion moves: 0 in every fix run, 3 on head.
 
 ![Two witness jumps with the fix](after.gif)
 

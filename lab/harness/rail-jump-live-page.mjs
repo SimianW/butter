@@ -226,8 +226,10 @@ export function classify(result) {
   }
   points.push(last);
   for (let i = 1; i < points.length - 1; i++) {
-    const row = points[i], a = points[i - 1], b = points[i + 1];
-    if (!row.placeholder && (row.y < Math.min(a.y,b.y) - row.vh || row.y > Math.max(a.y,b.y) + row.vh)) excursions.push({ t: row.t, y: row.y });
+    const turn = points[i], a = points[i - 1], b = points[i + 1];
+    // A masked turning point is seen where the placeholder goes, if that is before the next one.
+    const row = turn.placeholder ? f.find(r => r.t > turn.t && r.t <= b.t && !r.placeholder) ?? turn : turn;
+    if (!row.placeholder &&(row.y < Math.min(a.y,b.y) - row.vh || row.y > Math.max(a.y,b.y) + row.vh)) excursions.push({ t: row.t, y: row.y });
   }
   const detour = losses.length > 0 || excursions.length > 0;
   const landing = f.find(r => !r.placeholder && r.targetTop != null && Math.abs(r.targetTop - 64) <= 32);

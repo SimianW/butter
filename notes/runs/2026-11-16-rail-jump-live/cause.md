@@ -297,8 +297,8 @@ another file or an empty value to disable exemptions. Each exempt result records
 No blanket native exemptions are used. Exit 1 means a non-native failed/detour jump, 0 means none,
 and 2 means setup failure.
 
-A fixed-definition classifier check passed seven assertions, including a masked reversal, a visible
-excursion, target loss, and the 32/33 px alignment boundary and a gradual multi-frame overshoot. The final turning-point classifier changes zero verdicts when replayed against the completed fresh native and head-1 runs. Reclassifying the earlier saved runs
+A fixed-definition classifier check passed eight assertions, including a masked reversal, a visible
+excursion, target loss, and the 32/33 px alignment boundary and a gradual multi-frame overshoot. The classifier now also counts an excursion whose turning point falls behind the placeholder but is still on screen when the placeholder goes (review R3); replayed on fix-1/2/3, head-after-fix, both streaming-off runs and the native run, it changes no verdict and no run's failed or visible-detour count (head-after-fix: two jumps already gated gain a second excursion). The final turning-point classifier changes zero verdicts when replayed against the completed fresh native and head-1 runs. Reclassifying the earlier saved runs
 (without exemptions) yields head-3/head-4/head-5: 9/9/10 gated jumps; streaming-off: zero gated
 jumps despite 43 jumps with raw reversals. Fresh native run: 54 jumps, 3 failed alignment assertions, 1 visible-detour flag,
 0 strict post-completion moves, 7 jumps with raw reversals; exit 1. Its starts are:
