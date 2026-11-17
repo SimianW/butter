@@ -375,4 +375,10 @@ EXIT 0; evidence <local>/lead-verify-fix2.json
 $ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-head/butter LABEL=lead-verify-head2 OUT=<local>/lead-verify-head2.json node lab/harness/rail-jump-live.mjs
 SUMMARY {"jumps":54,"failed":4,"visibleDetour":10,"native":0,"gated":10,"postCompletion":5,"postCompletionEventMoves":4,"afterLanding":8,"rawReversal":45,"rawReversalCount":109,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":0}
 EXIT 1; evidence <local>/lead-verify-head2.json
+# Two earlier runs by the lead, before the fix was built (step 2's red and green), evidence in the same local folder:
+$ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-head/butter LABEL=lead-verify-head node lab/harness/rail-jump-live.mjs
+SUMMARY {"jumps":54,"failed":3,"visibleDetour":9,"native":0,"gated":9,"postCompletion":5,"postCompletionEventMoves":2,"afterLanding":8,"rawReversal":45,"rawReversalCount":106}
+EXIT 1; evidence <local>/lead-verify-head.json
+$ LAB_ID=2 EXT=/home/simon/snap/chromium/common/rail-jump-prototype-content-anchor-off/butter LABEL=lead-verify-prototype-content-anchor-off node lab/harness/rail-jump-live.mjs
+EXIT 0; evidence <local>/lead-verify-prototype-content-anchor-off.json
 ```

@@ -32,7 +32,7 @@ table is the run on that rule.
 
 The page changed during the day (review F5). In the two last runs, `lead-verify-fix2` and
 `lead-verify-head2`, ChatGPT's scroller itself computes `overflow-anchor: auto`; in every earlier
-run it computed `none` (the `FIXTURE` lines of each log). Butter sets no style on the scroller, so
+run that records it (the `scrollerStyle` in its `FIXTURE` lines) it computed `none`. Butter sets no style on the scroller, so
 the change is ChatGPT's or the lab's, and its cause is not established. On the changed page the
 head still fails (4 failed, 10 visible detours) and the fix still passes, so the comparison holds on
 both. cause.md's remark that the head's scroller computes `none` describes the earlier page.
@@ -53,12 +53,12 @@ other, non-turn child of the scroller computes `none` with or without Butter.
 | fix-3 | fix | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [fix-3.log](fix-3.log) |
 | lead-verify-fix | fix (the lead's own run) | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix.log](lead-verify-fix.log) |
 | lead-verify-fix2 | fix, rule scoped to `cv` (review F2), dev build `+dev.3` | 54 | 0 | 0 | 0 / 48 | 44 | 0 | [lead-verify-fix2.log](lead-verify-fix2.log) |
-| lead-verify-head2 | head `d0d6b1b`, on the changed page (below) | 54 | 4 | 10 | 0 / 48 | 0 | 1 | [lead-verify-head2.log](lead-verify-head2.log) |
+| lead-verify-head2 | head `d0d6b1b`, on the changed page (above) | 54 | 4 | 10 | 0 / 48 | 0 | 1 | [lead-verify-head2.log](lead-verify-head2.log) |
 | head-after-fix | head `d0d6b1b` | 54 | 3 | 9 | 0 / 48 | 0 | 1 | [head-after-fix.log](head-after-fix.log) |
 
 The head run, after the three fix runs on the same day, shows the check still goes red without
 the change. The classifier now also counts an excursion that is still on screen when the placeholder goes
-(review R3); re-classifying these four runs with it changes no count in the table above. Post-completion moves: 0 in every fix run, 3 on head.
+(review R3); re-classifying these four runs with it changes no count in the table above. Post-completion moves: 0 in every fix run, 3 and 4 on the two head runs (`head-after-fix`, `lead-verify-head2`).
 
 ![Two witness jumps with the fix](after.gif)
 
