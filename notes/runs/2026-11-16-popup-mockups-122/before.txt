@@ -1,0 +1,47 @@
+Redesign mockup, after panels:
+  default-after            DIFF   height 523/522 px  diff 4.572%
+  paused-after             DIFF   height 523/522 px  diff 4.537%
+  rail-fault-after         DIFF   height 556/554 px  diff 4.431%
+  layouts-pending-after    DIFF   height 594/551 px  diff 21.311%
+  clear-confirm-after      DIFF   height 523/522 px  diff 4.958%
+  branch-off-after         DIFF   height 523/522 px  diff 4.574%
+  branch-fault-after       DIFF   height 556/554 px  diff 4.431%
+  dark-after               DIFF   height 523/522 px  diff 3.900%
+  zh-after                 DIFF   height 523/522 px  diff 4.385%
+Dev states:
+  d1-en-recording-light    569 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d2-en-saved-light        569 px  row "Saved bug-04_21-14-03.json Alt+Shift+B"
+  d3-en-away-light         569 px  row "Not recording Alt+Shift+B"
+  d1-en-recording-dark     569 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d4-en-tallest-light      640 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d5-zh-recording-light    569 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d6-zh-tallest-light      623 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d2-en-saved-dark         569 px  row "Saved bug-04_21-14-03.json Alt+Shift+B"
+  d3-en-away-dark          569 px  row "Not recording Alt+Shift+B"
+  d4-en-tallest-dark       640 px  row "Round 2 · 3 bugs Alt+Shift+B"
+  d5-zh-recording-dark     569 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+  d6-zh-tallest-dark       623 px  row "第 2 轮 · 3 个 bug Alt+Shift+B"
+Dev mockup (#32), dev-*-after panels:
+  dev-default-after        DIFF   height 569/568 px  diff 5.074%
+  dev-saved-after          DIFF   height 569/568 px  diff 5.037%
+  dev-away-after           DIFF   height 569/568 px  diff 4.819%
+  dev-dark-after           DIFF   height 569/568 px  diff 4.446%
+  dev-worst-after          DIFF   height 640/597 px  diff 22.332%
+Dev actions: New round -> "Round 3 · 0 bugs" (kept after reload), save -> butter-diag/round-3/bug-01_<time>.json (download complete), then "Round 3 · 1 bug Alt+Shift+B"
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 9 of 9 after panels differ from the redesign mockup: default-after (523/522 px, 4.572%); paused-after (523/522 px, 4.537%); rail-fault-after (556/554 px, 4.431%); layouts-pending-after (594/551 px, 21.311%); clear-confirm-after (523/522 px, 4.958%); branch-off-after (523/522 px, 4.574%); branch-fault-after (556/554 px, 4.431%); dark-after (523/522 px, 3.900%); zh-after (523/522 px, 4.385%)
+
+9 !== 0
+
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 9,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.22.2

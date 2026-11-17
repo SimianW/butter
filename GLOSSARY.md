@@ -389,6 +389,12 @@ _Avoid_: live QA, live test
 _Where_: `bookmarks-live.mjs`, `bookmark-selection-live.mjs`, `branch-live.mjs`, `branch-live-edges.mjs`,
 `dev-capture-live.mjs`
 
+**Verdict line**:
+The line a harness script prints for one check: `PASS <check>` or `FAIL <check>: <why>`. The run
+exits non-zero when any `FAIL` was printed; a `REPORT` line is a measurement that cannot fail it.
+_Avoid_: result line
+_Where_: `lab/README.md` (Rules for lab runs); `rail-tick-thin.mjs`, `dev-capture-live.mjs`
+
 **Precondition**:
 What a live harness's scenario needs from the ones before it (the fixture loaded, two stored test
 bookmarks, a top-level list in the fixture), checked against the live page and store after `start`.
@@ -407,3 +413,11 @@ The shared code that drives Butter's pill and its cells and selects text in an a
 does, for any page; each harness binds it to its own page and keeps its feature's helpers apart.
 _Avoid_: page object
 _Where_: `driver/butter.mjs`
+
+**Evidence shot**:
+A screenshot a harness keeps as evidence of how something looks: cropped to the region under test,
+cut to the viewport, taken at device scale (one PNG pixel per device pixel), and saved with a
+`<file>.json` sidecar that records the page URL, viewport, devicePixelRatio, browser zoom, clip and
+the PNG's size in device pixels. A full-page or downscaled screenshot can hide or invent a 1 px fault.
+_Avoid_: screenshot (for one kept as evidence)
+_Where_: `runner/shot.mjs`

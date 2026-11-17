@@ -142,8 +142,8 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   step, tell the user it is time and give the command to type, such as `/to-spec`.
 - Subagents: when a skill calls for a subagent, choose its model by the work it does, from the
   delegation table in your global instructions: an implementer or merger is Build, a reviewer is
-  Hunt, an explorer is Chore. A brief for delegated `implement` work names the `tdd` skill and the
-  seams file.
+  Hunt, a lab or browser runner is Drive, an explorer is Chore. A brief for delegated `implement`
+  work names the `tdd` skill and the seams file.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
