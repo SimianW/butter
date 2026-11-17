@@ -17,7 +17,7 @@ check_caps = check_pr_body.check_caps
 parse_caps = check_pr_body.parse_caps
 
 REVIEWED = "- **Verdict:** approved at `abc1234`"
-REVIEWERS = "- **Reviewers:** gpt-6.1-sol ×3 → claude-opus-5-5 ×1"
+REVIEWERS = "- **Reviewers:** gpt-6.2-sol ×3 → claude-opus-5-5 ×1"
 
 
 def tier(n):
@@ -141,7 +141,7 @@ class VerdictItemTest(unittest.TestCase):
     def test_old_review_line_fails(self):
         body = (
             "Review tier: 1\n\n"
-            "Reviewed with review-loop: 3 rounds with gpt-6.1-sol on high at 060d43c. Verdict: approved"
+            "Reviewed with review-loop: 3 rounds with gpt-6.2-sol on high at 060d43c. Verdict: approved"
         )
         failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
         self.assertEqual(len(failures), 2)

@@ -10,7 +10,7 @@ end:
 
     - **Tier:** 1
     - **Verdict:** approved at `fd81ae1`
-    - **Reviewers:** gpt-6.1-sol ×3 → claude-opus-5-5 ×1
+    - **Reviewers:** gpt-6.2-sol ×3 → claude-opus-5-5 ×1
 
 The Tier item (`-` or `*` bullet, `- **Tier:** N`) must give N = 0, 1 or 2 and at least the tier
 scripts/review-tier.py computes against base; the first Tier item counts. When that tier is 1 or
