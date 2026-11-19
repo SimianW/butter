@@ -121,6 +121,7 @@ puts the question at the inset. The session dump records `finds` and the destina
 | seek-1118-fix2 #2 | **0** | 5 PASS | the same two, at 1985 and 1886 ms | 3.3–4.2 s |
 | seek-1118-fix3 (after the refactor) | **0** | 5 PASS | the same two, at 1817 and 1870 ms | 3.0–4.2 s |
 | seek-1118-fix4 (review round 1: a find keeps the destination's offset) | **0** | 5 PASS | the same two (192797 → 195529 at 1819 ms, 226906 → 229145 at 1938 ms): an estimated destination's offset is the question's start, as before | 3.0–4.1 s |
+| seek-1118-fix5 (review round 2: a stored layout's offset in its stored row's px) | **0** | 5 PASS | the same two (192797 → 195529 at 1836 ms, 226906 → 229145 at 1919 ms) | 3.1–4.2 s |
 
 Verdict lines: `PASS seek-landing #1` … `#5`, `SUMMARY seek-landing: 0 FAILs`. Before, on
 fix-1118-fix: `FAIL seek-landing #2: preview showed question 6 +0 (unseen estimate, from its start),
@@ -145,6 +146,13 @@ drop position, so the semantic step starts next to the previewed passage. Two ne
 turn, at 200 and 10100 px, used to land at offset 100 and now lands at 10000. With no anchor text, it
 used to land at 0 and now lands at 10000. The finder's stillness also restarts on a frame with the
 target mounted. On `math12` (estimated destinations) the finds are unchanged.
+
+**Review round 2.** That offset is in the frozen model's px, but a stored layout's preview shows
+the passage in its stored row's px (`core.previewScrollTop` scales by `row.h / t.h`), and the model
+can give a stored row a different height. `layoutCheck.findOffset` now scales the offset the same
+way. Equal heights and estimated destinations keep today's offset. A new test, with a model row of
+39000 px and a stored row of 12000 px, was red on `06dae56` (find 64448, landed at 10000) and passes
+here (find 57525, lands at 3077). On `math12` the finds are unchanged.
 
 **Harness.** Its verdict rule was right and is unchanged. The default positions are now the five
 used here (the old default 0.3, 0.55 and 0.8 had one failing position). It also gained a
@@ -188,7 +196,7 @@ reads after 1 s, goes Back to the chat (no reload), and reads again. Then the sa
 - Lock `seek-1118` on lab 2 from 04:38 to 05:09 UTC (31 min of the 120 min budget), and for the
   after-refactor runs from 05:15:44 to 05:19:25 UTC (4 min of that round's 30), restored (`"ok":true`)
   and released (exit 0) both times; for review round 1, 05:32:19 to 05:34:43 UTC (of 20 min),
-  restored and released the same way. Before that
+  restored and released the same way; for review round 2, 05:44:54 to 05:47:18 UTC (of 15 min). Before that
   the lab sat free for about an hour while I waited: my wait loop's `pgrep -f` pattern matched its
   own command line.
 - At the end: `lab-restore --lab 2 --owner seek-1118` (exit 0, `"ok":true`: browser restarted to
