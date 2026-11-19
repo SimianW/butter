@@ -128,3 +128,68 @@ test("the bug file shows every round's mount tries and the wait each loss stoppe
     [['lost', 3, BOTTOM]],
   );
 });
+
+// Review L1: the target unmounted during the math wait. Question 0 holds a formula ChatGPT has not
+// typeset yet (raw TeX); 32 ms into the math wait ChatGPT unmounts it, and brings it back `backAfter`
+// ms later (null: never by itself). The formula is typeset `TYPESET` ms after the click.
+const TYPESET = 1500;
+async function unmountDuringMath(backAfter) {
+  const events = [],
+    steps = [];
+  let now = () => 0;
+  const tracer = createRailTrace({
+    emit: (type, fields) => events.push({ type, ...fields }),
+    now: () => now(),
+  });
+  const t = setup({
+    trace: (step, fields) => {
+      steps.push({ step, t: now() });
+      tracer.trace(step, fields);
+    },
+  });
+  now = t.now;
+  let typeset = false;
+  const formula = { querySelector: (s) => (s === '.katex' && typeset ? {} : null) };
+  const q0 = t.els[0];
+  q0.querySelectorAll = (s) => (s === '[data-math-source]' ? [formula] : []);
+  t.scroller.scrollTop = TOPS[3] - 64;
+  await t.run(500);
+  const clicked = t.now();
+  void t.jump.go(0);
+  let mathStart = null,
+    unmountedAt = null,
+    arrivedTypeset = null;
+  while (t.now() - clicked < 15000 && !steps.some((s) => s.step === 'end')) {
+    await t.run(16);
+    const mount = steps.find((s) => s.step === 'mount');
+    if (mathStart == null && mount && steps.some((s) => s.step === 'waiting' && s.t >= mount.t))
+      mathStart = t.now();
+    if (mathStart != null && unmountedAt == null && t.now() >= mathStart + 32) {
+      q0.remove();
+      q0.isConnected = false;
+      unmountedAt = t.now();
+    }
+    if (backAfter != null && unmountedAt != null && t.now() >= unmountedAt + backAfter) {
+      if (!q0.isConnected) {
+        q0.isConnected = true;
+        t.scroller.append(q0);
+      }
+    }
+    if (t.now() - clicked >= TYPESET) typeset = true;
+    if (arrivedTypeset == null && steps.some((s) => s.step === 'arrived')) arrivedTypeset = typeset;
+  }
+  return { unmountedAt, arrivedTypeset, waits: events.filter((e) => e.type === 'rail-wait') };
+}
+
+test('a target back within the lost window during the math wait is not shown before its formulas are typeset', async () => {
+  const { unmountedAt, arrivedTypeset } = await unmountDuringMath(112);
+  assert.ok(unmountedAt != null, 'control: question 0 was unmounted during the math wait');
+  assert.equal(arrivedTypeset, true, 'the jump arrived with raw TeX still showing');
+});
+
+test('a target lost during the math wait is recorded as lost in that wait', async () => {
+  const { unmountedAt, waits } = await unmountDuringMath(null);
+  assert.ok(unmountedAt != null, 'control: question 0 was unmounted during the math wait');
+  const math = waits.filter((w) => w.wait === 'math');
+  assert.equal(math[0]?.lost, true, `the first math wait: ${JSON.stringify(math[0])}`);
+});

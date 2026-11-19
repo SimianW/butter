@@ -22,7 +22,6 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     return id;
   };
   const ctx = vm.createContext({
-    document: { documentElement: new FakeElement('html') },
     ResizeObserver,
     matchMedia: () => ({ matches: false }),
     performance: { now: () => now },
