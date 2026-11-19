@@ -13,7 +13,7 @@ const fs = require('node:fs'),
 const tree = process.env.REVIEW_SOURCE || path.join(__dirname, '../extension');
 const read = (f) => fs.readFileSync(`${tree}/${f}`, 'utf8');
 const conv = '00000000-0000-0000-0000-000000000000';
-const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 3000, 30000],
+const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 12000, 30000],
   TOPS = HEIGHTS.map((_, i) => HEIGHTS.slice(0, i).reduce((a, b) => a + b, 0)),
   CLIENT = 900,
   OVERSCAN = 300,
@@ -21,10 +21,13 @@ const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 3000, 30000],
   BUBBLE = 20, // the question's bubble below its turn's top
   SCROLL_HEIGHT = TOPS.at(-1) + HEIGHTS.at(-1);
 
-// `model`: the frozen model's turn heights. Releases with question `target` at the view's top and
-// runs frames until the chat is readable (or 2000 frames). Returns the session and where the view's
-// top is: which real turn, and how far into it.
-function release({ model, target }) {
+// `model`: the frozen model's turn heights. Releases with question `target` at the view's top,
+// `offset` px into it, and runs frames until the chat is readable (or 2000 frames). Returns the
+// session and where the view's top is: which real turn, and how far into it. `layout`: the target
+// has a stored layout, so the destination keeps that offset; then the preview shows `needle` at
+// `previewY` (none: null) and the real turn holds it at `realAt` px into the turn. `bubble`: the
+// turns have a question bubble.
+function release({ model, target, offset = 100, layout = false, needle = null, bubble = true }) {
   const frames = [],
     ids = HEIGHTS.map((_, i) => `q${i}`);
   let now = 0,
@@ -34,7 +37,7 @@ function release({ model, target }) {
     getAttribute: () => id,
     querySelectorAll: () => [],
     querySelector: (s) =>
-      s === '[data-user-message-bubble]'
+      bubble && s === '[data-user-message-bubble]'
         ? { getBoundingClientRect: () => ({ top: TOPS[i] + BUBBLE - top }) }
         : null,
     parentElement: {
@@ -90,6 +93,11 @@ function release({ model, target }) {
     CSS: { escape: (x) => x },
     __butterPageReader: {},
     __butterAnchorVisibleSwap: () => ({ items: 0 }),
+    __butterAnchorVisibleNeedles: () => (needle ? [{ needle: 'phrase', y: needle.previewY }] : []),
+    __butterAnchorTextBoxes: (root, text) =>
+      needle && text === 'phrase' && root.dataset
+        ? needle.realAt.map((at) => ({ top: TOPS[ids.indexOf(root.dataset.turnKey)] + at - top }))
+        : [],
   });
   ctx.window = ctx;
   for (const f of ['seek/core-main.js', 'seek/layout-check-main.js'])
@@ -100,20 +108,26 @@ function release({ model, target }) {
     top: model.slice(0, i).reduce((a, b) => a + b, 0),
     h,
     known: false,
-    layout: false,
-    items: null,
+    layout: layout && i === target,
+    items: layout && i === target ? [] : null,
   }));
-  const lastTop = rows[target].top + 100 - INSET;
+  const lastTop = rows[target].top + offset - INSET;
   top = lastTop;
   ctx.testActive = {
     sc,
     conv,
-    prep: { model: rows, previewModel: rows, flat: [], maxTop: SCROLL_HEIGHT - CLIENT, gap: 0 },
+    prep: {
+      model: rows,
+      previewModel: rows,
+      flat: [{ turn: target }],
+      maxTop: SCROLL_HEIGHT - CLIENT,
+      gap: 0,
+    },
     startTop: lastTop - 60000,
     lastTop,
     insetTop: INSET,
     hostRect: { x: 0, y: INSET, width: 768, height: 500 },
-    rendered: new Map(),
+    rendered: new Map([[0, {}]]),
   };
   ctx.testEst = { hidden: true };
   vm.runInContext(
@@ -157,6 +171,33 @@ test('a release to an estimated question finds its turn when the destination fal
   assert.ok(landed.ms < 3000, `readable in ${landed.ms} ms`);
 });
 
+// Review L1: a destination with a stored layout keeps its offset into the turn (here 10000 px). The
+// model is 32000 px short, as above, so the commit lands in question 5 and the turn is found; the
+// find must aim at the offset, not the turn's top, so the semantic step starts next to the passage.
+const SHORT = [2000, 3000, 2500, 4000, 3000, 8000, 12000, 30000];
+test('a found layout destination lands at the previewed passage when its phrase repeats in the turn', () => {
+  // The preview shows the phrase 100 px below the inset; the turn has it at 200 and 10100 px.
+  const landed = release({
+    model: SHORT,
+    target: 6,
+    offset: 10000,
+    layout: true,
+    needle: { previewY: INSET + 100, realAt: [200, 10100] },
+  });
+  assert.equal(landed.turn, 6);
+  assert.ok(
+    Math.abs(landed.offset - 10000) <= 4,
+    `at the previewed passage (offset ${landed.offset})`,
+  );
+});
+
+test('a found layout destination with no anchor text lands at its offset, not the turn top', () => {
+  // No needle and no question bubble: nothing for the semantic step to move to.
+  const landed = release({ model: SHORT, target: 6, offset: 10000, layout: true, bubble: false });
+  assert.equal(landed.turn, 6);
+  assert.ok(Math.abs(landed.offset - 10000) <= 4, `at the destination's offset (${landed.offset})`);
+});
+
 test('a release whose destination question mounts where the model put it does not search', () => {
   const landed = release({ model: HEIGHTS, target: 6 });
   assert.equal(landed.timedOut, false);
@@ -164,19 +205,21 @@ test('a release whose destination question mounts where the model put it does no
 });
 
 // layoutCheck.finder's timing rule, directly: a search is due once scrollTop has stayed put for 5
-// frames and 250 ms; a scrollTop change or a search starts the stillness over; at most `limit`
-// searches; findTurn's input is read only when one is due.
+// unmounted frames and 250 ms; a scrollTop change, a frame with the target mounted (scrollTop NaN)
+// or a search starts the stillness over; at most `limit` searches; findTurn's input is read only
+// when one is due.
 test('the release search waits 5 still frames and 250 ms, restarts on a scroll, and stops at its limit', () => {
   const { finder } = require(`${tree}/seek/layout-check-main.js`);
   let reads = 0;
-  // Turn 0 mounted; the target, turn 1, starts after it: findTurn says 1000 - 52.
+  // Turn 0 mounted; the target, turn 1, starts after it; the destination's offset is -52 (an
+  // estimated question below the header): findTurn says 1000 - 52.
   const look = () => {
     reads++;
     return {
       index: 1,
       mounted: [{ index: 0, top: 0, bottom: 1000 }],
       tops: [0, 500],
-      insetTop: 52,
+      offset: -52,
       maxScroll: 1e6,
     };
   };
@@ -209,4 +252,10 @@ test('the release search waits 5 still frames and 250 ms, restarts on a scroll, 
   let moved = null;
   for (let t = 300; t <= 700 && moved == null; t += 16) moved = here(t, 100, look);
   assert.equal(moved, 948, 'still allowed its one search');
+  // Review L2: a frame with the target mounted (NaN) starts the stillness over, even at the same
+  // scrollTop: still from 0 ms, mounted at 112 ms, so due 250 ms after 128 ms (384), not at 256.
+  const gap = finder({ limit: 1 }),
+    due = [];
+  for (let t = 0; t <= 600; t += 16) if (gap(t, t === 112 ? NaN : 0, look) != null) due.push(t);
+  assert.deepEqual(due, [384]);
 });

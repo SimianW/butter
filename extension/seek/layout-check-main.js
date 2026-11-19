@@ -46,10 +46,13 @@
   }
   // A seek destination's turn did not mount where the frozen model put it: an estimated turn near
   // it is taller or shorter than the model says, and only that one mounts there. Where to look
-  // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates): after the last
-  // one before the target, or before the first one after it, moved by the model's spacing (`tops`:
-  // its turn tops) between them and the target. Null when none is mounted or they span the target.
-  function findTurn({ index, mounted, tops, gap = 0, insetTop, maxScroll }) {
+  // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates): the target's
+  // top is after the last one before it, or before the first one after it, moved by the model's
+  // spacing (`tops`: its turn tops) between them; the scroll goes `offset` from there, the
+  // destination's own offset (core.landing's `offset`: the scroll position relative to the turn's
+  // top, so -insetTop for an estimated question's start, and the kept drop position for a stored
+  // layout). Null when none is mounted or they span the target.
+  function findTurn({ index, mounted, tops, gap = 0, offset, maxScroll }) {
     if (!mounted.length) return null;
     const first = mounted.reduce((x, y) => (y.index < x.index ? y : x)),
       last = mounted.reduce((x, y) => (y.index > x.index ? y : x));
@@ -58,18 +61,19 @@
       last.index < index
         ? last.bottom + gap + tops[index] - tops[last.index + 1]
         : first.top - (tops[first.index] - tops[index]);
-    return Math.max(0, Math.min(maxScroll, top - insetTop));
+    return Math.max(0, Math.min(maxScroll, top + offset));
   }
   // The release's search for a destination turn that stays unmounted. `finder()` returns `step`,
-  // called each frame while it is unmounted with the clock, scrollTop and `look()` (findTurn's
-  // input, read only when a search is due). Once scrollTop has stayed put for `frames` frames and
+  // called each frame with the clock, scrollTop and `look()` (findTurn's input, read only when a
+  // search is due). Once scrollTop has stayed put for `frames` consecutive unmounted frames and
   // `ms` ms, it returns where findTurn says to look, at most `limit` times; otherwise null. A
-  // scrollTop change, or a search, starts the stillness over.
+  // scrollTop change, a frame with the target mounted, or a search starts the stillness over.
   function finder({ limit = 4, frames = 5, ms = 250 } = {}) {
     let at = NaN,
       since = 0,
       still = 0,
       found = 0;
+    // `top`: NaN on a frame where the target is mounted, which starts the stillness over.
     return (now, top, look) => {
       if (found >= limit) return null;
       if (top !== at) {

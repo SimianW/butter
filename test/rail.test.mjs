@@ -419,13 +419,14 @@ for (const mode of ['pointer', 'keyboard', 'moved']) {
   });
 }
 
-// 2026-11-18 seek landing, bug B: ChatGPT's settings switch the theme without a reload by setting
-// data-theme (and data-appearance-preset) on <html>; its class stays "chatgpt-theme".
+// 2026-11-18 seek landing, bug B: ChatGPT's settings switch the theme without a reload. The
+// attribute that matters is data-theme (the rail observes it); its class stays "chatgpt-theme",
+// and data-appearance-preset, which also changes, is not observed.
 test("the rail follows a switch of ChatGPT's theme without a reload", () => {
   const nav = setup();
   assert.equal(nav.host.hasAttribute('data-dark'), false);
-  nav.theme({ 'data-theme': 'dark', 'data-appearance-preset': 'dark' }, 'dark');
+  nav.theme({ 'data-theme': 'dark' }, 'dark');
   assert.equal(nav.host.hasAttribute('data-dark'), true, 'dark after the switch to dark');
-  nav.theme({ 'data-theme': 'light', 'data-appearance-preset': 'light' }, 'light');
+  nav.theme({ 'data-theme': 'light' }, 'light');
   assert.equal(nav.host.hasAttribute('data-dark'), false, 'light after the switch back');
 });

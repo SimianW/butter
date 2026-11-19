@@ -76,6 +76,7 @@ const state = () =>
 let browser, context, page;
 let original = null,
   originalLs = null,
+  captured = false, // both originals read: only then may an error put them back
   restored = false;
 const COOKIE = 'codex_appearance_theme';
 async function putBack() {
@@ -152,6 +153,7 @@ try {
   original = (await context.cookies('https://chatgpt.com')).find((c) => c.name === COOKIE) || null;
   const s0 = await state();
   originalLs = s0.lsTheme;
+  captured = true;
   report(`before: cookie ${original ? JSON.stringify(original.value) : 'absent'}; ${JSON.stringify(s0)}`);
   await page.evaluate(watch);
   await measure('Dark', true);
@@ -168,7 +170,7 @@ try {
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
-  if (!restored && context && page) {
+  if (captured && !restored && context && page) {
     try {
       await putBack();
       report('theme put back after the error');

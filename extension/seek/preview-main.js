@@ -1097,7 +1097,7 @@
         mounted,
         tops,
         gap: a.prep.gap,
-        insetTop: a.insetTop,
+        offset: a.destination.offset,
         maxScroll,
       };
     };
@@ -1119,7 +1119,7 @@
         [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
       // Unmounted where the frozen model put it: look for it from the mounted turns.
       const from = a.sc.scrollTop,
-        to = !el && d ? find(now, from, look) : null;
+        to = d ? find(now, el ? NaN : from, look) : null;
       if (to != null) {
         a.finds.push({ t: Math.round(now - a.end), from: Math.round(from), to: Math.round(to) });
         a.sc.scrollTop = to;
@@ -1317,7 +1317,7 @@
     (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);
   // The swap audit is anchor-main.js's (__butterAnchorVisibleSwap), which loads before this file.
   function measureSwap(a) {
-    a.swap = globalThis.__butterAnchorVisibleSwap?.(a);
+    a.swap = globalThis.__butterAnchorVisibleSwap(a);
   }
 
   // Opt-in diagnostics return timing, counts and geometry only; never chat text.
