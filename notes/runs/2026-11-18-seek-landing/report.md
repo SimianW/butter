@@ -119,11 +119,23 @@ puts the question at the inset. The session dump records `finds` and the destina
 | seek-1118-fix #2 | **0** | 5 PASS | the same two, at 1835 and 1887 ms | 3.0–4.0 s |
 | seek-1118-fix2 #1 | **0** | 5 PASS | trial 2: 192799 → 195529 at 1819 ms; trial 3: 226908 → 229145 at 1887 ms | 3.0–4.2 s |
 | seek-1118-fix2 #2 | **0** | 5 PASS | the same two, at 1985 and 1886 ms | 3.3–4.2 s |
+| seek-1118-fix3 (after the refactor) | **0** | 5 PASS | the same two, at 1817 and 1870 ms | 3.0–4.2 s |
 
 Verdict lines: `PASS seek-landing #1` … `#5`, `SUMMARY seek-landing: 0 FAILs`. Before, on
 fix-1118-fix: `FAIL seek-landing #2: preview showed question 6 +0 (unseen estimate, from its start),
 landed on question 5 +31261 (viewport 912)`, `FAIL seek-landing #3: … question 7 +0 …, landed on
 question 6 +31378`, `SUMMARY seek-landing: 2 FAILs`, exit 1.
+
+**After review: refactor.** The search's state and its timing rule moved out of `ready()` into
+`layoutCheck.finder` (next to `findTurn`). `test/seek-landing-find.test.js` gained a direct test of
+that rule: 5 still frames and 250 ms, a restart on a scroll or after a search, the limit of 4, and
+`findTurn`'s input read only when a search is due. On fix-1118-fix's tree
+(`REVIEW_SOURCE=~/snap/chromium/common/fix-1118-fix/butter`) the file is now `pass 1, fail 3`: the
+two releases as before, plus the finder test, since there is no finder there. On this tree it is
+`pass 4`. `preview-main.js` also lost its inline copy of the swap audit, which ran only when
+`anchor-main.js`'s `__butterAnchorVisibleSwap` was missing (it loads first and always defines it).
+The file went from 1583 to 1515 lines, and its line cap from 1546 to 1515. The dev bug file keeps
+the new `retarget` kind `find` (`extension/dev/allowlist.js`; `test/dev-recorder.test.js`).
 
 **Harness.** Its verdict rule was right and is unchanged. The default positions are now the five
 used here (the old default 0.3, 0.55 and 0.8 had one failing position). It also gained a
@@ -143,6 +155,7 @@ reads after 1 s, goes Back to the chat (no reload), and reads again. Then the sa
 | Computed `color-scheme` after Dark | `dark` | `dark` |
 | Rail host `data-dark` after Dark | **absent** (`FAIL switch-dark-host`), still absent back in the chat (`FAIL switch-dark-chat`) | set **96 ms** after the pick (`PASS switch-dark-host`, `PASS switch-dark-chat`) |
 | After Light | absent (it never changed) | removed **91 ms** after the pick |
+| seek-1118-fix3 (after the refactor) | | `data-dark` set 82 ms after Dark, removed 77 ms after Light; all 8 PASS, exit 0 |
 | Exit | **1** | **0** |
 
 - **Cause.** `rail/rail.js` re-checks the theme only on mutations of `<html>`'s `class` and `style`.
@@ -163,7 +176,9 @@ reads after 1 s, goes Back to the chat (no reload), and reads again. Then the sa
 
 ## Lab time and clean-up
 
-- Lock `seek-1118` on lab 2 from 04:38 to 05:09 UTC (31 min of the 120 min budget). Before that
+- Lock `seek-1118` on lab 2 from 04:38 to 05:09 UTC (31 min of the 120 min budget), and for the
+  after-refactor runs from 05:15:44 to 05:19:25 UTC (4 min of that round's 30), restored (`"ok":true`)
+  and released (exit 0) both times. Before that
   the lab sat free for about an hour while I waited: my wait loop's `pgrep -f` pattern matched its
   own command line.
 - At the end: `lab-restore --lab 2 --owner seek-1118` (exit 0, `"ok":true`: browser restarted to
