@@ -396,6 +396,18 @@ test("a readiness wait's lost field is kept in the bug file", () => {
   assert.equal(snap.redacted, 0);
 });
 
+test("a seek release's find retarget keeps its kind in the bug file", () => {
+  const rec = createRecorder();
+  const fields = { kind: 'find', to: 195529, error: 2732 };
+  rec.record('retarget', fields, 1_000);
+  const snap = rec.snapshot(meta(2_000));
+  assert.deepEqual(
+    snap.events.map(({ t: _t, ...e }) => e),
+    [{ type: 'retarget', ...fields }],
+  );
+  assert.equal(snap.redacted, 0);
+});
+
 test('the rail part is a group: each of its parts is read and filtered on its own', () => {
   const snap = createRecorder().snapshot(
     meta(0, {
