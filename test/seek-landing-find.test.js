@@ -162,3 +162,51 @@ test('a release whose destination question mounts where the model put it does no
   assert.equal(landed.timedOut, false);
   assert.equal(landed.turn, 6);
 });
+
+// layoutCheck.finder's timing rule, directly: a search is due once scrollTop has stayed put for 5
+// frames and 250 ms; a scrollTop change or a search starts the stillness over; at most `limit`
+// searches; findTurn's input is read only when one is due.
+test('the release search waits 5 still frames and 250 ms, restarts on a scroll, and stops at its limit', () => {
+  const { finder } = require(`${tree}/seek/layout-check-main.js`);
+  let reads = 0;
+  // Turn 0 mounted; the target, turn 1, starts after it: findTurn says 1000 - 52.
+  const look = () => {
+    reads++;
+    return {
+      index: 1,
+      mounted: [{ index: 0, top: 0, bottom: 1000 }],
+      tops: [0, 500],
+      insetTop: 52,
+      maxScroll: 1e6,
+    };
+  };
+  const find = finder({ limit: 4 });
+  // Frames 16 ms apart: the 5th still frame comes at 80 ms, too early; the first due one at 256 ms.
+  const run = (top, from, to) => {
+    const out = [];
+    for (let t = from; t <= to; t += 16) out.push([t, find(t, top, look)]);
+    return out;
+  };
+  const first = run(0, 0, 256);
+  assert.equal(reads, 1, 'findTurn read once, when due');
+  assert.deepEqual(
+    first.filter(([, to]) => to != null),
+    [[256, 948]],
+  );
+  // The same position again: still, so the next search is due 5 frames and 250 ms later.
+  assert.equal(find(272, 0, look), null, 'a search starts the stillness over');
+  // A scroll restarts it: nothing until 250 ms after the new position.
+  assert.equal(find(288, 10, look), null);
+  const after = run(10, 304, 600).filter(([, to]) => to != null);
+  assert.equal(after[0][0], 544, 'due 256 ms after the scroll, the first frame past 250 ms');
+  // At most 4 searches that move.
+  let n = 2;
+  for (let t = 600, top = 20; t < 5000; t += 16) if (find(t, top, look) != null) n++;
+  assert.equal(n, 4);
+  // A search whose answer is where the chat already is does not count and moves nowhere.
+  const here = finder({ limit: 1 });
+  for (let t = 0; t <= 300; t += 16) assert.equal(here(t, 948, look), null);
+  let moved = null;
+  for (let t = 300; t <= 700 && moved == null; t += 16) moved = here(t, 100, look);
+  assert.equal(moved, 948, 'still allowed its one search');
+});

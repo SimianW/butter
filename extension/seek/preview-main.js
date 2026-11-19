@@ -1077,12 +1077,30 @@
     };
     let prev = 0,
       quiet = 0,
-      lastTop = NaN,
-      missTop = NaN,
-      missSince = 0,
-      missFrames = 0;
+      lastTop = NaN;
     a.retargets = [];
     a.finds = [];
+    const find = layoutCheck.finder({ limit: 4 });
+    // findTurn's input: the destination, and the mounted turns' rows in scroll coordinates.
+    const look = () => {
+      const at = new Map(a.prep.model.map((t) => [t.id, t.index])),
+        origin = a.sc.getBoundingClientRect().top - a.sc.scrollTop;
+      const mounted = [...a.sc.querySelectorAll('[data-turn-key]')].flatMap((t) => {
+        const index = at.get(t.getAttribute('data-turn-key')),
+          r = t.parentElement.getBoundingClientRect();
+        return index == null ? [] : [{ index, top: r.top - origin, bottom: r.bottom - origin }];
+      });
+      const tops = a.prep.model.map((t) => t.top),
+        maxScroll = a.sc.scrollHeight - a.sc.clientHeight;
+      return {
+        index: a.destination.index,
+        mounted,
+        tops,
+        gap: a.prep.gap,
+        insetTop: a.insetTop,
+        maxScroll,
+      };
+    };
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
       a.sc.getBoundingClientRect().top +
@@ -1099,36 +1117,15 @@
       const pendingMath =
         el &&
         [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
-      // Unmounted where the frozen model put it, and still for 5 frames and 250 ms: look for it from
-      // the turns mounted now (layoutCheck.findTurn), at most 4 times.
-      if (!el && d && a.finds.length < 4) {
-        const top = a.sc.scrollTop;
-        if (top !== missTop) [missTop, missSince, missFrames] = [top, now, 0];
-        else if (++missFrames >= 5 && now - missSince >= 250) {
-          const at = new Map(a.prep.model.map((t) => [t.id, t.index])),
-            origin = a.sc.getBoundingClientRect().top - top;
-          const mounted = [...a.sc.querySelectorAll('[data-turn-key]')].flatMap((t) => {
-            const index = at.get(t.getAttribute('data-turn-key')),
-              r = t.parentElement.getBoundingClientRect();
-            return index == null ? [] : [{ index, top: r.top - origin, bottom: r.bottom - origin }];
-          });
-          const to = layoutCheck.findTurn({
-            index: d.index,
-            mounted,
-            tops: a.prep.model.map((t) => t.top),
-            gap: a.prep.gap,
-            insetTop: a.insetTop,
-            maxScroll: a.sc.scrollHeight - a.sc.clientHeight,
-          });
-          [missSince, missFrames] = [now, 0];
-          if (to != null && Math.abs(to - top) >= 1) {
-            a.finds.push({ t: Math.round(now - a.end), from: Math.round(top), to: Math.round(to) });
-            a.sc.scrollTop = to;
-            event('find', a.finds.at(-1));
-            if (tap) emit('retarget', { kind: 'find', to, error: to - top });
-            quiet = prev = 0;
-          }
-        }
+      // Unmounted where the frozen model put it: look for it from the mounted turns.
+      const from = a.sc.scrollTop,
+        to = !el && d ? find(now, from, look) : null;
+      if (to != null) {
+        a.finds.push({ t: Math.round(now - a.end), from: Math.round(from), to: Math.round(to) });
+        a.sc.scrollTop = to;
+        event('find', a.finds.at(-1));
+        if (tap) emit('retarget', { kind: 'find', to, error: to - from });
+        quiet = prev = 0;
       }
       if (el && !pendingMath && d.layout && !a.semantic) {
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
@@ -1316,76 +1313,11 @@
   }
 
   // ---- swap alignment audit: where the preview showed text vs where the real text is ----
-  const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/u;
   const textRect = (root, needle) =>
     (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);
+  // The swap audit is anchor-main.js's (__butterAnchorVisibleSwap), which loads before this file.
   function measureSwap(a) {
-    if (globalThis.__butterAnchorVisibleSwap) {
-      a.swap = globalThis.__butterAnchorVisibleSwap(a);
-      return;
-    }
-    const s = a.sc,
-      sr = s.getBoundingClientRect(),
-      top = a.lastTop,
-      H = a.hostRect;
-    const items = [],
-      anchors = [];
-    // Block level: each rendered preview item vs the same-index real item of the same turn.
-    const realItems = new Map();
-    for (const [i, el] of a.rendered) {
-      const f = a.prep.flat[i],
-        t = a.prep.model[f.turn];
-      const py = sr.top + f.abs - top;
-      if (py < H.y || py > H.y + H.height - 20) continue;
-      if (!realItems.has(t.id)) {
-        const te = s.querySelector(`[data-turn-key="${CSS.escape(t.id)}"]`);
-        realItems.set(t.id, te ? [...page.previewItemsIn(te)] : null);
-      }
-      const real = realItems.get(t.id)?.[f.index];
-      if (!real) continue;
-      const rr = real.getBoundingClientRect();
-      items.push({ err: Math.round(py - rr.top), hMatch: Math.abs(rr.height - f.h) <= 2 });
-      // Text level: a plain-text run inside this item, located in both trees.
-      if (anchors.length < 3) {
-        const m = el.textContent.match(ANCHOR);
-        if (!m) continue;
-        const needle = m[0].slice(0, 16),
-          pr = textRect(el, needle)[0];
-        if (pr == null || pr < H.y || pr > H.y + H.height - 20) continue;
-        const rs = textRect(real, needle);
-        if (!rs.length) continue;
-        const best = rs.reduce((x, y) => (Math.abs(y - pr) < Math.abs(x - pr) ? y : x));
-        anchors.push({ err: Math.round(pr - best), mode: 'layout' });
-      }
-    }
-    // Estimated-turn text: audit the answer beginning against the mounted destination.
-    if (!est.hidden && a.estTurn) {
-      const m = est.textContent.match(ANCHOR),
-        te = s.querySelector(`[data-turn-key="${CSS.escape(a.estTurn)}"]`);
-      if (m && te) {
-        const needle = m[0].slice(0, 16),
-          pr = textRect(est, needle)[0],
-          rs = textRect(te, needle);
-        if (pr != null && rs.length)
-          anchors.push({
-            err: Math.round(
-              pr - rs.reduce((x, y) => (Math.abs(y - pr) < Math.abs(x - pr) ? y : x)),
-            ),
-            mode: 'estimate',
-          });
-      }
-    }
-    const abs = items.map((x) => Math.abs(x.err)).sort((x, y) => x - y),
-      signed = items.map((x) => x.err).sort((x, y) => x - y);
-    a.swap = {
-      items: items.length,
-      itemErrSignedMedian: signed[signed.length >> 1] ?? null,
-      itemErrSpread: signed.length ? signed.at(-1) - signed[0] : null,
-      itemErrMedian: abs[abs.length >> 1] ?? null,
-      itemErrMax: abs.at(-1) ?? null,
-      hMatch: items.filter((x) => x.hMatch).length,
-      anchors,
-    };
+    a.swap = globalThis.__butterAnchorVisibleSwap?.(a);
   }
 
   // Opt-in diagnostics return timing, counts and geometry only; never chat text.

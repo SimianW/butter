@@ -9,7 +9,7 @@ export const maxLinesCaps = {
   'extension/bookmarks/content.js': 552,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 1349,
-  'extension/seek/preview-main.js': 1583,
+  'extension/seek/preview-main.js': 1515,
   'lab/harness/dev-capture-qa.mjs': 799,
   'lab/harness/popup-qa.mjs': 548,
   'test/branch-run.test.js': 509,

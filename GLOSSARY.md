@@ -300,7 +300,7 @@ Letting go of the thumb: the last movement is coalesced, ChatGPT gets one destin
 commit), and the real chat is revealed once the target is ready. A target that does not mount where
 the commit put it (an estimated answer next to it is longer or shorter than estimated) is looked
 for from the turns mounted there, at most four times.
-_Where_: `seek/preview-main.js`, `seek/layout-check-main.js` (`findTurn`)
+_Where_: `seek/preview-main.js`, `seek/layout-check-main.js` (`findTurn`, `finder`)
 
 **Layout record**:
 A turn's measured geometry, taken only from a complete, typeset, fully rendered snapshot; a

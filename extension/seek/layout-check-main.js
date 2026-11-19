@@ -1,4 +1,5 @@
-// Pure source-block reconstruction, persisted geometry identity and semantic landing.
+// Pure source-block reconstruction, persisted geometry identity, semantic landing and the search
+// for a release target that does not mount (findTurn, finder).
 (function (root) {
   'use strict';
   // Pure layout identity; callers supply measurements outside the native width restore hook.
@@ -58,6 +59,31 @@
         ? last.bottom + gap + tops[index] - tops[last.index + 1]
         : first.top - (tops[first.index] - tops[index]);
     return Math.max(0, Math.min(maxScroll, top - insetTop));
+  }
+  // The release's search for a destination turn that stays unmounted. `finder()` returns `step`,
+  // called each frame while it is unmounted with the clock, scrollTop and `look()` (findTurn's
+  // input, read only when a search is due). Once scrollTop has stayed put for `frames` frames and
+  // `ms` ms, it returns where findTurn says to look, at most `limit` times; otherwise null. A
+  // scrollTop change, or a search, starts the stillness over.
+  function finder({ limit = 4, frames = 5, ms = 250 } = {}) {
+    let at = NaN,
+      since = 0,
+      still = 0,
+      found = 0;
+    return (now, top, look) => {
+      if (found >= limit) return null;
+      if (top !== at) {
+        [at, since, still] = [top, now, 0];
+        return null;
+      }
+      if (++still < frames || now - since < ms) return null;
+      [since, still] = [now, 0];
+      const to = findTurn(look());
+      if (to == null || Math.abs(to - top) < 1) return null;
+      found++;
+      at = NaN;
+      return to;
+    };
   }
   function inline(s) {
     const math = [];
@@ -227,6 +253,7 @@
     visibleRect,
     semanticTarget,
     findTurn,
+    finder,
     segments,
     inline,
     geometryOnly,
