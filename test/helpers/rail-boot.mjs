@@ -42,6 +42,9 @@ export function setup({
   document.documentElement = new FakeElement('html');
   const window = new FakeElement();
   const { ResizeObserver, IntersectionObserver, resize } = fakeObservers();
+  // MutationObservers are recorded; `theme()` fires the ones watching <html>'s attributes.
+  const mutationObservers = [];
+  let colorScheme = 'light';
   const ctx = vm.createContext({
     document,
     ButterSeekMeta: seekMeta,
@@ -54,9 +57,14 @@ export function setup({
     ResizeObserver,
     IntersectionObserver,
     MutationObserver: class {
-      observe() {}
+      constructor(callback) {
+        this.callback = callback;
+      }
+      observe(target, options) {
+        mutationObservers.push({ observer: this, target, options });
+      }
     },
-    getComputedStyle: () => ({ colorScheme: 'light' }),
+    getComputedStyle: () => ({ colorScheme }),
     matchMedia: () => ({ matches: false, addEventListener() {} }),
     innerWidth: 1200,
     devicePixelRatio: 1,
@@ -235,6 +243,23 @@ export function setup({
     navigate: (pathname) => {
       ctx.location.pathname = pathname;
       for (const callback of intervals) callback();
+    },
+    // ChatGPT switches its theme without a reload: sets `attributes` on <html> (name -> value),
+    // and its computed color-scheme becomes `scheme`; observers of those attributes are told.
+    theme: (attributes, scheme) => {
+      colorScheme = scheme;
+      for (const [name, value] of Object.entries(attributes))
+        document.documentElement.setAttribute(name, value);
+      for (const { observer, target, options } of mutationObservers) {
+        if (target !== document.documentElement || !options?.attributes) continue;
+        const names = Object.keys(attributes).filter(
+          (name) => !options.attributeFilter || options.attributeFilter.includes(name),
+        );
+        if (names.length)
+          observer.callback(
+            names.map((attributeName) => ({ type: 'attributes', attributeName, target })),
+          );
+      }
     },
     advanceClock: (ms) => {
       now += ms;

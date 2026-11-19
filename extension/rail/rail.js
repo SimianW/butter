@@ -174,9 +174,10 @@
           /dark/.test(getComputedStyle(document.documentElement).colorScheme),
       );
     dark();
+    // ChatGPT's settings switch the theme without a reload through data-theme (its class stays).
     new MutationObserver(dark).observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class', 'style'],
+      attributeFilter: ['class', 'style', 'data-theme', 'data-appearance-mode'],
     });
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () =>
       setTimeout(dark, 50),
