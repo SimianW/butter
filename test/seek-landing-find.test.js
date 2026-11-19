@@ -26,8 +26,17 @@ const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 12000, 30000],
 // session and where the view's top is: which real turn, and how far into it. `layout`: the target
 // has a stored layout, so the destination keeps that offset; then the preview shows `needle` at
 // `previewY` (none: null) and the real turn holds it at `realAt` px into the turn. `bubble`: the
-// turns have a question bubble.
-function release({ model, target, offset = 100, layout = false, needle = null, bubble = true }) {
+// turns have a question bubble. `rowH`: the target's stored row height, the preview's px (default:
+// its model height).
+function release({
+  model,
+  target,
+  offset = 100,
+  layout = false,
+  needle = null,
+  bubble = true,
+  rowH = model[target],
+}) {
   const frames = [],
     ids = HEIGHTS.map((_, i) => `q${i}`);
   let now = 0,
@@ -111,6 +120,9 @@ function release({ model, target, offset = 100, layout = false, needle = null, b
     layout: layout && i === target,
     items: layout && i === target ? [] : null,
   }));
+  // The preview's rows: the same, but the target is `rowH` tall (core.buildPreviewModel).
+  const preview = rows.map((r, i) => ({ ...r, h: i === target ? rowH : r.h }));
+  for (let i = 1; i < preview.length; i++) preview[i].top = preview[i - 1].top + preview[i - 1].h;
   const lastTop = rows[target].top + offset - INSET;
   top = lastTop;
   ctx.testActive = {
@@ -118,7 +130,7 @@ function release({ model, target, offset = 100, layout = false, needle = null, b
     conv,
     prep: {
       model: rows,
-      previewModel: rows,
+      previewModel: preview,
       flat: [{ turn: target }],
       maxTop: SCROLL_HEIGHT - CLIENT,
       gap: 0,
@@ -187,6 +199,25 @@ test('a found layout destination lands at the previewed passage when its phrase 
   assert.equal(landed.turn, 6);
   assert.ok(
     Math.abs(landed.offset - 10000) <= 4,
+    `at the previewed passage (offset ${landed.offset})`,
+  );
+});
+
+// Review L6: the frozen model gives the stored row a share of the unmeasured height (39000 px), not
+// its stored 12000 px. A drop 10000 model px into it is shown by the preview 10000 * 12000 / 39000
+// = 3077 px into the row (core.previewScrollTop), and that is where the passage is in the turn.
+test('a found layout destination lands at the previewed passage when the model and stored row heights differ', () => {
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 3000, 8000, 39000, 30000],
+    target: 6,
+    offset: 10000,
+    layout: true,
+    rowH: 12000,
+    needle: { previewY: INSET + 100, realAt: [3177, 10100] },
+  });
+  assert.equal(landed.turn, 6);
+  assert.ok(
+    Math.abs(landed.offset - 3077) <= 4,
     `at the previewed passage (offset ${landed.offset})`,
   );
 });

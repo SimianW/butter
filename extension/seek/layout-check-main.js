@@ -48,10 +48,9 @@
   // it is taller or shorter than the model says, and only that one mounts there. Where to look
   // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates): the target's
   // top is after the last one before it, or before the first one after it, moved by the model's
-  // spacing (`tops`: its turn tops) between them; the scroll goes `offset` from there, the
-  // destination's own offset (core.landing's `offset`: the scroll position relative to the turn's
-  // top, so -insetTop for an estimated question's start, and the kept drop position for a stored
-  // layout). Null when none is mounted or they span the target.
+  // spacing (`tops`: its turn tops) between them; the scroll goes `offset` from there, in the real
+  // turn's px: the destination's offset as the preview showed it (findOffset). Null when none is
+  // mounted or they span the target.
   function findTurn({ index, mounted, tops, gap = 0, offset, maxScroll }) {
     if (!mounted.length) return null;
     const first = mounted.reduce((x, y) => (y.index < x.index ? y : x)),
@@ -62,6 +61,17 @@
         ? last.bottom + gap + tops[index] - tops[last.index + 1]
         : first.top - (tops[first.index] - tops[index]);
     return Math.max(0, Math.min(maxScroll, top + offset));
+  }
+  // The scroll position relative to destination `d`'s turn top, in the px the preview showed it in.
+  // `d.offset` (core.landing) is in the frozen model's px: -insetTop for an estimated question's
+  // start, the kept drop position for a stored layout. A stored layout's preview row (`row`, from
+  // the preview model) is its stored height, and core.previewScrollTop scaled the view's top line
+  // (`d.offset + insetTop`) by row.h / d.height (the model row's height) to show it: scaled the
+  // same way, the offset matches the stored, real turn. Equal heights return `d.offset` itself.
+  function findOffset(d, row, insetTop) {
+    if (!d.layout || row.h === d.height) return d.offset;
+    const o = d.offset + insetTop;
+    return (Math.min(o, d.height) * row.h) / d.height + Math.max(0, o - d.height) - insetTop;
   }
   // The release's search for a destination turn that stays unmounted. `finder()` returns `step`,
   // called each frame with the clock, scrollTop and `look()` (findTurn's input, read only when a
@@ -257,6 +267,7 @@
     visibleRect,
     semanticTarget,
     findTurn,
+    findOffset,
     finder,
     segments,
     inline,

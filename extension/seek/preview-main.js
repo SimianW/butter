@@ -1090,16 +1090,13 @@
           r = t.parentElement.getBoundingClientRect();
         return index == null ? [] : [{ index, top: r.top - origin, bottom: r.bottom - origin }];
       });
-      const tops = a.prep.model.map((t) => t.top),
+      // The destination's row in the preview model: a stored layout shows its passage in its px.
+      const d = a.destination,
+        row = (a.prep.previewModel || a.prep.model)[d.index],
         maxScroll = a.sc.scrollHeight - a.sc.clientHeight;
-      return {
-        index: a.destination.index,
-        mounted,
-        tops,
-        gap: a.prep.gap,
-        offset: a.destination.offset,
-        maxScroll,
-      };
+      const tops = a.prep.model.map((t) => t.top),
+        offset = layoutCheck.findOffset(d, row, a.insetTop);
+      return { index: d.index, mounted, tops, gap: a.prep.gap, offset, maxScroll };
     };
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
