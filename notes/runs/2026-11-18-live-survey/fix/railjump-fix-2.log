@@ -1,0 +1,52 @@
+fix-railjump-2 math9 from=top to=4 phase=reload class=clean samples=177
+fix-railjump-2 math9 from=bottom to=0 phase=reload class=clean samples=198
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+fix-railjump-2 math9 from=top to=0 phase=reload-setup class=clean samples=152
+fix-railjump-2 math9 from=top to=1 phase=settled class=clean samples=182
+fix-railjump-2 math9 from=top to=2 phase=settled class=clean samples=220
+fix-railjump-2 math9 from=top to=3 phase=settled class=clean samples=190
+fix-railjump-2 math9 from=top to=4 phase=settled class=clean samples=178
+fix-railjump-2 math9 from=top to=5 phase=settled class=clean samples=186
+fix-railjump-2 math9 from=top to=6 phase=settled class=clean samples=190
+fix-railjump-2 math9 from=top to=7 phase=settled class=clean samples=188
+fix-railjump-2 math9 from=top to=8 phase=settled class=clean samples=180
+fix-railjump-2 math9 from=bottom to=0 phase=settled class=clean samples=178
+fix-railjump-2 math9 from=bottom to=1 phase=settled class=clean samples=190
+fix-railjump-2 math9 from=bottom to=2 phase=settled class=clean samples=189
+fix-railjump-2 math9 from=bottom to=3 phase=settled class=clean samples=187
+fix-railjump-2 math9 from=bottom to=4 phase=settled class=clean samples=189
+fix-railjump-2 math9 from=bottom to=5 phase=settled class=clean samples=188
+fix-railjump-2 math9 from=bottom to=6 phase=settled class=clean samples=187
+fix-railjump-2 math9 from=bottom to=7 phase=settled class=clean samples=190
+fix-railjump-2 math9 from=bottom to=8 phase=settled class=clean samples=190
+fix-railjump-2 math9 from=previous to=0 phase=settled class=clean samples=178
+fix-railjump-2 math9 from=previous to=1 phase=settled class=clean samples=180
+fix-railjump-2 math9 from=previous to=8 phase=settled class=clean samples=156
+fix-railjump-2 math9 from=previous to=7 phase=settled class=clean samples=165
+fix-railjump-2 math12 from=top to=4 phase=reload class=clean samples=226
+fix-railjump-2 math12 from=bottom to=0 phase=reload class=clean samples=201
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":8,"hasPrev":true,"height":215338,"mathDisplay":469,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":8,"measuredRows":0,"trace":true}
+fix-railjump-2 math12 from=top to=0 phase=reload-setup class=clean samples=148
+fix-railjump-2 math12 from=top to=1 phase=settled class=clean samples=200
+fix-railjump-2 math12 from=top to=2 phase=settled class=clean samples=186
+fix-railjump-2 math12 from=top to=3 phase=settled class=clean samples=178
+fix-railjump-2 math12 from=top to=4 phase=settled class=clean samples=188
+fix-railjump-2 math12 from=top to=5 phase=settled class=clean samples=200
+fix-railjump-2 math12 from=top to=6 phase=settled class=clean samples=201
+fix-railjump-2 math12 from=top to=7 phase=settled class=clean samples=188
+fix-railjump-2 math12 from=bottom to=0 phase=settled class=clean samples=190
+fix-railjump-2 math12 from=bottom to=1 phase=settled class=clean samples=199
+fix-railjump-2 math12 from=bottom to=2 phase=settled class=clean samples=195
+fix-railjump-2 math12 from=bottom to=3 phase=settled class=clean samples=186
+fix-railjump-2 math12 from=bottom to=4 phase=settled class=clean samples=186
+fix-railjump-2 math12 from=bottom to=5 phase=settled class=clean samples=188
+fix-railjump-2 math12 from=bottom to=6 phase=settled class=clean samples=186
+fix-railjump-2 math12 from=bottom to=7 phase=settled class=clean samples=186
+fix-railjump-2 math12 from=previous to=0 phase=settled class=clean samples=169
+fix-railjump-2 math12 from=previous to=1 phase=settled class=clean samples=164
+fix-railjump-2 math12 from=previous to=7 phase=settled class=clean samples=155
+fix-railjump-2 math12 from=previous to=6 phase=settled class=clean samples=163
+SUMMARY {"jumps":46,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":40,"rawReversalCount":84,"unpinChecks":40,"anchoringOn":0,"cvOff":0}
+chromium: stopped
+chromium: started (pid 775778)
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-18-live-survey/railjump-fix-2.json
