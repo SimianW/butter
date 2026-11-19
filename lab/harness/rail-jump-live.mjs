@@ -2,8 +2,8 @@
 // EXT=/snap-readable/dev/butter loads exactly that extension; EXT= is the native control.
 // LAB_ID=2 FIXTURES=math9,math12 OUT=<numeric-results.json> LABEL=head SMOOTHER=off
 // RECORD=1 records first failing examples via x11grab (private MP4s in /tmp).
-// Exit 1: a failed or visibly detoured jump, or, with Butter, the chat's scroll anchoring still off
-// after a wheel unpinned it (`anchoringLeftOff`). Exit 2: setup error.
+// Exit 1: a failed or visibly detoured jump, or, with Butter's `cv` setting on, the chat's scroll
+// anchoring on at a wheel unpin's check (`anchoringOn`). Exit 2: setup error.
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -77,25 +77,30 @@ async function open(name, settle = 0, earlier = true) {
   if (settle) await page.waitForTimeout(settle);
   return prepare();
 }
-// The pin's hold on the browser's scroll anchoring (rail/jump.js): `data-butter-pinned` on <html>, and
-// each of the scroller's children: whether it holds the turns and its computed overflow-anchor.
-// ChatGPT's own non-turn child computes none with or without Butter.
+// The browser's scroll anchoring on the chat's content (stream/containment.css): whether Butter's
+// `cv` setting is on (`data-butter-off` on <html> does not hold it), and each of the scroller's
+// children: whether it holds the turns and its computed overflow-anchor. ChatGPT's own non-turn
+// child computes none with or without Butter.
 const anchoring = () => page.evaluate(() => {
   const s = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight);
-  return { attribute: document.documentElement.hasAttribute('data-butter-pinned'),
+  return { cv: !(document.documentElement.getAttribute('data-butter-off') || '').split(/\s+/).includes('cv'),
     children: [...s.children].map(c => ({ turns: !!c.querySelector('[data-turn-key]'), overflowAnchor: getComputedStyle(c).overflowAnchor })) };
 });
+// With `cv` on, the turns' container computes none; with `cv` off the check only reports (null).
+const anchoringOff = a => a.cv ? a.children.every(c => !c.turns || c.overflowAnchor === 'none') : null;
 async function unpin() {
   const before = worker && await anchoring();
   // Wheel in the chat (not the rail) cancels any completed jump's following observer.
   await page.mouse.move(1000, 420); await page.mouse.wheel(0, 1);
   await page.waitForTimeout(50);
   if (!worker) return;
-  // Unpinned, the browser's scroll anchoring is back on for the chat's content.
+  // Pinned (before the wheel) and unpinned (after it), with `cv` on the browser's scroll anchoring
+  // stays off for the chat's content.
   const check = { before, ...await anchoring() };
-  check.ok = !check.attribute && check.children.every(c => !c.turns || c.overflowAnchor === 'auto');
+  const off = [before, check].map(anchoringOff);
+  check.ok = off.includes(false) ? false : off[1];
   summary.unpinChecks.push(check);
-  if (!check.ok) console.log(`UNPIN anchoring still off: ${JSON.stringify(check)}`);
+  if (check.ok === false) console.log(`UNPIN anchoring on with cv: ${JSON.stringify(check)}`);
 }
 async function jump(name, from, to, phase) {
   await prepare();
@@ -239,9 +244,9 @@ try {
     await unpin(); // the last jump's pin ends too
   }
   summary.counts = Object.fromEntries(fixtures.map(name => [name, Object.fromEntries(['clean', 'detour', 'failed', 'native'].map(c => [c, summary.jumps.filter(j => j.case === name && j.class === c).length]))]));
-  summary.metrics = { jumps: summary.jumps.length, failed: summary.jumps.filter(j=>j.failed).length, visibleDetour: summary.jumps.filter(j=>j.detour).length, native: summary.jumps.filter(j=>j.class === 'native').length, gated: summary.jumps.filter(j=>!['clean','native'].includes(j.class)).length, postCompletion: summary.jumps.filter(j=>j.postCompletion.length).length, postCompletionEventMoves: summary.jumps.filter(j=>j.postEndMoves.length).length, afterLanding: summary.jumps.filter(j=>j.afterLanding.length).length, rawReversal: summary.jumps.filter(j=>j.reversals.length).length, rawReversalCount: summary.jumps.reduce((n,j)=>n+j.reversals.length,0), unpinChecks: summary.unpinChecks.length, anchoringLeftOff: summary.unpinChecks.filter(c => !c.ok).length, pinnedAnchoringOff: summary.unpinChecks.filter(c => c.before.attribute && c.before.children.some(x => x.turns && x.overflowAnchor === 'none')).length };
+  summary.metrics = { jumps: summary.jumps.length, failed: summary.jumps.filter(j=>j.failed).length, visibleDetour: summary.jumps.filter(j=>j.detour).length, native: summary.jumps.filter(j=>j.class === 'native').length, gated: summary.jumps.filter(j=>!['clean','native'].includes(j.class)).length, postCompletion: summary.jumps.filter(j=>j.postCompletion.length).length, postCompletionEventMoves: summary.jumps.filter(j=>j.postEndMoves.length).length, afterLanding: summary.jumps.filter(j=>j.afterLanding.length).length, rawReversal: summary.jumps.filter(j=>j.reversals.length).length, rawReversalCount: summary.jumps.reduce((n,j)=>n+j.reversals.length,0), unpinChecks: summary.unpinChecks.length, anchoringOn: summary.unpinChecks.filter(c => c.ok === false).length, cvOff: summary.unpinChecks.filter(c => c.ok === null).length };
   console.log(`SUMMARY ${JSON.stringify(summary.metrics)}`);
-  process.exitCode = summary.jumps.some(j => !['clean','native'].includes(j.class)) || summary.metrics.anchoringLeftOff ? 1 : 0;
+  process.exitCode = summary.jumps.some(j => !['clean','native'].includes(j.class)) || summary.metrics.anchoringOn ? 1 : 0;
 } catch (error) {
   summary.error = error.message.replace(/https?:\/\/\S+/g, '<private-url>');
   console.error(`HARNESS ERROR: ${summary.error}`); process.exitCode = 2;
