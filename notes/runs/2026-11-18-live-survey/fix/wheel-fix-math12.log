@@ -1,0 +1,12 @@
+REPORT load math12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=34 scrollTop=66096 scrollHeight=67042 clientHeight=912 overflowAnchor=auto children=T:none,none butterOff=layout turns=2
+PASS load math12 #1: reached the end in 218 steps
+REPORT load math12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=34 scrollTop=66096 scrollHeight=67042 clientHeight=912 overflowAnchor=auto children=T:none,none butterOff=layout turns=2
+PASS load math12 #2: reached the end in 311 steps
+REPORT scrollHeight range 67042–67042 over 2 loads
+REPORT overflow-anchor scroller [children]: auto [T:none,none]
+REPORT not opened at the end: math12 #1, math12 #2
+REPORT build=0.1.0-alpha.21+fix.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":111,"sendAttempts":4}
+SUMMARY fix-math12: 0/2 loads failed
+chromium: stopped
+chromium: started (pid 721435)
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-18-live-survey/wheel-fix-math12.json
