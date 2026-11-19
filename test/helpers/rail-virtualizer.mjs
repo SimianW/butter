@@ -26,8 +26,7 @@ const SCRIPTS = ['turns.js', 'readiness.js', 'jump.js'];
 // - `page(top)`: ChatGPT moves the chat to `top` (not logged in `writes`);
 // - `mounted(fn)`: `fn(i)` runs each time turn `i` mounts;
 // - `frameMs`: the time between frames (16; more while the page is busy);
-// - `run(ms)`: runs timers and frames for `ms`; `now()`: the page's clock;
-// - `html`: the page's `<html>` element.
+// - `run(ms)`: runs timers and frames for `ms`; `now()`: the page's clock.
 // A wheel on the scroller cancels the jump, as rail/rail.js wires the tracker's `scrolled`.
 // `trace(step, fields)`: the dev build's trace hook (dev/rail-trace.js), given the rail as rail.js
 // lends it. `hasPrev`: the chat has earlier pages left (they never load here).
@@ -39,10 +38,8 @@ export function setup({ trace, hasPrev = false } = {}) {
     timers = new Map();
   const observers = fakeObservers();
   const window = new FakeElement();
-  const html = new FakeElement('html');
   const ctx = vm.createContext({
     ButterRailModel,
-    document: { documentElement: html },
     Element: FakeElement,
     ResizeObserver: observers.ResizeObserver,
     IntersectionObserver: observers.IntersectionObserver,
@@ -238,7 +235,6 @@ export function setup({ trace, hasPrev = false } = {}) {
     els,
     st,
     trip,
-    html,
     frameMs: 16,
     now: () => now,
     page(to) {

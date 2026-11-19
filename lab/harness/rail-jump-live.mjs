@@ -86,8 +86,9 @@ const anchoring = () => page.evaluate(() => {
   return { cv: !(document.documentElement.getAttribute('data-butter-off') || '').split(/\s+/).includes('cv'),
     children: [...s.children].map(c => ({ turns: !!c.querySelector('[data-turn-key]'), overflowAnchor: getComputedStyle(c).overflowAnchor })) };
 });
-// With `cv` on, the turns' container computes none; with `cv` off the check only reports (null).
-const anchoringOff = a => a.cv ? a.children.every(c => !c.turns || c.overflowAnchor === 'none') : null;
+// With `cv` on, every child of the scroller computes none (the rule names them all); with `cv` off
+// the check only reports (null).
+const anchoringOff = a => a.cv ? a.children.every(c => c.overflowAnchor === 'none') : null;
 async function unpin() {
   const before = worker && await anchoring();
   // Wheel in the chat (not the rail) cancels any completed jump's following observer.

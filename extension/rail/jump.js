@@ -279,10 +279,14 @@
           setBusy(id, tok);
         }
         // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
-        const pendingMath = () =>
-          [...(turns.el(id)?.querySelectorAll('[data-math-source]') ?? [])].some(
-            (x) => !x.querySelector('.katex'),
+        // A missing target counts as pending: back within the lost window, its math is checked again.
+        const pendingMath = () => {
+          const turn = turns.el(id);
+          return (
+            !turn ||
+            [...turn.querySelectorAll('[data-math-source]')].some((x) => !x.querySelector('.katex'))
           );
+        };
         // ChatGPT can unmount the target again after it mounted, and move the chat elsewhere. Lost
         // during the readiness waits, it is looked for again from where the turns are now: at most
         // two more rounds of mount tries and waits, within the deadline. `tried`: this jump's tries.
