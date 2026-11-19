@@ -33,6 +33,8 @@
   start instead of its end.
 - Fixed letting go of the scrollbar in a long chat sometimes leaving you deep inside the answer
   before the question the preview showed, after about 10 seconds of loading.
+- Fixed the question rail keeping its light colours after you switch ChatGPT to the dark theme in
+  its settings (or its dark colours after switching back) until you reloaded the page.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 
