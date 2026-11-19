@@ -120,6 +120,7 @@ puts the question at the inset. The session dump records `finds` and the destina
 | seek-1118-fix2 #1 | **0** | 5 PASS | trial 2: 192799 → 195529 at 1819 ms; trial 3: 226908 → 229145 at 1887 ms | 3.0–4.2 s |
 | seek-1118-fix2 #2 | **0** | 5 PASS | the same two, at 1985 and 1886 ms | 3.3–4.2 s |
 | seek-1118-fix3 (after the refactor) | **0** | 5 PASS | the same two, at 1817 and 1870 ms | 3.0–4.2 s |
+| seek-1118-fix4 (review round 1: a find keeps the destination's offset) | **0** | 5 PASS | the same two (192797 → 195529 at 1819 ms, 226906 → 229145 at 1938 ms): an estimated destination's offset is the question's start, as before | 3.0–4.1 s |
 
 Verdict lines: `PASS seek-landing #1` … `#5`, `SUMMARY seek-landing: 0 FAILs`. Before, on
 fix-1118-fix: `FAIL seek-landing #2: preview showed question 6 +0 (unseen estimate, from its start),
@@ -136,6 +137,14 @@ two releases as before, plus the finder test, since there is no finder there. On
 `anchor-main.js`'s `__butterAnchorVisibleSwap` was missing (it loads first and always defines it).
 The file went from 1583 to 1515 lines, and its line cap from 1546 to 1515. The dev bug file keeps
 the new `retarget` kind `find` (`extension/dev/allowlist.js`; `test/dev-recorder.test.js`).
+
+**Review round 1.** A find now scrolls to the found turn's top plus the destination's offset
+(`core.landing`'s `offset`), not to the turn's top. For a stored-layout destination, that keeps the
+drop position, so the semantic step starts next to the previewed passage. Two new tests in
+`test/seek-landing-find.test.js` were red on `e93be9d` and pass here. A phrase that repeats in the
+turn, at 200 and 10100 px, used to land at offset 100 and now lands at 10000. With no anchor text, it
+used to land at 0 and now lands at 10000. The finder's stillness also restarts on a frame with the
+target mounted. On `math12` (estimated destinations) the finds are unchanged.
 
 **Harness.** Its verdict rule was right and is unchanged. The default positions are now the five
 used here (the old default 0.3, 0.55 and 0.8 had one failing position). It also gained a
@@ -178,7 +187,8 @@ reads after 1 s, goes Back to the chat (no reload), and reads again. Then the sa
 
 - Lock `seek-1118` on lab 2 from 04:38 to 05:09 UTC (31 min of the 120 min budget), and for the
   after-refactor runs from 05:15:44 to 05:19:25 UTC (4 min of that round's 30), restored (`"ok":true`)
-  and released (exit 0) both times. Before that
+  and released (exit 0) both times; for review round 1, 05:32:19 to 05:34:43 UTC (of 20 min),
+  restored and released the same way. Before that
   the lab sat free for about an hour while I waited: my wait loop's `pgrep -f` pattern matched its
   own command line.
 - At the end: `lab-restore --lab 2 --owner seek-1118` (exit 0, `"ok":true`: browser restarted to
