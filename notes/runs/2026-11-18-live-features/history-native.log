@@ -1,0 +1,5 @@
+REPORT native math12: opened with 5 entries, scrollTop 67149 of 68061
+REPORT top reached: true, entries 12, 120 wheel steps of -6000 px, 60 s
+REPORT newest-page GETs: 2, num_turns [10, 10], params ["num_turns","include_has_versions"]
+REPORT earlier-page GETs: 2, num_turns [10, 10], before param on 2, params ["before","num_turns","include_has_versions"]
+SUMMARY history-native: 0 FAILs

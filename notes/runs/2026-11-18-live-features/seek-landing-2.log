@@ -1,0 +1,17 @@
+REPORT math12: history loaded, 12 entries
+REPORT trial 1 at 0.2: thumb press y 197, scrollTop 69258 → held 132267 (moved 63009), preview shown while held true (0 items, 17 updates), preview top: question 3 +26337 px (layout false, known false); landed: question 3 +1 px of 12 entries, scrollTop 103111, inset 52; session {"kind":"classic","reason":"pointerup","canceled":false,"landingErrorPx":0,"turnTopErrorPx":-2766.7204521734384,"destination":{"turn":3,"offset":-52,"known":false,"stored":false,"layout":false},"releaseToReadableMs":3584,"timedOut":false}
+REPORT trial 1 preview drew: {"est":true,"estTop":0,"unseen":true,"notice":true} → expected question 3 +0 px
+PASS seek-landing #1
+REPORT trial 2 at 0.4: thumb press y 370, scrollTop 138495 → held 201347 (moved 62852), preview shown while held true (0 items, 34 updates), preview top: question 6 +8498 px (layout false, known false); landed: question 5 +31261 px of 12 entries, scrollTop 192797, inset 52; session {"kind":"classic","reason":"pointerup","canceled":false,"destination":{"turn":6,"offset":-52,"known":false,"stored":false,"layout":false},"releaseToReadableMs":10003,"timedOut":true}
+REPORT trial 2 preview drew: {"est":true,"estTop":0,"unseen":true,"notice":true} → expected question 6 +0 px
+FAIL seek-landing #2: preview showed question 6 +0 (unseen estimate, from its start), landed on question 5 +31261 (viewport 912)
+REPORT trial 3 at 0.55: thumb press y 499, scrollTop 190431 → held 253461 (moved 63030), preview shown while held true (0 items, 52 updates), preview top: question 7 +26503 px (layout false, known false); landed: question 6 +31378 px of 12 entries, scrollTop 226906, inset 52; session {"kind":"classic","reason":"pointerup","canceled":false,"destination":{"turn":7,"offset":-52,"known":false,"stored":false,"layout":false},"releaseToReadableMs":10003,"timedOut":true}
+REPORT trial 3 preview drew: {"est":true,"estTop":0,"unseen":true,"notice":true} → expected question 7 +0 px
+FAIL seek-landing #3: preview showed question 7 +0 (unseen estimate, from its start), landed on question 6 +31378 (viewport 912)
+REPORT trial 4 at 0.7: thumb press y 628, scrollTop 242367 → held 178855 (moved -63512), preview shown while held true (0 items, 68 updates), preview top: question 5 +12619 px (layout false, known false); landed: question 5 +1 px of 12 entries, scrollTop 161537, inset 52; session {"kind":"classic","reason":"pointerup","canceled":false,"landingErrorPx":0,"turnTopErrorPx":-4646.7914402115275,"destination":{"turn":5,"offset":-52,"known":false,"stored":false,"layout":false},"releaseToReadableMs":3805,"timedOut":false}
+REPORT trial 4 preview drew: {"est":true,"estTop":0,"unseen":true,"notice":true} → expected question 5 +0 px
+PASS seek-landing #4
+REPORT trial 5 at 0.85: thumb press y 758, scrollTop 294320 → held 230977 (moved -63343), preview shown while held true (0 items, 84 updates), preview top: question 7 +1409 px (layout false, known false); landed: question 7 +1 px of 12 entries, scrollTop 229145, inset 52; session {"kind":"classic","reason":"pointerup","canceled":false,"landingErrorPx":0,"turnTopErrorPx":-371.32674285568646,"destination":{"turn":7,"offset":-52,"known":false,"stored":false,"layout":false},"releaseToReadableMs":3923,"timedOut":false}
+REPORT trial 5 preview drew: {"est":true,"estTop":0,"unseen":true,"notice":true} → expected question 7 +0 px
+PASS seek-landing #5
+SUMMARY seek-landing: 2 FAILs

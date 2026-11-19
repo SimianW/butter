@@ -1,0 +1,32 @@
+REPORT build 0.1.0-alpha.21+fix.1 (fix-1118-fix), fixture ats12, 357 chunks over 107 s
+REPORT opened: scrollTop 9416 of 10276 (fromEnd 0), entries 5, rail 5 ticks, lit [3,4], data-butter-off "layout", fetch hook outermost false, rAF hook outermost false
+REPORT selector counts, typed: {"pre-jump SEND_BUTTON":1,"branch SEND (testid + aria-labels)":1,"branch structural button[type=submit]":1,"[data-testid=\"send-button\"]":0,"#composer-submit-button":0,"[data-testid=\"stop-button\"]":0}
+REPORT pre-jump condition with text typed: SEND_BUTTON in form true, would fire on Enter true
+PASS replay-hook
+REPORT replay: started true, chunks 357/357, done true, local answers [/backend-api/conversation/init, /backend-api/sentinel/chat-requirements/prepare, /backend-api/conversation/init, /backend-api/f/conversation/prepare, /__replay_selftest, /backend-api/sentinel/chat-requirements/prepare, /backend-api/f/conversation/prepare], denied in page 39: ["POST /v1/initialize","POST /ces/v1/rgstr","POST /ces/v1/telemetry/intake","POST /ces/statsc/flush"], request keys ["turn_attribution","conversation_id","action","model","parent_message_id","timezone","timezone_offset_min","is_do_not_remember","client_contextual_info","conversation_mode","gizmo_id","local_function_names","messages","supported_encodings","genui_state_snapshots","client_prepare_state"]
+PASS replay-streams
+PASS in-progress
+REPORT in_progress in 454/467 samples; mid-stream: turn 5/6, 284 blocks, 284 computed content-visibility auto, seen 23, unrendered 249, AdaptiveStreaming 1, turn cv auto
+REPORT streaming turn blocks over time (blocks/cvAuto/seen/unrendered): 1/1/0/0 74/74/23/40 163/163/23/124 197/197/23/161 282/282/23/244 372/372/23/336 434/434/23/392 535/535/25/490 609/609/25/558
+REPORT after completion: turn 5/6, in_progress 0, 612 blocks, cv auto 592, seen 27, unrendered 565, answer 248 chars, scrollTop 9592 of 94772 (fromEnd 84320)
+PASS cv-blocks
+PASS seen-marks
+REPORT marks on the streamed answer: max during stream seen 25, unrendered 565; after: seen 27, unrendered 565
+PASS throttle-matched
+REPORT __butterStats {"smootherFrames":361,"published":360}
+REPORT answer DOM updates while streaming: 337, interval p10 256, median 266.6, p90 313.3 ms
+REPORT native smoother rAF callbacks seen by the harness hook: 0 (hook outermost false), interval median null ms; other publish/flush-like callbacks: [["(t) => {\n      pending.delete(handle);\n      if (entry.canceled) return;\n      lastRun = performance.now();\n      stats.published++;\n      cb(t);\n    }",355]]
+REPORT view while streaming: at the end (within 4 px) in 0/454 samples; fromEnd min 26, median 37598, max 84530; scrollTop first 9592, last 9592; after completion fromEnd 84320
+PASS stream-no-jump
+PASS rail-new-tick
+PASS rail-new-tick-lit
+REPORT rail after completion: 6 ticks, lit [3,4,5]; during stream ticks 6
+REPORT wheel phase: last turn 81634 px high, 60 steps up
+REPORT view shift up (60 steps): 6/60 over 4px (988, 997, 1076, 951, 834, 934 px), median 0.2, max 1076 (lost 0, none 0, clamped 0); in the streamed answer: 6/58 over 4px (988, 997, 1076, 951, 834, 934 px), median 0.2, max 1076 (lost 0, none 0, clamped 0)
+REPORT view shift down (60 steps, ended fromEnd 2): 0/60 over 4px, median 0, max 0.4 (lost 0, none 0, clamped 0); in the streamed answer: 0/56 over 4px, median 0, max 0.2 (lost 0, none 0, clamped 0)
+PASS wheel-no-jump
+PASS no-escape
+REPORT network: guard-blocked non-GET 5 [["POST /ces/v1/rgstr",2],["POST /backend-api/codex/notification/subscriptions",1],["POST /backend-api/conversation/init",1],["POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>",1]], WebSockets closed 38
+PASS server-unchanged
+REPORT composer after reload: 0 chars
+SUMMARY fix-ats12: 0 FAILs

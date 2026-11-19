@@ -1,0 +1,20 @@
+REPORT history loaded: ChatGPT's turn list 12 entries
+REPORT API: 9 conversation pages, 46 messages, 12 visible questions; user messages 12
+REPORT API question lengths (normalized): [7, 16, 42, 2, 915, 26, 22, 56, 20, 7, 23, 4]
+REPORT API question 4: content_type text, parts 1 (string), q 915 chars, 65 lines
+REPORT API question 4 message keys: id author{} author.role author.name author.metadata{} create_time update_time status end_turn weight metadata{} metadata.request_id metadata.message_source metadata.turn_exchange_id metadata.working_turn_id metadata.can_save recipient channel
+REPORT API question 4 content keys: content_type parts
+REPORT API question 4 metadata keys not on every other question: []
+REPORT API neighbours of question 4 (role/content_type/hidden): user/text/shown/all assistant/reasoning_recap/shown/all assistant/text/shown/all *user/text/shown/all assistant/reasoning_recap/shown/all assistant/text/shown/all user/text/shown/all
+REPORT rail: 12 ticks
+REPORT card 4: 389 chars; equals API q false; is API q cut at 400 true
+REPORT turn of question 4: {"mounted":true,"bubbleLen":37,"bubbleInQ":true,"qInBubble":false,"qStartsWithBubble":false,"qShownInTurn":false,"media":1,"mediaKinds":["button[data-composer-attachment-pill type class aria-haspopup aria-expanded data-state data-slot]"],"buttons":["(11 chars)","Copy message","Edit message","Copy","Rate response","Read aloud","Share","Add to project sources","More actions"],"versions":false,"userPartTag":"div[data-user-message-bubble data-user-message-has-prompt class]"}
+REPORT bubble tree:
+div[data-user-message-bubble data-user-message-has-prompt class] text=37
+  div[class] text=37
+    div[class] text=37
+      div[class data-search-result-target] text=37
+        div[] text=37
+          div[class dir] text=37 leaf
+REPORT elements with own text outside the answer: [{"tag":"span","attrs":["class"],"len":9,"inQ":false,"inBubble":false},{"tag":"span","attrs":["class","aria-hidden"],"len":3,"inQ":false,"inBubble":false},{"tag":"span","attrs":["class"],"len":11,"inQ":false,"inBubble":false},{"tag":"div","attrs":["class","dir"],"len":37,"inQ":true,"inBubble":true},{"tag":"span","attrs":["class"],"len":13,"inQ":false,"inBubble":false},{"tag":"span","attrs":["class","aria-hidden"],"len":7,"inQ":false,"inBubble":false}]
+REPORT bubble's React message props: []
