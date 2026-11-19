@@ -43,6 +43,22 @@
     if (Math.abs(to - scrollTop) <= tolerance) return null;
     return { to, delta, clamped: Math.abs(to - scrollTop - delta) > tolerance };
   }
+  // A seek destination's turn did not mount where the frozen model put it: an estimated turn near
+  // it is taller or shorter than the model says, and only that one mounts there. Where to look
+  // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates): after the last
+  // one before the target, or before the first one after it, moved by the model's spacing (`tops`:
+  // its turn tops) between them and the target. Null when none is mounted or they span the target.
+  function findTurn({ index, mounted, tops, gap = 0, insetTop, maxScroll }) {
+    if (!mounted.length) return null;
+    const first = mounted.reduce((x, y) => (y.index < x.index ? y : x)),
+      last = mounted.reduce((x, y) => (y.index > x.index ? y : x));
+    if (first.index <= index && last.index >= index) return null;
+    const top =
+      last.index < index
+        ? last.bottom + gap + tops[index] - tops[last.index + 1]
+        : first.top - (tops[first.index] - tops[index]);
+    return Math.max(0, Math.min(maxScroll, top - insetTop));
+  }
   function inline(s) {
     const math = [];
     s = s.replace(
@@ -210,6 +226,7 @@
     TTL,
     visibleRect,
     semanticTarget,
+    findTurn,
     segments,
     inline,
     geometryOnly,

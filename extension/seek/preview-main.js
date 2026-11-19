@@ -1077,8 +1077,12 @@
     };
     let prev = 0,
       quiet = 0,
-      lastTop = NaN;
+      lastTop = NaN,
+      missTop = NaN,
+      missSince = 0,
+      missFrames = 0;
     a.retargets = [];
+    a.finds = [];
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
       a.sc.getBoundingClientRect().top +
@@ -1095,6 +1099,37 @@
       const pendingMath =
         el &&
         [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
+      // Unmounted where the frozen model put it, and still for 5 frames and 250 ms: look for it from
+      // the turns mounted now (layoutCheck.findTurn), at most 4 times.
+      if (!el && d && a.finds.length < 4) {
+        const top = a.sc.scrollTop;
+        if (top !== missTop) [missTop, missSince, missFrames] = [top, now, 0];
+        else if (++missFrames >= 5 && now - missSince >= 250) {
+          const at = new Map(a.prep.model.map((t) => [t.id, t.index])),
+            origin = a.sc.getBoundingClientRect().top - top;
+          const mounted = [...a.sc.querySelectorAll('[data-turn-key]')].flatMap((t) => {
+            const index = at.get(t.getAttribute('data-turn-key')),
+              r = t.parentElement.getBoundingClientRect();
+            return index == null ? [] : [{ index, top: r.top - origin, bottom: r.bottom - origin }];
+          });
+          const to = layoutCheck.findTurn({
+            index: d.index,
+            mounted,
+            tops: a.prep.model.map((t) => t.top),
+            gap: a.prep.gap,
+            insetTop: a.insetTop,
+            maxScroll: a.sc.scrollHeight - a.sc.clientHeight,
+          });
+          [missSince, missFrames] = [now, 0];
+          if (to != null && Math.abs(to - top) >= 1) {
+            a.finds.push({ t: Math.round(now - a.end), from: Math.round(top), to: Math.round(to) });
+            a.sc.scrollTop = to;
+            event('find', a.finds.at(-1));
+            if (tap) emit('retarget', { kind: 'find', to, error: to - top });
+            quiet = prev = 0;
+          }
+        }
+      }
       if (el && !pendingMath && d.layout && !a.semantic) {
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
         const candidates =
@@ -1385,6 +1420,7 @@
       landingErrorPx: a.landingErrorPx,
       turnTopErrorPx: a.turnTopErrorPx,
       retargets: a.retargets,
+      finds: a.finds,
       coalescing: a.release?.dump(),
       commitRetarget: a.commitRetarget,
       alignmentCorrection: a.alignmentCorrection,
@@ -1392,6 +1428,7 @@
       swapError: a.swapError,
       destination: a.destination && {
         turn: a.destination.index,
+        top: Math.round(a.destination.top),
         offset: Math.round(a.destination.offset),
         known: a.destination.known,
         stored: a.prep.model[a.destination.index]?.stored,

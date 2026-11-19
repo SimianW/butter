@@ -31,6 +31,8 @@
   the chat instead, or flicking away from the question and back, with Smoother streaming on.
 - Fixed a long chat jumping back to its start while you scroll down, and sometimes opening at its
   start instead of its end.
+- Fixed letting go of the scrollbar in a long chat sometimes leaving you deep inside the answer
+  before the question the preview showed, after about 10 seconds of loading.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 
