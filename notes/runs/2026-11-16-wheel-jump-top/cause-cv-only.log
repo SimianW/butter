@@ -1,0 +1,19 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT=~/snap/chromium/common/wheel-jump-head-test/butter LABEL=cause-cv-only LOADS=3 GAP=20000 PAGELOG=1 OPTS={"cv":true,"container":false,"throttle":false,"older":false,"rail":false,"seek":false,"branch":false,"bookmark":false} node lab/harness/wheel-jump-live.mjs   # 21:03
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=38144 scrollTop=0 scrollHeight=39004 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=container throttle older rail seek layout branch bookmark turns=3
+FAIL load ats12 #1: 6 jumps back, first 8400 → 0 at step 12
+REPORT load ats12 #1 causes: [["no wrapped call",6]]
+REPORT load ats12 #1 page log: 156 scroll rows, 58 turn insertions/removals, 3955 skip changes, turn order entries
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=container throttle older rail seek layout branch bookmark turns=1
+FAIL load ats12 #2: 21 jumps back, first 6300 → 0 at step 9
+REPORT load ats12 #2 causes: [["no wrapped call",21]]
+REPORT load ats12 #2 page log: 169 scroll rows, 126 turn insertions/removals, 180 skip changes, turn order entries
+REPORT load ats12 #3: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=38144 scrollTop=0 scrollHeight=39004 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=container throttle older rail seek layout branch bookmark turns=3
+FAIL load ats12 #3: 6 jumps back, first 8400 → 0 at step 12
+REPORT load ats12 #3 causes: [["no wrapped call",6]]
+REPORT load ats12 #3 page log: 156 scroll rows, 58 turn insertions/removals, 3955 skip changes, turn order entries
+REPORT scrollHeight range 12857–39004 over 3 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":134,"sendAttempts":0}
+SUMMARY cause-cv-only: 3/3 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-cv-only.json

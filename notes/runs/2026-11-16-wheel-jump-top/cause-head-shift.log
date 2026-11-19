@@ -1,0 +1,21 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT=~/snap/chromium/common/wheel-jump-head-test/butter LABEL=cause-head-shift LOADS=2 GAP=20000 SHIFT=1 PAGELOG=1 node lab/harness/wheel-jump-live.mjs   # 21:29
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=1
+FAIL load ats12 #1: 19 jumps back, first 6300 → 0 at step 9
+REPORT load ats12 #1 causes: [["no wrapped call",19]]
+REPORT load ats12 #1 view shift up: 0/0 over 4px, median -, max - (lost 0, none 0, clamped 3; content moves >4px 0, max -)
+REPORT load ats12 #1 view shift down: 6/131 over 4px, median 0, max 4900 (lost 10, none 9, clamped 0; content moves >4px 0, max 0.2)
+REPORT load ats12 #1 view shift down before first jump back (step 9): 0/8 over 4px, median 0, max 0 (lost 0, none 0, clamped 0; content moves >4px 0, max 0)
+REPORT load ats12 #1 page log: 168 scroll rows, 111 turn insertions/removals, 729 skip changes, turn order entries
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=12211 scrollTop=1750 scrollHeight=14821 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #2: 24 jumps back, first 4900 → 0 at step 8
+REPORT load ats12 #2 causes: [["no wrapped call",24]]
+REPORT load ats12 #2 view shift up: 0/2 over 4px, median 0, max 0 (lost 0, none 0, clamped 3; content moves >4px 0, max 0)
+REPORT load ats12 #2 view shift down: 1/127 over 4px, median 0, max 4899.8 (lost 23, none 0, clamped 0; content moves >4px 0, max 0.2)
+REPORT load ats12 #2 view shift down before first jump back (step 8): 1/7 over 4px, median 0, max 4899.8 (lost 0, none 0, clamped 0; content moves >4px 0, max 0.2)
+REPORT load ats12 #2 page log: 174 scroll rows, 147 turn insertions/removals, 1337 skip changes, turn order entries
+REPORT scrollHeight range 12857–14821 over 2 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":82,"sendAttempts":0}
+SUMMARY cause-head-shift: 2/2 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-head-shift.json

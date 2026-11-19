@@ -1,0 +1,13 @@
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=cv layout turns=3
+PASS load ats12 #1: reached the end in 34 steps
+REPORT load ats12 #2: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=57 scrollTop=9359 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=cv layout turns=3
+PASS load ats12 #2: reached the end in 20 steps
+REPORT load ats12 #3 skipped: ChatGPT did not load the chat twice (no turns mounted, scrollHeight 912)
+REPORT scrollHeight range 10276–10276 over 2 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":217,"sendAttempts":0}
+SUMMARY lead-cv-off: 0/2 loads failed (1 skipped: chat did not load)
+chromium: stopped
+chromium: started (pid 873940)
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/lead-cv-off.json

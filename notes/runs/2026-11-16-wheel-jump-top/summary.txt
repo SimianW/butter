@@ -1,0 +1,78 @@
+== head-dev: build=0.1.0-alpha.21+dev.1 mode=default restartEach=False loads=12 skipped=0 failed=12 guard={'enabled': True, 'blockedMutations': 476, 'sendAttempts': 0}
+  retried loads: []  firstAfterRestart: [1]
+  settle h: [(10276, 2), (14847, 1), (15087, 9)]  settle y: [(1990, 10), (9359, 1), (9363, 1)]
+  turns at settle: Counter({2: 10, 3: 2})  styles: Counter({'auto [T:auto,none]': 12})
+  butterOff: Counter({'layout': 12}) hosts: Counter({'chatgpt-butter-nav,chatgpt-butter-consent': 12}) theme: Counter({'light': 12})
+  up end (y,h): [(10951, 35599), (0, 40699), (0, 40699), (6754, 24650), (4059, 39626), (4059, 39657), (10951, 35599), (6754, 24619), (4059, 39657), (0, 40699), (6754, 24650), (0, 40699)]
+  jumps per load: [7, 6, 6, 9, 6, 6, 7, 8, 7, 6, 9, 6]  reachedEnd: [False, False, False, False, False, False, False, False, False, False, False, False]
+  causes: Counter({'no wrapped call': 83})  to: Counter({0: 82, 700: 1})
+  from range: 3643 20751  h same before/after: 77 / 83  afterLastStep: 0
+  h at jump: [(24620, 1), (24650, 2), (35569, 1), (35599, 2), (35600, 2), (35840, 1), (39626, 1), (39628, 1), (39657, 2), (39658, 2), (39659, 1), (39897, 1)]
+  ms from previous scroll event to the drop: [14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 16, 16, 16, 16, 16, 17, 23, 28, 46, 46, 46, 46, 46, 46, 46, 46, 47, 47, 47, 47, 47, 47, 47, 48, 50, 55, 57, 59, 60, 96, 98, 98, 108, 108, 111, 112, 113, 114, 114, 114, 116, 117, 119, 121, 129, 129, 131, 131, 132, 132, 133, 134, 135, 137, 144, 145, 147, 147, 148, 149, 156, 195, 211, 215, 229, 234, 285, 291, 292, 297, 301]
+  writes in down phase: Counter({'MAIN scrollTo:before': 51})
+== head-test: build=0.1.0-alpha.21+wheel.1 mode=default restartEach=False loads=11 skipped=1 failed=11 guard={'enabled': True, 'blockedMutations': 882, 'sendAttempts': 0}
+  retried loads: [1, 2, 3, 4, 5, 6, 9, 10, 11, 12]  firstAfterRestart: []
+  settle h: [(10276, 1), (12857, 1), (14847, 2), (15087, 7)]  settle y: [(0, 1), (1750, 2), (1990, 7), (9359, 1)]
+  turns at settle: Counter({2: 9, 3: 1, 1: 1})  styles: Counter({'auto [T:auto,none]': 11})
+  butterOff: Counter({'layout': 11}) hosts: Counter({'chatgpt-butter-nav,chatgpt-butter-consent': 11}) theme: Counter({'light': 11})
+  up end (y,h): [(0, 24648), (0, 17896), (0, 17896), (0, 17865), (0, 17896), (0, 17896), (0, 12857), (0, 24648), (0, 14847), (0, 24648), (0, 14847)]
+  jumps per load: [14, 20, 17, 19, 17, 16, 21, 14, 24, 14, 25]  reachedEnd: [False, False, False, False, False, False, False, False, False, False, False]
+  causes: Counter({'no wrapped call': 201})  to: Counter({0: 184, 700: 17})
+  from range: 2100 11900  h same before/after: 151 / 201  afterLastStep: 4
+  h at jump: [(12825, 1), (12826, 20), (14847, 49), (17864, 33), (17865, 11), (17866, 9), (17896, 36), (24648, 35), (24649, 7)]
+  ms from previous scroll event to the drop: [14, 20, 20, 26, 26, 26, 26, 26, 26, 26, 27, 27, 28, 28, 28, 29, 52, 52, 53, 57, 58, 61, 62, 63, 63, 66, 67, 68, 85, 86, 93, 93, 93, 94, 95, 96, 97, 97, 97, 97, 97, 98, 98, 99, 108, 108, 108, 109, 109, 109, 109, 109, 109, 109, 109, 110, 110, 110, 110, 110, 111, 111, 111, 111, 111, 111, 111, 112, 112, 112, 112, 112, 113, 114, 114, 114, 114, 115, 115, 115, 117, 123, 125, 125, 125, 126, 126, 126, 126, 126, 126, 126, 127, 127, 127, 127, 127, 128, 128, 128, 128, 128, 128, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 129, 130, 130, 130, 130, 130, 130, 131, 131, 131, 132, 132, 132, 134, 142, 142, 143, 143, 143, 143, 143, 143, 144, 144, 144, 145, 145, 145, 145, 145, 145, 146, 146, 146, 146, 146, 146, 146, 146, 147, 147, 147, 147, 147, 147, 147, 147, 148, 148, 148, 149, 150, 150, 150, 150, 150, 150, 151, 151, 151, 151, 152, 152, 152, 152, 154, 160, 162, 162, 162, 164, 165, 166, 167, 167, 172, 221, 477, 481, 492, 711]
+  writes in down phase: Counter()
+== head-test-arm: build=0.1.0-alpha.21+wheel.1 mode=arm restartEach=False loads=6 skipped=0 failed=6 guard={'enabled': True, 'blockedMutations': 345, 'sendAttempts': 0}
+  retried loads: [2, 4, 5]  firstAfterRestart: [1]
+  settle h: [(10276, 1), (12857, 2), (15087, 3)]  settle y: [(0, 2), (1990, 3), (9359, 1)]
+  turns at settle: Counter({2: 3, 1: 2, 3: 1})  styles: Counter({'auto [T:auto,none]': 6})
+  butterOff: Counter({'layout': 6}) hosts: Counter({'chatgpt-butter-nav,chatgpt-butter-consent': 6}) theme: Counter({'light': 6})
+  up end (y,h): [(3912, 10372), (0, 24619), (29110, 35570), (6367, 12827), (18159, 24619), (6367, 12827)]
+  jumps per load: [1, 14, 1, 1, 1, 1]  reachedEnd: [True, False, True, True, True, True]
+  causes: Counter({'no wrapped call': 18, 'script write': 1})  to: Counter({0: 18, 2455: 1})
+  from range: 4900 34710  h same before/after: 16 / 19  afterLastStep: 0
+  h at jump: [(12827, 3), (24618, 13), (24619, 1), (24620, 1), (35570, 1)]
+  ms from previous scroll event to the drop: [53, 54, 57, 60, 84, 85, 94, 111, 112, 112, 128, 128, 129, 152, 696, 698, 841, 849, 896]
+  write-near: script write 9512 2455 [('MAIN', 'scrollTo:before', [{'top': 2455, 'behavior': 'instant'}], 0, ['at ea (page:/cdn/assets/76629.abc4ea1bfe.js:326:356755)', 'at callback (page:/cdn/assets/76629.abc4ea1bfe.js:342:10521)'])]
+  writes in down phase: Counter({'MAIN scrollTo:before': 1})
+  endWrites: [{'writes': 6, 'held': True, 'after': {'y': 9416, 'h': 10276, 'atEnd': True}}, {'writes': 80, 'held': False, 'after': {'y': 23759, 'h': 24619, 'atEnd': True}}, {'writes': 24, 'held': True, 'after': {'y': 34710, 'h': 35570, 'atEnd': True}}, {'writes': 25, 'held': True, 'after': {'y': 11967, 'h': 12827, 'atEnd': True}}, {'writes': 80, 'held': True, 'after': {'y': 23759, 'h': 24619, 'atEnd': True}}, {'writes': 14, 'held': True, 'after': {'y': 11967, 'h': 12827, 'atEnd': True}}]
+== head-test-restart: build=0.1.0-alpha.21+wheel.1 mode=default restartEach=True loads=4 skipped=0 failed=4 guard={'enabled': True, 'blockedMutations': 317, 'sendAttempts': 0}
+  retried loads: [1, 2, 3, 4]  firstAfterRestart: []
+  settle h: [(10256, 1), (15087, 3)]  settle y: [(1990, 3), (9339, 1)]
+  turns at settle: Counter({2: 3, 3: 1})  styles: Counter({'auto [T:auto,none]': 4})
+  butterOff: Counter({'layout': 4}) hosts: Counter({'chatgpt-butter-nav,chatgpt-butter-consent': 4}) theme: Counter({'light': 4})
+  up end (y,h): [(0, 17896), (0, 24617), (0, 17896), (0, 24648)]
+  jumps per load: [19, 14, 19, 14]  reachedEnd: [False, False, False, False]
+  causes: Counter({'no wrapped call': 66})  to: Counter({0: 65, 700: 1})
+  from range: 4900 11200  h same before/after: 61 / 66  afterLastStep: 2
+  h at jump: [(17864, 15), (17865, 1), (17896, 22), (24617, 13), (24618, 1), (24648, 11), (24649, 3)]
+  ms from previous scroll event to the drop: [26, 26, 26, 26, 27, 27, 27, 52, 52, 52, 53, 60, 62, 64, 70, 94, 95, 97, 97, 99, 104, 108, 109, 109, 109, 109, 109, 110, 110, 111, 111, 112, 112, 112, 112, 125, 125, 126, 126, 126, 127, 127, 127, 128, 129, 129, 129, 130, 139, 141, 145, 145, 145, 145, 145, 146, 146, 147, 147, 148, 151, 151, 161, 165, 182, 481]
+  writes in down phase: Counter()
+== rec-head-test: build=0.1.0-alpha.21+wheel.1 mode=default restartEach=False loads=1 skipped=0 failed=1 guard={'enabled': True, 'blockedMutations': 40, 'sendAttempts': 0}
+  retried loads: []  firstAfterRestart: [1]
+  settle h: [(15087, 1)]  settle y: [(1990, 1)]
+  turns at settle: Counter({2: 1})  styles: Counter({'auto [T:auto,none]': 1})
+  butterOff: Counter({'layout': 1}) hosts: Counter({'chatgpt-butter-nav,chatgpt-butter-consent': 1}) theme: Counter({'light': 1})
+  up end (y,h): [(0, 17896)]
+  jumps per load: [18]  reachedEnd: [False]
+  causes: Counter({'no wrapped call': 18})  to: Counter({0: 17, 700: 1})
+  from range: 4900 11200  h same before/after: 18 / 18  afterLastStep: 0
+  h at jump: [(17864, 13), (17896, 5)]
+  ms from previous scroll event to the drop: [27, 28, 94, 98, 99, 108, 109, 110, 113, 126, 126, 130, 143, 143, 145, 147, 157, 164]
+  writes in down phase: Counter()
+== rec-native: build=no extension mode=default restartEach=False loads=1 skipped=0 failed=0 guard={'enabled': True, 'blockedMutations': 36, 'sendAttempts': 0}
+  retried loads: []  firstAfterRestart: [1]
+  settle h: [(10276, 1)]  settle y: [(9367, 1)]
+  turns at settle: Counter({3: 1})  styles: Counter({'auto [T:auto,none]': 1})
+  butterOff: Counter({'None': 1}) hosts: Counter({'': 1}) theme: Counter({'light': 1})
+  up end (y,h): [(0, 40668)]
+  jumps per load: [0]  reachedEnd: [True]
+  writes in down phase: Counter()
+== native: build=no extension mode=default restartEach=False loads=4 skipped=8 failed=0 guard={'enabled': True, 'blockedMutations': 528, 'sendAttempts': 0}
+  retried loads: [3]  firstAfterRestart: [1]
+  settle h: [(10276, 4)]  settle y: [(9363, 4)]
+  turns at settle: Counter({3: 4})  styles: Counter({'auto [T:auto,none]': 4})
+  butterOff: Counter({'None': 4}) hosts: Counter({'': 4}) theme: Counter({'light': 4})
+  up end (y,h): [(0, 40668), (0, 39625), (0, 40668), (0, 39625)]
+  jumps per load: [0, 0, 0, 0]  reachedEnd: [True, True, True, True]
+  writes in down phase: Counter()

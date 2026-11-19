@@ -1,0 +1,24 @@
+REPORT load ats12 #1: firstAfterRestart=true openedAtEnd=false fromEnd=57 scrollTop=9359 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=3 endWrites={"writes":6,"held":true,"after":{"y":9416,"h":10276,"atEnd":true}}
+FAIL load ats12 #1: 1 jumps back, first 9512 → 2455 at step 8
+REPORT load ats12 #1 causes: [["script write",1]]
+REPORT load ats12 #2: firstAfterRestart=false openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":80,"held":false,"after":{"y":23759,"h":24619,"atEnd":true}}
+FAIL load ats12 #2: 14 jumps back, first 9800 → 0 at step 14
+REPORT load ats12 #2 causes: [["no wrapped call",14]]
+REPORT load ats12 #3: firstAfterRestart=false openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":24,"held":true,"after":{"y":34710,"h":35570,"atEnd":true}}
+FAIL load ats12 #3: 1 jumps back, first 34710 → 0 at step 8
+REPORT load ats12 #3 causes: [["no wrapped call",1]]
+REPORT load ats12 #4: firstAfterRestart=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=1 endWrites={"writes":25,"held":true,"after":{"y":11967,"h":12827,"atEnd":true}}
+FAIL load ats12 #4: 1 jumps back, first 11967 → 0 at step 8
+REPORT load ats12 #4 causes: [["no wrapped call",1]]
+REPORT load ats12 #5: firstAfterRestart=false openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":80,"held":true,"after":{"y":23759,"h":24619,"atEnd":true}}
+FAIL load ats12 #5: 1 jumps back, first 23759 → 0 at step 8
+REPORT load ats12 #5 causes: [["no wrapped call",1]]
+REPORT load ats12 #6: firstAfterRestart=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=1 endWrites={"writes":14,"held":true,"after":{"y":11967,"h":12827,"atEnd":true}}
+FAIL load ats12 #6: 1 jumps back, first 11967 → 0 at step 8
+REPORT load ats12 #6 causes: [["no wrapped call",1]]
+REPORT scrollHeight range 10276–15087 over 6 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3, ats12 #4, ats12 #5, ats12 #6
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=arm restartEach=false flags=[] guard={"enabled":true,"blockedMutations":345,"sendAttempts":0}
+SUMMARY head-test-arm: 6/6 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/head-test-arm.json

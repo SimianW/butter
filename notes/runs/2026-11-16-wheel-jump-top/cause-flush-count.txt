@@ -1,0 +1,6 @@
+cause-trace.json jumps 5; marked counts rose at the drop: 5 (turns 5, blocks 5); skipped turns just after: {"1":1,"2":3,"3":1}
+cause-cv-only.json jumps 33; marked counts rose at the drop: 33 (turns 33, blocks 33); skipped turns just after: {"0":1,"1":11,"2":21}
+cause-turn-cv-off.json jumps 38; marked counts rose at the drop: 38 (turns 38, blocks 38); skipped turns just after: {"0":38}
+cause-block-cv-off.json jumps 63; marked counts rose at the drop: 62 (turns 62, blocks 62); skipped turns just after: {"0":2,"1":7,"2":54}
+   no rise: #2 t=27292/27508 rows 27292/27507 4900->0 seenT 0->0 seenB 0->0 mounted 1->1
+cause-head-shift.json jumps 43; marked counts rose at the drop: 43 (turns 43, blocks 43); skipped turns just after: {"0":2,"1":27,"2":14}

@@ -1,0 +1,30 @@
+REPORT load ats12 #1: firstAfterRestart=true openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #1: reached the end in 56 steps
+REPORT load ats12 #2: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #2: reached the end in 56 steps
+REPORT load ats12 #3: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #3: reached the end in 57 steps
+REPORT load ats12 #4: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #4: reached the end in 57 steps
+REPORT load ats12 #5: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #5: reached the end in 56 steps
+REPORT load ats12 #6: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #6: reached the end in 56 steps
+REPORT load ats12 #7: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #7: reached the end in 56 steps
+REPORT load ats12 #8: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #8: reached the end in 57 steps
+REPORT load ats12 #9: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #9: reached the end in 56 steps
+REPORT load ats12 #10: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #10: reached the end in 56 steps
+REPORT load ats12 #11: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #11: reached the end in 57 steps
+REPORT load ats12 #12: firstAfterRestart=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #12: reached the end in 57 steps
+REPORT scrollHeight range 10276–10276 over 12 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3, ats12 #4, ats12 #5, ats12 #6, ats12 #7, ats12 #8, ats12 #9, ats12 #10, ats12 #11, ats12 #12
+REPORT build=no extension chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":409,"sendAttempts":0}
+SUMMARY native: 0/12 loads failed
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/native.json

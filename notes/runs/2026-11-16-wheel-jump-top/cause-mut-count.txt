@@ -1,0 +1,5 @@
+cause-trace.json jumps 5; with a turn inserted/removed between the high row and the drop: 0; spacer margin-top before the drop: {"none":5}; mounted turns at the high row: {"1":1,"2":3,"3":1}
+cause-cv-only.json jumps 33; with a turn inserted/removed between the high row and the drop: 19; spacer margin-top before the drop: {">0":33}; mounted turns at the high row: {"1":31,"2":2}
+cause-turn-cv-off.json jumps 38; with a turn inserted/removed between the high row and the drop: 2; spacer margin-top before the drop: {">0":21,"0px":17}; mounted turns at the high row: {"1":27,"2":10,"3":1}
+cause-block-cv-off.json jumps 63; with a turn inserted/removed between the high row and the drop: 54; spacer margin-top before the drop: {">0":62,"0px":1}; mounted turns at the high row: {"1":49,"2":14}
+cause-head-shift.json jumps 43; with a turn inserted/removed between the high row and the drop: 15; spacer margin-top before the drop: {">0":42,"0px":1}; mounted turns at the high row: {"1":15,"2":28}

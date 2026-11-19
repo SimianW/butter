@@ -1,0 +1,26 @@
+20:31:25
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #1: reached the end in 57 steps
+REPORT load ats12 #2 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #3: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #3: reached the end in 56 steps
+REPORT load ats12 #4 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #5 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #6: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #6: reached the end in 57 steps
+REPORT load ats12 #7 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #8 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #9: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #9: reached the end in 56 steps
+REPORT load ats12 #10 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #11 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #12 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT scrollHeight range 10276–10276 over 4 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #3, ats12 #6, ats12 #9
+REPORT build=no extension chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":528,"sendAttempts":0}
+SUMMARY native: 0/4 loads failed (8 skipped: chat did not load)
+HARNESS ERROR: half the loads or more did not load the chat
+EXIT 2; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/native.json
+exit=2
+20:37:04
