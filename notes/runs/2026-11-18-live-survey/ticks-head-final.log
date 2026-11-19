@@ -1,0 +1,47 @@
+REPORT ats12 questions=12 ticks=12 threeDots=false
+PASS ats12 count
+REPORT ats12 page jump back at step 7: scrollTop 4200 → 0 (lit [0,1]); resumed at 4200
+REPORT ats12 page jump back at step 49: scrollTop 32900 → 0 (lit [0,1]); resumed at 32900
+REPORT ats12 wheel: 59 steps of 700 px, 57 judged, 2 page jumps back, questions seen 12/12
+PASS ats12 wheel-lit-matches
+PASS ats12 wheel-never-none
+PASS ats12 wheel-top-lit
+PASS ats12 wheel-monotonic
+REPORT ats12 click 11: 2 ticks lit [10,11], rule [10,11]
+REPORT ats12 click 0: 2 ticks lit [0,1], rule [0,1]
+REPORT ats12 clicks: 12 ticks clicked
+PASS ats12 click-lands
+PASS ats12 click-lit
+PASS ats12 click-only
+PASS ats12 click-lit-2s
+PASS ats12 click-only-2s
+FAIL ats12 card-text: tick 4: card text (389 chars) is not question 4's (37 chars)
+PASS ats12 keys-arrow
+PASS ats12 keys-enter
+REPORT guard blocked POST /backend-api/f/conversation/prepare during math12 open
+REPORT guard blocked POST /backend-api/f/conversation/prepare during math12 open
+REPORT math12 questions=12 ticks=12 threeDots=false
+PASS math12 count
+REPORT math12 page jump back at step 13: scrollTop 34728 → 2894 (lit []); resumed at 34728
+REPORT math12 page jump back at step 29: scrollTop 78138 → 0 (lit []); resumed at 78138
+REPORT math12 page jump back at step 30: scrollTop 78138 → 2894 (lit [0]); resumed at 78138
+REPORT math12 wheel pass stopped at scrollTop 78138: the chat jumped back after 5 resumes there in a row
+REPORT math12 4 more page jumps back, each resumed the same way
+REPORT math12 wheel: 34 steps of 2894 px, 27 judged, 7 page jumps back, questions seen 3/12
+PASS math12 wheel-lit-matches
+PASS math12 wheel-never-none
+PASS math12 wheel-top-lit
+PASS math12 wheel-monotonic
+REPORT math12 click 11: 2 ticks lit [10,11], rule [10,11]
+REPORT math12 clicks: 12 ticks clicked
+PASS math12 click-lands
+PASS math12 click-lit
+PASS math12 click-only
+PASS math12 click-lit-2s
+PASS math12 click-only-2s
+PASS math12 card-text
+PASS math12 keys-arrow
+PASS math12 keys-enter
+REPORT guard sendAttempts=2 blockedMutations=111
+SUMMARY head-final: 1 FAIL
+EXIT 1
