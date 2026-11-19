@@ -50,8 +50,8 @@ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"]
    notes/runs/2026-11-16-rail-jump-live/cause.md). ChatGPT's scroller (.thread-scroll-container)
    had `overflow-anchor: none` until 2026-11-16, so the chat had no anchoring before then either.
    The cost measured in the lab: at most one 7.9 px view shift per load, where content above the
-   view grew while the user wheeled up (wheel-jump-top cause.md, Q4). With content-visibility off the move does not
-   happen, and the browser's and ChatGPT's anchoring stay as they are. */
+   view grew while the user wheeled up (wheel-jump-top cause.md, Q4). With content-visibility off
+   the move does not happen, and the browser's and ChatGPT's anchoring stay as they are. */
 html:not([data-butter-off~='cv']) .thread-scroll-container > * {
   overflow-anchor: none !important;
 }

@@ -189,7 +189,7 @@ _Where_: `rail/readiness.js`, `rail/jump.js`
 The clicked question staying current and aligned after a jump until you scroll yourself. While
 pinned, the jump keeps it aligned itself.
 _Avoid_: locked, sticky
-_Where_: `rail/model.js`, `rail/jump.js`, `stream/containment.css`
+_Where_: `rail/model.js`, `rail/jump.js`
 
 **Journey status**:
 What a jump tells the rail presentation model while it runs: whether it is travelling (only its
