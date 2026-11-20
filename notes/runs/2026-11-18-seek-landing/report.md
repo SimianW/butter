@@ -154,6 +154,56 @@ way. Equal heights and estimated destinations keep today's offset. A new test, w
 39000 px and a stored row of 12000 px, was red on `06dae56` (find 64448, landed at 10000) and passes
 here (find 57525, lands at 3077). On `math12` the finds are unchanged.
 
+**Review round 3** (unit evidence only; not yet rerun live). Four findings, each with a test in
+`test/seek-landing-find.test.js` that was red on `e09235b` and passes here. Its fake virtualizer can
+now give a never-mounted turn a slot height until it mounts, then grow it to its real height, as
+ChatGPT's does; before, unmounted turns sat at their real heights, which hid L8's forward case.
+
+- **L8: the search aimed in two kinds of px.** It added a stored-px offset (`findOffset`) to
+  frozen-px turn tops. With a stored row taller than the frozen row (3,000 vs 12,000 px, drop
+  2,500 px shown at 10,000), a backward search landed at 73,448 px inside the next turn, repeated
+  the same answer and timed out after 10 s. A forward search overshot a 4,000 px slot the same way.
+  Now every search aims at the target's top (`findInput`, offset `-insetTop`), and once a
+  stored-layout target mounts after a search, `findLanding` scrolls once to its real row top plus
+  `findOffset`, before the semantic step picks its occurrence. Both cases now land at 10,000 px, on
+  the previewed occurrence of a phrase the turn repeats. Estimated destinations and targets mounted
+  at the commit are unchanged.
+- **L9: any parent was taken as a turn's row.** `turnRow` takes it only when it is not the scroller,
+  holds one `[data-turn-key]` and is taller than 0. A `display: contents`-like parent used to walk
+  the search back 4 times (22,448 → 22,240 px); a shared full-height parent swung it between 95,600
+  and 0. Now neither searches, and both stay at the commit (22,448 and 14,000 px), as before the
+  search existed.
+- **L11: a timeout revealed the last search position.** With the target never mounting, the release
+  ended at the search's 54,448 px. It now goes back to the commit's position (`a.finds[0].from`,
+  22,448 px) before it reveals, and records `realTop` after that.
+- **N3:** `finder` ignores a `findTurn` answer that is not a finite number (it returned `NaN`).
+
+The search's DOM reading moved from `look()` in `preview-main.js` to `layoutCheck.findInput`, and
+the new code went to `layout-check-main.js`: `preview-main.js` went from 1512 to 1505 lines, its cap
+with it. Separately, `lab/harness/rail-theme-switch-live.mjs` now compares the restored theme with
+the state it captured before the run (checks renamed `theme-restored`, `host-restored`); not run.
+
+```text
+$ REVIEW_SOURCE=<e09235b's extension/> node --test test/seek-landing-find.test.js
+landed {"turn":7,"offset":7000,"top":73448,"ms":10016,"timedOut":true,"finds":1}    # L8 backward
+landed {"turn":7,"offset":7000,"top":65448,"ms":10016,"timedOut":true,"finds":2}    # L8 forward
+landed {"turn":5,"offset":7792,"top":22240,"ms":10016,"timedOut":true,"finds":4}    # L9 contents
+landed {"turn":0,"offset":52,"top":0,"ms":10016,"timedOut":true,"finds":4}          # L9 shared
+landed {"turn":6,"offset":0,"top":54448,"ms":10016,"timedOut":true,"finds":1}       # L11
+ℹ tests 13
+ℹ pass 7
+ℹ fail 6
+$ node --test test/seek-landing-find.test.js
+landed {"turn":6,"offset":10000,"top":64448,"ms":368,"timedOut":false,"finds":1}    # L8 backward
+landed {"turn":6,"offset":10000,"top":64448,"ms":368,"timedOut":false,"finds":1}    # L8 forward
+landed {"turn":5,"offset":8000,"top":22448,"ms":10016,"timedOut":true,"finds":0}    # L9 contents
+landed {"turn":4,"offset":2552,"top":14000,"ms":10016,"timedOut":true,"finds":0}    # L9 shared
+landed {"turn":5,"offset":8000,"top":22448,"ms":10016,"timedOut":true,"finds":1}    # L11
+ℹ tests 13
+ℹ pass 13
+ℹ fail 0
+```
+
 **Harness.** Its verdict rule was right and is unchanged. The default positions are now the five
 used here (the old default 0.3, 0.55 and 0.8 had one failing position). It also gained a
 post-release trace (`TRACE` ms, default 2000), the session's `finds` and `destination`, and
