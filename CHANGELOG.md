@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.22] - 2026-11-20
+
 ### Added
 
 - Added a Bookmarks switch to the popup. Off hides the Bookmark button, the shortcut and the dots;
