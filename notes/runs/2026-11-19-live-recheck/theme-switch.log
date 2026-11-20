@@ -1,0 +1,13 @@
+REPORT before: cookie "light"; {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"t":8542}
+REPORT Dark: {"htmlClass":"chatgpt-theme","dataTheme":"dark","appearance":"light","colorScheme":"dark","lsTheme":"light","hostDark":true,"t":4999}; <html> attributes changed: ["data-theme","data-appearance-preset"]; data-dark changes after the pick: [[267,true]]
+PASS switch-dark-page
+PASS switch-dark-host
+REPORT Dark, back in the chat: {"htmlClass":"chatgpt-theme","dataTheme":"dark","appearance":"light","colorScheme":"dark","lsTheme":"light","hostDark":true,"t":6006}; reloaded: false
+PASS switch-dark-chat
+HARNESS ERROR: locator.click: Timeout 10000ms exceeded.
+Call log:
+  - waiting for getByRole('button', { name: 'Open profile menu' })
+
+REPORT theme put back after the error
+SUMMARY theme-switch: 0 FAILs
+PROCESS EXIT 2

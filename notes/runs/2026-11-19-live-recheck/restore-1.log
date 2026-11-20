@@ -1,0 +1,4 @@
+restore lab 2: restarting browser (now {"pid":984441,"extensions":["~/snap/chromium/common/recheck-1119-test/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 986660)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":986660,"extensions":[],"flags":[]},"at":"2026-11-20T02:54:11.682Z","ok":true}

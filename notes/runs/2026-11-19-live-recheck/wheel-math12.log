@@ -1,0 +1,11 @@
+REPORT load math12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=2019 scrollTop=64103 scrollHeight=67034 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=1
+PASS load math12 #1: reached the end in 311 steps
+REPORT load math12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=2019 scrollTop=64103 scrollHeight=67034 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=1
+PASS load math12 #2: reached the end in 266 steps
+REPORT scrollHeight range 67034–67034 over 2 loads
+REPORT overflow-anchor scroller [children]: none [T:none,none]
+REPORT not opened at the end: math12 #1, math12 #2
+REPORT build=0.1.0-alpha.21+recheck.1 chromium=157.0.8103.50 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":112,"sendAttempts":4}
+SUMMARY recheck-wheel-math12: 0/2 loads failed
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-19-live-recheck/wheel-math12.json
+PROCESS EXIT 0

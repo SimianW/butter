@@ -1,0 +1,1 @@
+before ["codex_appearance_theme=light"] {"dataTheme":"light","appearance":"light","preset":"codex","colorScheme":"light","lsTheme":"light","dialogs":0,"hostDark":null}
