@@ -96,9 +96,9 @@ async function open() {
   await page.locator('chatgpt-butter-nav[data-on]').waitFor({ state: 'attached', timeout: 30000 });
   await pause(4000);
 }
-// ChatGPT's own settings: the profile menu's Settings item opens the /settings page in the app (no
-// reload; the rail's host stays in the page), its Appearance section has the theme as radio inputs
-// labelled System, Light and Dark.
+// ChatGPT's own settings: the profile menu's Settings item opens Settings in the app (no reload; the
+// rail's host stays in the page; a modal dialog since 2026-11-19), its Appearance section has the
+// theme as radio inputs labelled System, Light and Dark.
 async function pick(label) {
   if (!new URL(page.url()).pathname.startsWith('/settings/appearance')) {
     await page.getByRole('button', { name: 'Open profile menu' }).click({ timeout: 10000 });
@@ -113,8 +113,24 @@ async function pick(label) {
   await page.locator(`input[aria-label="${label}"]`).first().locator('xpath=..').click({ timeout: 10000 });
   return t;
 }
-// Back to the chat the way a user does (the browser's Back, no reload), until its turns show.
+// Since 2026-11-19 Settings is a modal dialog over the chat that Back does not close, and it hides
+// the sidebar (the profile button) from the accessibility tree: close it as a user does (Escape,
+// else its Close button) and wait until no modal dialog shows.
+async function closeSettings() {
+  const modal = page.locator('[role="dialog"][aria-modal="true"]:visible');
+  if (!(await modal.count())) return;
+  await page.keyboard.press('Escape');
+  await modal.first().waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+  if (await modal.count()) {
+    await modal.first().getByRole('button', { name: /^close$/i }).first().click({ timeout: 5000 });
+    await modal.first().waitFor({ state: 'hidden', timeout: 5000 });
+  }
+  await pause(600);
+}
+// Back to the chat the way a user does (close Settings, the browser's Back, no reload), until its
+// turns show.
 async function back() {
+  await closeSettings();
   for (let n = 0; n < 3 && !(await page.locator('.thread-scroll-container:visible [data-turn-key]').count()); n++) {
     await page.goBack({ waitUntil: 'commit' });
     await pause(1500);
@@ -173,7 +189,10 @@ try {
   if (captured && !restored && context && page) {
     try {
       await putBack();
-      report('theme put back after the error');
+      // ChatGPT applies the restored cookie and localStorage.theme only on a load.
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+      await pause(5000);
+      report(`theme put back after the error; after a reload: ${JSON.stringify(await state())}`);
     } catch {}
   }
 } finally {
