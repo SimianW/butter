@@ -1,0 +1,19 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT=~/snap/chromium/common/wheel-jump-turn-cv-off/butter LABEL=cause-turn-cv-off LOADS=3 GAP=20000 PAGELOG=1 node lab/harness/wheel-jump-live.mjs   # 21:07
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=53 scrollTop=9343 scrollHeight=10256 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=3
+FAIL load ats12 #1: 14 jumps back, first 17954 → 0 at step 17
+REPORT load ats12 #1 causes: [["no wrapped call",14]]
+REPORT load ats12 #1 page log: 164 scroll rows, 49 turn insertions/removals, 2942 skip changes, turn order entries
+REPORT load ats12 #2: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=9542 scrollTop=2695 scrollHeight=13097 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #2: 13 jumps back, first 7249 → 0 at step 6
+REPORT load ats12 #2 causes: [["no wrapped call",13]]
+REPORT load ats12 #2 page log: 167 scroll rows, 45 turn insertions/removals, 3724 skip changes, turn order entries
+REPORT load ats12 #3: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=9542 scrollTop=2695 scrollHeight=13097 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #3: 11 jumps back, first 20751 → 0 at step 14
+REPORT load ats12 #3 causes: [["no wrapped call",11]]
+REPORT load ats12 #3 page log: 161 scroll rows, 27 turn insertions/removals, 3881 skip changes, turn order entries
+REPORT scrollHeight range 10256–13097 over 3 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":235,"sendAttempts":0}
+SUMMARY cause-turn-cv-off: 3/3 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-turn-cv-off.json

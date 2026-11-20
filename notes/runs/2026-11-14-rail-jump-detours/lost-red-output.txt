@@ -1,0 +1,40 @@
+✖ a target unmounted once after it mounted is mounted again, and the jump lands on it (19.804488ms)
+✖ a target unmounted every time it mounts ends the jump in bounded time, shown and unpinned (7.005877ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.035037
+
+✖ failing tests:
+
+test at test/rail-jump-lost.test.mjs:45:1
+✖ a target unmounted once after it mounted is mounted again, and the jump lands on it (19.804488ms)
+  AssertionError [ERR_ASSERTION]: bug: question 0 was unmounted after it mounted and the jump never looked for it again: it ended 4408 ms after the click at scrollTop 6527 (question 0 unmounted, pinned false); writes: 5597, 0, 20, 420
+      at TestContext.<anonymous> (file:///home/Simian/.t3/worktrees/butter/t3-d5d5f867-51ae2926bafdcfb7/test/rail-jump-lost.test.mjs:49:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/rail-jump-lost.test.mjs:62:1
+✖ a target unmounted every time it mounts ends the jump in bounded time, shown and unpinned (7.005877ms)
+  AssertionError [ERR_ASSERTION]: bug: the jump ended 4408 ms after the click (bound 3000 ms); writes: 5597, 0, 20, 420
+      at TestContext.<anonymous> (file:///home/Simian/.t3/worktrees/butter/t3-d5d5f867-51ae2926bafdcfb7/test/rail-jump-lost.test.mjs:65:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

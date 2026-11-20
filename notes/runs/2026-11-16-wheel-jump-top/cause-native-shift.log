@@ -1,0 +1,13 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT= LABEL=cause-native-shift LOADS=2 GAP=20000 SHIFT=1 node lab/harness/wheel-jump-live.mjs   # 21:24
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=53 scrollTop=9363 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=null turns=3
+PASS load ats12 #1: reached the end in 56 steps
+REPORT load ats12 #1 view shift up: 0/55 over 4px, median 0, max 1 (lost 0, none 0, clamped 5; content moves >4px 5, max 10659)
+REPORT load ats12 #1 view shift down: 0/55 over 4px, median 0, max 0.5 (lost 0, none 0, clamped 1; content moves >4px 0, max 0.5)
+REPORT load ats12 #2 skipped: ChatGPT did not load the chat twice (no turns mounted, scrollHeight 912)
+REPORT scrollHeight range 10276–10276 over 1 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1
+REPORT build=no extension chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":109,"sendAttempts":0}
+SUMMARY cause-native-shift: 0/1 loads failed (1 skipped: chat did not load)
+HARNESS ERROR: half the loads or more did not load the chat
+EXIT 2; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-native-shift.json

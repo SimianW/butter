@@ -1,0 +1,13 @@
+$ LAB_ID=2 EXT=~/snap/chromium/common/wheel-jump-head-test/butter LABEL=check LOADS=1 node lab/harness/wheel-jump-live.mjs
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=1
+FAIL load ats12 #1: 21 jumps back, first 5600 → 700 at step 9
+REPORT load ats12 #1 causes: [["no wrapped call",21]]
+REPORT scrollHeight range 12857–12857 over 1 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":40,"sendAttempts":0}
+SUMMARY check: 1/1 loads failed
+chromium: stopped
+chromium: started (pid 949617)
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/check.json
+exit 1

@@ -1,0 +1,9 @@
+REPORT before: cookie "light", localStorage.theme "light"; {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","bodyBg":"rgb(252, 252, 252)","lsTheme":"light","host":true,"hostDark":false,"ticks":5,"barColor":"rgb(13, 13, 13)","bgBehind":"rgb(252, 252, 252)","barSize":[12,2],"restOpacity":0.28,"litOpacity":1,"contrastRest":1.91,"contrastLit":18.94}
+REPORT dark: {"htmlClass":"chatgpt-theme","dataTheme":"dark","appearance":"dark","colorScheme":"dark","bodyBg":"rgb(0, 0, 0)","lsTheme":"dark","host":true,"hostDark":true,"ticks":5,"barColor":"rgb(236, 236, 236)","bgBehind":"rgb(0, 0, 0)","barSize":[12,2],"restOpacity":0.28,"litOpacity":1,"contrastRest":2.09,"contrastLit":17.78}
+PASS dark-page
+PASS dark-host
+PASS dark-ticks-visible
+REPORT after restore: cookie "light", localStorage.theme "light"; {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","bodyBg":"rgb(252, 252, 252)","lsTheme":"light","host":true,"hostDark":false,"ticks":5,"barColor":"rgb(13, 13, 13)","bgBehind":"rgb(252, 252, 252)","barSize":[12,2],"restOpacity":0.28,"litOpacity":1,"contrastRest":1.91,"contrastLit":18.94}
+PASS light-restored
+PASS light-host
+SUMMARY dark: 0 FAILs

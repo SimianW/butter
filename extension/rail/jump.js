@@ -2,7 +2,8 @@
 // the rail, as a glide when the question is near and mounted, otherwise as a trip (rail/trip.js)
 // while ChatGPT renders it, loading earlier pages first for the three dots. A turn ChatGPT hasn't
 // mounted has no element to scroll to: go where it should be (the turn tracker's estimate), let
-// ChatGPT mount it, then align.
+// ChatGPT mount it, then align once the readiness waits (rail/readiness.js) pass. A target ChatGPT
+// unmounts again during those waits is looked for again, twice at most.
 // It privately owns the jump in progress: its token, the journey (a far jump's deadline and
 // readiness, carried over when a new click takes the trip over), the pin keeping the clicked
 // question aligned until the user scrolls, the bookmark landing, the busy tick and the earlier
@@ -126,6 +127,11 @@
             landOff(el),
         ),
       );
+    const waits = (globalThis.ButterRailReadiness || require('./readiness.js'))(
+      model,
+      turns,
+      targetTop,
+    );
 
     // `want`: an earlier trip for a bookmark (its key) on the dots. Pages load only until bookmarks/
     // content.js places it under a question, then the trip lands on its text as a bookmark jump does.
@@ -225,7 +231,7 @@
             await frame();
             await frame();
             if (!live()) return;
-            const page = nextPage(Math.min(10000, loadEnd - performance.now()), live); // arm before scrolling
+            const page = waits.nextPage(Math.min(10000, loadEnd - performance.now()), live); // arm before scrolling
             sc().scrollTop = 0;
             if (!(await page)) break; // stalled/offline: reveal the oldest loaded question
             await frame();
@@ -272,72 +278,105 @@
           setActive(id);
           setBusy(id, tok);
         }
-        el = turns.el(id);
-        for (let tries = 0; tries < 8 && !el && live(); tries++) {
-          i = model.index(id); // earlier pages may have changed the question's index
-          if (i == null) return;
-          // Where the records put the target, it didn't mount: measure again and move toward it.
-          if (tries) turns.retarget(i, seen);
-          const estimate = turns.estimate(i),
-            written = Math.max(0, estimate - TOP_INSET);
-          sc().scrollTop = written;
-          trace('write', () => ({ tok, tries, estimate, written }));
-          let f = 0;
-          for (; f < 30 && live() && !(el = turns.el(id)); f++) await frame();
-          trace('mount', () => ({ tok, frames: f, el, live: live() }));
-        }
-        if (!el || !live()) return;
-        sc().scrollTop = targetTop(el);
-        let ready = flight.ready.get(id);
-        const top =
-          sc().scrollTop + el.getBoundingClientRect().top - sc().getBoundingClientRect().top;
-        if (!ready || ready.el !== el || Math.abs(ready.top - top) > 2) {
-          ready = { el, top, geometry: {} };
-          flight.ready.set(id, ready);
-        }
-        if (!ready.page) {
-          if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
-            trace('waiting', () => ({ tok }));
-            await nextPage(4000, live);
-            await new Promise((r) => setTimeout(r, 150));
-            trace('wait', () => ({ tok, wait: 'page', live: live() }));
-          }
-          if (!live()) return;
-          ready.page = true;
-        }
         // Soon after a chat opens ChatGPT mounts formulas as raw TeX and typesets them a moment later.
-        const pendingMath = () =>
-          [...(turns.el(id)?.querySelectorAll('[data-math-source]') ?? [])].some(
-            (x) => !x.querySelector('.katex'),
+        // A missing target counts as pending: back within the lost window, its math is checked again.
+        const pendingMath = () => {
+          const turn = turns.el(id);
+          return (
+            !turn ||
+            [...turn.querySelectorAll('[data-math-source]')].some((x) => !x.querySelector('.katex'))
           );
-        if (!ready.math || pendingMath()) {
-          trace('waiting', () => ({ tok }));
-          for (
-            const end = performance.now() + 3000;
-            live() && performance.now() < end && pendingMath();
+        };
+        // ChatGPT can unmount the target again after it mounted, and move the chat elsewhere. Lost
+        // during the readiness waits, it is looked for again from where the turns are now: at most
+        // two more rounds of mount tries and waits, within the deadline. `tried`: this jump's tries.
+        let tried = 0,
+          lead = 0;
+        for (let round = 0; ; round++) {
+          if (round) turns.measure(seen);
+          el = turns.el(id);
+          for (let tries = 0; tries < 8 && !el && live(); tries++) {
+            i = model.index(id); // earlier pages may have changed the question's index
+            if (i == null) return;
+            // Where the records put the target, it didn't mount: measure again and move toward it.
+            if (tries) turns.retarget(i, seen);
+            const estimate = turns.estimate(i),
+              written = Math.max(0, estimate - TOP_INSET),
+              n = tried++;
+            sc().scrollTop = written;
+            trace('write', () => ({ tok, tries: n, estimate, written }));
+            let f = 0;
+            for (; f < 30 && live() && !(el = turns.el(id)); f++) await frame();
+            trace('mount', () => ({ tok, frames: f, el, live: live() }));
+          }
+          if (!el || !live()) return;
+          sc().scrollTop = targetTop(el);
+          let ready = flight.ready.get(id);
+          const top =
+            sc().scrollTop + el.getBoundingClientRect().top - sc().getBoundingClientRect().top;
+          if (!ready || ready.el !== el || Math.abs(ready.top - top) > 2 || ready.geometry.lost) {
+            ready = { el, top, geometry: {} };
+            flight.ready.set(id, ready);
+          }
+          // `here()`: live, and the target not lost (`g.lost`), in every wait from here on.
+          const g = ready.geometry,
+            here = () => live() && !waits.lost(id, g);
+          if (!ready.page) {
+            if (!earlier && model.hasPrev && sc().scrollTop < PAGE_AT) {
+              trace('waiting', () => ({ tok }));
+              await waits.nextPage(4000, here);
+              if (!g.lost) await new Promise((r) => setTimeout(r, 150));
+              trace('wait', () => ({ tok, wait: 'page', live: live(), lost: g.lost }));
+            }
+            if (!live()) return;
+            ready.page = !g.lost;
+          }
+          if (!g.lost && (!ready.math || pendingMath())) {
+            trace('waiting', () => ({ tok }));
+            for (
+              const end = performance.now() + 3000;
+              here() && performance.now() < end && pendingMath();
 
-          )
-            await frame();
-          trace('wait', () => ({ tok, wait: 'math', live: live(), pending: pendingMath() }));
+            )
+              await frame();
+            trace('wait', () => ({
+              tok,
+              wait: 'math',
+              live: live(),
+              pending: pendingMath(),
+              lost: g.lost,
+            }));
+            if (!live()) return;
+            ready.math = !pendingMath();
+          }
+          // Missing now, the target is being replaced (back within LOST ms) or lost.
+          while (!(el = turns.el(id)) && here()) await frame();
           if (!live()) return;
-          ready.math = !pendingMath();
+          if (g.lost) {
+            el = null; // the next round looks for it; after the last, the jump ends
+            if (round === 2 || !model.pinned) break;
+            continue;
+          }
+          lead = reduced() ? 0 : m * Math.min(400, sc().clientHeight * 0.4);
+          follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
+          // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
+          // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
+          const hold = { off: lead, state: g };
+          trace('waiting', () => ({ tok }));
+          const waited = (wait) => () =>
+            trace('wait', () => ({ tok, wait, live: live(), lost: g.lost }));
+          await Promise.all([
+            ready.quiet ? null : waits.quiet(here, 4000).then(waited('quiet')),
+            waits.steady(el, here, hold).then(waited('steady')),
+          ]);
+          if (!live()) return;
+          if (!g.lost) {
+            ready.quiet = true;
+            el = await waits.steady(el, here, hold);
+            waited('recheck')(); // since quiet and steady
+          }
+          if (!g.lost || round === 2 || !model.pinned) break;
         }
-        el = turns.el(id);
-        if (!el || !live()) return;
-        const lead = reduced() ? 0 : m * Math.min(400, sc().clientHeight * 0.4);
-        follow(id, tok, lead); // keep correcting while hidden, during reveal, and across remounts
-        // Quiet frames and stable target geometry overlap. Recheck after quiet: it can outlast the
-        // geometry check while ChatGPT renders another neighbour. Unrelated total-height growth is OK.
-        trace('waiting', () => ({ tok }));
-        const waited = (wait) => () => trace('wait', () => ({ tok, wait, live: live() }));
-        await Promise.all([
-          ready.quiet ? null : quiet(live, 4000).then(waited('quiet')),
-          steady(el, live, lead, 3000, 150, ready.geometry).then(waited('steady')),
-        ]);
-        if (!live()) return;
-        ready.quiet = true;
-        el = await steady(el, live, lead, 3000, 150, ready.geometry);
-        trace('wait', () => ({ tok, wait: 'recheck', live: live() })); // since quiet and steady
         if (!live() || !el?.isConnected || !model.pinned) return;
         flash(el);
         landed = true;
@@ -402,58 +441,7 @@
     };
     // A few quiet frames don't mean neighbouring answers have finished mounting/typesetting. Keep
     // following the question through arrival, including a replacement of its virtualized element.
-    const settle = (el, live) => steady(el, live, 0, 2000, 350);
-    const steady = async (el, live, off = 0, max = 3000, span = 150, state = {}) => {
-      const end = performance.now() + max,
-        id = el.getAttribute('data-turn-key');
-      while (live() && performance.now() < end) {
-        el = turns.el(id);
-        if (!el) {
-          state.el = null;
-          state.since = performance.now();
-          await frame();
-          continue;
-        }
-        const top =
-          sc().scrollTop + el.getBoundingClientRect().top - sc().getBoundingClientRect().top;
-        if (state.el !== el || Math.abs(state.top - top) > 2 || state.since == null) {
-          state.el = el;
-          state.top = top;
-          state.since = performance.now();
-        }
-        const t = Math.max(
-          0,
-          Math.min(sc().scrollHeight - sc().clientHeight, top - TOP_INSET + off + landOff(el)),
-        );
-        if (Math.abs(t - sc().scrollTop) > 2) sc().scrollTop = t;
-        if (performance.now() - state.since >= span) return el;
-        await frame();
-      }
-      return turns.el(id);
-    };
-    // Resolves once the page paints at a normal pace again: three frames under 40 ms in a row.
-    const quiet = async (live, max) => {
-      const end = performance.now() + max;
-      let last = await frame(),
-        ok = 0;
-      while (ok < 3 && live() && performance.now() < end) {
-        const t = await frame();
-        ok = t - last < 40 ? ok + 1 : 0;
-        last = t;
-      }
-    };
-    // Conversation-scoped and cancellable. A response from a hidden chat cannot wake this wait;
-    // timed-out waits leave no callbacks behind. Completion also includes empty final pages.
-    const nextPage = async (max, live) => {
-      const first = model.items[0]?.id,
-        end = performance.now() + max;
-      while (live() && performance.now() < end) {
-        if (!model.hasPrev || model.items[0]?.id !== first) return true;
-        await frame();
-      }
-      return false;
-    };
-
+    const settle = (el, live) => waits.steady(el, live, { max: 2000, span: 350 });
     let busyTok = 0;
     const setBusy = (id, tok = 0) => {
       model.journey({ busy: id });

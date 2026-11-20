@@ -1,0 +1,7 @@
+FIXTURE math12 {"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-middle math12 from=3 to=7 phase=reload-setup class=clean samples=214
+cause-middle math12 from=7 to=3 phase=settled class=clean samples=175
+cause-middle math12 from=3 to=7 phase=settled class=failed positions=[[110,103156],[131,103199],[152,103279],[180,103361],[200,103455],[220,103483],[240,103505],[272,103536],[293,103556],[313,103563],[407,229183],[2967,228793],[3191,228805],[3211,228828],[3231,228880],[3249,228958],[3269,229016],[3287,229053],[3324,229114],[3344,229125],[3363,229134],[3419,229142],[3428,229154],[3459,229158],[3975,0]] targetTop=null reversals=3
+cause-middle math12 from=7 to=3 phase=settled class=clean samples=184
+SUMMARY {"jumps":4,"failed":1,"visibleDetour":1,"postCompletion":0,"rawReversal":4}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-middle.json

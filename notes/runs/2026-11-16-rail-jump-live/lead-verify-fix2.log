@@ -1,0 +1,60 @@
+lead-verify-fix2 math9 from=top to=5 phase=reload class=clean samples=189
+lead-verify-fix2 math9 from=bottom to=0 phase=reload class=clean samples=208
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+lead-verify-fix2 math9 from=top to=0 phase=reload-setup class=clean samples=152
+lead-verify-fix2 math9 from=top to=1 phase=settled class=clean samples=180
+lead-verify-fix2 math9 from=top to=2 phase=settled class=clean samples=217
+lead-verify-fix2 math9 from=top to=3 phase=settled class=clean samples=186
+lead-verify-fix2 math9 from=top to=4 phase=settled class=clean samples=179
+lead-verify-fix2 math9 from=top to=5 phase=settled class=clean samples=187
+lead-verify-fix2 math9 from=top to=6 phase=settled class=clean samples=191
+lead-verify-fix2 math9 from=top to=7 phase=settled class=clean samples=173
+lead-verify-fix2 math9 from=top to=8 phase=settled class=clean samples=187
+lead-verify-fix2 math9 from=bottom to=0 phase=settled class=clean samples=176
+lead-verify-fix2 math9 from=bottom to=1 phase=settled class=clean samples=155
+lead-verify-fix2 math9 from=bottom to=2 phase=settled class=clean samples=165
+lead-verify-fix2 math9 from=bottom to=3 phase=settled class=clean samples=159
+lead-verify-fix2 math9 from=bottom to=4 phase=settled class=clean samples=159
+lead-verify-fix2 math9 from=bottom to=5 phase=settled class=clean samples=144
+lead-verify-fix2 math9 from=bottom to=6 phase=settled class=clean samples=149
+lead-verify-fix2 math9 from=bottom to=7 phase=settled class=clean samples=156
+lead-verify-fix2 math9 from=bottom to=8 phase=settled class=clean samples=156
+lead-verify-fix2 math9 from=previous to=0 phase=settled class=clean samples=179
+lead-verify-fix2 math9 from=previous to=1 phase=settled class=clean samples=182
+lead-verify-fix2 math9 from=previous to=8 phase=settled class=clean samples=160
+lead-verify-fix2 math9 from=previous to=7 phase=settled class=clean samples=166
+lead-verify-fix2 math12 from=top to=5 phase=reload class=clean samples=228
+lead-verify-fix2 math12 from=bottom to=0 phase=reload class=clean samples=205
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345082,"mathDisplay":554,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+lead-verify-fix2 math12 from=top to=0 phase=reload-setup class=clean samples=151
+lead-verify-fix2 math12 from=top to=1 phase=settled class=clean samples=161
+lead-verify-fix2 math12 from=top to=2 phase=settled class=clean samples=226
+lead-verify-fix2 math12 from=top to=3 phase=settled class=clean samples=182
+lead-verify-fix2 math12 from=top to=4 phase=settled class=clean samples=167
+lead-verify-fix2 math12 from=top to=5 phase=settled class=clean samples=212
+lead-verify-fix2 math12 from=top to=6 phase=settled class=clean samples=213
+lead-verify-fix2 math12 from=top to=7 phase=settled class=clean samples=214
+lead-verify-fix2 math12 from=top to=8 phase=settled class=clean samples=212
+lead-verify-fix2 math12 from=top to=9 phase=settled class=clean samples=216
+lead-verify-fix2 math12 from=top to=10 phase=settled class=clean samples=170
+lead-verify-fix2 math12 from=top to=11 phase=settled class=clean samples=205
+lead-verify-fix2 math12 from=bottom to=0 phase=settled class=clean samples=177
+lead-verify-fix2 math12 from=bottom to=1 phase=settled class=clean samples=150
+lead-verify-fix2 math12 from=bottom to=2 phase=settled class=clean samples=196
+lead-verify-fix2 math12 from=bottom to=3 phase=settled class=clean samples=187
+lead-verify-fix2 math12 from=bottom to=4 phase=settled class=clean samples=188
+lead-verify-fix2 math12 from=bottom to=5 phase=settled class=clean samples=188
+lead-verify-fix2 math12 from=bottom to=6 phase=settled class=clean samples=187
+lead-verify-fix2 math12 from=bottom to=7 phase=settled class=clean samples=189
+lead-verify-fix2 math12 from=bottom to=8 phase=settled class=clean samples=145
+lead-verify-fix2 math12 from=bottom to=9 phase=settled class=clean samples=188
+lead-verify-fix2 math12 from=bottom to=10 phase=settled class=clean samples=179
+lead-verify-fix2 math12 from=bottom to=11 phase=settled class=clean samples=145
+lead-verify-fix2 math12 from=previous to=0 phase=settled class=clean samples=174
+lead-verify-fix2 math12 from=previous to=1 phase=settled class=clean samples=163
+lead-verify-fix2 math12 from=previous to=11 phase=settled class=clean samples=174
+lead-verify-fix2 math12 from=previous to=10 phase=settled class=clean samples=182
+SUMMARY {"jumps":54,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":43,"rawReversalCount":86,"unpinChecks":48,"anchoringLeftOff":0,"pinnedAnchoringOff":44}
+chromium: stopped
+chromium: started (pid 621923)
+EXIT 0; evidence /tmp/butter-wf/verify/lead-verify-fix2.json

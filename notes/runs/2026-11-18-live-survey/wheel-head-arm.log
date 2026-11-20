@@ -1,0 +1,15 @@
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=12182 scrollTop=1990 scrollHeight=15032 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":80,"held":false,"after":{"y":0,"h":40671,"atEnd":false}}
+FAIL load ats12 #1: 6 jumps back, first 8400 → 0 at step 12
+REPORT load ats12 #1 causes: [["no wrapped call",6]]
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=12207 scrollTop=1990 scrollHeight=15057 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":80,"held":false,"after":{"y":0,"h":40671,"atEnd":false}}
+FAIL load ats12 #2: 6 jumps back, first 8400 → 0 at step 12
+REPORT load ats12 #2 causes: [["no wrapped call",6]]
+REPORT load ats12 #3: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=12207 scrollTop=1990 scrollHeight=15057 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2 endWrites={"writes":80,"held":false,"after":{"y":0,"h":40671,"atEnd":false}}
+FAIL load ats12 #3: 6 jumps back, first 8400 → 0 at step 12
+REPORT load ats12 #3 causes: [["no wrapped call",6]]
+REPORT scrollHeight range 15032–15057 over 3 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3
+REPORT build=0.1.0-alpha.21+survey.1 chromium=156.0.8078.47 mode=arm restartEach=false flags=[] guard={"enabled":true,"blockedMutations":149,"sendAttempts":0}
+SUMMARY head-arm: 3/3 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-18-live-survey/wheel-head-arm.json

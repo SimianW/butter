@@ -16,8 +16,11 @@ In order of preference:
    layout, the wiring between scripts and shortcuts. Misses ChatGPT's live markup, and CI does not
    run it.
 3. Live lab script: `lab/harness/`, run under the lab lock as [lab/README.md](../../lab/README.md)
-   says (like `bookmarks-live.mjs`). Only when the bug needs a real ChatGPT page; the PR names the
-   script and the steps. Catches what only the real page shows. Slow, and CI does not run it.
+   says (like `bookmarks-live.mjs`, or `rail-jump-live.mjs` for rail jumps: 54 tick clicks on two
+   math fixtures, exit 1 on a failed or visibly detoured jump, or when scroll anchoring is on
+   with the `cv` setting on). Only when the bug needs a real
+   ChatGPT page; the PR names the script and the steps. Catches what only the real page shows.
+   Slow, and CI does not run it.
 
 Tooling under `scripts/` has its own seam: `scripts/test_*.py`, run with
 `python3 -m unittest discover -s scripts -p 'test_*.py'`. Catches the packaging, review-tier and

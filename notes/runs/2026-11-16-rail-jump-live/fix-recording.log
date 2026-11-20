@@ -1,0 +1,10 @@
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+fix-recording math9 from=top to=1 phase=reload-setup class=clean samples=178
+fix-recording math9 from=top to=5 phase=settled class=clean samples=188
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+fix-recording math12 from=top to=1 phase=reload-setup class=clean samples=160
+fix-recording math12 from=top to=5 phase=settled class=clean samples=216
+SUMMARY {"jumps":4,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":4,"rawReversalCount":8,"unpinChecks":6,"anchoringLeftOff":0,"pinnedAnchoringOff":4}
+chromium: stopped
+chromium: started (pid 515506)
+EXIT 0; evidence /home/simon/.local/share/chatgpt-lab/captures/2026-11-16-rail-jump-live/fix-recording.json

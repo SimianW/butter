@@ -1,0 +1,78 @@
+REPORT ats12 questions=12 ticks=12 threeDots=false
+PASS ats12 count
+REPORT ats12 page jump back at step 7: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 14: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 22: scrollTop 4900 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 30: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 37: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 44: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 51: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 58: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 65: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 72: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 79: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 86: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 93: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 100: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 107: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 114: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 121: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 128: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 135: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 142: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 149: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 156: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 163: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 170: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 177: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 184: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 191: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 198: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 205: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 212: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 219: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 226: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 233: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 240: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 247: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 254: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 261: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 268: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 275: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 282: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 289: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 296: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 303: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 310: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 317: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 324: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 331: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 339: scrollTop 4900 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 347: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 354: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 361: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 368: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 375: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 382: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 389: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 page jump back at step 396: scrollTop 4200 → 0 (lit [0,1])
+REPORT ats12 wheel: 401 steps of 700 px, 344 judged, 56 page jumps back, questions seen 4/12
+PASS ats12 wheel-lit-matches
+PASS ats12 wheel-never-none
+PASS ats12 wheel-top-lit
+PASS ats12 wheel-monotonic
+REPORT ats12 card-text: 8 ticks whose question the wheel pass never mounted (not judged)
+PASS ats12 card-text
+REPORT ats12 click 11: 2 ticks lit [10,11], rule [10,11]
+REPORT ats12 click 0: 2 ticks lit [0,1], rule [0,1]
+REPORT ats12 clicks: 12 ticks clicked
+PASS ats12 click-lands
+PASS ats12 click-lit
+PASS ats12 click-only
+PASS ats12 click-lit-2s
+PASS ats12 click-only-2s
+PASS ats12 keys-arrow
+PASS ats12 keys-enter
+REPORT guard sendAttempts=0 blockedMutations=83
+SUMMARY head-try: 0 FAILs
+EXIT 0

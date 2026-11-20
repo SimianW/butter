@@ -1,0 +1,2 @@
+REPORT load math12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=34 scrollTop=66096 scrollHeight=67042 clientHeight=912 overflowAnchor=auto children=T:none,none butterOff=layout turns=2
+FAIL load math12 #1: 0 jumps back, but did not reach the end in 150 steps (scrollTop 118244 of 119214)

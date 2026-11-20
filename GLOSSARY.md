@@ -177,8 +177,17 @@ A far jump's bookkeeping behind the trip: its deadline and readiness, carried ov
 takes the trip over.
 _Where_: `rail/jump.js`
 
+**Readiness waits**:
+What a far jump waits for once its target has mounted, with the chat still hidden: ChatGPT's next
+earlier page near the top, typeset formulas, frames at a normal pace, and the target's top staying
+still. A target unmounted for 250 ms during them is **lost**, and the jump runs its mount tries and
+these waits again, in at most two more rounds.
+_Avoid_: settle (that is after arrival)
+_Where_: `rail/readiness.js`, `rail/jump.js`
+
 **Pinned**:
-The clicked question staying current and aligned after a jump until you scroll yourself.
+The clicked question staying current and aligned after a jump until you scroll yourself. While
+pinned, the jump keeps it aligned itself.
 _Avoid_: locked, sticky
 _Where_: `rail/model.js`, `rail/jump.js`
 

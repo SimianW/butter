@@ -1,0 +1,58 @@
+native math9 from=top to=4 phase=reload class=clean samples=27
+native math9 from=bottom to=0 phase=reload class=clean samples=152
+FIXTURE math9 {"questions":9,"hasPrev":null,"height":291333,"mathDisplay":194,"nativeQuestions":9,"measuredRows":0,"trace":false}
+native math9 from=top to=0 phase=reload-setup class=clean samples=153
+native math9 from=top to=1 phase=settled class=clean samples=151
+native math9 from=top to=2 phase=settled class=clean samples=153
+native math9 from=top to=3 phase=settled class=clean samples=152
+native math9 from=top to=4 phase=settled class=clean samples=151
+native math9 from=top to=5 phase=settled class=clean samples=130
+native math9 from=top to=6 phase=settled class=clean samples=126
+native math9 from=top to=7 phase=settled class=clean samples=152
+native math9 from=top to=8 phase=settled class=clean samples=150
+native math9 from=bottom to=0 phase=settled class=clean samples=153
+native math9 from=bottom to=1 phase=settled class=clean samples=149
+native math9 from=bottom to=2 phase=settled class=clean samples=149
+native math9 from=bottom to=3 phase=settled class=clean samples=150
+native math9 from=bottom to=4 phase=settled class=clean samples=149
+native math9 from=bottom to=5 phase=settled class=clean samples=126
+native math9 from=bottom to=6 phase=settled class=clean samples=125
+native math9 from=bottom to=7 phase=settled class=clean samples=149
+native math9 from=bottom to=8 phase=settled class=clean samples=148
+native math9 from=previous to=0 phase=settled class=clean samples=154
+native math9 from=previous to=1 phase=settled class=clean samples=150
+native math9 from=previous to=8 phase=settled class=clean samples=152
+native math9 from=previous to=7 phase=settled class=clean samples=121
+native math12 from=top to=4 phase=reload class=clean samples=141
+native math12 from=bottom to=0 phase=reload class=failed positions=[[963,82],[5951,78252],[6278,78277],[6474,78401],[6662,78413]] targetTop=116 reversals=1
+FIXTURE math12 {"questions":12,"hasPrev":null,"height":344993,"mathDisplay":231,"nativeQuestions":12,"measuredRows":0,"trace":false}
+native math12 from=top to=0 phase=reload-setup class=clean samples=147
+native math12 from=top to=1 phase=settled class=clean samples=135
+native math12 from=top to=2 phase=settled class=detour positions=[[184,78576],[2922,78452],[3268,78576],[3407,78588]] targetTop=52 reversals=2
+native math12 from=top to=3 phase=settled class=clean samples=155
+native math12 from=top to=4 phase=settled class=clean samples=155
+native math12 from=top to=5 phase=settled class=clean samples=155
+native math12 from=top to=6 phase=settled class=clean samples=155
+native math12 from=top to=7 phase=settled class=clean samples=136
+native math12 from=top to=8 phase=settled class=detour positions=[[185,277093],[3379,276961],[3656,277085],[3811,277105]] targetTop=52 reversals=2
+native math12 from=top to=9 phase=settled class=clean samples=155
+native math12 from=top to=10 phase=settled class=clean samples=155
+native math12 from=top to=11 phase=settled class=clean samples=148
+native math12 from=bottom to=0 phase=settled class=clean samples=147
+native math12 from=bottom to=1 phase=settled class=detour positions=[[2439,31666],[2904,31790],[3050,31802]] targetTop=64 reversals=1
+native math12 from=bottom to=2 phase=settled class=detour positions=[[2581,78440],[2918,78564],[3047,78576]] targetTop=64 reversals=1
+native math12 from=bottom to=3 phase=settled class=clean samples=149
+native math12 from=bottom to=4 phase=settled class=detour positions=[[2541,129776],[2848,129801]] targetTop=64 reversals=1
+native math12 from=bottom to=5 phase=settled class=clean samples=149
+native math12 from=bottom to=6 phase=settled class=clean samples=149
+native math12 from=bottom to=7 phase=settled class=clean samples=132
+native math12 from=bottom to=8 phase=settled class=detour positions=[[2930,276950],[3620,277073],[3790,277093]] targetTop=64 reversals=1
+native math12 from=bottom to=9 phase=settled class=clean samples=142
+native math12 from=bottom to=10 phase=settled class=failed positions=[] targetTop=-17529 reversals=0
+native math12 from=bottom to=11 phase=settled class=clean samples=152
+native math12 from=previous to=0 phase=settled class=clean samples=145
+native math12 from=previous to=1 phase=settled class=failed positions=[[58,31802],[1612,31926],[1820,31938]] targetTop=-72 reversals=0
+native math12 from=previous to=11 phase=settled class=clean samples=148
+native math12 from=previous to=10 phase=settled class=clean samples=138
+SUMMARY {"math9":{"clean":24,"detour":0,"failed":0},"math12":{"clean":21,"detour":6,"failed":3}}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/native.json

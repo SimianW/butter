@@ -86,11 +86,12 @@ export default [
     },
   },
   {
-    // The rail model, the turn tracker, the rail's style and its card fall back to their
+    // The rail model, the turn tracker, the jump, the rail's style and its card fall back to their
     // dependencies under node.
     files: [
       'extension/rail/model.js',
       'extension/rail/turns.js',
+      'extension/rail/jump.js',
       'extension/rail/style.js',
       'extension/rail/card.js',
     ],
@@ -209,6 +210,7 @@ export default [
       'extension/rail/model.js',
       'extension/rail/turns.js',
       'extension/rail/trip.js',
+      'extension/rail/readiness.js',
       'extension/rail/jump.js',
       'extension/rail/pre-jump.js',
       'extension/rail/style.js',

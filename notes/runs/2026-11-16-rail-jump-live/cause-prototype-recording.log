@@ -1,0 +1,8 @@
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-prototype-recording math9 from=top to=1 phase=reload-setup class=clean samples=178
+cause-prototype-recording math9 from=top to=5 phase=settled class=clean samples=195
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":345030,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+cause-prototype-recording math12 from=top to=1 phase=reload-setup class=clean samples=159
+cause-prototype-recording math12 from=top to=5 phase=settled class=clean samples=215
+SUMMARY {"jumps":4,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"afterLanding":0,"rawReversal":4,"rawReversalCount":8}
+EXIT 0; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-prototype-recording.json

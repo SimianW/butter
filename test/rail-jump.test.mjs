@@ -8,7 +8,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
 
-const source = fs.readFileSync(new URL('../extension/rail/jump.js', import.meta.url), 'utf8');
+const read = (f) => fs.readFileSync(new URL(`../extension/rail/${f}`, import.meta.url), 'utf8');
 
 function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
   let now = 10_000,
@@ -32,7 +32,8 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     },
     setTimeout,
   });
-  vm.runInContext(source, ctx, { filename: 'rail/jump.js' });
+  for (const f of ['readiness.js', 'jump.js'])
+    vm.runInContext(read(f), ctx, { filename: `rail/${f}` });
 
   // The scroller and its turns.
   const scroller = new FakeElement();

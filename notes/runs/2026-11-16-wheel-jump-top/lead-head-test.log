@@ -1,0 +1,17 @@
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=56 scrollTop=9340 scrollHeight=10256 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=3
+FAIL load ats12 #1: 18 jumps back, first 6540 → 0 at step 9
+REPORT load ats12 #1 causes: [["no wrapped call",18]]
+REPORT load ats12 #2: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1750 scrollHeight=14847 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #2: 24 jumps back, first 4900 → 0 at step 8
+REPORT load ats12 #2 causes: [["no wrapped call",24]]
+REPORT load ats12 #3: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #3: 14 jumps back, first 9800 → 0 at step 15
+REPORT load ats12 #3 causes: [["no wrapped call",14]]
+REPORT scrollHeight range 10256–15087 over 3 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":238,"sendAttempts":0}
+SUMMARY lead-head-test: 3/3 loads failed
+chromium: stopped
+chromium: started (pid 867476)
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/lead-head-test.json

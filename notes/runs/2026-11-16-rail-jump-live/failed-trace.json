@@ -1,0 +1,119 @@
+[
+  {
+    "t": 0,
+    "type": "rail-jump",
+    "fields": {
+      "jump": 13,
+      "target": 5,
+      "activeBefore": 4,
+      "scrollTop": 0,
+      "scrollHeight": 345030,
+      "clientHeight": 912,
+      "mountedFrom": 0,
+      "mountedTo": 0,
+      "earlier": false,
+      "mounted": false,
+      "path": "trip",
+      "direction": "down"
+    }
+  },
+  {
+    "t": 2116,
+    "type": "rail-try",
+    "fields": {
+      "jump": 13,
+      "try": 1,
+      "estimate": 156782.5,
+      "written": 156718.5,
+      "scrollTopRead": 156719,
+      "scrollHeight": 345030,
+      "frames": 30,
+      "waitMs": 1855,
+      "scrollTopAfter": 156719,
+      "mountedFrom": 4,
+      "mountedTo": 4,
+      "lastBottom": 161630.28125,
+      "lastWrapperBottom": 161630,
+      "lastWrapperInline": true,
+      "mounted": false,
+      "live": true
+    }
+  },
+  {
+    "t": 3189,
+    "type": "rail-try",
+    "fields": {
+      "jump": 13,
+      "try": 2,
+      "estimate": 161630,
+      "written": 161566,
+      "scrollTopRead": 161566,
+      "scrollHeight": 345033,
+      "frames": 2,
+      "waitMs": 1073,
+      "scrollTopAfter": 161566,
+      "mountedFrom": 4,
+      "mountedTo": 5,
+      "lastBottom": 195622.609375,
+      "lastWrapperBottom": 195622.28125,
+      "lastWrapperInline": true,
+      "mounted": true,
+      "live": true
+    }
+  },
+  {
+    "t": 3190,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 13,
+      "wait": "math",
+      "durationMs": 1,
+      "live": true,
+      "pending": false
+    }
+  },
+  {
+    "t": 3356,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 13,
+      "wait": "steady",
+      "durationMs": 165,
+      "live": true
+    }
+  },
+  {
+    "t": 3412,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 13,
+      "wait": "quiet",
+      "durationMs": 221,
+      "live": true
+    }
+  },
+  {
+    "t": 3412,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 13,
+      "wait": "recheck",
+      "durationMs": 0,
+      "live": true
+    }
+  },
+  {
+    "t": 4351,
+    "type": "rail-end",
+    "fields": {
+      "jump": 13,
+      "outcome": "landed",
+      "path": "trip",
+      "elapsedMs": 4351,
+      "tries": 2,
+      "expired": false,
+      "scrollTop": 161578,
+      "targetTop": 64.28125
+    }
+  }
+]

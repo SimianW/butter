@@ -1,0 +1,16 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT=~/snap/chromium/common/wheel-jump-head-test/butter LABEL=cause-cv-off LOADS=3 GAP=20000 SHIFT=1 OPTS={"cv":false} node lab/harness/wheel-jump-live.mjs   # 20:59
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=56 scrollTop=9360 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=cv layout turns=3
+PASS load ats12 #1: reached the end in 34 steps
+REPORT load ats12 #1 view shift up: 0/32 over 4px, median 0, max 0.5 (lost 0, none 0, clamped 12; content moves >4px 2, max 2455)
+REPORT load ats12 #1 view shift down: 0/33 over 4px, median 0, max 0.4 (lost 0, none 0, clamped 1; content moves >4px 0, max 0.4)
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=57 scrollTop=9359 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=cv layout turns=3
+PASS load ats12 #2: reached the end in 20 steps
+REPORT load ats12 #2 view shift up: 0/19 over 4px, median 0, max 0.4 (lost 0, none 0, clamped 4; content moves >4px 2, max 2455)
+REPORT load ats12 #2 view shift down: 0/19 over 4px, median 0, max 0.4 (lost 0, none 0, clamped 1; content moves >4px 0, max 0.4)
+REPORT load ats12 #3 skipped: ChatGPT did not load the chat twice (no turns mounted, scrollHeight 912)
+REPORT scrollHeight range 10276–10276 over 2 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":155,"sendAttempts":0}
+SUMMARY cause-cv-off: 0/2 loads failed (1 skipped: chat did not load)
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-cv-off.json

@@ -1,0 +1,21 @@
+cause-trace.json rows where marks rose: 7; with a drop > 1 viewport: 5; without: 2
+   without: #1 y 4090->4790 h 14816 seenT 1->2 seenB 46->104
+   without: #1 y 6550->7250 h 17867 seenT 0->1 seenB 0->46
+cause-cv-only.json rows where marks rose: 43; with a drop > 1 viewport: 33; without: 10
+   without: #1 y 4200->4900 h 39004 seenT 0->2 seenB 0->280
+   without: #1 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #1 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #1 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #1 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #3 y 4200->4900 h 39004 seenT 0->2 seenB 0->280
+   without: #3 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #3 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #3 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+   without: #3 y 4200->4900 h 39003 seenT 0->2 seenB 0->280
+cause-turn-cv-off.json rows where marks rose: 40; with a drop > 1 viewport: 38; without: 2
+   without: #1 y 10954->11654 h 24619 seenT 1->3 seenB 53->129
+   without: #2 y 5140->5840 h 18136 seenT 0->2 seenB 0->76
+cause-block-cv-off.json rows where marks rose: 62; with a drop > 1 viewport: 62; without: 0
+cause-head-shift.json rows where marks rose: 45; with a drop > 1 viewport: 43; without: 2
+   without: #1 y 4900->4900 h 12826 seenT 0->1 seenB 0->58
+   without: #1 y 4900->4900 h 12828 seenT 0->1 seenB 0->58

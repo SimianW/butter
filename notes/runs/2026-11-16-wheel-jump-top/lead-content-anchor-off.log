@@ -1,0 +1,12 @@
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=57 scrollTop=9339 scrollHeight=10256 clientHeight=860 overflowAnchor=auto children=T:none,none butterOff=layout turns=3
+PASS load ats12 #1: reached the end in 18 steps
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=53 scrollTop=9362 scrollHeight=10275 clientHeight=860 overflowAnchor=auto children=T:none,none butterOff=layout turns=3
+PASS load ats12 #2: reached the end in 20 steps
+REPORT scrollHeight range 10256–10275 over 2 loads
+REPORT overflow-anchor scroller [children]: auto [T:none,none]
+REPORT not opened at the end: ats12 #1, ats12 #2
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":109,"sendAttempts":0}
+SUMMARY lead-content-anchor-off: 0/2 loads failed
+chromium: stopped
+chromium: started (pid 974447)
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/lead-content-anchor-off.json

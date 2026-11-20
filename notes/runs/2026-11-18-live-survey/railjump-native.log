@@ -1,0 +1,58 @@
+survey-native math9 from=top to=4 phase=reload class=failed positions=[[86,141784]] targetTop=null reversals=0
+survey-native math9 from=bottom to=0 phase=reload class=clean samples=153
+FIXTURE math9 {"streamingStyles":{"container":"inline-size","turn":null,"block":null,"contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":null,"probe":true,"questions":9,"hasPrev":null,"height":291333,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":false}
+survey-native math9 from=top to=0 phase=reload-setup class=clean samples=155
+survey-native math9 from=top to=1 phase=settled class=clean samples=150
+survey-native math9 from=top to=2 phase=settled class=clean samples=152
+survey-native math9 from=top to=3 phase=settled class=clean samples=152
+survey-native math9 from=top to=4 phase=settled class=clean samples=150
+survey-native math9 from=top to=5 phase=settled class=clean samples=130
+survey-native math9 from=top to=6 phase=settled class=clean samples=126
+survey-native math9 from=top to=7 phase=settled class=clean samples=153
+survey-native math9 from=top to=8 phase=settled class=clean samples=151
+survey-native math9 from=bottom to=0 phase=settled class=clean samples=152
+survey-native math9 from=bottom to=1 phase=settled class=clean samples=150
+survey-native math9 from=bottom to=2 phase=settled class=clean samples=150
+survey-native math9 from=bottom to=3 phase=settled class=clean samples=150
+survey-native math9 from=bottom to=4 phase=settled class=clean samples=149
+survey-native math9 from=bottom to=5 phase=settled class=clean samples=127
+survey-native math9 from=bottom to=6 phase=settled class=clean samples=125
+survey-native math9 from=bottom to=7 phase=settled class=clean samples=148
+survey-native math9 from=bottom to=8 phase=settled class=clean samples=148
+survey-native math9 from=previous to=0 phase=settled class=clean samples=155
+survey-native math9 from=previous to=1 phase=settled class=clean samples=151
+survey-native math9 from=previous to=8 phase=settled class=clean samples=150
+survey-native math9 from=previous to=7 phase=settled class=clean samples=121
+survey-native math12 from=top to=4 phase=reload class=clean samples=158
+survey-native math12 from=bottom to=0 phase=reload class=failed positions=[[1062,82],[5953,78252],[6348,78277],[6578,78401],[6798,78413]] targetTop=116 reversals=1
+FIXTURE math12 {"streamingStyles":{"container":"inline-size","turn":null,"block":null,"contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"auto","scrollSnapType":"none","scrollBehavior":"auto"},"off":null,"probe":true,"questions":12,"hasPrev":null,"height":345174,"mathDisplay":231,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":false}
+survey-native math12 from=top to=0 phase=reload-setup class=clean samples=154
+survey-native math12 from=top to=1 phase=settled class=clean samples=135
+survey-native math12 from=top to=2 phase=settled class=clean samples=158
+survey-native math12 from=top to=3 phase=settled class=clean samples=155
+survey-native math12 from=top to=4 phase=settled class=clean samples=155
+survey-native math12 from=top to=5 phase=settled class=clean samples=155
+survey-native math12 from=top to=6 phase=settled class=clean samples=154
+survey-native math12 from=top to=7 phase=settled class=clean samples=136
+survey-native math12 from=top to=8 phase=settled class=clean samples=157
+survey-native math12 from=top to=9 phase=settled class=clean samples=156
+survey-native math12 from=top to=10 phase=settled class=clean samples=156
+survey-native math12 from=top to=11 phase=settled class=clean samples=151
+survey-native math12 from=bottom to=0 phase=settled class=clean samples=146
+survey-native math12 from=bottom to=1 phase=settled class=clean samples=158
+survey-native math12 from=bottom to=2 phase=settled class=clean samples=159
+survey-native math12 from=bottom to=3 phase=settled class=clean samples=149
+survey-native math12 from=bottom to=4 phase=settled class=clean samples=156
+survey-native math12 from=bottom to=5 phase=settled class=clean samples=149
+survey-native math12 from=bottom to=6 phase=settled class=clean samples=148
+survey-native math12 from=bottom to=7 phase=settled class=clean samples=132
+survey-native math12 from=bottom to=8 phase=settled class=clean samples=157
+survey-native math12 from=bottom to=9 phase=settled class=clean samples=143
+survey-native math12 from=bottom to=10 phase=settled class=failed positions=[] targetTop=-17529 reversals=0
+survey-native math12 from=bottom to=11 phase=settled class=clean samples=153
+survey-native math12 from=previous to=0 phase=settled class=clean samples=147
+survey-native math12 from=previous to=1 phase=settled class=clean samples=142
+survey-native math12 from=previous to=11 phase=settled class=clean samples=150
+survey-native math12 from=previous to=10 phase=settled class=failed positions=[] targetTop=-17529 reversals=0
+SUMMARY {"jumps":54,"failed":4,"visibleDetour":1,"native":0,"gated":4,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":1,"rawReversal":7,"rawReversalCount":9,"unpinChecks":0,"anchoringLeftOff":0,"pinnedAnchoringOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-18-live-survey/railjump-native.json

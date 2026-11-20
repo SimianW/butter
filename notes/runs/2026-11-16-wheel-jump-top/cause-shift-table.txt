@@ -1,0 +1,26 @@
+| cause-native-shift #1 | up | 0 | 55 | 0 | 1 |
+| cause-native-shift #1 | down | 0 | 55 | 0 | 0.5 |
+| cause-native-shift-2 #1 | up | 0 | 54 | 0 | 1 |
+| cause-native-shift-2 #1 | down | 0 | 55 | 0 | 0.5 |
+| cause-cv-off #1 | up | 0 | 32 | 0 | 0.5 |
+| cause-cv-off #1 | down | 0 | 33 | 0 | 0.4 |
+| cause-cv-off #2 | up | 0 | 19 | 0 | 0.4 |
+| cause-cv-off #2 | down | 0 | 19 | 0 | 0.4 |
+| cause-cv-off-2 #1 | up | 0 | 18 | 0 | 0.4 |
+| cause-cv-off-2 #1 | down | 0 | 19 | 0 | 0.4 |
+| cause-content-anchor-off #1 | up | 1 | 16 | 0 | 7.9 |
+| cause-content-anchor-off #1 | down | 0 | 17 | 0 | 0.4 |
+| cause-content-anchor-off #2 | up | 0 | 32 | 0 | 0.5 |
+| cause-content-anchor-off #2 | down | 0 | 33 | 0 | 0.4 |
+| cause-content-anchor-off #3 | up | 0 | 23 | 0 | 0.5 |
+| cause-content-anchor-off #3 | down | 0 | 24 | 0 | 0.2 |
+| cause-scroller-anchor-off #1 | up | 0 | 19 | 0 | 0.4 |
+| cause-scroller-anchor-off #1 | down | 0 | 19 | 0 | 0.4 |
+| cause-scroller-anchor-off #2 | up | 1 | 32 | 0 | 7.9 |
+| cause-scroller-anchor-off #2 | down | 0 | 33 | 0 | 0.4 |
+| cause-scroller-anchor-off #3 | up | 0 | 23 | 0 | 0.5 |
+| cause-scroller-anchor-off #3 | down | 0 | 24 | 0 | 0.2 |
+| cause-head-shift #1 | up | 0 | 0 | - | - |
+| cause-head-shift #1 | down (steps 1–8, before the first jump back) | 0 | 8 | 0 | 0 |
+| cause-head-shift #2 | up | 0 | 2 | 0 | 0 |
+| cause-head-shift #2 | down (steps 1–6, before the first jump back) | 0 | 6 | 0 | 0 |

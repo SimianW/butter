@@ -1,0 +1,42 @@
+REPORT load ats12 #1: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #1: 14 jumps back, first 9800 → 0 at step 15
+REPORT load ats12 #1 causes: [["no wrapped call",14]]
+REPORT load ats12 #2: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #2: 20 jumps back, first 6300 → 0 at step 10
+REPORT load ats12 #2 causes: [["no wrapped call",20]]
+REPORT load ats12 #3: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #3: 17 jumps back, first 6300 → 0 at step 10
+REPORT load ats12 #3 causes: [["no wrapped call",17]]
+REPORT load ats12 #4: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=57 scrollTop=9359 scrollHeight=10276 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=3
+FAIL load ats12 #4: 19 jumps back, first 6300 → 0 at step 10
+REPORT load ats12 #4 causes: [["no wrapped call",19]]
+REPORT load ats12 #5: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #5: 17 jumps back, first 6300 → 0 at step 10
+REPORT load ats12 #5 causes: [["no wrapped call",17]]
+REPORT load ats12 #6: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #6: 16 jumps back, first 6300 → 0 at step 10
+REPORT load ats12 #6 causes: [["no wrapped call",16]]
+REPORT load ats12 #7 skipped: the chat did not load twice (no turns mounted, scrollHeight 912)
+REPORT load ats12 #8: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=11997 scrollTop=0 scrollHeight=12857 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=1
+FAIL load ats12 #8: 21 jumps back, first 6300 → 0 at step 9
+REPORT load ats12 #8 causes: [["no wrapped call",21]]
+REPORT load ats12 #9: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #9: 14 jumps back, first 9800 → 0 at step 14
+REPORT load ats12 #9 causes: [["no wrapped call",14]]
+REPORT load ats12 #10: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1750 scrollHeight=14847 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #10: 24 jumps back, first 4900 → 0 at step 7
+REPORT load ats12 #10 causes: [["no wrapped call",24]]
+REPORT load ats12 #11: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1990 scrollHeight=15087 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #11: 14 jumps back, first 9800 → 0 at step 15
+REPORT load ats12 #11 causes: [["no wrapped call",14]]
+REPORT load ats12 #12: firstAfterRestart=false retried=true openedAtEnd=false fromEnd=12237 scrollTop=1750 scrollHeight=14847 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=2
+FAIL load ats12 #12: 25 jumps back, first 4900 → 0 at step 7
+REPORT load ats12 #12 causes: [["no wrapped call",25]]
+REPORT scrollHeight range 10276–15087 over 11 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3, ats12 #4, ats12 #5, ats12 #6, ats12 #8, ats12 #9, ats12 #10, ats12 #11, ats12 #12
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":882,"sendAttempts":0}
+SUMMARY head-test: 11/11 loads failed (1 skipped: chat did not load)
+chromium: stopped
+chromium: started (pid 838350)
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/wheel-jump-live/head-test.json

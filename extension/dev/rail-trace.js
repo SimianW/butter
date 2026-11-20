@@ -160,14 +160,21 @@
         const j = jumps.get(tok);
         if (j) j.since = now();
       },
-      wait({ tok, wait, live, pending }) {
+      wait({ tok, wait, live, pending, lost }) {
         const j = jumps.get(tok);
         if (!j) return;
         j.mounted = true; // the readiness waits come after the target mounted
         // The recheck starts when the last of quiet and steady ended.
         const start = wait === 'recheck' ? j.waited : j.since;
         j.waited = now();
-        emit('rail-wait', { jump: tok, wait, durationMs: round(j.waited - start), live, pending });
+        emit('rail-wait', {
+          jump: tok,
+          wait,
+          durationMs: round(j.waited - start),
+          live,
+          pending,
+          lost,
+        });
       },
       // The chat stopped on the target (a trip slid in, a glide's smooth scroll ended).
       arrived({ tok }) {

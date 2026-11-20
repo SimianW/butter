@@ -1,0 +1,12 @@
+$ LAB_ID=2 LAB_OWNER=wheel-jump-cause EXT=~/snap/chromium/common/wheel-jump-head-test/butter LABEL=cause-trace LOADS=1 STEPS=40 TRACE=1 PAGELOG=1
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=57 scrollTop=9358 scrollHeight=10275 clientHeight=860 overflowAnchor=auto children=T:auto,none butterOff=layout turns=3
+FAIL load ats12 #1: 5 jumps back, first 11790 → 0 at step 14
+REPORT load ats12 #1 causes: [["no wrapped call",5]]
+REPORT load ats12 #1 trace: 238 scroll events kept, clock aligned
+REPORT load ats12 #1 page log: 52 scroll rows, 0 turn insertions/removals, 327 skip changes, turn order entries
+REPORT scrollHeight range 10275–10275 over 1 loads
+REPORT overflow-anchor scroller [children]: auto [T:auto,none]
+REPORT not opened at the end: ats12 #1
+REPORT build=0.1.0-alpha.21+wheel.1 chromium=156.0.8078.47 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":34,"sendAttempts":0}
+SUMMARY cause-trace: 1/1 loads failed
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-16-wheel-jump-top/cause-trace.json

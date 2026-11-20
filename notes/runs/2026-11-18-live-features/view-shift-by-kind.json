@@ -1,0 +1,344 @@
+{
+ "replay-fix-1": {
+  "fixture": "math9",
+  "build": "0.1.0-alpha.21+fix.1",
+  "shift": {
+   "up/block": {
+    "steps": 50,
+    "visualOver4": 0,
+    "visualMax": 1.2,
+    "extraScrollOver4": 38,
+    "extraScrollMax": 1213
+   },
+   "up/turn": {
+    "steps": 10,
+    "visualOver4": 8,
+    "visualMax": 1025,
+    "extraScrollOver4": 8,
+    "extraScrollMax": 1025
+   },
+   "down/block": {
+    "steps": 49,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 9,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 329,
+   "min": 151.3,
+   "p10": 257,
+   "median": 267.8,
+   "under240": 5
+  },
+  "afterCompletion": {
+   "scrollHeight": 229920,
+   "blocks": 612,
+   "cvAuto": 592,
+   "seen": 26,
+   "unrendered": 566,
+   "lastTurnBottomFromViewTop": 85168
+  },
+  "probeWrites": null
+ },
+ "replay-fix-ats12": {
+  "fixture": "ats12",
+  "build": "0.1.0-alpha.21+fix.1",
+  "shift": {
+   "up/block": {
+    "steps": 52,
+    "visualOver4": 0,
+    "visualMax": 1.1,
+    "extraScrollOver4": 41,
+    "extraScrollMax": 1313
+   },
+   "up/turn": {
+    "steps": 8,
+    "visualOver4": 6,
+    "visualMax": 1076,
+    "extraScrollOver4": 6,
+    "extraScrollMax": 1076
+   },
+   "down/block": {
+    "steps": 43,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 16,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 336,
+   "min": 151.9,
+   "p10": 256,
+   "median": 266.6,
+   "under240": 3
+  },
+  "afterCompletion": {
+   "scrollHeight": 94772,
+   "blocks": 612,
+   "cvAuto": 592,
+   "seen": 27,
+   "unrendered": 565,
+   "lastTurnBottomFromViewTop": 85022
+  },
+  "probeWrites": null
+ },
+ "replay-fix-ats12-probe": {
+  "fixture": "ats12",
+  "build": "0.1.0-alpha.21+fix.1",
+  "shift": {
+   "up/block": {
+    "steps": 52,
+    "visualOver4": 0,
+    "visualMax": 1.1,
+    "extraScrollOver4": 41,
+    "extraScrollMax": 1233
+   },
+   "up/turn": {
+    "steps": 8,
+    "visualOver4": 6,
+    "visualMax": 1084,
+    "extraScrollOver4": 6,
+    "extraScrollMax": 1084
+   },
+   "down/block": {
+    "steps": 43,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 16,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 334,
+   "min": 149.9,
+   "p10": 255.8,
+   "median": 266.9,
+   "under240": 3
+  },
+  "afterCompletion": {
+   "scrollHeight": 94934,
+   "blocks": 612,
+   "cvAuto": 592,
+   "seen": 25,
+   "unrendered": 567,
+   "lastTurnBottomFromViewTop": 85184
+  },
+  "probeWrites": 231
+ },
+ "replay-native-1": {
+  "fixture": "math9",
+  "build": "no extension",
+  "shift": {
+   "up/block": {
+    "steps": 42,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "up/turn": {
+    "steps": 13,
+    "visualOver4": 0,
+    "visualMax": 0.1,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/block": {
+    "steps": 47,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 7,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.1,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 312,
+   "min": 79.6,
+   "p10": 156.6,
+   "median": 282.6,
+   "under240": 112
+  },
+  "afterCompletion": {
+   "scrollHeight": 181797,
+   "blocks": 612,
+   "cvAuto": 0,
+   "seen": 0,
+   "unrendered": 0,
+   "lastTurnBottomFromViewTop": 37000
+  },
+  "probeWrites": null
+ },
+ "replay-native-ats12": {
+  "fixture": "ats12",
+  "build": "no extension",
+  "shift": {
+   "up/block": {
+    "steps": 48,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "up/turn": {
+    "steps": 7,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/block": {
+    "steps": 40,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 14,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 671,
+   "min": 17.4,
+   "p10": 50.3,
+   "median": 103.4,
+   "under240": 552
+  },
+  "afterCompletion": {
+   "scrollHeight": 46698,
+   "blocks": 612,
+   "cvAuto": 0,
+   "seen": 0,
+   "unrendered": 0,
+   "lastTurnBottomFromViewTop": 36948
+  },
+  "probeWrites": null
+ },
+ "replay-native-ats12-probe": {
+  "fixture": "ats12",
+  "build": "no extension",
+  "shift": {
+   "up/block": {
+    "steps": 48,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "up/turn": {
+    "steps": 7,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/block": {
+    "steps": 40,
+    "visualOver4": 0,
+    "visualMax": 0.4,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/turn": {
+    "steps": 14,
+    "visualOver4": 0,
+    "visualMax": 0,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   },
+   "down/user": {
+    "steps": 1,
+    "visualOver4": 0,
+    "visualMax": 0.2,
+    "extraScrollOver4": 0,
+    "extraScrollMax": 0
+   }
+  },
+  "answerDomUpdates": {
+   "n": 667,
+   "min": 18.1,
+   "p10": 50.2,
+   "median": 103,
+   "under240": 544
+  },
+  "afterCompletion": {
+   "scrollHeight": 46698,
+   "blocks": 612,
+   "cvAuto": 0,
+   "seen": 0,
+   "unrendered": 0,
+   "lastTurnBottomFromViewTop": 36948
+  },
+  "probeWrites": 8
+ }
+}

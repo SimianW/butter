@@ -65,13 +65,16 @@
       sc = s;
       model.measure(null);
       onScreen.clear();
+      // A turn that has left has an empty box, which would read as "wherever the chat is now": its
+      // last real position stays.
       ioPos = new IntersectionObserver(
         (es) => {
           for (const e of es)
-            pos.set(
-              e.target.getAttribute('data-turn-key'),
-              e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop,
-            );
+            if (e.target.isConnected && e.boundingClientRect.height > 0)
+              pos.set(
+                e.target.getAttribute('data-turn-key'),
+                e.boundingClientRect.top - e.rootBounds.top + sc.scrollTop,
+              );
         },
         { root: sc },
       );

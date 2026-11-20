@@ -1,0 +1,97 @@
+[
+  {
+    "t": 0,
+    "type": "rail-jump",
+    "fields": {
+      "jump": 5,
+      "target": 1,
+      "activeBefore": 0,
+      "scrollTop": 0,
+      "scrollHeight": 291333,
+      "clientHeight": 912,
+      "mountedFrom": 0,
+      "mountedTo": 0,
+      "earlier": false,
+      "mounted": false,
+      "path": "trip",
+      "direction": "down"
+    }
+  },
+  {
+    "t": 1651,
+    "type": "rail-try",
+    "fields": {
+      "jump": 5,
+      "try": 1,
+      "estimate": 27756.609375,
+      "written": 27692.609375,
+      "scrollTopRead": 27693,
+      "scrollHeight": 291333,
+      "frames": 2,
+      "waitMs": 1387,
+      "scrollTopAfter": 27693,
+      "mountedFrom": 0,
+      "mountedTo": 1,
+      "lastBottom": 65102.359375,
+      "lastWrapperBottom": 65102.609375,
+      "lastWrapperInline": true,
+      "mounted": true,
+      "live": true
+    }
+  },
+  {
+    "t": 1654,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 5,
+      "wait": "math",
+      "durationMs": 2,
+      "live": true,
+      "pending": false
+    }
+  },
+  {
+    "t": 1865,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 5,
+      "wait": "steady",
+      "durationMs": 210,
+      "live": true
+    }
+  },
+  {
+    "t": 1982,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 5,
+      "wait": "quiet",
+      "durationMs": 327,
+      "live": true
+    }
+  },
+  {
+    "t": 1982,
+    "type": "rail-wait",
+    "fields": {
+      "jump": 5,
+      "wait": "recheck",
+      "durationMs": 0,
+      "live": true
+    }
+  },
+  {
+    "t": 2890,
+    "type": "rail-end",
+    "fields": {
+      "jump": 5,
+      "outcome": "landed",
+      "path": "trip",
+      "elapsedMs": 2891,
+      "tries": 1,
+      "expired": false,
+      "scrollTop": 27705,
+      "targetTop": 63.609375
+    }
+  }
+]

@@ -23,6 +23,14 @@
   showing the question you started from.
 - Fixed one tick on the rail looking thinner and fainter than the others at some browser zoom
   levels.
+- Fixed a jump from the question rail sometimes scrolling the chat the wrong way before heading to
+  the question.
+- Fixed a jump from the question rail sometimes waiting about 4 seconds and then showing the end of
+  the chat instead of the question when ChatGPT briefly removed it.
+- Fixed a jump from the question rail sometimes reaching the question and then showing the start of
+  the chat instead, or flicking away from the question and back, with Smoother streaming on.
+- Fixed a long chat jumping back to its start while you scroll down, and sometimes opening at its
+  start instead of its end.
 
 ## [0.1.0-alpha.21] - 2026-11-12
 

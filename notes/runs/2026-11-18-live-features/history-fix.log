@@ -1,0 +1,6 @@
+REPORT fix-1118-fix math12: opened with 5 entries, scrollTop 66096 of 67042
+REPORT top reached: true, entries 12, 140 wheel steps of -6000 px, 51 s
+REPORT newest-page GETs: 2, num_turns [10, 10], params ["num_turns","include_has_versions"]
+REPORT earlier-page GETs: 7, num_turns [2, 2, 2, 2, 2, 2, 2], before param on 7, params ["before","num_turns","include_has_versions"]
+PASS older-page-size
+SUMMARY history-fix: 0 FAILs

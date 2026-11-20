@@ -1,0 +1,19 @@
+REPORT API: 7 conversation pages, 35 messages, 10 visible questions; user messages 10
+REPORT API question lengths (normalized): [42, 2, 915, 26, 22, 56, 20, 7, 23, 4]
+REPORT API question 4: content_type text, parts 1 (string), q 22 chars, 1 lines
+REPORT API question 4 message keys: id author{} author.role author.name author.metadata{} create_time update_time status end_turn weight metadata{} metadata.request_id metadata.message_source metadata.turn_exchange_id metadata.working_turn_id metadata.can_save recipient channel
+REPORT API question 4 content keys: content_type parts
+REPORT API question 4 metadata keys not on every other question: []
+REPORT API neighbours of question 4 (role/content_type/hidden): user/text/shown/all assistant/reasoning_recap/shown/all assistant/text/shown/all *user/text/shown/all assistant/reasoning_recap/shown/all assistant/text/shown/all user/text/shown/all
+REPORT rail: 10 ticks
+REPORT card 4: 22 chars; equals API q true; is API q cut at 400 false
+REPORT turn of question 4: {"mounted":true,"bubbleLen":22,"bubbleInQ":true,"qInBubble":true,"qStartsWithBubble":true,"qShownInTurn":true,"media":0,"mediaKinds":[],"buttons":["Copy message","Share prompt","Edit message","Copy","Rate response","Read aloud","Share","Add to project sources","More actions"],"versions":false,"userPartTag":"div[data-user-message-bubble data-user-message-has-prompt class]"}
+REPORT bubble tree:
+div[data-user-message-bubble data-user-message-has-prompt class] text=22
+  div[class] text=22
+    div[class] text=22
+      div[class data-search-result-target] text=22
+        div[] text=22
+          div[class dir] text=22 leaf
+REPORT elements with own text outside the answer: [{"tag":"span","attrs":["class"],"len":9,"inQ":false,"inBubble":false},{"tag":"span","attrs":["class","aria-hidden"],"len":3,"inQ":false,"inBubble":false},{"tag":"div","attrs":["class","dir"],"len":22,"inQ":true,"inBubble":true},{"tag":"span","attrs":["class"],"len":13,"inQ":false,"inBubble":false},{"tag":"span","attrs":["class","aria-hidden"],"len":7,"inQ":false,"inBubble":false}]
+REPORT bubble's React message props: []

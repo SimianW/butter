@@ -1,0 +1,4 @@
+FIXTURE math9 {"questions":9,"hasPrev":false,"height":291333,"mathDisplay":194,"nativeQuestions":9,"measuredRows":0,"trace":true}
+cause-browser-trace math9 from=top to=1 phase=reload-setup class=failed positions=[[195,11],[210,32],[217,75],[347,381],[355,412],[817,27693]] targetTop=75.609375 reversals=0
+SUMMARY {"jumps":1,"failed":1,"visibleDetour":0,"native":0,"gated":1,"postCompletion":0,"rawReversal":0}
+EXIT 1; evidence /home/simon/.t3/worktrees/butter/t3-3b51885a-1b7fbd47051eba67/notes/runs/2026-11-16-rail-jump-live/cause-browser-trace.json
