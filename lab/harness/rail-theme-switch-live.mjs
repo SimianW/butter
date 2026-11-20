@@ -3,13 +3,13 @@
 // and checks that the rail's host (`chatgpt-butter-nav`) has `data-dark` within a second, and still
 // after going Back to the chat; then the same for Light. It records which attributes of <html>
 // ChatGPT changed meanwhile. Then it puts the theme cookie and localStorage.theme back to
-// their values before the run and confirms the light theme after a reload. Read-only on chats,
-// send guard on (a settings write to the server is refused, as every non-GET is). Needs the lab
-// lock you hold (LAB_OWNER).
+// their values before the run and, after a reload, confirms the theme and the host's data-dark
+// from before the run. Read-only on chats, send guard on (a settings write to the server is
+// refused, as every non-GET is). Needs the lab lock you hold (LAB_OWNER).
 //
 // LAB_ID=2 LAB_OWNER=<owner> EXT=<unpacked Butter dir> [FIXTURE=ats12] node lab/harness/rail-theme-switch-live.mjs
-// Checks: switch-dark-page, switch-dark-host, switch-dark-chat, the same for light, light-restored,
-// light-host. Exit 1 on FAIL, 2 on setup error.
+// Checks: switch-dark-page, switch-dark-host, switch-dark-chat, the same for light, theme-restored,
+// host-restored. Exit 1 on FAIL, 2 on setup error.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -165,8 +165,8 @@ try {
   const s1 = await state();
   const cookieNow = (await context.cookies('https://chatgpt.com')).find((c) => c.name === COOKIE) || null;
   report(`after restore and reload: cookie ${cookieNow ? JSON.stringify(cookieNow.value) : 'absent'}; ${JSON.stringify(s1)}`);
-  verdict((cookieNow?.value ?? null) === (original?.value ?? null) && s1.lsTheme === originalLs && s1.dataTheme === s0.dataTheme && s1.colorScheme === s0.colorScheme, 'light-restored', `cookie ${cookieNow?.value}, localStorage ${s1.lsTheme}, data-theme ${s1.dataTheme}, color-scheme ${s1.colorScheme}`);
-  verdict(!s1.hostDark, 'light-host', 'chatgpt-butter-nav has data-dark after the restore');
+  verdict((cookieNow?.value ?? null) === (original?.value ?? null) && s1.lsTheme === originalLs && s1.dataTheme === s0.dataTheme && s1.colorScheme === s0.colorScheme, 'theme-restored', `cookie ${cookieNow?.value}, localStorage ${s1.lsTheme}, data-theme ${s1.dataTheme}, color-scheme ${s1.colorScheme}`);
+  verdict(s1.hostDark === s0.hostDark, 'host-restored', `chatgpt-butter-nav's data-dark is ${s1.hostDark} after the restore, ${s0.hostDark} before the run`);
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;

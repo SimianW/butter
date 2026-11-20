@@ -1,7 +1,8 @@
 // A seek release towards a question whose position Butter only estimates (2026-11-18 live features,
 // item 6: math12's questions 6 and 7 left the chat about 31k px inside the previous answer and timed
 // out after 10 s). preview-main.js's commit and readiness wait run over a fake virtualizer that
-// mounts the turns within OVERSCAN px of the view. The real turns are HEIGHTS tall; Butter's frozen
+// mounts the turns within OVERSCAN px of the view. The real turns are HEIGHTS tall (a turn not yet
+// mounted holds its `slot` height, if given, until it mounts, as ChatGPT's estimate); Butter's frozen
 // model is off by a long answer above or below the target, so its destination lies inside another
 // turn and the target does not mount there: the commit must find it from the mounted turns.
 // REVIEW_SOURCE=<an extension/ tree> runs it on that tree's seek scripts.
@@ -27,7 +28,10 @@ const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 12000, 30000],
 // has a stored layout, so the destination keeps that offset; then the preview shows `needle` at
 // `previewY` (none: null) and the real turn holds it at `realAt` px into the turn. `bubble`: the
 // turns have a question bubble. `rowH`: the target's stored row height, the preview's px (default:
-// its model height).
+// its model height). `slot`: { index: height } for turns that hold that height until they first
+// mount, then grow to their real height. `parent`: each turn's parentElement: 'own' (its row),
+// 'contents' (a 0-height rect, as `display: contents`) or 'shared' (one full-height wrapper for all
+// turns). `suppress`: turns that never mount.
 function release({
   model,
   target,
@@ -36,40 +40,63 @@ function release({
   needle = null,
   bubble = true,
   rowH = model[target],
+  slot = {},
+  parent = 'own',
+  suppress = [],
 }) {
   const frames = [],
-    ids = HEIGHTS.map((_, i) => `q${i}`);
+    ids = HEIGHTS.map((_, i) => `q${i}`),
+    seen = new Set();
   let now = 0,
     top = 0;
-  const turns = ids.map((id, i) => ({
-    dataset: { turnKey: id },
-    getAttribute: () => id,
-    querySelectorAll: () => [],
-    querySelector: (s) =>
-      bubble && s === '[data-user-message-bubble]'
-        ? { getBoundingClientRect: () => ({ top: TOPS[i] + BUBBLE - top }) }
-        : null,
-    parentElement: {
-      getBoundingClientRect: () => ({
-        top: TOPS[i] - top,
-        bottom: TOPS[i] + HEIGHTS[i] - top,
-        height: HEIGHTS[i],
-      }),
-    },
-  }));
-  const mounted = () =>
-    turns.filter(
-      (_, i) => TOPS[i] + HEIGHTS[i] > top - OVERSCAN && TOPS[i] < top + CLIENT + OVERSCAN,
+  // The live layout: a turn not yet mounted holds its slot height.
+  const heights = () => HEIGHTS.map((h, i) => (seen.has(i) ? h : (slot[i] ?? h))),
+    tops = () => heights().map((_, i, hs) => hs.slice(0, i).reduce((a, b) => a + b, 0)),
+    total = () => heights().reduce((a, b) => a + b, 0);
+  const rect = (i) => {
+    if (parent === 'contents') return { top: 0, bottom: 0, height: 0 };
+    if (parent === 'shared') return { top: -top, bottom: total() - top, height: total() };
+    return { top: tops()[i] - top, bottom: tops()[i] + heights()[i] - top, height: heights()[i] };
+  };
+  const shared = { getBoundingClientRect: () => rect(0), querySelectorAll: () => mounted() };
+  const turns = ids.map((id, i) => {
+    const turn = {
+      dataset: { turnKey: id },
+      getAttribute: () => id,
+      querySelectorAll: () => [],
+      querySelector: (s) =>
+        bubble && s === '[data-user-message-bubble]'
+          ? { getBoundingClientRect: () => ({ top: tops()[i] + BUBBLE - top }) }
+          : null,
+    };
+    turn.parentElement =
+      parent === 'shared'
+        ? shared
+        : { getBoundingClientRect: () => rect(i), querySelectorAll: () => [turn] };
+    return turn;
+  });
+  // Mounting a turn measures it: from then on it is its real height.
+  function mounted() {
+    const t = tops(),
+      h = heights();
+    const out = turns.filter(
+      (_, i) =>
+        !suppress.includes(i) && t[i] + h[i] > top - OVERSCAN && t[i] < top + CLIENT + OVERSCAN,
     );
+    for (const turn of out) seen.add(turns.indexOf(turn));
+    return out;
+  }
   const sc = {
     get scrollTop() {
       return top;
     },
     set scrollTop(v) {
-      top = Math.max(0, Math.min(SCROLL_HEIGHT - CLIENT, v));
+      top = Math.max(0, Math.min(total() - CLIENT, v));
     },
     clientHeight: CLIENT,
-    scrollHeight: SCROLL_HEIGHT,
+    get scrollHeight() {
+      return total();
+    },
     isConnected: true,
     dispatchEvent() {},
     getBoundingClientRect: () => ({ top: 0 }),
@@ -105,7 +132,7 @@ function release({
     __butterAnchorVisibleNeedles: () => (needle ? [{ needle: 'phrase', y: needle.previewY }] : []),
     __butterAnchorTextBoxes: (root, text) =>
       needle && text === 'phrase' && root.dataset
-        ? needle.realAt.map((at) => ({ top: TOPS[ids.indexOf(root.dataset.turnKey)] + at - top }))
+        ? needle.realAt.map((at) => ({ top: tops()[ids.indexOf(root.dataset.turnKey)] + at - top }))
         : [],
   });
   ctx.window = ctx;
@@ -157,8 +184,16 @@ function release({
     frames.shift()();
   }
   const at = top + INSET,
-    turn = TOPS.findLastIndex((t) => t <= at);
-  const landed = { turn, offset: at - TOPS[turn], ms: a.readable - a.end, timedOut: a.timedOut };
+    t = tops(),
+    turn = t.findLastIndex((x) => x <= at);
+  const landed = {
+    turn,
+    offset: at - t[turn],
+    top,
+    ms: a.readable - a.end,
+    timedOut: a.timedOut,
+    finds: a.finds.length,
+  };
   console.log('landed', JSON.stringify(landed), 'finds', JSON.stringify(a.finds));
   return landed;
 }
@@ -233,6 +268,95 @@ test('a release whose destination question mounts where the model put it does no
   const landed = release({ model: HEIGHTS, target: 6 });
   assert.equal(landed.timedOut, false);
   assert.equal(landed.turn, 6);
+});
+
+// Review L8: a stored row taller than the frozen row (frozen 3000 px, stored and real 12000 px). The
+// drop is 2500 frozen px into it, which the preview shows 10000 px in, at the passage. The search
+// aims at the turn's top; once the turn mounts, the view goes 10000 px into it, so the semantic step
+// picks the previewed occurrence of a phrase the turn repeats.
+const STORED = { target: 6, offset: 2500, layout: true, rowH: 12000 };
+test('a found layout destination searched backwards lands at the previewed passage when the stored row is taller than the frozen one', () => {
+  // The model overestimates question 4 by 20000 px: the commit lands in question 7, the only turn
+  // mounted, at 66500 px. Aimed 9948 px past the target's top from there, the view stayed in question 7.
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 23000, 40000, 3000, 30000],
+    ...STORED,
+    needle: { previewY: INSET + 100, realAt: [8500, 10100] },
+  });
+  assert.equal(landed.turn, 6);
+  assert.equal(landed.timedOut, false);
+  assert.ok(
+    Math.abs(landed.offset - 10000) <= 4,
+    `at the previewed passage (offset ${landed.offset})`,
+  );
+});
+
+test('a found layout destination searched forwards lands at the previewed passage when its offset is past the unmounted slot', () => {
+  // Question 6 holds a 4000 px slot until it mounts; the destination's 9948 px offset is past it.
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 3000, 8000, 3000, 30000],
+    ...STORED,
+    slot: { 6: 4000 },
+    needle: { previewY: INSET + 100, realAt: [300, 10100] },
+  });
+  assert.equal(landed.turn, 6);
+  assert.equal(landed.timedOut, false);
+  assert.ok(
+    Math.abs(landed.offset - 10000) <= 4,
+    `at the previewed passage (offset ${landed.offset})`,
+  );
+});
+
+// Review L9: a turn's parentElement is used as its row only when it is one: a `display: contents`
+// wrapper (0-height rect) or one wrapper around several turns gives no row, so there is no search
+// and the release stays where the commit left it, as before the search existed.
+test('a release does not search from a turn whose parent has a 0-height rect', () => {
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 3000, 8000, 3000, 30000],
+    target: 6,
+    parent: 'contents',
+  });
+  assert.equal(landed.finds, 0);
+  assert.equal(landed.top, 22448, 'at the commit');
+});
+
+test('a release does not search from turns that share one full-height parent', () => {
+  // The commit lands at 14000 px, where questions 4 and 5 are both mounted.
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 2000, 552, 3000, 30000],
+    target: 6,
+    parent: 'shared',
+  });
+  assert.equal(landed.finds, 0);
+  assert.equal(landed.top, 14000, 'at the commit');
+});
+
+// Review L11: when the target never mounts, the release times out where the commit left it, not at
+// the last search position.
+test('a release whose found turn never mounts ends at the commit position', () => {
+  const landed = release({
+    model: [2000, 3000, 2500, 4000, 3000, 8000, 3000, 30000],
+    target: 6,
+    suppress: [6],
+  });
+  assert.equal(landed.timedOut, true);
+  assert.ok(landed.finds > 0, 'it searched');
+  assert.equal(landed.top, 22448, 'at the commit');
+});
+
+// Review N3: a search whose answer is not a number (a model with no top for the turn after the
+// last mounted one) moves nowhere.
+test('the release search ignores a search answer that is not a number', () => {
+  const { finder } = require(`${tree}/seek/layout-check-main.js`);
+  const find = finder({ limit: 4 }),
+    look = () => ({
+      index: 1,
+      mounted: [{ index: 0, top: 0, bottom: 1000 }],
+      tops: [0],
+      offset: -52,
+      maxScroll: 1e6,
+    });
+  for (let t = 0; t <= 2000; t += 16) assert.equal(find(t, 0, look), null, `at ${t} ms`);
 });
 
 // layoutCheck.finder's timing rule, directly: a search is due once scrollTop has stayed put for 5

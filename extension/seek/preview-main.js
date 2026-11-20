@@ -1081,23 +1081,9 @@
     a.retargets = [];
     a.finds = [];
     const find = layoutCheck.finder({ limit: 4 });
-    // findTurn's input: the destination, and the mounted turns' rows in scroll coordinates.
-    const look = () => {
-      const at = new Map(a.prep.model.map((t) => [t.id, t.index])),
-        origin = a.sc.getBoundingClientRect().top - a.sc.scrollTop;
-      const mounted = [...a.sc.querySelectorAll('[data-turn-key]')].flatMap((t) => {
-        const index = at.get(t.getAttribute('data-turn-key')),
-          r = t.parentElement.getBoundingClientRect();
-        return index == null ? [] : [{ index, top: r.top - origin, bottom: r.bottom - origin }];
-      });
-      // The destination's row in the preview model: a stored layout shows its passage in its px.
-      const d = a.destination,
-        row = (a.prep.previewModel || a.prep.model)[d.index],
-        maxScroll = a.sc.scrollHeight - a.sc.clientHeight;
-      const tops = a.prep.model.map((t) => t.top),
-        offset = layoutCheck.findOffset(d, row, a.insetTop);
-      return { index: d.index, mounted, tops, gap: a.prep.gap, offset, maxScroll };
-    };
+    // findTurn's input (layoutCheck.findInput): the search aims at the target's top, through the
+    // mounted turns' own rows; layoutCheck.findLanding then places a stored layout.
+    const look = () => layoutCheck.findInput(a);
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
       a.sc.getBoundingClientRect().top +
@@ -1123,6 +1109,11 @@
         event('find', a.finds.at(-1));
         if (tap) emit('retarget', { kind: 'find', to, error: to - from });
         quiet = prev = 0;
+      }
+      // A stored layout the search found: once its turn mounts, go to its offset in the real row.
+      if (el && d.layout && a.finds.length && !a.semantic && a.findLanding == null) {
+        a.findLanding = layoutCheck.findLanding(a, el);
+        if (a.findLanding != null) a.sc.scrollTop = a.findLanding;
       }
       if (el && !pendingMath && d.layout && !a.semantic) {
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
@@ -1262,9 +1253,11 @@
             return;
           }
         }
+        // The target never mounted after a search: back to where the commit left the chat.
+        if (!el && a.finds.length) a.sc.scrollTop = a.finds[0].from;
         a.readable = now;
         a.timedOut = quiet < 3;
-        a.realTop = top;
+        a.realTop = a.sc.scrollTop;
         hide(true);
         if (el) {
           const bubble = !d.layout && el.querySelector('[data-user-message-bubble]');

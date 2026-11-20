@@ -1,5 +1,6 @@
 // Pure source-block reconstruction, persisted geometry identity, semantic landing and the search
-// for a release target that does not mount (findTurn, finder).
+// for a release target that does not mount (findTurn, finder; turnRow, findInput and findLanding
+// read the release's mounted turns).
 (function (root) {
   'use strict';
   // Pure layout identity; callers supply measurements outside the native width restore hook.
@@ -46,11 +47,12 @@
   }
   // A seek destination's turn did not mount where the frozen model put it: an estimated turn near
   // it is taller or shorter than the model says, and only that one mounts there. Where to look
-  // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates): the target's
-  // top is after the last one before it, or before the first one after it, moved by the model's
-  // spacing (`tops`: its turn tops) between them; the scroll goes `offset` from there, in the real
-  // turn's px: the destination's offset as the preview showed it (findOffset). Null when none is
-  // mounted or they span the target.
+  // next, from the turns mounted now ({ index, top, bottom } in scroll coordinates, from turnRow):
+  // the target's top is after the last one before it, or before the first one after it, moved by
+  // the model's spacing (`tops`: its turn tops) between them; the scroll goes `offset` from there
+  // (findInput passes -insetTop: the target's top, at the start of whatever slot ChatGPT gives it;
+  // findLanding then places a stored layout once it mounts). Null when none is mounted or they span
+  // the target.
   function findTurn({ index, mounted, tops, gap = 0, offset, maxScroll }) {
     if (!mounted.length) return null;
     const first = mounted.reduce((x, y) => (y.index < x.index ? y : x)),
@@ -62,6 +64,15 @@
         : first.top - (tops[first.index] - tops[index]);
     return Math.max(0, Math.min(maxScroll, top + offset));
   }
+  // A mounted turn's row: its parent's rect, only when that parent is the turn's own row (not the
+  // scroller, holding no other turn, taller than 0: not a `display: contents` or shared wrapper).
+  // Null otherwise; the search uses no other element's rect.
+  function turnRow(turn, sc) {
+    const p = turn.parentElement;
+    if (!p || p === sc || p.querySelectorAll('[data-turn-key]').length !== 1) return null;
+    const r = p.getBoundingClientRect();
+    return r.height > 0 ? r : null;
+  }
   // The scroll position relative to destination `d`'s turn top, in the px the preview showed it in.
   // `d.offset` (core.landing) is in the frozen model's px: -insetTop for an estimated question's
   // start, the kept drop position for a stored layout. A stored layout's preview row (`row`, from
@@ -72,6 +83,38 @@
     if (!d.layout || row.h === d.height) return d.offset;
     const o = d.offset + insetTop;
     return (Math.min(o, d.height) * row.h) / d.height + Math.max(0, o - d.height) - insetTop;
+  }
+  // findTurn's input for release session `a` (preview-main.js's commit): its destination, the
+  // frozen model's turn tops, and the mounted turns that have their own row (turnRow), in scroll
+  // coordinates. The offset is -insetTop: the search aims at the target's top.
+  function findInput(a) {
+    const at = new Map(a.prep.model.map((t) => [t.id, t.index])),
+      origin = a.sc.getBoundingClientRect().top - a.sc.scrollTop;
+    const mounted = [...a.sc.querySelectorAll('[data-turn-key]')].flatMap((t) => {
+      const index = at.get(t.getAttribute('data-turn-key')),
+        r = index == null ? null : turnRow(t, a.sc);
+      return r ? [{ index, top: r.top - origin, bottom: r.bottom - origin }] : [];
+    });
+    return {
+      index: a.destination.index,
+      mounted,
+      tops: a.prep.model.map((t) => t.top),
+      gap: a.prep.gap,
+      offset: -a.insetTop,
+      maxScroll: a.sc.scrollHeight - a.sc.clientHeight,
+    };
+  }
+  // Where session `a`'s stored-layout destination, found by the search, goes once its turn `el`
+  // mounts: the turn's real row top (turnRow) plus findOffset against the destination's preview
+  // row. Null when the turn has no usable row.
+  function findLanding(a, el) {
+    const d = a.destination,
+      r = turnRow(el, a.sc);
+    if (!r) return null;
+    const top = r.top - a.sc.getBoundingClientRect().top + a.sc.scrollTop,
+      row = (a.prep.previewModel || a.prep.model)[d.index];
+    const to = top + findOffset(d, row, a.insetTop);
+    return Math.max(0, Math.min(a.sc.scrollHeight - a.sc.clientHeight, to));
   }
   // The release's search for a destination turn that stays unmounted. `finder()` returns `step`,
   // called each frame with the clock, scrollTop and `look()` (findTurn's input, read only when a
@@ -93,7 +136,7 @@
       if (++still < frames || now - since < ms) return null;
       [since, still] = [now, 0];
       const to = findTurn(look());
-      if (to == null || Math.abs(to - top) < 1) return null;
+      if (!Number.isFinite(to) || Math.abs(to - top) < 1) return null;
       found++;
       at = NaN;
       return to;
@@ -267,7 +310,10 @@
     visibleRect,
     semanticTarget,
     findTurn,
+    turnRow,
     findOffset,
+    findInput,
+    findLanding,
     finder,
     segments,
     inline,
