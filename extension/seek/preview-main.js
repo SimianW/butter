@@ -1079,6 +1079,10 @@
       quiet = 0,
       lastTop = NaN;
     a.retargets = [];
+    a.finds = [];
+    const find = layoutCheck.finder({ limit: 4 });
+    // findTurn's input (layoutCheck.findInput): the search aims at the target's top, by own rows.
+    const look = () => layoutCheck.findInput(a);
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
       a.sc.getBoundingClientRect().top +
@@ -1095,7 +1099,23 @@
       const pendingMath =
         el &&
         [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
+      // Unmounted where the frozen model put it: look for it from the mounted turns.
+      const from = a.sc.scrollTop,
+        to = d ? find(now, el ? NaN : from, look) : null;
+      if (to != null) {
+        a.finds.push({ t: Math.round(now - a.end), from: Math.round(from), to: Math.round(to) });
+        a.sc.scrollTop = to;
+        event('find', a.finds.at(-1));
+        if (tap) emit('retarget', { kind: 'find', to, error: to - from });
+        quiet = prev = 0;
+      }
       if (el && !pendingMath && d.layout && !a.semantic) {
+        // After a search the chat is at the turn's top: first go to its offset in the real row.
+        const landing = a.finds.length ? layoutCheck.findLanding(a, el) : null;
+        if (landing != null) {
+          a.sc.scrollTop = landing;
+          event('find-landing', { to: Math.round(landing) });
+        }
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
         const candidates =
           !est.hidden && a.estTurn === d.id
@@ -1233,9 +1253,11 @@
             return;
           }
         }
+        // The target never mounted after a search: back to where the commit left the chat.
+        if (!el && a.finds.length) a.sc.scrollTop = a.finds[0].from;
         a.readable = now;
         a.timedOut = quiet < 3;
-        a.realTop = top;
+        a.realTop = a.sc.scrollTop;
         hide(true);
         if (el) {
           const bubble = !d.layout && el.querySelector('[data-user-message-bubble]');
@@ -1281,76 +1303,11 @@
   }
 
   // ---- swap alignment audit: where the preview showed text vs where the real text is ----
-  const ANCHOR = /[\p{Script=Han}]{8,}|[A-Za-z][A-Za-z ,]{24,}/u;
   const textRect = (root, needle) =>
     (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);
+  // The swap audit is anchor-main.js's (__butterAnchorVisibleSwap), which loads before this file.
   function measureSwap(a) {
-    if (globalThis.__butterAnchorVisibleSwap) {
-      a.swap = globalThis.__butterAnchorVisibleSwap(a);
-      return;
-    }
-    const s = a.sc,
-      sr = s.getBoundingClientRect(),
-      top = a.lastTop,
-      H = a.hostRect;
-    const items = [],
-      anchors = [];
-    // Block level: each rendered preview item vs the same-index real item of the same turn.
-    const realItems = new Map();
-    for (const [i, el] of a.rendered) {
-      const f = a.prep.flat[i],
-        t = a.prep.model[f.turn];
-      const py = sr.top + f.abs - top;
-      if (py < H.y || py > H.y + H.height - 20) continue;
-      if (!realItems.has(t.id)) {
-        const te = s.querySelector(`[data-turn-key="${CSS.escape(t.id)}"]`);
-        realItems.set(t.id, te ? [...page.previewItemsIn(te)] : null);
-      }
-      const real = realItems.get(t.id)?.[f.index];
-      if (!real) continue;
-      const rr = real.getBoundingClientRect();
-      items.push({ err: Math.round(py - rr.top), hMatch: Math.abs(rr.height - f.h) <= 2 });
-      // Text level: a plain-text run inside this item, located in both trees.
-      if (anchors.length < 3) {
-        const m = el.textContent.match(ANCHOR);
-        if (!m) continue;
-        const needle = m[0].slice(0, 16),
-          pr = textRect(el, needle)[0];
-        if (pr == null || pr < H.y || pr > H.y + H.height - 20) continue;
-        const rs = textRect(real, needle);
-        if (!rs.length) continue;
-        const best = rs.reduce((x, y) => (Math.abs(y - pr) < Math.abs(x - pr) ? y : x));
-        anchors.push({ err: Math.round(pr - best), mode: 'layout' });
-      }
-    }
-    // Estimated-turn text: audit the answer beginning against the mounted destination.
-    if (!est.hidden && a.estTurn) {
-      const m = est.textContent.match(ANCHOR),
-        te = s.querySelector(`[data-turn-key="${CSS.escape(a.estTurn)}"]`);
-      if (m && te) {
-        const needle = m[0].slice(0, 16),
-          pr = textRect(est, needle)[0],
-          rs = textRect(te, needle);
-        if (pr != null && rs.length)
-          anchors.push({
-            err: Math.round(
-              pr - rs.reduce((x, y) => (Math.abs(y - pr) < Math.abs(x - pr) ? y : x)),
-            ),
-            mode: 'estimate',
-          });
-      }
-    }
-    const abs = items.map((x) => Math.abs(x.err)).sort((x, y) => x - y),
-      signed = items.map((x) => x.err).sort((x, y) => x - y);
-    a.swap = {
-      items: items.length,
-      itemErrSignedMedian: signed[signed.length >> 1] ?? null,
-      itemErrSpread: signed.length ? signed.at(-1) - signed[0] : null,
-      itemErrMedian: abs[abs.length >> 1] ?? null,
-      itemErrMax: abs.at(-1) ?? null,
-      hMatch: items.filter((x) => x.hMatch).length,
-      anchors,
-    };
+    a.swap = globalThis.__butterAnchorVisibleSwap(a);
   }
 
   // Opt-in diagnostics return timing, counts and geometry only; never chat text.
@@ -1385,6 +1342,7 @@
       landingErrorPx: a.landingErrorPx,
       turnTopErrorPx: a.turnTopErrorPx,
       retargets: a.retargets,
+      finds: a.finds,
       coalescing: a.release?.dump(),
       commitRetarget: a.commitRetarget,
       alignmentCorrection: a.alignmentCorrection,
@@ -1392,6 +1350,7 @@
       swapError: a.swapError,
       destination: a.destination && {
         turn: a.destination.index,
+        top: Math.round(a.destination.top),
         offset: Math.round(a.destination.offset),
         known: a.destination.known,
         stored: a.prep.model[a.destination.index]?.stored,

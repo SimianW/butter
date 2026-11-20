@@ -1,0 +1,15 @@
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=false fromEnd=5 scrollTop=9409 scrollHeight=10326 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #1: reached the end in 57 steps
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=5 scrollTop=9389 scrollHeight=10306 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #2: reached the end in 57 steps
+REPORT load ats12 #3: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=5 scrollTop=9389 scrollHeight=10306 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #3: reached the end in 25 steps
+REPORT load ats12 #4: firstAfterRestart=false retried=false openedAtEnd=false fromEnd=4 scrollTop=9442 scrollHeight=10358 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #4: reached the end in 57 steps
+REPORT scrollHeight range 10306–10358 over 4 loads
+REPORT overflow-anchor scroller [children]: none [T:none,none]
+REPORT not opened at the end: ats12 #1, ats12 #2, ats12 #3, ats12 #4
+REPORT build=0.1.0-alpha.21+recheck.1 chromium=157.0.8103.50 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":170,"sendAttempts":0}
+SUMMARY recheck-wheel-ats12: 0/4 loads failed
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-19-live-recheck/wheel-ats12.json
+PROCESS EXIT 0

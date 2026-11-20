@@ -1,0 +1,17 @@
+OPENED {"y":64103,"h":67034,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":1,"bytes":18492,"errors":0,"entries":1,"pending":0},"butterOff":null}
+HISTORY {"y":0,"h":347340,"vh":912}
+STEP 50 {"y":30000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":5,"bytes":148470,"errors":0,"entries":5,"pending":0},"butterOff":null}
+STEP 100 {"y":60000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":6,"bytes":197091,"errors":0,"entries":6,"pending":0},"butterOff":null}
+STEP 150 {"y":90000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":7,"bytes":197088,"errors":0,"entries":6,"pending":0},"butterOff":null}
+STEP 200 {"y":120000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":8,"bytes":225032,"errors":0,"entries":7,"pending":0},"butterOff":null}
+STEP 250 {"y":150000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":9,"bytes":225029,"errors":0,"entries":7,"pending":0},"butterOff":null}
+STEP 300 {"y":180000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":10,"bytes":261237,"errors":0,"entries":8,"pending":0},"butterOff":null}
+STEP 350 {"y":210000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":11,"bytes":261233,"errors":0,"entries":8,"pending":0},"butterOff":null}
+STEP 400 {"y":240000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":12,"bytes":309777,"errors":0,"entries":9,"pending":0},"butterOff":null}
+STEP 450 {"y":270000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":12,"bytes":309777,"errors":0,"entries":9,"pending":0},"butterOff":null}
+STEP 500 {"y":300000,"h":347340,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":12,"bytes":309777,"errors":0,"entries":9,"pending":0},"butterOff":null}
+STEP 550 {"y":330000,"h":348386,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":14,"bytes":363928,"errors":0,"entries":11,"pending":1},"butterOff":null}
+STEP 600 {"y":347474,"h":348386,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":16,"bytes":365473,"errors":0,"entries":12,"pending":0},"butterOff":null}
+STEP 650 {"y":347474,"h":348386,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":16,"bytes":365473,"errors":0,"entries":12,"pending":0},"butterOff":null}
+STEP 700 {"y":347474,"h":348386,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":16,"bytes":365473,"errors":0,"entries":12,"pending":0},"butterOff":null}
+END {"y":347474,"h":348386,"vh":912} {"storage":{"ready":true,"loads":1,"hits":0,"writes":16,"bytes":365473,"errors":0,"entries":12,"pending":0},"butterOff":null}

@@ -1,0 +1,5 @@
+# layout-cleanup.mjs was stopped here (TaskStop): the delete waited on the service worker's open connection; layout-dbdelete.log finished it after a browser restart
+ID-OK true
+BEFORE {"keys":["butter","butterLayoutMigrated"],"layoutConsent":"granted","layout":true,"dbs":[["butter-layouts-v1",2]],"rows":{"bookmarks":0,"geometry":12,"state":0}}
+LAYOUT OFF {"keys":["butter","butterLayoutCleared","butterLayoutMigrated"],"layoutConsent":"granted","layout":false,"dbs":[["butter-layouts-v1",2]],"rows":{"bookmarks":0,"geometry":0,"state":1}}
+DELETE DB {"deleted":"pending","blocked":true}

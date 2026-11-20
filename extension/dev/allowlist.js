@@ -349,6 +349,7 @@
     'semantic',
     'question',
     'history-block',
+    'find', // a release looking for a destination turn that did not mount
     // core.validateSnapshot reasons, and the cache's 'estimated'
     'missing',
     'incomplete',

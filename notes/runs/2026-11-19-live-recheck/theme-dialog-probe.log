@@ -1,0 +1,7 @@
+# Read-only probe after theme-switch-2.log stopped (adhoc/dialog-probe.mjs, kept in the captures dir); dialog headings left out (they hold a chat title and the account name)
+path /g/<project>/c/<id>
+dialog {"tag": "SECTION", "role": "dialog", "modal": "false", "open": null, "labelledby": true, "rect": [0, 0, 0, 0], "visible": false} headings=1
+dialog {"tag": "DIV", "role": "dialog", "modal": "true", "open": null, "labelledby": true, "rect": [200, 68, 1200, 775], "visible": true} headings=12
+profileButton True hidden by [{"tag": "NAV", "ariaHidden": "true", "inert": false, "id": null}]
+after reload {"dataTheme":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"dialogs":[{"visible":false,"modal":"false"}]}
+cookie ["codex_appearance_theme=light"]

@@ -1,0 +1,16 @@
+REPORT before: cookie "light"; {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"t":8618}
+REPORT Dark: {"htmlClass":"chatgpt-theme","dataTheme":"dark","appearance":"light","colorScheme":"dark","lsTheme":"light","hostDark":true,"t":5353}; <html> attributes changed: ["data-theme","data-appearance-preset"]; data-dark changes after the pick: [[263,true]]
+PASS switch-dark-page
+PASS switch-dark-host
+REPORT Dark, back in the chat: {"htmlClass":"chatgpt-theme","dataTheme":"dark","appearance":"light","colorScheme":"dark","lsTheme":"light","hostDark":true,"t":7128}; reloaded: false
+PASS switch-dark-chat
+REPORT Light: {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"t":12057}; <html> attributes changed: ["data-theme","data-appearance-preset"]; data-dark changes after the pick: [[263,false]]
+PASS switch-light-page
+PASS switch-light-host
+REPORT Light, back in the chat: {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"t":13833}; reloaded: false
+PASS switch-light-chat
+REPORT after restore and reload: cookie "light"; {"htmlClass":"chatgpt-theme","dataTheme":"light","appearance":"light","colorScheme":"light","lsTheme":"light","hostDark":false,"t":8988}
+PASS theme-restored
+PASS host-restored
+SUMMARY theme-switch: 0 FAILs
+PROCESS EXIT 0
