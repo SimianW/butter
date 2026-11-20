@@ -1,0 +1,3 @@
+BEFORE {"keys":[],"dbs":[["butter-layouts-v1",2]]}
+DELETE DB {"deleted":true,"blocked":false}
+AFTER {"keys":[],"dbs":[]}
