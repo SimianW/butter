@@ -1081,8 +1081,7 @@
     a.retargets = [];
     a.finds = [];
     const find = layoutCheck.finder({ limit: 4 });
-    // findTurn's input (layoutCheck.findInput): the search aims at the target's top, through the
-    // mounted turns' own rows; layoutCheck.findLanding then places a stored layout.
+    // findTurn's input (layoutCheck.findInput): the search aims at the target's top, by own rows.
     const look = () => layoutCheck.findInput(a);
     const rowTop = (el) =>
       el.parentElement.getBoundingClientRect().top -
@@ -1110,12 +1109,13 @@
         if (tap) emit('retarget', { kind: 'find', to, error: to - from });
         quiet = prev = 0;
       }
-      // A stored layout the search found: once its turn mounts, go to its offset in the real row.
-      if (el && d.layout && a.finds.length && !a.semantic && a.findLanding == null) {
-        a.findLanding = layoutCheck.findLanding(a, el);
-        if (a.findLanding != null) a.sc.scrollTop = a.findLanding;
-      }
       if (el && !pendingMath && d.layout && !a.semantic) {
+        // After a search the chat is at the turn's top: first go to its offset in the real row.
+        const landing = a.finds.length ? layoutCheck.findLanding(a, el) : null;
+        if (landing != null) {
+          a.sc.scrollTop = landing;
+          event('find-landing', { to: Math.round(landing) });
+        }
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
         const candidates =
           !est.hidden && a.estTurn === d.id

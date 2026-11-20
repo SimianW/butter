@@ -31,7 +31,9 @@ const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 12000, 30000],
 // its model height). `slot`: { index: height } for turns that hold that height until they first
 // mount, then grow to their real height. `parent`: each turn's parentElement: 'own' (its row),
 // 'contents' (a 0-height rect, as `display: contents`) or 'shared' (one full-height wrapper for all
-// turns). `suppress`: turns that never mount.
+// turns). `suppress`: turns that never mount. `mathUntil`: the target's math renders at that time
+// (ms); until then it has a `[data-math-source]` node with no `.katex`. `jump`: { at, to }: at `at`
+// ms the virtualizer moves the chat to `to`, which unmounts the target.
 function release({
   model,
   target,
@@ -43,10 +45,13 @@ function release({
   slot = {},
   parent = 'own',
   suppress = [],
+  mathUntil = 0,
+  jump = null,
 }) {
   const frames = [],
     ids = HEIGHTS.map((_, i) => `q${i}`),
-    seen = new Set();
+    seen = new Set(),
+    pending = []; // while the target's math is pending: the view's top, px into the target
   let now = 0,
     top = 0;
   // The live layout: a turn not yet mounted holds its slot height.
@@ -63,7 +68,11 @@ function release({
     const turn = {
       dataset: { turnKey: id },
       getAttribute: () => id,
-      querySelectorAll: () => [],
+      querySelectorAll: (s) => {
+        if (s !== '[data-math-source]' || i !== target || !mathUntil) return [];
+        if (now < mathUntil) pending.push(top + INSET - tops()[i]);
+        return [{ querySelector: () => (now < mathUntil ? null : {}) }];
+      },
       querySelector: (s) =>
         bubble && s === '[data-user-message-bubble]'
           ? { getBoundingClientRect: () => ({ top: tops()[i] + BUBBLE - top }) }
@@ -181,6 +190,7 @@ function release({
   const a = ctx.testActive;
   for (let i = 0; frames.length && i < 2000 && a.readable == null; i++) {
     now += 16;
+    if (jump && now >= jump.at && !jump.done) [top, jump.done] = [jump.to, true];
     frames.shift()();
   }
   const at = top + INSET,
@@ -193,6 +203,7 @@ function release({
     ms: a.readable - a.end,
     timedOut: a.timedOut,
     finds: a.finds.length,
+    pending,
   };
   console.log('landed', JSON.stringify(landed), 'finds', JSON.stringify(a.finds));
   return landed;
@@ -235,6 +246,32 @@ test('a found layout destination lands at the previewed passage when its phrase 
   assert.ok(
     Math.abs(landed.offset - 10000) <= 4,
     `at the previewed passage (offset ${landed.offset})`,
+  );
+});
+
+// Review L18: the target mounts with its math pending, then ChatGPT unmounts it and moves the
+// chat into question 5; a second search finds it again, and its math finishes after that. The
+// view goes to the offset only once the math is done, so it does so after the second search too.
+test('a found layout destination lands at the previewed passage when its turn unmounts while its math is pending', () => {
+  const landed = release({
+    model: SHORT,
+    target: 6,
+    offset: 10000,
+    layout: true,
+    needle: { previewY: INSET + 100, realAt: [200, 10100] },
+    mathUntil: 2000,
+    jump: { at: 1000, to: 30000 },
+  });
+  assert.equal(landed.finds, 2, 'found twice');
+  assert.equal(landed.turn, 6);
+  assert.ok(
+    Math.abs(landed.offset - 10000) <= 4,
+    `at the previewed passage (offset ${landed.offset})`,
+  );
+  assert.ok(landed.pending.length > 0, 'the target was mounted with its math pending');
+  assert.ok(
+    landed.pending.every((o) => Math.abs(o) <= 4),
+    `at the turn's top while its math is pending (${[...new Set(landed.pending)]})`,
   );
 });
 

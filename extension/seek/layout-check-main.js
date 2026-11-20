@@ -310,8 +310,6 @@
     visibleRect,
     semanticTarget,
     findTurn,
-    turnRow,
-    findOffset,
     findInput,
     findLanding,
     finder,
