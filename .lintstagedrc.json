@@ -1,0 +1,4 @@
+{
+  "extension/**/*.{js,css,html,json}": "prettier --write",
+  "test/**": "prettier --write --ignore-unknown"
+}

@@ -26,5 +26,5 @@ Tooling under `scripts/` has its own seam: `scripts/test_*.py`, run with
 `python3 -m unittest discover -s scripts -p 'test_*.py'`. Catches the packaging, review-tier and
 PR-body rules; it reaches nothing in `extension/`.
 
-Before a PR, run every check in [`.github/workflows/check.yml`](../../.github/workflows/check.yml)
-locally.
+Before a PR, run `npm run check`: it runs every check in
+[`.github/workflows/check.yml`](../../.github/workflows/check.yml) locally.

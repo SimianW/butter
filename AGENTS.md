@@ -48,7 +48,7 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   that test at them without asking the user.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Dev docs: [docs/development.md](docs/development.md) has the setup and test commands, and links
-  out per topic (runtime API, releasing).
+  out per topic (runtime API, releasing). `npm run check` runs every CI check locally.
 - Frontend: before any visible frontend change, use the `mockup-first` skill: show the user a
   mockup and wait for approval. Mockups are saved in `mockups/`. The UI's default language is
   English (`extension/_locales/en/`; `zh_CN` is the second locale), and its fonts, colours and

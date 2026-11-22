@@ -270,6 +270,8 @@ Run `npm ci` to install the pinned development tools (Prettier, ESLint, and Play
 `extension/**/*.{js,css,html,json}` and `test/**`. Use `npm run format:check` to check them.
 `npm run lint` checks `extension/` and `test/` for undefined and unused names, and those plus `lab/harness/` for file length: at most 500 lines (blank lines and comments count), except the files capped at their current length in `eslint.config.mjs`, which may only shrink (ESLint; config in `eslint.config.mjs`).
 `node --test` uses only Node built-ins, except `test/max-lines-caps.test.mjs`, which imports the ESLint config and so needs `npm ci`; it fails when a capped file has shrunk below its cap or to 500 lines or fewer, so the cap is lowered or dropped.
+`npm run check` runs every CI check in order (`node --test` needs `npx playwright install --only-shell chromium` once).
+`npm ci` also installs a Husky pre-commit hook that formats staged files with Prettier (lint-staged, same globs as `format:check`) and runs `npm run lint` and `python3 scripts/check-version.py`; `git commit --no-verify` skips it.
 
 ## Runtime API
 
