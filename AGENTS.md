@@ -108,7 +108,7 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   `## Review` section as `- **Tier:** N` (the `pr` skill); after an APPROVE, `review-loop` adds
   the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items (the Verdict reads
   `overridden by <user> at <sha>` when the user ships a stuck loop). CI's `pr-body` check
-  enforces the Tier and Verdict items, and
+  enforces the Tier and Verdict items, and the Cap raised items (see File length), and
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
@@ -119,6 +119,13 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   lock files, binary files and the folders in the script's `SKIP_PREFIXES` (docs, assets and
   `lab/variants/`) do not count. `python3 scripts/pr-size.py` prints the label locally. The label
   is CI's to set.
+- File length: every linted file stays within `maxLines` (500) in `eslint.config.mjs`; a file
+  already over it has a cap in `maxLinesCaps`, which may only come down as the file shrinks
+  (`npm run lint` and `test/max-lines-caps.test.mjs`). Split a file along a seam rather than
+  raise its cap. A PR that adds or raises a cap carries one item per cap in its body, such as
+  ``- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: <reason>`` (`new` in place
+  of the old cap for an added one); `pr-body` fails without it. A raised cap does not change
+  the tier.
 - Reviews: every gate review before merge, including when the user asks to review a PR or branch,
   runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
   it (see New features).
