@@ -11,9 +11,9 @@ A .js, .mjs, .cjs or .css file that exists on both sides and changed only in com
 whitespace is tier 0, wherever it lives, except the review gate's own files (GATE_FILES), which are
 always tier 2: the working tree's same-code.mjs judges its own change. JavaScript is compared by
 scripts/same-code.mjs (espree tokens and syntax tree), so it needs node and `npm ci`; without them
-the script exits with an error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
-runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS holding a backslash (an
-escape) or `url(` in any letter case is never treated as comment-only.
+the script exits with an error rather than guess. CSS is compared here: comments outside strings
+are dropped and whitespace runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS
+holding a backslash (an escape) or `url(` in any letter case is never treated as comment-only.
 
 In the manifest, a content_scripts change is tier 1 when it only edits the entries' js and css
 lists (same entries in the same order, every other key unchanged, no file moved between entries);
