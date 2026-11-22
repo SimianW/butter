@@ -27,6 +27,17 @@ the check falls back to the paths that differ between <sha> and the working tree
 the PR changed at review time or changes now. Markdown or notes added after the approval pass, and
 so does a .js, .mjs, .cjs or .css file whose reviewed and current versions differ only in comments
 and whitespace (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
+
+Separately from the tier, every max-lines cap the PR adds or raises in eslint.config.mjs's
+`maxLinesCaps` needs its own item, at any tier:
+
+    - **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: <why the file cannot split now>
+
+The item names the path in backticks, the cap at the merge base (`new` for an added cap), `→`
+(or `->`), the cap in the working tree, and a reason after the colon. Caps are read from the
+object literal in eslint.config.mjs as Prettier formats it (`'path': N,` lines); any other line in
+it fails the check, so a cap cannot hide from it. A cap that drops or goes away needs no item, and
+raising a cap does not change the tier.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
 import importlib.util
@@ -43,6 +54,10 @@ review_tier = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(review_tier)
 
 TIER_ITEM = re.compile(r"[-*] \*\*Tier:\*\* ([0-9]+)")
+ESLINT_CONFIG = "eslint.config.mjs"
+CAPS_BLOCK = re.compile(r"^export const maxLinesCaps = \{\n(.*?)^\};", re.M | re.S)
+CAP_ENTRY = re.compile(r"'([^'\\]+)': ([0-9]+),")
+CAP_ITEM = re.compile(r"[-*] \*\*Cap raised:\*\* `([^`]+)` (new|[0-9]+) (?:→|->) ([0-9]+): \S.*")
 VERDICT_ITEM = re.compile(
     r"[-*] \*\*Verdict:\*\* (approved|overridden by [^`@\s]+) at (`?)([0-9a-fA-F]{7,40})\2"
 )
@@ -54,6 +69,72 @@ def tier_item(tier):
 
 def verdict_item(sha=None):
     return f"- **Verdict:** approved at {sha or '<sha>'}"
+
+
+class CapsError(Exception):
+    pass
+
+
+def parse_caps(text):
+    """Return {path: cap} from the maxLinesCaps literal in eslint.config.mjs's text."""
+    text = text.replace("\r\n", "\n")
+    if re.search(r"^export const maxLinesCaps = \{\};", text, re.M):
+        return {}
+    match = CAPS_BLOCK.search(text)
+    if match is None:
+        raise CapsError(f"no `export const maxLinesCaps = {{ ... }};` block in {ESLINT_CONFIG}")
+    caps = {}
+    for line in match.group(1).splitlines():
+        line = line.strip()
+        if not line or line.startswith("//"):
+            continue
+        entry = CAP_ENTRY.fullmatch(line)
+        if entry is None:
+            raise CapsError(f"cannot read the maxLinesCaps line {line!r} in {ESLINT_CONFIG}")
+        caps[entry.group(1)] = int(entry.group(2))
+    return caps
+
+
+def caps_at(rev, root):
+    """Return the caps in eslint.config.mjs at rev; {} when the file does not exist there."""
+    try:
+        text = review_tier.git("show", f"{rev}:{ESLINT_CONFIG}", cwd=root)
+    except review_tier.GitError:
+        return {}
+    return parse_caps(text.decode("utf-8"))
+
+
+def working_caps(root):
+    """Return the caps in the working tree's eslint.config.mjs; {} when it does not exist."""
+    path = Path(root, ESLINT_CONFIG)
+    return parse_caps(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def cap_item(path, old, new):
+    return f"- **Cap raised:** `{path}` {old if old is not None else 'new'} → {new}: <reason>"
+
+
+def check_caps(body, before, after):
+    """Return (failures, passes): every cap added or raised from before to after needs its item."""
+    items = set()
+    for line in (body or "").splitlines():
+        match = CAP_ITEM.fullmatch(line.strip())
+        if match:
+            items.add((match.group(1), match.group(2), int(match.group(3))))
+    failures, passes = [], []
+    for path, new in sorted(after.items()):
+        old = before.get(path)
+        if old is not None and new <= old:
+            continue
+        verb = "adds" if old is None else f"raises from {old}"
+        if (path, "new" if old is None else str(old), new) in items:
+            passes.append(f"the max-lines cap the PR {verb} to {new} for {path} has its reason")
+        else:
+            failures.append(
+                f"the PR {verb} the max-lines cap to {new} for {path} in {ESLINT_CONFIG}; split the "
+                f"file along a seam, or add `{cap_item(path, old, new)}`"
+            )
+    return failures, passes
 
 
 def check_body(body, tier, reasons, review_gate=None, head=None):
@@ -164,7 +245,8 @@ def main(argv):
         root = review_tier.git("rev-parse", "--show-toplevel").decode().strip()
         merge_base, paths, before, after, format_only = review_tier.collect(base)
         head = review_tier.git("rev-parse", "--short", "HEAD", cwd=root).decode().strip()
-    except (review_tier.GitError, review_tier.ToolError, OSError) as error:
+        caps_before, caps_after = caps_at(merge_base, root), working_caps(root)
+    except (review_tier.GitError, review_tier.ToolError, CapsError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
     if not paths:
@@ -182,6 +264,8 @@ def main(argv):
     except (review_tier.GitError, review_tier.ToolError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
+    cap_failures, cap_passes = check_caps(os.environ.get("PR_BODY", ""), caps_before, caps_after)
+    failures, passes = failures + cap_failures, passes + cap_passes
     for message in failures:
         print(f"FAIL: {message}")
     if failures:

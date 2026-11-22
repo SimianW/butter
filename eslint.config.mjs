@@ -4,7 +4,9 @@ import globals from 'globals';
 
 export const maxLines = 500;
 
-// Raising a cap needs the reason in the PR body; prefer splitting the file along a seam.
+// Prefer splitting a file along a seam to raising its cap. A PR that adds or raises a cap needs a
+// `- **Cap raised:** `<path>` <old or new> → <cap>: <reason>` item in its body, which
+// scripts/check-pr-body.py reads; keep this literal to `'path': N,` lines so that script can.
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 552,
   'extension/seek/core-main.js': 570,

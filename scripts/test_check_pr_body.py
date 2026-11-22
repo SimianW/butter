@@ -13,6 +13,8 @@ SPEC = importlib.util.spec_from_file_location("check_pr_body", ROOT / "scripts" 
 check_pr_body = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(check_pr_body)
 check_body = check_pr_body.check_body
+check_caps = check_pr_body.check_caps
+parse_caps = check_pr_body.parse_caps
 
 REVIEWED = "- **Verdict:** approved at `abc1234`"
 REVIEWERS = "- **Reviewers:** gpt-6.1-sol ×3 → claude-opus-5-5 ×1"
@@ -189,6 +191,80 @@ class VerdictItemTest(unittest.TestCase):
     def test_tier_zero_skips_the_gate(self):
         failures, _ = check_body(tier(0), 0, ["README.md (Markdown)"], review_gate=self.fail)
         self.assertEqual(failures, [])
+
+
+class CapsTest(unittest.TestCase):
+    BEFORE = {"extension/seek/preview-main.js": 1546, "test/a.test.js": 600}
+
+    def test_raised_cap_without_an_item_fails_with_the_item_to_add(self):
+        after = {**self.BEFORE, "extension/seek/preview-main.js": 1583}
+        failures, _ = check_caps(tier(1), self.BEFORE, after)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("raises from 1546 the max-lines cap to 1583", failures[0])
+        self.assertIn("`- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: <reason>`", failures[0])
+
+    def test_raised_cap_with_its_item_passes(self):
+        after = {**self.BEFORE, "extension/seek/preview-main.js": 1583}
+        body = "- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: the seam lands in #140"
+        failures, passes = check_caps(body, self.BEFORE, after)
+        self.assertEqual(failures, [])
+        self.assertEqual(len(passes), 1)
+
+    def test_ascii_arrow_and_star_bullet_pass(self):
+        after = {**self.BEFORE, "test/a.test.js": 610}
+        body = "* **Cap raised:** `test/a.test.js` 600 -> 610: one more fixture"
+        self.assertEqual(check_caps(body, self.BEFORE, after)[0], [])
+
+    def test_added_cap_needs_a_new_item(self):
+        after = {**self.BEFORE, "extension/x.js": 520}
+        failures, _ = check_caps("", self.BEFORE, after)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("adds the max-lines cap to 520 for extension/x.js", failures[0])
+        self.assertIn("`extension/x.js` new → 520", failures[0])
+        body = "- **Cap raised:** `extension/x.js` new → 520: generated table"
+        self.assertEqual(check_caps(body, self.BEFORE, after)[0], [])
+
+    def test_stale_item_fails(self):
+        after = {**self.BEFORE, "extension/seek/preview-main.js": 1600}
+        body = "- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: reason"
+        failures, _ = check_caps(body, self.BEFORE, after)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("1546 → 1600", failures[0])
+
+    def test_item_without_a_reason_fails(self):
+        after = {**self.BEFORE, "test/a.test.js": 610}
+        failures, _ = check_caps("- **Cap raised:** `test/a.test.js` 600 → 610:", self.BEFORE, after)
+        self.assertEqual(len(failures), 1)
+
+    def test_lowered_and_dropped_caps_need_no_item(self):
+        after = {"extension/seek/preview-main.js": 1500}
+        self.assertEqual(check_caps("", self.BEFORE, after), ([], []))
+
+    def test_unchanged_caps_need_no_item(self):
+        self.assertEqual(check_caps("", self.BEFORE, dict(self.BEFORE)), ([], []))
+
+
+class ParseCapsTest(unittest.TestCase):
+    def test_reads_the_repo_config(self):
+        caps = parse_caps((ROOT / "eslint.config.mjs").read_text(encoding="utf-8"))
+        self.assertTrue(caps)
+        self.assertTrue(all(isinstance(cap, int) for cap in caps.values()))
+
+    def test_reads_entries_and_skips_comments(self):
+        text = "export const maxLinesCaps = {\r\n  // Why.\r\n  'a/b.js': 510,\r\n\r\n  'c.js': 600,\r\n};\r\n"
+        self.assertEqual(parse_caps(text), {"a/b.js": 510, "c.js": 600})
+
+    def test_empty_literal_is_no_caps(self):
+        self.assertEqual(parse_caps("export const maxLinesCaps = {};\n"), {})
+
+    def test_unreadable_line_fails(self):
+        for line in ["  ...extra,", "  'a.js': 500 + 10,", "  [key]: 510,", '  "a.js": 510,']:
+            with self.subTest(line=line), self.assertRaises(check_pr_body.CapsError):
+                parse_caps(f"export const maxLinesCaps = {{\n{line}\n}};\n")
+
+    def test_missing_block_fails(self):
+        with self.assertRaises(check_pr_body.CapsError):
+            parse_caps("const maxLinesCaps = makeCaps();\n")
 
 
 class LineEndingTest(unittest.TestCase):
@@ -450,6 +526,40 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("PASS: Tier: 0 is at least the computed tier 0", result.stdout)
         self.assertIn("PASS: tier 0 needs no Verdict item", result.stdout)
+
+    def caps_config(self, caps):
+        rows = "".join(f"  '{path}': {cap},\n" for path, cap in caps.items())
+        return f"export const maxLines = 500;\n\nexport const maxLinesCaps = {{\n{rows}}};\n"
+
+    def test_raised_cap_without_an_item_fails_at_tier_zero(self):
+        self.git("checkout", "-q", "main")
+        self.write("eslint.config.mjs", self.caps_config({"extension/big.js": 600}))
+        self.commit("main caps a file")
+        self.git("checkout", "-q", "-b", "raise")
+        self.write("eslint.config.mjs", self.caps_config({"extension/big.js": 640}))
+        self.commit("raise the cap")
+        body = "## Review\n\n- **Tier:** 2\n" + REVIEWED.replace("abc1234", self.rev("HEAD")[:7])
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("FAIL: the PR raises from 600 the max-lines cap to 640 for extension/big.js", result.stdout)
+        body += "\n- **Cap raised:** `extension/big.js` 600 → 640: the split waits on #1"
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: the max-lines cap the PR raises from 600 to 640", result.stdout)
+
+    def test_cap_added_in_a_new_config_needs_an_item(self):
+        self.write("eslint.config.mjs", self.caps_config({"extension/dev/capture.js": 510}))
+        self.commit("add a config with a cap")
+        result = self.run_check(self.body(self.rev("HEAD")[:7], tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("adds the max-lines cap to 510 for extension/dev/capture.js", result.stdout)
+
+    def test_unreadable_caps_fail_the_check(self):
+        self.write("eslint.config.mjs", "export const maxLinesCaps = {\n  ...more,\n};\n")
+        self.commit("config the check cannot read")
+        result = self.run_check(self.body(self.rev("HEAD")[:7], tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("cannot read the maxLinesCaps line", result.stderr)
 
 
 class WorkflowTest(unittest.TestCase):
