@@ -643,6 +643,13 @@ class RuleTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual(classify([path], None, None), (2, [f"{path} (review gate)"]))
 
+    def test_comment_only_change_to_a_gate_file_stays_tier_2(self):
+        # The working tree's same-code.mjs judges its own change, so an edited comparator could
+        # call itself comment-only; the gate files never take the tier 0 route.
+        for path in ("scripts/review-tier.py", "scripts/check-pr-body.py", "scripts/same-code.mjs"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None, {path}), (2, [f"{path} (review gate)"]))
+
     def test_other_scripts_and_their_tests_are_tier_1(self):
         self.assertEqual(
             classify(["scripts/pr-size.py", "scripts/test_review_tier.py", ".github/dependabot.yml"], None, None)[0],

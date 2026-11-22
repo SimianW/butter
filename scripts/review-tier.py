@@ -8,9 +8,10 @@ Compares `git merge-base HEAD <base>` with the working tree, untracked files inc
 Tier 2 is high risk, tier 1 is ordinary code, tier 0 needs only the checks.
 
 A .js, .mjs, .cjs or .css file that exists on both sides and changed only in comments and
-whitespace is tier 0, wherever it lives. JavaScript is compared by scripts/same-code.mjs (espree
-tokens and syntax tree), so it needs node and `npm ci`; without them the script exits with an
-error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
+whitespace is tier 0, wherever it lives, except the review gate's own files (GATE_FILES), which are
+always tier 2: the working tree's same-code.mjs judges its own change. JavaScript is compared by
+scripts/same-code.mjs (espree tokens and syntax tree), so it needs node and `npm ci`; without them
+the script exits with an error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
 runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS holding a backslash (an
 escape) or `url(` in any letter case is never treated as comment-only.
 
@@ -123,14 +124,14 @@ def classify_path(path, manifest_before, manifest_after, format_only=frozenset()
     """Return (tier, reason) for one repo-relative path.
 
     format_only holds the paths whose two versions differ only in comments and whitespace."""
+    if path in GATE_FILES:
+        return 2, f"{path} (review gate)"
     if path in format_only:
         return 0, f"{path} (comments or formatting only)"
     if path.startswith(HIGH_RISK_DIRS):
         return 2, f"{path} (high-risk directory)"
     if path in HIGH_RISK_FILES:
         return 2, f"{path} (storage or consent)"
-    if path in GATE_FILES:
-        return 2, f"{path} (review gate)"
     if path == MANIFEST:
         keys = changed_keys(manifest_before, manifest_after)
         risky = [key for key in keys if key in HIGH_RISK_KEYS]
