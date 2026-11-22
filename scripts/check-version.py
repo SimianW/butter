@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the manifest's version mapping and the version sites documented in AGENTS.md."""
+"""Check the manifest's version mapping and the version sites documented in docs/agents/releasing.md."""
 import datetime
 import json
 from pathlib import Path
@@ -71,7 +71,7 @@ def check(root):
 
     changelog = read("CHANGELOG.md")
     if changelog is not None:
-        # A standing Unreleased heading first (AGENTS.md, Changelog), then the current build's entry.
+        # A standing Unreleased heading first (docs/agents/changelog.md), then the current build's entry.
         headings = [line for line in changelog.splitlines() if line.startswith("## ")]
         if not headings or headings[0] != "## [Unreleased]":
             errors.append(

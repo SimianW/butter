@@ -303,7 +303,7 @@ memory on clear. New measurements can subsequently save again if saving remains 
 The bridge deletes the old site-origin trial database `butter-seek-cold-geometry-v1` once and marks
 success in extension settings. A blocked/failed deletion is retried on a later visit. No old
 records are read or imported. See [privacy and clearing instructions](../PRIVACY.md#what-butter-saves-on-your-computer),
-the [runtime API](development.md#layout-storage-api), and the
+the [runtime API](runtime-api.md#layout-storage-api), and the
 [backend/permission rationale](layout-storage-design.md).
 
 Ask in branch keeps the selected text, the question, the original conversation id and its title in
