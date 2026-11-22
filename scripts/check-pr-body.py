@@ -101,7 +101,10 @@ def caps_at(rev, root):
         text = review_tier.git("show", f"{rev}:{ESLINT_CONFIG}", cwd=root)
     except review_tier.GitError:
         return {}
-    return parse_caps(text.decode("utf-8"))
+    try:
+        return parse_caps(text.decode("utf-8"))
+    except CapsError as error:
+        raise CapsError(f"{error} at the merge base {rev[:7]}; rebase onto the base branch") from None
 
 
 def working_caps(root):
@@ -126,13 +129,17 @@ def check_caps(body, before, after):
         old = before.get(path)
         if old is not None and new <= old:
             continue
-        verb = "adds" if old is None else f"raises from {old}"
+        change = (
+            f"adds a max-lines cap of {new} for {path}"
+            if old is None
+            else f"raises the max-lines cap for {path} from {old} to {new}"
+        )
         if (path, "new" if old is None else str(old), new) in items:
-            passes.append(f"the max-lines cap the PR {verb} to {new} for {path} has its reason")
+            passes.append(f"the PR {change}, with its reason")
         else:
             failures.append(
-                f"the PR {verb} the max-lines cap to {new} for {path} in {ESLINT_CONFIG}; split the "
-                f"file along a seam, or add `{cap_item(path, old, new)}`"
+                f"the PR {change} in {ESLINT_CONFIG}; split the file along a seam, "
+                f"or add `{cap_item(path, old, new)}`"
             )
     return failures, passes
 

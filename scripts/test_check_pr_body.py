@@ -200,7 +200,7 @@ class CapsTest(unittest.TestCase):
         after = {**self.BEFORE, "extension/seek/preview-main.js": 1583}
         failures, _ = check_caps(tier(1), self.BEFORE, after)
         self.assertEqual(len(failures), 1)
-        self.assertIn("raises from 1546 the max-lines cap to 1583", failures[0])
+        self.assertIn("raises the max-lines cap for extension/seek/preview-main.js from 1546 to 1583", failures[0])
         self.assertIn("`- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: <reason>`", failures[0])
 
     def test_raised_cap_with_its_item_passes(self):
@@ -219,7 +219,7 @@ class CapsTest(unittest.TestCase):
         after = {**self.BEFORE, "extension/x.js": 520}
         failures, _ = check_caps("", self.BEFORE, after)
         self.assertEqual(len(failures), 1)
-        self.assertIn("adds the max-lines cap to 520 for extension/x.js", failures[0])
+        self.assertIn("adds a max-lines cap of 520 for extension/x.js", failures[0])
         self.assertIn("`extension/x.js` new → 520", failures[0])
         body = "- **Cap raised:** `extension/x.js` new → 520: generated table"
         self.assertEqual(check_caps(body, self.BEFORE, after)[0], [])
@@ -531,28 +531,40 @@ class ReviewedCommitTest(unittest.TestCase):
         rows = "".join(f"  '{path}': {cap},\n" for path, cap in caps.items())
         return f"export const maxLines = 500;\n\nexport const maxLinesCaps = {{\n{rows}}};\n"
 
-    def test_raised_cap_without_an_item_fails_at_tier_zero(self):
+    def test_raised_cap_without_an_item_fails_and_stays_tier_one(self):
         self.git("checkout", "-q", "main")
         self.write("eslint.config.mjs", self.caps_config({"extension/big.js": 600}))
         self.commit("main caps a file")
         self.git("checkout", "-q", "-b", "raise")
         self.write("eslint.config.mjs", self.caps_config({"extension/big.js": 640}))
         self.commit("raise the cap")
-        body = "## Review\n\n- **Tier:** 2\n" + REVIEWED.replace("abc1234", self.rev("HEAD")[:7])
+        body = "## Review\n\n- **Tier:** 1\n" + REVIEWED.replace("abc1234", self.rev("HEAD")[:7])
         result = self.run_check(body)
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("FAIL: the PR raises from 600 the max-lines cap to 640 for extension/big.js", result.stdout)
+        self.assertIn("FAIL: the PR raises the max-lines cap for extension/big.js from 600 to 640", result.stdout)
         body += "\n- **Cap raised:** `extension/big.js` 600 → 640: the split waits on #1"
         result = self.run_check(body)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("PASS: the max-lines cap the PR raises from 600 to 640", result.stdout)
+        self.assertIn("PASS: Tier: 1 is at least the computed tier 1", result.stdout)
+        self.assertIn("PASS: the PR raises the max-lines cap for extension/big.js from 600 to 640, with its reason", result.stdout)
 
     def test_cap_added_in_a_new_config_needs_an_item(self):
         self.write("eslint.config.mjs", self.caps_config({"extension/dev/capture.js": 510}))
         self.commit("add a config with a cap")
         result = self.run_check(self.body(self.rev("HEAD")[:7], tier=2))
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("adds the max-lines cap to 510 for extension/dev/capture.js", result.stdout)
+        self.assertIn("adds a max-lines cap of 510 for extension/dev/capture.js", result.stdout)
+
+    def test_merge_base_without_a_caps_literal_asks_for_a_rebase(self):
+        self.git("checkout", "-q", "main")
+        self.write("eslint.config.mjs", "export default [];\n")
+        self.commit("main config before the ratchet")
+        self.git("checkout", "-q", "-b", "old")
+        self.write("extension/dev/capture.js", "export const a = 3;\n")
+        self.commit("work on the old base")
+        result = self.run_check(self.body(self.rev("HEAD")[:7]))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("rebase onto the base branch", result.stderr)
 
     def test_unreadable_caps_fail_the_check(self):
         self.write("eslint.config.mjs", "export const maxLinesCaps = {\n  ...more,\n};\n")
