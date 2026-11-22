@@ -27,8 +27,8 @@ Done when: one command goes **red** on this bug, and you have run it and seen it
 
 Fix it with the `tdd` skill: the smallest change that turns the step 2 command **green**.
 
-Done when: the step 2 command passes, and so does every check in
-[`.github/workflows/check.yml`](../.github/workflows/check.yml), run locally.
+Done when: the step 2 command passes, and so does `npm run check` (every check in
+[`.github/workflows/check.yml`](../.github/workflows/check.yml), run locally).
 
 ## 4. Review and ship
 
