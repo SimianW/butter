@@ -1,5 +1,5 @@
 // ISOLATED world. The bookmark worker's client, shared by bookmarks/content.js and bookmarks/notice.js:
-// version-1 runtime messages to bookmarks/worker.js (docs/development.md, "Bookmarks store API").
+// version-1 runtime messages to bookmarks/worker.js (docs/runtime-api.md, "Bookmarks store API").
 // A storage failure (`bookmark-storage`) or a stopped worker closing the port is retried with the
 // same request, which wakes the worker again, up to three times in all. It also reports the
 // popup's Clear (its token in local storage) and reads the Bookmark command's key.

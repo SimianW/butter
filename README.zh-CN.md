@@ -100,7 +100,7 @@ Butter 只在 chatgpt.com 上运行，不自行发起网络请求，没有服务
 - [安装与设置](docs/install.md)（英文）
 - [工作原理](docs/how-it-works.md)（英文）：实现方式与已知取舍
 - [性能测试](docs/benchmarks.md)（英文）：完整结果与测试方法
-- [开发](docs/development.md)（英文）：仓库结构、测试与打包
+- [开发](docs/development.md)（英文）：仓库结构与测试
 - [隐私政策](PRIVACY.zh-CN.md)：Butter 读取、存储和发送了什么
 
 MIT 许可证。

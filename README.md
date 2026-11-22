@@ -100,7 +100,7 @@ Butter runs only on chatgpt.com, makes no network requests of its own, and has n
 - [Install and settings](docs/install.md)
 - [How it works](docs/how-it-works.md): implementation and known trade-offs
 - [Benchmarks](docs/benchmarks.md): full results and method
-- [Development](docs/development.md): repo layout, tests and packaging
+- [Development](docs/development.md): repo layout and tests
 - [Privacy policy](PRIVACY.md): what Butter reads, stores and sends
 
 MIT license.
