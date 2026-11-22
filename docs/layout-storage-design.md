@@ -94,13 +94,13 @@ account switches, clear generations, and stale prefetch responses are fenced sep
 The worker refreshes LRU on load without extending the 30-day TTL, prunes on usage/load/write,
 and evicts the least recently used rows globally. Usage counts distinct account/conversation
 pairs. Clear and layout-off cover all accounts. Migration deletes the old trial database without
-reading it. See [development](runtime-api.md#layout-storage-api) for the runtime contract.
+reading it. See the [runtime API](runtime-api.md#layout-storage-api) for the runtime contract.
 
 ## Protocol and worker termination
 
 Runtime protocol version 1 uses `{ version: 1, type, ... }`; unsupported versions return
 `{ error: 'layout-protocol' }`. The public usage and clear calls and internal load/put shapes are
-listed in [development](runtime-api.md#layout-storage-api). Clear includes a random UUID
+listed in the [runtime API](runtime-api.md#layout-storage-api). Clear includes a random UUID
 `requestId`; retry the exact same request. The last 64 clear ids are durably deduplicated in the
 same transaction as clear and generation advancement, so a lost response followed by a retry
 does not delete layouts written after the original clear. This bounded window covers immediate
