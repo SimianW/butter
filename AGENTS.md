@@ -45,8 +45,10 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.
 - Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams and the skills
-  that test at them without asking the user. [docs/development.md](docs/development.md) has the test commands.
+  that test at them without asking the user.
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
+- Dev docs: [docs/development.md](docs/development.md) has the setup and test commands, and links
+  out per topic (runtime API, releasing).
 - Frontend: before any visible frontend change, use the `mockup-first` skill: show the user a
   mockup and wait for approval. Mockups are saved in `mockups/`. The UI's default language is
   English (`extension/_locales/en/`; `zh_CN` is the second locale), and its fonts, colours and
