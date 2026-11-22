@@ -28,12 +28,24 @@ import sys
 
 
 MANIFEST = "extension/manifest.json"
-HIGH_RISK_DIRS = ("extension/storage/", "extension/consent/", "extension/stream/")
+HIGH_RISK_DIRS = (
+    "extension/storage/",
+    "extension/consent/",
+    "extension/stream/",
+    ".github/workflows/",  # CI: weakening a check needs a tier 2 review.
+)
 # Files outside those directories that read or write chrome.storage or layout consent.
 HIGH_RISK_FILES = (
     "extension/shared/settings.js",
     "extension/shared/status.js",
     "extension/popup/popup.js",
+)
+# The review gate itself: this script, the PR-body check, and the JavaScript comparison that makes
+# a change tier 0. Weakening any of them needs a tier 2 review.
+GATE_FILES = (
+    "scripts/review-tier.py",
+    "scripts/check-pr-body.py",
+    "scripts/same-code.mjs",
 )
 HIGH_RISK_KEYS = (
     "permissions",
@@ -117,6 +129,8 @@ def classify_path(path, manifest_before, manifest_after, format_only=frozenset()
         return 2, f"{path} (high-risk directory)"
     if path in HIGH_RISK_FILES:
         return 2, f"{path} (storage or consent)"
+    if path in GATE_FILES:
+        return 2, f"{path} (review gate)"
     if path == MANIFEST:
         keys = changed_keys(manifest_before, manifest_after)
         risky = [key for key in keys if key in HIGH_RISK_KEYS]
