@@ -8,11 +8,12 @@ Compares `git merge-base HEAD <base>` with the working tree, untracked files inc
 Tier 2 is high risk, tier 1 is ordinary code, tier 0 needs only the checks.
 
 A .js, .mjs, .cjs or .css file that exists on both sides and changed only in comments and
-whitespace is tier 0, wherever it lives. JavaScript is compared by scripts/same-code.mjs (espree
-tokens and syntax tree), so it needs node and `npm ci`; without them the script exits with an
-error rather than guess. CSS is compared here: comments outside strings are dropped and whitespace
-runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS holding a backslash (an
-escape) or `url(` in any letter case is never treated as comment-only.
+whitespace is tier 0, wherever it lives, except the review gate's own files (GATE_FILES), which are
+always tier 2: the working tree's same-code.mjs judges its own change. JavaScript is compared by
+scripts/same-code.mjs (espree tokens and syntax tree), so it needs node and `npm ci`; without them
+the script exits with an error rather than guess. CSS is compared here: comments outside strings
+are dropped and whitespace runs collapse to one space, dropped only next to `{`, `}` and `;`; CSS
+holding a backslash (an escape) or `url(` in any letter case is never treated as comment-only.
 
 In the manifest, a content_scripts change is tier 1 when it only edits the entries' js and css
 lists (same entries in the same order, every other key unchanged, no file moved between entries);
@@ -28,12 +29,24 @@ import sys
 
 
 MANIFEST = "extension/manifest.json"
-HIGH_RISK_DIRS = ("extension/storage/", "extension/consent/", "extension/stream/")
+HIGH_RISK_DIRS = (
+    "extension/storage/",
+    "extension/consent/",
+    "extension/stream/",
+    ".github/workflows/",  # CI: weakening a check needs a tier 2 review.
+)
 # Files outside those directories that read or write chrome.storage or layout consent.
 HIGH_RISK_FILES = (
     "extension/shared/settings.js",
     "extension/shared/status.js",
     "extension/popup/popup.js",
+)
+# The review gate itself: this script, the PR-body check, and the JavaScript comparison that makes
+# a change tier 0. Weakening any of them needs a tier 2 review.
+GATE_FILES = (
+    "scripts/review-tier.py",
+    "scripts/check-pr-body.py",
+    "scripts/same-code.mjs",
 )
 HIGH_RISK_KEYS = (
     "permissions",
@@ -111,6 +124,8 @@ def classify_path(path, manifest_before, manifest_after, format_only=frozenset()
     """Return (tier, reason) for one repo-relative path.
 
     format_only holds the paths whose two versions differ only in comments and whitespace."""
+    if path in GATE_FILES:
+        return 2, f"{path} (review gate)"
     if path in format_only:
         return 0, f"{path} (comments or formatting only)"
     if path.startswith(HIGH_RISK_DIRS):

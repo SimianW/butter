@@ -582,18 +582,10 @@ class MergedPullRequestTests(unittest.TestCase):
         self.assertEqual(tier, 2)
         self.assertEqual(reasons, ["extension/popup/popup.js (storage or consent)"])
 
-    def test_pr_13_workflow_and_ci_is_tier_1(self):
+    def test_pr_13_workflow_and_ci_is_tier_2(self):
         tier, reasons = classify(PR_13_FILES, None, None)
-        self.assertEqual(tier, 1)
-        self.assertEqual(
-            reasons,
-            [
-                ".github/workflows/check.yml",
-                "scripts/check-version.py",
-                "scripts/package.py",
-                "scripts/test_package.py",
-            ],
-        )
+        self.assertEqual(tier, 2)
+        self.assertEqual(reasons, [".github/workflows/check.yml (high-risk directory)"])
 
     def test_pr_14_manifest_name_and_tests_is_tier_1(self):
         tier, reasons = classify(PR_14_FILES, MANIFEST_ALPHA_12, MANIFEST_LOCALIZED)
@@ -640,6 +632,29 @@ class RuleTests(unittest.TestCase):
         for path in ("extension/shared/settings.js", "extension/shared/status.js", "extension/popup/popup.js"):
             with self.subTest(path=path):
                 self.assertEqual(classify([path], None, None), (2, [f"{path} (storage or consent)"]))
+
+    def test_ci_workflows_are_tier_2(self):
+        for path in (".github/workflows/check.yml", ".github/workflows/pr-body.yml"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None), (2, [f"{path} (high-risk directory)"]))
+
+    def test_review_gate_files_are_tier_2(self):
+        for path in ("scripts/review-tier.py", "scripts/check-pr-body.py", "scripts/same-code.mjs"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None), (2, [f"{path} (review gate)"]))
+
+    def test_comment_only_change_to_a_gate_file_stays_tier_2(self):
+        # The working tree's same-code.mjs judges its own change, so an edited comparator could
+        # call itself comment-only; the gate files never take the tier 0 route.
+        for path in ("scripts/review-tier.py", "scripts/check-pr-body.py", "scripts/same-code.mjs"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None, {path}), (2, [f"{path} (review gate)"]))
+
+    def test_other_scripts_and_their_tests_are_tier_1(self):
+        self.assertEqual(
+            classify(["scripts/pr-size.py", "scripts/test_review_tier.py", ".github/dependabot.yml"], None, None)[0],
+            1,
+        )
 
     def test_other_popup_and_shared_files_are_tier_1(self):
         self.assertEqual(classify(["extension/popup/popup.css", "extension/shared/config-main.js"], None, None)[0], 1)
