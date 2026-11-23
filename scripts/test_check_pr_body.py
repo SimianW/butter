@@ -463,7 +463,8 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertIn(f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
         self.assertIn("review-loop's After approval", result.stdout)
-        self.assertIn("one merge round on the conflict resolution", result.stdout)
+        self.assertIn("an approved Verdict gets one merge round on the conflict resolution", result.stdout)
+        self.assertIn("an override goes back to the user", result.stdout)
         self.assertIn("otherwise run a new review-loop round", result.stdout)
 
     def test_tier_two_change_after_the_sha_fails(self):
@@ -612,6 +613,75 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("FAIL: leftover conflict markers at README.md:1, README.md:3, README.md:5", result.stdout)
         self.assertIn("resolve the conflict", result.stdout)
+        self.assertIn("a heading underline of exactly seven `=` counts too; lengthen it", result.stdout)
+
+    def merge(self, branch):
+        """Merge branch into the current one; returns whether git stopped on a conflict."""
+        merge = subprocess.run(["git", "merge", "-q", "--no-edit", branch], cwd=self.root, capture_output=True)
+        return merge.returncode != 0
+
+    def test_base_merge_resolved_by_keeping_the_pr_side_of_a_code_conflict_fails(self):
+        # A keep-ours resolution drops main's change and leaves the file as the reviewed commit
+        # had it; the reviewers never saw main's change dropped.
+        self.write("extension/storage/layout-bridge.js", "export const mode = 'pr';\n")
+        self.commit("pr edits the bridge")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.write("extension/storage/layout-bridge.js", "export const mode = 'main';\n")
+        self.commit("main edits the same line")
+        self.git("checkout", "-q", "pr")
+        self.assertTrue(self.merge("main"))
+        self.git("checkout", "--ours", "--", "extension/storage/layout-bridge.js")
+        self.commit("resolve by keeping the pr side")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 2: "
+            "extension/storage/layout-bridge.js (high-risk directory)",
+            result.stdout,
+        )
+
+    def test_base_merge_that_reverts_mains_change_to_another_file_fails(self):
+        # A Markdown conflict makes the replay conflict; main's change to a file the PR never
+        # touched is undone in the merge, and that must not hide behind the Markdown conflict.
+        self.git("checkout", "-q", "main")
+        self.write("extension/shared/util.js", "export const u = 9;\n")
+        self.commit("main edits util")
+        self.git("checkout", "-q", "pr")
+        self.merge_main_with_a_readme_conflict()
+        self.write("README.md", "Butter by pr and main\n")
+        self.write("extension/shared/util.js", "export const u = 1;\n")
+        self.commit("resolve the readme, revert main's util")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("reach tier 1: extension/shared/util.js", result.stdout)
+        self.assertNotIn("README.md", result.stdout)
+
+    def test_base_merge_resolved_by_keeping_the_pr_side_of_a_manifest_conflict_fails(self):
+        # The replayed manifest holds conflict markers, so it cannot be compared key by key;
+        # the check counts it as tier 2 instead of stopping on its invalid JSON.
+        self.git("checkout", "-q", "main")
+        self.write("extension/manifest.json", '{"version": "1.0", "permissions": []}\n')
+        self.commit("main adds a manifest")
+        self.git("checkout", "-q", "pr")
+        self.assertFalse(self.merge("main"))
+        self.write("extension/manifest.json", '{"version": "1.1", "permissions": []}\n')
+        self.commit("pr bumps the version")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.write("extension/manifest.json", '{"version": "1.2", "permissions": []}\n')
+        self.commit("main bumps the version")
+        self.git("checkout", "-q", "pr")
+        self.assertTrue(self.merge("main"))
+        self.git("checkout", "--ours", "--", "extension/manifest.json")
+        self.commit("resolve by keeping the pr side")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 2: "
+            "extension/manifest.json (conflicted when the reviewed commit is replayed onto the base)",
+            result.stdout,
+        )
 
     def test_conflict_markers_fail_a_tier_zero_pr(self):
         self.git("checkout", "-q", "-b", "docs", "main")

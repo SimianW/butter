@@ -19,14 +19,15 @@ backticks around the sha optional, 7 to 40 hex digits), or its override form
 `- **Verdict:** overridden by <user> at <sha>`, which records the user shipping a stuck
 review-loop (`<user>` is a login without `@`). When several Verdict items exist, the last
 one counts. The Reviewers item is for humans; the check does not read it. The sha must exist in
-this checkout and be an ancestor of HEAD: a rebase, amend or force-push after the approval fails
-the check, because review-loop's After approval updates a PR only by merging the base branch in.
+this checkout and be an ancestor of HEAD: a rewrite that drops the approved commit from HEAD's
+history (a rebase, or an amend or force-push of that commit) fails the check, because
+review-loop's After approval updates a PR only by merging the base branch in.
 Nothing after the sha may reach tier 1 or 2: <sha> is replayed onto the current base with
 `git merge-tree` (so a base-branch merge after the review does not count, even in files the PR
 also changed), and the paths that differ between that tree and the working tree are classified
-with review_tier.classify. When the replay conflicts, the check falls back to the paths that
-differ between <sha> and the working tree, limited to paths the PR changed at review time or
-changes now. Markdown or notes added after the approval pass, and
+with review_tier.classify. When the replay conflicts, the tree keeps each conflicted file with its
+conflict markers, so every resolution of it counts as a change after the review; a conflicted
+extension/manifest.json is tier 2. Markdown or notes added after the approval pass, and
 so does a .js, .mjs, .cjs or .css file whose reviewed and current versions differ only in comments
 and whitespace (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
 
@@ -43,7 +44,8 @@ raising a cap does not change the tier.
 
 Also at any tier, the working tree may hold no leftover conflict markers the PR adds: the lines
 `git diff --check` reports as "leftover conflict marker" against the merge base fail the check,
-each named by path and line. Its whitespace findings do not count.
+each named by path and line; a Markdown heading underline of exactly seven `=` counts as one. Its
+whitespace findings do not count.
 
 Items inside HTML comments (`<!-- ... -->`) and fenced code blocks do not count: they never render.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
@@ -224,7 +226,8 @@ def check_conflict_markers(markers):
     """Return (failures, passes): leftover conflict markers fail the PR at any tier."""
     if markers:
         return [
-            f"leftover conflict markers at {', '.join(markers)}; resolve the conflict and commit"
+            f"leftover conflict markers at {', '.join(markers)}; resolve the conflict and commit "
+            "(a heading underline of exactly seven `=` counts too; lengthen it)"
         ], []
     return [], ["no leftover conflict markers"]
 
@@ -274,46 +277,34 @@ def check_body(body, tier, reasons, review_gate=None, head=None):
     return failures, passes
 
 
+def git_status(*args, ok, root):
+    """Return (status, stdout bytes) for a git command whose exit status is an answer; a status
+    outside ok is an error."""
+    result = subprocess.run(["git", *args], capture_output=True, cwd=root)
+    if result.returncode not in ok:
+        message = result.stderr.decode("utf-8", "replace").strip()
+        raise review_tier.GitError(f"git {' '.join(args)} failed: {message}")
+    return result.returncode, result.stdout
+
+
 def replayed_tree(sha, base, root):
-    """The tree of sha's PR changes replayed onto the current base, or None when that conflicts."""
+    """The tree of sha's PR changes replayed onto the current base. When the replay conflicts,
+    the tree holds the conflicted files with their conflict markers, so any resolution of them
+    differs from it."""
     old_base = review_tier.git("merge-base", sha, base, cwd=root).decode().strip()
     new_base = review_tier.git("merge-base", "HEAD", base, cwd=root).decode().strip()
-    try:
-        out = review_tier.git(
-            "merge-tree", "--write-tree", f"--merge-base={old_base}", sha, new_base, cwd=root
-        )
-    except review_tier.GitError:
-        return None
+    args = ("merge-tree", "--write-tree", f"--merge-base={old_base}", sha, new_base)
+    _, out = git_status(*args, ok=(0, 1), root=root)  # 1: the replay conflicts
     return out.decode().splitlines()[0].strip()
-
-
-def post_review_paths(sha, base, paths, root):
-    """Return (paths, rev): the paths the PR changed after sha, and the rev holding their
-    reviewed state. rev is sha replayed onto the current base; when that conflicts, rev is sha
-    and the paths that differ from it are limited to paths the PR changed at review time or
-    changes now."""
-    tree = replayed_tree(sha, base, root)
-    if tree is not None:
-        return review_tier.changed_since(tree, root), tree
-    review_base = review_tier.git("merge-base", sha, base, cwd=root).decode().strip()
-    at_review = review_tier.git(
-        "diff", "--name-only", "--no-renames", "-z", review_base, sha, "--", cwd=root
-    )
-    pr_paths = {path for path in at_review.decode("utf-8").split("\0") if path} | set(paths)
-    return [path for path in review_tier.changed_since(sha, root) if path in pr_paths], sha
 
 
 def is_ancestor(sha, root):
     """Return whether sha is an ancestor of HEAD (or HEAD itself)."""
-    args = ("merge-base", "--is-ancestor", sha, "HEAD")
-    result = subprocess.run(["git", *args], capture_output=True, cwd=root)
-    if result.returncode > 1:
-        message = result.stderr.decode("utf-8", "replace").strip()
-        raise review_tier.GitError(f"git {' '.join(args)} failed: {message}")
-    return result.returncode == 0
+    status, _ = git_status("merge-base", "--is-ancestor", sha, "HEAD", ok=(0, 1), root=root)
+    return status == 0
 
 
-def check_after_review(sha, base, paths, root):
+def check_after_review(sha, base, root):
     """Return (failures, passes) for the changes made after the approved commit sha."""
     try:
         full = review_tier.git("rev-parse", "--verify", "--quiet", f"{sha}^{{commit}}", cwd=root)
@@ -330,20 +321,43 @@ def check_after_review(sha, base, paths, root):
             "(rebase, amend or force-push); follow review-loop's After approval and merge the base "
             "branch in instead of rebasing"
         ], []
-    changed, reviewed = post_review_paths(full, base, paths, root)
+    reviewed = replayed_tree(full, base, root)
+    changed = review_tier.changed_since(reviewed, root)
     if not changed:
         return [], [f"nothing changed after the reviewed commit {sha}"]
-    before = review_tier.manifest_at(reviewed, root) if review_tier.MANIFEST in changed else None
-    after = review_tier.working_manifest(root) if review_tier.MANIFEST in changed else None
-    format_only = review_tier.format_only_paths(changed, reviewed, root)
-    tier, reasons = review_tier.classify(changed, before, after, format_only)
+    tier, reasons = classify_after_review(changed, reviewed, root)
     if tier >= 1:
         return [
             f"changes after the reviewed commit {sha} reach tier {tier}: {'; '.join(reasons)}; "
-            "follow review-loop's After approval: if they come from merging the base branch in, "
-            "run one merge round on the conflict resolution; otherwise run a new review-loop round"
+            "follow review-loop's After approval: after a base-branch merge, an approved Verdict "
+            "gets one merge round on the conflict resolution and an override goes back to the "
+            "user; otherwise run a new review-loop round"
         ], []
     return [], [f"changes after the reviewed commit {sha} are tier 0: {'; '.join(reasons)}"]
+
+
+def classify_after_review(changed, reviewed, root):
+    """Return (tier, reasons) for the paths changed since the reviewed tree. A file that
+    conflicted in the replay holds conflict markers there: JavaScript with markers does not
+    parse, so it is never format-only, and a manifest with markers, which cannot be compared key
+    by key, is tier 2."""
+    before = after = None
+    conflicted_manifest = False
+    if review_tier.MANIFEST in changed:
+        after = review_tier.working_manifest(root)
+        try:
+            before = review_tier.manifest_at(reviewed, root)
+        except (review_tier.GitError, UnicodeDecodeError):
+            conflicted_manifest = True
+    format_only = review_tier.format_only_paths(changed, reviewed, root)
+    tier, reasons = review_tier.classify(changed, before, after, format_only)
+    if not conflicted_manifest:
+        return tier, reasons
+    manifest = (
+        f"{review_tier.MANIFEST} (conflicted when the reviewed commit is replayed onto the base)"
+    )
+    others = [reason for reason in reasons if not reason.startswith(review_tier.MANIFEST)]
+    return 2, (others if tier == 2 else []) + [manifest]
 
 
 def main(argv):
@@ -369,7 +383,7 @@ def main(argv):
             os.environ.get("PR_BODY", ""),
             tier,
             reasons,
-            review_gate=lambda sha: check_after_review(sha, base, paths, root),
+            review_gate=lambda sha: check_after_review(sha, base, root),
             head=head,
         )
     except (review_tier.GitError, review_tier.ToolError, OSError) as error:
