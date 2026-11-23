@@ -68,6 +68,9 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   work names the `tdd` skill and the seams file.
 - Lab runs: read [lab/README.md](lab/README.md) first; it points to the live lab's locks and
   fixtures.
+- Main checkout: the lab runs its harness from the main checkout (`~/.local/share/chatgpt-lab/harness`
+  links to its `lab/harness`), so that checkout stays on `main`. Never switch branches there, even
+  when a brief says to: do branch work in a worktree, or stop and report.
 - Lab-run reports and result data go to `notes/runs/<YYYY-MM-DD>-<slug>/`, never only `/tmp`.
   Strip private data first; the rules are in [notes/runs/README.md](notes/runs/README.md).
 
