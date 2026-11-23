@@ -2,10 +2,11 @@
   "name": "butter-for-chatgpt",
   "private": true,
   "scripts": {
-    "check": "npm run format:check && npm run lint && node --test && python3 -m unittest discover -s scripts -p 'test_*.py' && python3 scripts/check-version.py",
+    "check": "npm run format:check && npm run lint && npm test && python3 -m unittest discover -s scripts -p 'test_*.py' && python3 scripts/check-version.py",
     "format": "prettier --write \"extension/**/*.{js,css,html,json}\" \"test/**\"",
     "format:check": "prettier --check \"extension/**/*.{js,css,html,json}\" \"test/**\"",
     "lint": "eslint .",
+    "test": "node --test 'test/**/*.test.{cjs,js,mjs}'",
     "prepare": "husky"
   },
   "devDependencies": {

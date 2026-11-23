@@ -27,8 +27,23 @@ const rules = {
 };
 
 export default [
-  // lab/harness/ is linted for file length only.
-  { ignores: ['lab/*', '!lab/harness/', 'node_modules/', 'dist/', 'design/', 'notes/'] },
+  // lab/harness/ is linted for file length only, except its git-ignored local folders. .claude/
+  // holds agent worktrees, each a full copy of the repo.
+  {
+    ignores: [
+      'lab/*',
+      '!lab/harness/',
+      'lab/harness/scratch/',
+      'lab/harness/results/',
+      'lab/harness/recordings/',
+      'lab/harness/logs/',
+      '.claude/',
+      'node_modules/',
+      'dist/',
+      'design/',
+      'notes/',
+    ],
+  },
   {
     files: ['extension/**/*.js'],
     ignores: [
