@@ -288,7 +288,8 @@ _Where_: `bookmarks/content.js`, `bookmarks/wash.js`
 **Seek preview**:
 The light text preview drawn in place of the real turns while you drag the native scrollbar thumb.
 _Avoid_: scrub, fast scroll
-_Where_: `seek/preview-main.js`
+_Where_: `seek/preview-main.js`; conversation markdown for turns without a layout record
+`seek/preview-texts-main.js`
 
 **Candidate**:
 A press on the scrollbar thumb that may become a seek; it activates only once it actually scrolls
@@ -297,10 +298,17 @@ _Where_: `seek/preview-main.js`, `seek/core-main.js`
 
 **Release**:
 Letting go of the thumb: the last movement is coalesced, ChatGPT gets one destination scroll (the
-commit), and the real chat is revealed once the target is ready. A target that does not mount where
-the commit put it (an estimated answer next to it is longer or shorter than estimated) is looked
-for from the turns mounted there, at most four times.
-_Where_: `seek/preview-main.js`, `seek/layout-check-main.js` (`findTurn`, `finder`)
+commit), and the real chat is revealed once the target is ready. An estimated target that does not
+mount where the commit put it (an estimated answer next to it is longer or shorter than estimated)
+is looked for from the turns mounted there, at most four times; a stored-layout target is not.
+_Where_: `seek/preview-main.js`, `seek/landing-main.js`, `seek/layout-check-main.js` (`findTurn`,
+`finder`)
+
+**Landing**:
+The part of a release after the commit, run each frame until the chat is revealed: the search for
+an estimated target, the move to the previewed text (or its question), the drift and history-block
+corrections, then the reveal and the seek outcome.
+_Where_: `seek/landing-main.js`
 
 **Layout record**:
 A turn's measured geometry, taken only from a complete, typeset, fully rendered snapshot; a

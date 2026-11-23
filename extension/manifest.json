@@ -64,6 +64,9 @@
         "seek/layout-persistence-main.js",
         "seek/layout-lean-main.js",
         "seek/layout-cache-main.js",
+        "seek/preview-texts-main.js",
+        "seek/landing-main.js",
+        "seek/seek-diagnostics-main.js",
         "seek/preview-main.js"
       ],
       "world": "MAIN",

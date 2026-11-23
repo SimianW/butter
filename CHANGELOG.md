@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Known issues
+
+- With "Remember long-chat layouts" on, letting go of the scrollbar in a long chat can again
+  sometimes leave you deep inside the answer before the question the preview showed, after about
+  10 seconds of loading.
+
 ## [0.1.0-alpha.22] - 2026-11-20
 
 ### Added
