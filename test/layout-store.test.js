@@ -73,13 +73,11 @@ function fixture({ known = true, columns } = {}) {
   const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
   ctx.window = ctx;
   vm.createContext(ctx);
-  vm.runInContext(
-    fs.readFileSync(
-      require('node:path').join(__dirname, '../extension/seek/layout-cache-main.js'),
-      'utf8',
-    ),
-    ctx,
-  );
+  for (const file of ['layout-persistence-main.js', 'layout-lean-main.js', 'layout-cache-main.js'])
+    vm.runInContext(
+      fs.readFileSync(require('node:path').join(__dirname, '../extension/seek', file), 'utf8'),
+      ctx,
+    );
   if (known) storage.account();
   return {
     ctx,

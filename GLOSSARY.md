@@ -306,12 +306,17 @@ _Where_: `seek/preview-main.js`, `seek/layout-check-main.js` (`findTurn`, `finde
 A turn's measured geometry, taken only from a complete, typeset, fully rendered snapshot; a
 skipped, partial or still-streaming snapshot never replaces it.
 _Avoid_: estimate, cache entry
-_Where_: `seek/layout-cache-main.js`
+_Where_: `seek/layout-cache-main.js`; stored ones `seek/layout-persistence-main.js`
 
 **Warm**:
 A layout record measured in this tab, as opposed to a stored one loaded from the extension's
 database.
 _Where_: `seek/layout-cache-main.js`
+
+**Lean text**:
+A preview item's text as the seek preview draws it: TeX source for math, list bullets, no buttons,
+SVG or images, capped at 4000 characters. Kept in page memory, never stored.
+_Where_: `seek/layout-lean-main.js`
 
 **Fingerprint**:
 The width, font, theme and other facts a stored layout record must match before it is reused.
@@ -325,7 +330,7 @@ _Where_: `storage/layout-worker.js`
 **Write epoch**:
 A per-conversation counter that keeps stale responses and hashes from reviving a record after the
 conversation changed.
-_Where_: `seek/layout-cache-main.js`
+_Where_: `seek/layout-persistence-main.js`
 
 ## Selection and Ask in branch
 

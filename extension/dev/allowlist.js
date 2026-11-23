@@ -370,7 +370,7 @@
     'width',
     'identity',
     'block-count',
-    // layout store rejections (layout-check-main.js acceptStored, layout-cache-main.js)
+    // layout store rejections (layout-check-main.js acceptStored, layout-persistence-main.js)
     'schema',
     'turn',
     'msg',

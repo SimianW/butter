@@ -61,6 +61,8 @@ try {
       'seek/core-main.js',
       'seek/layout-check-main.js',
       'seek/layout-codec.js',
+      'seek/layout-persistence-main.js',
+      'seek/layout-lean-main.js',
       'seek/layout-cache-main.js',
     ])
       await page.addScriptTag({ content: await fs.readFile(new URL(file, extension), 'utf8') });

@@ -10,13 +10,13 @@ export const maxLines = 500;
 export const maxLinesCaps = {
   'extension/bookmarks/content.js': 552,
   'extension/seek/core-main.js': 570,
-  'extension/seek/layout-cache-main.js': 1349,
+  'extension/seek/layout-cache-main.js': 799,
   'extension/seek/preview-main.js': 1505,
   'lab/harness/dev-capture-qa.mjs': 799,
   'lab/harness/popup-qa.mjs': 548,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,
-  'test/height-cache-dom.test.js': 1463,
+  'test/height-cache-dom.test.js': 1461,
   'test/layout-storage.test.js': 565,
   'test/seek-landing.test.js': 917,
 };
@@ -147,11 +147,15 @@ export default [
     languageOptions: { globals: { ButterPopup: 'readonly' } }, // defined in popup/model.js
   },
   {
-    files: ['extension/seek/anchor-main.js', 'extension/seek/layout-cache-main.js'],
+    files: [
+      'extension/seek/anchor-main.js',
+      'extension/seek/layout-cache-main.js',
+      'extension/seek/layout-persistence-main.js',
+    ],
     languageOptions: { globals: { __butterLayoutCheck: 'readonly' } }, // defined in seek/layout-check-main.js
   },
   {
-    files: ['extension/seek/layout-cache-main.js', 'extension/storage/layout-worker.js'],
+    files: ['extension/seek/layout-persistence-main.js', 'extension/storage/layout-worker.js'],
     languageOptions: { globals: { ButterLayoutCodec: 'readonly' } }, // defined in seek/layout-codec.js
   },
   {

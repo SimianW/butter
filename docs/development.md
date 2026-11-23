@@ -47,8 +47,9 @@
 The MAIN-world scripts retain their dependency order. `page/reader-main.js` comes first among the
 page-reading scripts: seek's `layout-cache-main.js`, `anchor-main.js` and `preview-main.js` read
 ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector.
-`seek/layout-codec.js` supplies the geometry wire format before the single
-`seek/layout-cache-main.js`; all consumers still run after it.
+`seek/layout-codec.js` supplies the geometry wire format before `seek/layout-persistence-main.js`
+(stored layout records) and `seek/layout-lean-main.js` (lean text), whose factories the single
+`seek/layout-cache-main.js` calls; all consumers still run after it.
 `seek/anchor-main.js` supplies semantic landing anchors as well as swap diagnostics.
 
 ## Tests

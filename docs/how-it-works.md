@@ -263,7 +263,8 @@ Settings live in `chrome.storage.local`. Layouts live in the extension's Indexed
 `butter-layouts-v1`, behind `storage/layout-worker.js`; the page never opens a layout database.
 `storage/layout-bridge.js` passes allowlisted compact geometry and SHA-256 identities from the
 ISOLATED world to the worker. The single `seek/layout-cache-main.js` owns measured warm entries,
-prefetched geometry, source matching, adoption and restore validation. Preview text stays in page
+adoption and restore validation; the stored records it prefetches and matches to their source are
+`seek/layout-persistence-main.js`. Preview text stays in page
 memory. Disk records contain sizes, positions, typography dictionaries, source block indexes,
 math offsets and hashed identities, never chat text or credentials. Bookmarks share the database in
 their own `bookmarks` store, the only place chat text is persisted: each keeps at most three rendered

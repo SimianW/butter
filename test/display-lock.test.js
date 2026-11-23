@@ -69,10 +69,8 @@ function fixture() {
   };
   context.window = context;
   vm.createContext(context);
-  vm.runInContext(
-    fs.readFileSync(require.resolve('../extension/seek/layout-cache-main.js'), 'utf8'),
-    context,
-  );
+  for (const file of ['layout-persistence-main.js', 'layout-lean-main.js', 'layout-cache-main.js'])
+    vm.runInContext(fs.readFileSync(require.resolve('../extension/seek/' + file), 'utf8'), context);
   const cv = (target, skipped) =>
     listeners.contentvisibilityautostatechange({
       target: Object.assign(target, { closest: () => target }),

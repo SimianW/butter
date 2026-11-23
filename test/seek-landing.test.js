@@ -104,14 +104,14 @@ function fixture() {
   ctx.window = ctx;
   vm.createContext(ctx);
   const own = require('node:path').join(__dirname, '../extension');
-  // REVIEW_SOURCE may point at a tree from before page/reader-main.js existed; load that file
-  // from this repo's extension/ then.
+  // REVIEW_SOURCE may point at an older tree; load the scripts it lacks from this repo's extension/.
   const sourceOf = (name) => {
     const file = `${process.env.REVIEW_SOURCE || own}/${name}.js`;
-    return name === 'page/reader-main' && !fs.existsSync(file) ? `${own}/${name}.js` : file;
+    return name !== 'seek/layout-cache-main' && !fs.existsSync(file) ? `${own}/${name}.js` : file;
   };
   const load = (name) => vm.runInContext(fs.readFileSync(sourceOf(name), 'utf8'), ctx);
-  ['page/reader-main', 'seek/layout-cache-main'].forEach(load);
+  const layoutScripts = ['layout-persistence-main', 'layout-lean-main', 'layout-cache-main'];
+  ['page/reader-main', ...layoutScripts.map((n) => `seek/${n}`)].forEach(load);
   storage.account();
   return {
     ctx,
