@@ -462,10 +462,13 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn(f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
-        self.assertIn("review-loop's After approval", result.stdout)
-        self.assertIn("an approved Verdict gets one merge round on the conflict resolution", result.stdout)
-        self.assertIn("an override goes back to the user", result.stdout)
-        self.assertIn("otherwise run a new review-loop round", result.stdout)
+        self.assertIn(
+            "follow review-loop's After approval: if every flagged change comes from resolving a "
+            "base-branch merge conflict, an approved Verdict gets one merge round on that "
+            "resolution and an override goes back to the user; otherwise run a new review-loop "
+            "round",
+            result.stdout,
+        )
 
     def test_tier_two_change_after_the_sha_fails(self):
         self.write("extension/storage/store.js", "export const s = 1;\n")
@@ -682,6 +685,94 @@ class ReviewedCommitTest(unittest.TestCase):
             "extension/manifest.json (conflicted when the reviewed commit is replayed onto the base)",
             result.stdout,
         )
+
+    def review_an_edit_that_main_deletes(self, path, text):
+        """The PR edits path (which main has) and is reviewed; main then deletes path, and the
+        merge of main into the PR stops on the modify/delete conflict."""
+        self.git("checkout", "-q", "main")
+        self.write(path, text)
+        self.commit("main adds the file")
+        self.git("checkout", "-q", "pr")
+        self.assertFalse(self.merge("main"))
+        self.write(path, "// PR edit.\n" + text)
+        self.commit("pr edits the file")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.git("rm", "-q", path)
+        self.commit("main deletes the file")
+        self.git("checkout", "-q", "pr")
+        self.assertTrue(self.merge("main"))
+
+    def test_base_merge_keeping_the_pr_copy_of_a_file_main_deleted_fails(self):
+        # A modify/delete conflict leaves the PR's copy, with no markers, in the replayed tree;
+        # keeping that copy drops main's deletion, which no reviewer saw.
+        self.review_an_edit_that_main_deletes("scripts/tool.py", "print(1)\n")
+        self.git("add", "scripts/tool.py")
+        self.commit("resolve by keeping the pr copy")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1: scripts/tool.py",
+            result.stdout,
+        )
+
+    def test_base_merge_keeping_the_pr_copy_of_a_markdown_file_main_deleted_passes(self):
+        self.review_an_edit_that_main_deletes("docs/guide.md", "Guide\n")
+        self.git("add", "docs/guide.md")
+        self.commit("resolve by keeping the pr copy")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(
+            f"PASS: changes after the reviewed commit {self.reviewed} are tier 0: docs/guide.md",
+            result.stdout,
+        )
+
+    def test_base_merge_keeping_the_pr_copy_of_a_manifest_main_deleted_fails(self):
+        # The replayed manifest is the PR's copy, so a key-by-key comparison sees nothing; a
+        # conflicted manifest is tier 2 whatever the tree holds.
+        self.git("checkout", "-q", "main")
+        self.write("extension/manifest.json", '{"version": "1.0", "permissions": []}\n')
+        self.commit("main adds a manifest")
+        self.git("checkout", "-q", "pr")
+        self.assertFalse(self.merge("main"))
+        self.write("extension/manifest.json", '{"version": "1.1", "permissions": []}\n')
+        self.commit("pr bumps the version")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.git("rm", "-q", "extension/manifest.json")
+        self.commit("main deletes the manifest")
+        self.git("checkout", "-q", "pr")
+        self.assertTrue(self.merge("main"))
+        self.git("add", "extension/manifest.json")
+        self.commit("resolve by keeping the pr copy")
+        result = self.run_check(self.body(self.reviewed, tier=2))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 2: "
+            "extension/manifest.json (conflicted when the reviewed commit is replayed onto the base)",
+            result.stdout,
+        )
+
+    def test_base_merge_restoring_a_file_the_pr_deleted_fails(self):
+        # A delete/modify conflict leaves main's copy in the replayed tree; `git add -A` after
+        # the merge keeps it, so the file the reviewers saw deleted comes back.
+        self.git("rm", "-q", "extension/shared/util.js")
+        self.commit("pr deletes util")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.write("extension/shared/util.js", "export const u = 9;\n")
+        self.commit("main edits util")
+        self.git("checkout", "-q", "pr")
+        self.assertTrue(self.merge("main"))
+        self.commit("resolve with add -A")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1: "
+            "extension/shared/util.js",
+            result.stdout,
+        )
+        self.assertNotIn("comments or formatting only", result.stdout)
 
     def test_conflict_markers_fail_a_tier_zero_pr(self):
         self.git("checkout", "-q", "-b", "docs", "main")

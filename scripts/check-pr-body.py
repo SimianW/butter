@@ -25,11 +25,13 @@ review-loop's After approval updates a PR only by merging the base branch in.
 Nothing after the sha may reach tier 1 or 2: <sha> is replayed onto the current base with
 `git merge-tree` (so a base-branch merge after the review does not count, even in files the PR
 also changed), and the paths that differ between that tree and the working tree are classified
-with review_tier.classify. When the replay conflicts, the tree keeps each conflicted file with its
-conflict markers, so every resolution of it counts as a change after the review; a conflicted
-extension/manifest.json is tier 2. Markdown or notes added after the approval pass, and
-so does a .js, .mjs, .cjs or .css file whose reviewed and current versions differ only in comments
-and whitespace (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
+with review_tier.classify. When the replay conflicts, the paths it conflicts on are classified too,
+so every resolution of a conflicted file counts as a change after the review, even one that keeps
+the tree's own copy (for a modify/delete or binary conflict, one side's version with no markers).
+A conflicted file is never format-only, and a conflicted extension/manifest.json is tier 2.
+Markdown or notes added after the approval pass, and so does an unconflicted .js, .mjs, .cjs or
+.css file whose reviewed and current versions differ only in comments and whitespace
+(review-tier.py's rule, which needs node and `npm ci` for JavaScript).
 
 Separately from the tier, every max-lines cap the PR adds or raises in eslint.config.mjs's
 `maxLinesCaps` needs its own item, at any tier:
@@ -288,14 +290,20 @@ def git_status(*args, ok, root):
 
 
 def replayed_tree(sha, base, root):
-    """The tree of sha's PR changes replayed onto the current base. When the replay conflicts,
-    the tree holds the conflicted files with their conflict markers, so any resolution of them
-    differs from it."""
+    """Return (tree, conflicted): the tree of sha's PR changes replayed onto the current base, and
+    the set of paths that conflict in that replay (empty when it is clean). A conflicted path's
+    entry in the tree may hold conflict markers, or one side's version with none (modify/delete,
+    binary), so callers treat every conflicted path as changed."""
     old_base = review_tier.git("merge-base", sha, base, cwd=root).decode().strip()
     new_base = review_tier.git("merge-base", "HEAD", base, cwd=root).decode().strip()
-    args = ("merge-tree", "--write-tree", f"--merge-base={old_base}", sha, new_base)
-    _, out = git_status(*args, ok=(0, 1), root=root)  # 1: the replay conflicts
-    return out.decode().splitlines()[0].strip()
+    args = (
+        "merge-tree", "--write-tree", "--name-only", "-z", "--no-messages",
+        f"--merge-base={old_base}", sha, new_base,
+    )
+    status, out = git_status(*args, ok=(0, 1), root=root)  # 1: the replay conflicts
+    # Output: the tree id, then each conflicted path, every field NUL-terminated.
+    tree, *paths = out.decode("utf-8").split("\0")
+    return tree.strip(), {path for path in paths if path} if status == 1 else set()
 
 
 def is_ancestor(sha, root):
@@ -321,35 +329,33 @@ def check_after_review(sha, base, root):
             "(rebase, amend or force-push); follow review-loop's After approval and merge the base "
             "branch in instead of rebasing"
         ], []
-    reviewed = replayed_tree(full, base, root)
-    changed = review_tier.changed_since(reviewed, root)
+    reviewed, conflicted = replayed_tree(full, base, root)
+    changed = sorted(set(review_tier.changed_since(reviewed, root)) | conflicted)
     if not changed:
         return [], [f"nothing changed after the reviewed commit {sha}"]
-    tier, reasons = classify_after_review(changed, reviewed, root)
+    tier, reasons = classify_after_review(changed, reviewed, conflicted, root)
     if tier >= 1:
         return [
             f"changes after the reviewed commit {sha} reach tier {tier}: {'; '.join(reasons)}; "
-            "follow review-loop's After approval: after a base-branch merge, an approved Verdict "
-            "gets one merge round on the conflict resolution and an override goes back to the "
-            "user; otherwise run a new review-loop round"
+            "follow review-loop's After approval: if every flagged change comes from resolving a "
+            "base-branch merge conflict, an approved Verdict gets one merge round on that "
+            "resolution and an override goes back to the user; otherwise run a new review-loop "
+            "round"
         ], []
     return [], [f"changes after the reviewed commit {sha} are tier 0: {'; '.join(reasons)}"]
 
 
-def classify_after_review(changed, reviewed, root):
-    """Return (tier, reasons) for the paths changed since the reviewed tree. A file that
-    conflicted in the replay holds conflict markers there: JavaScript with markers does not
-    parse, so it is never format-only, and a manifest with markers, which cannot be compared key
-    by key, is tier 2."""
+def classify_after_review(changed, reviewed, conflicted, root):
+    """Return (tier, reasons) for the paths changed since the reviewed tree. A path in conflicted
+    (one the replay conflicts on) is never format-only, and a conflicted manifest is tier 2: the
+    tree's copy of it may hold conflict markers or one side's version, so comparing against it
+    says nothing about what the resolution kept."""
     before = after = None
-    conflicted_manifest = False
-    if review_tier.MANIFEST in changed:
-        after = review_tier.working_manifest(root)
-        try:
-            before = review_tier.manifest_at(reviewed, root)
-        except (review_tier.GitError, UnicodeDecodeError):
-            conflicted_manifest = True
-    format_only = review_tier.format_only_paths(changed, reviewed, root)
+    conflicted_manifest = review_tier.MANIFEST in conflicted
+    if review_tier.MANIFEST in changed and not conflicted_manifest:
+        before, after = review_tier.manifest_at(reviewed, root), review_tier.working_manifest(root)
+    unconflicted = [path for path in changed if path not in conflicted]
+    format_only = review_tier.format_only_paths(unconflicted, reviewed, root)
     tier, reasons = review_tier.classify(changed, before, after, format_only)
     if not conflicted_manifest:
         return tier, reasons
