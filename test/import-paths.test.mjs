@@ -12,10 +12,7 @@ function* scripts(dir) {
   for (const entry of readdirSync(join(root, dir), { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) {
-      // Skip installs and the git-ignored local folders under lab/harness/.
-      if (!['node_modules', 'scratch', 'results', 'recordings', 'logs'].includes(entry.name)) {
-        yield* scripts(path);
-      }
+      if (entry.name !== 'node_modules') yield* scripts(path);
     } else if (/\.(js|mjs|cjs)$/.test(entry.name)) yield path;
   }
 }

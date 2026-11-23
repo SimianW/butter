@@ -16,8 +16,10 @@ test('ESLint skips every git-ignored folder and agent worktrees', async () => {
     .split('\n')
     .filter((line) => /^[^#!*\s][^*\s]*\/$/.test(line));
   assert.ok(folders.includes('lab/harness/scratch/'));
+  // A folder named without an inner slash is ignored at any depth.
+  const nested = folders.filter((f) => !f.slice(0, -1).includes('/')).map((f) => 'extension/' + f);
   for (const path of [
-    ...folders.map((f) => f + 'probe.js'),
+    ...[...folders, ...nested].map((f) => f + 'probe.js'),
     '.claude/worktrees/w/extension/a.js',
   ]) {
     assert.equal(await eslint.isPathIgnored(path), true, `${path} is linted`);
@@ -29,8 +31,8 @@ test('ESLint skips every git-ignored folder and agent worktrees', async () => {
 
 test('npm test runs every test file in test/, and no helper or file outside test/', () => {
   const command = JSON.parse(read('package.json')).scripts.test;
-  const pattern = /^node --test '([^']+)'$/.exec(command)?.[1];
-  assert.ok(pattern, `npm test is node --test with one quoted pattern: ${command}`);
+  const pattern = /^node --test '(test\/[^']+)'$/.exec(command)?.[1];
+  assert.ok(pattern, `npm test is node --test with one quoted pattern under test/: ${command}`);
   const run = globSync(pattern, { cwd: root }).sort();
   const files = globSync('test/**/*.{cjs,js,mjs}', { cwd: root })
     .filter((file) => !/^test\/(helpers|fixtures)\//.test(file))
