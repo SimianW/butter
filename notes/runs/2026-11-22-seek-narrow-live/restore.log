@@ -1,0 +1,4 @@
+restore lab 2: restarting browser (now {"pid":3570854,"extensions":["~/snap/chromium/common/seeknarrow-1122-dev/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 3573265)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":3573265,"extensions":[],"flags":[]},"at":"2026-11-23T02:59:12.631Z","ok":true}
