@@ -1,11 +1,17 @@
 // MAIN world: native-thumb scroll suppression, lean preview and one destination commit.
+// Conversation markdown is seek/preview-texts-main.js, the landing after the commit is
+// seek/landing-main.js and the diagnostics' session serializer is seek/seek-diagnostics-main.js;
+// all three load before this file, which calls their factories.
 // ChatGPT's answer structure (preview items, markdown columns) is read through the page reader,
 // page/reader-main.js.
 (() => {
   const core = globalThis.__butterSeekCore,
     page = globalThis.__butterPageReader,
-    layoutCheck = globalThis.__butterLayoutCheck;
-  if (!core || !page) return;
+    layoutCheck = globalThis.__butterLayoutCheck,
+    textsOf = globalThis.__butterPreviewTexts,
+    landingOf = globalThis.__butterSeekLanding,
+    diagnosticsOf = globalThis.__butterSeekDiagnostics;
+  if (!core || !page || !textsOf || !landingOf || !diagnosticsOf) return;
   const S = { v: 2, events: [], updates: [], sessions: [], presses: [], active: false };
   let seekFacts = {},
     statusPath = location.pathname;
@@ -24,7 +30,6 @@
     statusPath = location.pathname;
     seekFacts = facts;
   };
-  const conversations = new Map();
   let host,
     layer,
     est,
@@ -93,93 +98,15 @@
   };
   globalThis.__butterSeeking = () => !!active;
 
-  // ---- conversation markdown (estimate fallback for turns without a layout record) ----
-  document.addEventListener('butter-seek-data', (e) => {
-    const { conv: c, before, j } = e.detail;
-    let msgs = j.messages;
-    if (!msgs && j.mapping) {
-      msgs = [];
-      for (let n = j.mapping[j.current_node]; n; n = j.mapping[n.parent])
-        if (n.message) msgs.push(n.message);
-      msgs.reverse();
-    }
-    if (!Array.isArray(msgs)) return;
-    msgs = msgs.map((m) => ({
-      id: m.id,
-      role: m.author?.role,
-      channel: m.channel,
-      recipient: m.recipient,
-      hidden: m.metadata?.is_visually_hidden_from_conversation,
-      text: (m.content?.parts || []).filter((x) => typeof x === 'string').join('\n'),
-    }));
-    let old = conversations.get(c) || { messages: [], hasPrev: false };
-    if (before) {
-      const have = new Set(old.messages.map((m) => m.id));
-      msgs = msgs.filter((m) => !have.has(m.id)).concat(old.messages);
-    }
-    conversations.set(c, { messages: msgs, hasPrev: !!j.page_info?.has_previous_page });
-    const source = texts(c).byId;
-    queueMicrotask(() => globalThis.__butterLayoutCache?.setTexts(c, source));
-    while (conversations.size > 2) conversations.delete(conversations.keys().next().value);
-    if (active?.conv === c) {
-      event('data-during-hold', { before });
-      finish('data-invalidation', false);
-    } else if (pendingCommit?.conv === c) {
-      pendingCommit.release.invalidate('history-data');
-      event('data-during-release');
-    }
+  // Conversation markdown (texts) and its listeners: seek/preview-texts-main.js.
+  const { texts } = textsOf({
+    conv,
+    event,
+    finish,
+    seekOutcome,
+    active: () => active,
+    pendingCommit: () => pendingCommit,
   });
-  document.addEventListener('butter-nav', (e) => {
-    let m;
-    try {
-      m = JSON.parse(e.detail);
-    } catch {
-      return;
-    }
-    if (m.type !== 'send') return;
-    if (active || pendingCommit) finish('send-invalidation', false);
-    const data = conversations.get(m.conv || conv());
-    if (!data) return;
-    const parent = data.messages.findIndex((x) => x.id === m.parent);
-    if (parent >= 0) data.messages = data.messages.slice(0, parent + 1);
-    data.messages.push({ id: m.item.id, role: 'user', text: m.item.q || '' });
-  });
-  document.addEventListener('butter-layout-account-ready', () => {
-    const c = conv();
-    if (conversations.has(c))
-      queueMicrotask(() => globalThis.__butterLayoutCache?.setTexts(c, texts(c).byId));
-  });
-  document.addEventListener('butter-layout-account-change', () => {
-    seekOutcome({});
-    conversations.clear();
-    if (active || pendingCommit) finish('account-invalidation', false);
-  });
-  document.addEventListener('butter-seek-write', (e) => {
-    conversations.delete(e.detail.conv || conv());
-    if (active || pendingCommit) finish('mutation-invalidation', false);
-  });
-  const texts = (c = conv()) => {
-    const data = conversations.get(c),
-      out = {};
-    let current;
-    for (const m of data?.messages || []) {
-      if (m.hidden) continue;
-      if (m.role === 'user') {
-        current = { q: m.text, answer: '', msg: '', ids: [] };
-        out[m.id] = current;
-      } else if (
-        current &&
-        m.role === 'assistant' &&
-        (!m.channel || m.channel === 'final') &&
-        (!m.recipient || m.recipient === 'all')
-      ) {
-        current.answer += m.text + '\n';
-        current.msg = m.id;
-        current.ids.push(m.id);
-      }
-    }
-    return { byId: out, hasPrev: !!data?.hasPrev };
-  };
   // ChatGPT's virtualizer: row order and measured row heights (private React shape; read only).
   const measured = (s) => {
     const t = s.querySelector('[data-turn-key]');
@@ -976,6 +903,20 @@
     );
     railState(null, 'idle');
   }
+  // The landing after the commit (find, retargets, reveal): seek/landing-main.js.
+  const land = landingOf({
+    core,
+    layoutCheck,
+    event,
+    emit,
+    hide,
+    conv,
+    seekOutcome,
+    active: () => active,
+    revealOwner: () => revealOwner,
+    est: () => est,
+    tap: () => tap,
+  });
   function finish(reason, commit = true) {
     const a = active;
     if (!a) {
@@ -1075,295 +1016,12 @@
       if (stable >= 2 || performance.now() - a.end > 200) perform();
       else requestAnimationFrame(settle);
     };
-    let prev = 0,
-      quiet = 0,
-      lastTop = NaN;
-    a.retargets = [];
-    a.finds = [];
-    const find = layoutCheck.finder({ limit: 4 });
-    // findTurn's input (layoutCheck.findInput): the search aims at the target's top, by own rows.
-    const look = () => layoutCheck.findInput(a);
-    const rowTop = (el) =>
-      el.parentElement.getBoundingClientRect().top -
-      a.sc.getBoundingClientRect().top +
-      a.sc.scrollTop;
-    const ready = () => {
-      if (revealOwner !== a || a.canceled) return;
-      if (active || a.conv !== conv() || !a.sc.isConnected) {
-        if (!active) hide();
-        return;
-      }
-      const now = performance.now(),
-        d = a.destination,
-        el = d && a.sc.querySelector(`[data-turn-key="${CSS.escape(d.id)}"]`);
-      const pendingMath =
-        el &&
-        [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
-      // An estimated destination unmounted where the frozen model put it: look for it from the
-      // mounted turns. A stored-layout destination is not looked for (#134).
-      const from = a.sc.scrollTop,
-        to = d && !d.layout ? find(now, el ? NaN : from, look) : null;
-      if (to != null) {
-        a.finds.push({ t: Math.round(now - a.end), from: Math.round(from), to: Math.round(to) });
-        a.sc.scrollTop = to;
-        event('find', a.finds.at(-1));
-        if (tap) emit('retarget', { kind: 'find', to, error: to - from });
-        quiet = prev = 0;
-      }
-      if (el && !pendingMath && d.layout && !a.semantic) {
-        // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
-        const candidates =
-          !est.hidden && a.estTurn === d.id
-            ? [est]
-            : [...a.rendered]
-                .filter(([i]) => a.prep.model[a.prep.flat[i].turn].id === d.id)
-                .map(([, el]) => el);
-        let visible;
-        for (const el of candidates) {
-          visible = globalThis.__butterAnchorVisibleNeedles?.(el, a.hostRect, 1)?.[0];
-          if (visible) break;
-        }
-        a.semantic = {
-          needle: visible?.needle || null,
-          previewY: visible?.y ?? a.hostRect.y,
-          anchorVisible: !!visible,
-          attempts: 0,
-          passes: 0,
-          matched: false,
-        };
-      }
-      if (el && !pendingMath && a.semantic && !a.semantic.done) {
-        const sem = a.semantic;
-        sem.passes++;
-        const ys = sem.needle ? textRect(el, sem.needle) : [],
-          y = ys.length
-            ? ys.reduce((x, y) => (Math.abs(x - sem.previewY) < Math.abs(y - sem.previewY) ? x : y))
-            : null;
-        if (y != null) {
-          sem.matched = true;
-          sem.lastError = y - sem.previewY;
-          const r = layoutCheck.semanticTarget({
-            scrollTop: a.sc.scrollTop,
-            realY: y,
-            previewY: sem.previewY,
-            maxScroll: a.sc.scrollHeight - a.sc.clientHeight,
-          });
-          if (r && sem.attempts < 3) {
-            sem.attempts++;
-            sem.clamped = r.clamped;
-            a.sc.scrollTop = r.to;
-            quiet = 0;
-            prev = 0;
-            event('semantic-retarget', { to: r.to, error: r.delta });
-            if (tap) emit('retarget', { kind: 'semantic', to: r.to, error: r.delta });
-            requestAnimationFrame(ready);
-            return;
-          }
-        } else {
-          // Math-only/unmatched previews retain the selected question identity.
-          const q =
-            el.querySelector('[data-user-message-bubble]') ||
-            el.querySelector('[data-message-author-role="user"]');
-          if (q) {
-            const y = q.getBoundingClientRect().top;
-            sem.matched = false;
-            sem.fallback = true;
-            sem.lastError = y - a.hostRect.y;
-            const r = layoutCheck.semanticTarget({
-              scrollTop: a.sc.scrollTop,
-              realY: y,
-              previewY: a.hostRect.y,
-              maxScroll: a.sc.scrollHeight - a.sc.clientHeight,
-            });
-            if (r && sem.attempts < 3) {
-              sem.attempts++;
-              sem.clamped = r.clamped;
-              a.sc.scrollTop = r.to;
-              quiet = 0;
-              prev = 0;
-              event('semantic-question-fallback', { to: r.to });
-              if (tap) emit('retarget', { kind: 'question', to: r.to, error: r.delta });
-              requestAnimationFrame(ready);
-              return;
-            }
-          }
-        }
-        sem.done = sem.matched || sem.fallback || sem.passes >= 4;
-      }
-      if (el && !pendingMath && !a.semantic && a.retargets.length < 2 && !a.alignmentCorrection) {
-        const s = a.sc;
-        const bubble = !d.layout && el.querySelector('[data-user-message-bubble]');
-        const actual = bubble
-          ? bubble.getBoundingClientRect().top - s.getBoundingClientRect().top + s.scrollTop
-          : rowTop(el);
-        const r = core.retarget({
-          known: true,
-          frozenTurnTop: d.turnTop,
-          actualTurnTop: actual,
-          offset: d.offset,
-          height: d.height,
-          scrollTop: s.scrollTop,
-          maxScroll: s.scrollHeight - s.clientHeight,
-        });
-        if (r) {
-          a.retargets.push({
-            t: now - a.end,
-            drift: Math.round(r.drift),
-            from: Math.round(s.scrollTop),
-            to: Math.round(r.to),
-          });
-          s.scrollTop = r.to;
-          event('retarget', a.retargets.at(-1));
-          if (tap) emit('retarget', { kind: 'drift', to: r.to, error: r.drift });
-          quiet = 0;
-          prev = 0;
-          requestAnimationFrame(ready);
-          return;
-        }
-      }
-      const top = a.sc.scrollTop;
-      if (prev && now - prev < 50 && Math.abs(top - lastTop) < 2 && el && !pendingMath) quiet++;
-      else quiet = 0;
-      prev = now;
-      lastTop = top;
-      if (quiet >= 3 || now - a.end > 10000) {
-        // Prepending history may remove/change the old first turn's date/prefix without changing
-        // the answer blocks. For a measured destination, preserve their shared visible position.
-        // This branch is deliberately limited to sessions that began with unloaded history.
-        if (quiet >= 3 && !a.semantic && a.hasPrev && d.layout && !a.alignmentCorrection) {
-          measureSwap(a);
-          const audit = a.swap,
-            error = audit.itemErrSignedMedian;
-          if (audit.items >= 2 && audit.itemErrSpread <= 2 && Math.abs(error) > 4) {
-            const from = a.sc.scrollTop,
-              to = Math.max(0, Math.min(a.sc.scrollHeight - a.sc.clientHeight, from - error));
-            a.alignmentCorrection = { from, to, error, clamped: Math.abs(from - to - error) > 2 };
-            a.sc.scrollTop = to;
-            quiet = 0;
-            prev = 0;
-            lastTop = NaN;
-            event('history-block-alignment', a.alignmentCorrection);
-            if (tap) emit('retarget', { kind: 'history-block', to, error });
-            requestAnimationFrame(ready);
-            return;
-          }
-        }
-        // The target never mounted after a search: back to where the commit left the chat.
-        if (!el && a.finds.length) a.sc.scrollTop = a.finds[0].from;
-        a.readable = now;
-        a.timedOut = quiet < 3;
-        a.realTop = a.sc.scrollTop;
-        hide(true);
-        if (el) {
-          const bubble = !d.layout && el.querySelector('[data-user-message-bubble]');
-          const actual = bubble
-            ? bubble.getBoundingClientRect().top - a.sc.getBoundingClientRect().top + a.sc.scrollTop
-            : rowTop(el);
-          a.actualTurnTop = actual;
-          a.pixelModelErrorPx = actual + d.offset - top;
-          const error =
-            a.semantic && (a.semantic.matched || a.semantic.fallback)
-              ? a.semantic.lastError
-              : a.pixelModelErrorPx;
-          // At either scroll boundary, text cannot always reach the preview inset. Validate
-          // the achievable destination, retaining the raw model/semantic error for diagnostics.
-          const target = Math.max(0, Math.min(a.sc.scrollHeight - a.sc.clientHeight, top + error));
-          a.landingErrorPx = target - top;
-          a.turnTopErrorPx = actual - d.turnTop;
-        }
-        try {
-          measureSwap(a);
-        } catch (err) {
-          a.swapError = String(err);
-        }
-        const failed =
-          a.timedOut || !Number.isFinite(a.landingErrorPx) || Math.abs(a.landingErrorPx) > 4;
-        seekOutcome({
-          exercised: true,
-          failed,
-          engaged: !failed && ['pointerup', 'mouseup'].includes(a.reason),
-        });
-        event('reveal', { ms: now - a.end, error: a.landingErrorPx, timedOut: a.timedOut });
-        if (tap)
-          emit('reveal', {
-            durationMs: now - a.end,
-            error: a.landingErrorPx,
-            timedOut: a.timedOut,
-            matched: a.semantic?.matched ?? null,
-            fallback: a.semantic?.fallback ?? null,
-          });
-      } else requestAnimationFrame(ready);
-    };
+    const ready = land(a);
     requestAnimationFrame(settle);
   }
 
-  // ---- swap alignment audit: where the preview showed text vs where the real text is ----
-  const textRect = (root, needle) =>
-    (globalThis.__butterAnchorTextBoxes?.(root, needle) || []).map((r) => r.top);
-  // The swap audit is anchor-main.js's (__butterAnchorVisibleSwap), which loads before this file.
-  function measureSwap(a) {
-    a.swap = globalThis.__butterAnchorVisibleSwap(a);
-  }
-
-  // Opt-in diagnostics return timing, counts and geometry only; never chat text.
-  const clean = (a) =>
-    a && {
-      kind: a.kind,
-      reason: a.reason,
-      canceled: !!a.canceled,
-      start: a.start,
-      pressAt: a.pressAt,
-      end: a.end,
-      dispatched: a.dispatched,
-      readable: a.readable,
-      timedOut: a.timedOut,
-      pressToActivateMs: a.start - a.pressAt,
-      releaseToCommitMs: a.dispatched ? a.dispatched - a.end : null,
-      releaseToReadableMs: a.readable ? a.readable - a.end : null,
-      semantic:
-        a.semantic &&
-        (({ attempts, matched, fallback, clamped, lastError, anchorVisible, previewY }) => ({
-          attempts,
-          matched,
-          fallback,
-          clamped,
-          lastError,
-          anchorVisible,
-          previewY,
-        }))(a.semantic),
-      textFallback: a.textFallback,
-      startTop: a.startTop,
-      realTop: a.realTop,
-      landingErrorPx: a.landingErrorPx,
-      turnTopErrorPx: a.turnTopErrorPx,
-      retargets: a.retargets,
-      finds: a.finds,
-      coalescing: a.release?.dump(),
-      commitRetarget: a.commitRetarget,
-      alignmentCorrection: a.alignmentCorrection,
-      swap: a.swap,
-      swapError: a.swapError,
-      destination: a.destination && {
-        turn: a.destination.index,
-        top: Math.round(a.destination.top),
-        offset: Math.round(a.destination.offset),
-        known: a.destination.known,
-        stored: a.prep.model[a.destination.index]?.stored,
-        layout: a.destination.layout,
-      },
-      model: {
-        stored: a.prep.storedTurns,
-        turns: a.prep.model.length,
-        known: a.prep.knownTurns,
-        layout: a.prep.layoutTurns,
-        items: a.prep.flat.length,
-        prepMs: a.prep.prepMs,
-        gap: a.prep.gap,
-      },
-      insetTop: a.insetTop,
-      insetBottom: a.insetBottom,
-      hostRect: a.hostRect,
-    };
+  // Opt-in diagnostics' session serializer (clean): seek/seek-diagnostics-main.js.
+  const { clean } = diagnosticsOf();
   window.__seekDump = (full) => {
     const ups = S.updates,
       js = ups.map((u) => u.jsMs).sort((x, y) => x - y),

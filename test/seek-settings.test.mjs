@@ -6,6 +6,21 @@ import status from '../extension/shared/status.js';
 import pageReader from '../extension/page/reader-main.js';
 import statusCore from '../extension/seek/core-main.js';
 
+// preview-main.js and the factories it calls, in manifest order.
+const previewScripts = [
+  'preview-texts-main',
+  'landing-main',
+  'seek-diagnostics-main',
+  'preview-main',
+];
+const loadPreview = (ctx) => {
+  for (const name of previewScripts)
+    vm.runInContext(
+      fs.readFileSync(new URL(`../extension/seek/${name}.js`, import.meta.url), 'utf8'),
+      ctx,
+    );
+};
+
 test('seek follows the master and seek switches independently of the rail and other feature options', async () => {
   const attrs = new Map();
   let changed;
@@ -108,10 +123,7 @@ test('seek off marker prevents a trusted thumb press from preparing preview', ()
     },
   });
   // Evaluate the actual bootstrap and deliver its registered press listeners.
-  vm.runInContext(
-    fs.readFileSync(new URL('../extension/seek/preview-main.js', import.meta.url), 'utf8'),
-    ctx,
-  );
+  loadPreview(ctx);
   for (const fn of events.pointerdown || [])
     fn({
       isTrusted: true,
@@ -186,10 +198,7 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
       }
     },
   };
-  vm.runInNewContext(
-    fs.readFileSync(new URL('../extension/seek/preview-main.js', import.meta.url), 'utf8'),
-    ctx,
-  );
+  loadPreview(vm.createContext(ctx));
   const fire = (name, extra = {}) =>
     (events[name] || []).forEach((fn) => fn({ type: name, timeStamp: 100, target: sc, ...extra }));
   const probe = () => {

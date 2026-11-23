@@ -51,6 +51,9 @@ ChatGPT's answer structure through it, and `seek/core-main.js` holds no selector
 (stored layout records) and `seek/layout-lean-main.js` (lean text), whose factories the single
 `seek/layout-cache-main.js` calls; all consumers still run after it.
 `seek/anchor-main.js` supplies semantic landing anchors as well as swap diagnostics.
+`seek/preview-texts-main.js` (conversation markdown), `seek/landing-main.js` (the landing after a
+release's commit) and `seek/seek-diagnostics-main.js` (the diagnostics' session serializer) load
+right before `seek/preview-main.js`, which calls their factories.
 
 ## Tests
 

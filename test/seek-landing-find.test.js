@@ -11,7 +11,13 @@ const fs = require('node:fs'),
   path = require('node:path'),
   vm = require('node:vm');
 const tree = process.env.REVIEW_SOURCE || path.join(__dirname, '../extension');
-const read = (f) => fs.readFileSync(`${tree}/${f}`, 'utf8');
+// A REVIEW_SOURCE tree from before preview-main.js's split lacks its factory scripts: those come from
+// this repo's extension/ then.
+const read = (f) =>
+  fs.readFileSync(
+    fs.existsSync(`${tree}/${f}`) ? `${tree}/${f}` : path.join(__dirname, '../extension', f),
+    'utf8',
+  );
 const conv = '00000000-0000-0000-0000-000000000000';
 const HEIGHTS = [2000, 3000, 2500, 4000, 3000, 40000, 12000, 30000],
   TOPS = HEIGHTS.map((_, i) => HEIGHTS.slice(0, i).reduce((a, b) => a + b, 0)),
@@ -110,7 +116,13 @@ function release({ model, target, offset = 100, layout = false, parent = 'own', 
     __butterAnchorTextBoxes: () => [],
   });
   ctx.window = ctx;
-  for (const f of ['seek/core-main.js', 'seek/layout-check-main.js'])
+  for (const f of [
+    'seek/core-main.js',
+    'seek/layout-check-main.js',
+    'seek/preview-texts-main.js',
+    'seek/landing-main.js',
+    'seek/seek-diagnostics-main.js',
+  ])
     vm.runInContext(read(f), ctx, { filename: f });
   const rows = model.map((h, i) => ({
     id: ids[i],

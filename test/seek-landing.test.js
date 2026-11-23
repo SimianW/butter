@@ -110,8 +110,8 @@ function fixture() {
     return name !== 'seek/layout-cache-main' && !fs.existsSync(file) ? `${own}/${name}.js` : file;
   };
   const load = (name) => vm.runInContext(fs.readFileSync(sourceOf(name), 'utf8'), ctx);
-  const layoutScripts = ['layout-persistence-main', 'layout-lean-main', 'layout-cache-main'];
-  ['page/reader-main', ...layoutScripts.map((n) => `seek/${n}`)].forEach(load);
+  const main = 'layout-persistence layout-lean layout-cache preview-texts landing seek-diagnostics';
+  ['page/reader-main', ...main.split(' ').map((n) => `seek/${n}-main`)].forEach(load);
   storage.account();
   return {
     ctx,

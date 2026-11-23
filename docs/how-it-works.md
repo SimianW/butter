@@ -122,7 +122,8 @@ lit question that fills most of the band and shows the question number and then 
 continues to work with the rail switched off. It follows Butter's main switch and the popup's Smoother scrolling group (`opts.seek`),
 independently of the question rail.
 
-On release, the last native movement is coalesced and ChatGPT receives one destination scroll.
+On release, the last native movement is coalesced and ChatGPT receives one destination scroll;
+the landing that follows is `seek/landing-main.js`.
 The real turns remain transparent while the destination loads, including behind the header and
 around the composer. This preserves their layout and visibility checks. The preview waits for the
 target turn, its math and three quiet frames. For known geometry it pins a fully visible text excerpt
