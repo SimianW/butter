@@ -27,8 +27,9 @@ const rules = {
 };
 
 export default [
-  // lab/harness/ is linted for file length only, except its git-ignored local folders. .claude/
-  // holds agent worktrees, each a full copy of the repo.
+  // lab/harness/ is linted for file length only. Every git-ignored folder is ignored here too
+  // (test/check-scope.test.mjs), and so is .claude/, which holds agent worktrees, each a full copy
+  // of the repo.
   {
     ignores: [
       'lab/*',
@@ -37,6 +38,8 @@ export default [
       'lab/harness/results/',
       'lab/harness/recordings/',
       'lab/harness/logs/',
+      'mockups/',
+      '__pycache__/',
       '.claude/',
       'node_modules/',
       'dist/',
