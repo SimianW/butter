@@ -11,6 +11,8 @@ jobs:
     # With no `pr-body` run on the head, the required check waits until ready_for_review runs it.
     name: ${{ github.event.pull_request.draft && 'pr-body (draft, runs when ready)' || 'pr-body' }}
     runs-on: ubuntu-latest
+    env:
+      BASE_REF: origin/${{ github.event.pull_request.base.ref }}
     steps:
       - if: github.event.pull_request.draft
         run: echo "Draft PR; pr-body runs when it is marked ready for review."
@@ -21,21 +23,41 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-      # review-tier.py compares JavaScript through node and espree, so the check needs npm ci.
+          path: head
+          persist-credentials: false
+      # A PR must not judge itself with its own edited gate: the check runs the base branch's
+      # copy of the gate scripts against the head checkout. The copy lives outside `head`
+      # because review-tier.py counts untracked files in the checkout as changes.
+      - name: Copy the base branch's gate scripts
+        if: ${{ !github.event.pull_request.draft }}
+        run: |
+          mkdir gate
+          git -C head archive "$BASE_REF" scripts package.json package-lock.json | tar -x -C gate
+          echo "The gate scripts at $BASE_REF ($(git -C head rev-parse --short "$BASE_REF")) judge this PR."
+          merge_base="$(git -C head merge-base HEAD "$BASE_REF")"
+          changed="$(git -C head diff --name-only "$merge_base" HEAD -- scripts/review-tier.py scripts/check-pr-body.py scripts/same-code.mjs package-lock.json | paste -sd ' ' -)"
+          if [ -n "$changed" ]; then
+            echo "::notice title=pr-body::This PR changes the review gate ($changed); the base branch's copy judges this PR, and the PR's own version applies after merge."
+          fi
+      # review-tier.py compares JavaScript through node and espree.
       - if: ${{ !github.event.pull_request.draft }}
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: npm
+          cache-dependency-path: gate/package-lock.json
       - if: ${{ !github.event.pull_request.draft }}
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      # The base branch's lock installs the base's espree into `gate`, and --ignore-scripts keeps
+      # package install scripts from running; the head's packages are never installed.
       - if: ${{ !github.event.pull_request.draft }}
-        run: npm ci
+        working-directory: gate
+        run: npm ci --ignore-scripts
       - name: Check the Review section
         if: ${{ !github.event.pull_request.draft }}
+        working-directory: head
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
-          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
-        run: python3 scripts/check-pr-body.py "$BASE_REF"
+        run: python3 ../gate/scripts/check-pr-body.py "$BASE_REF"
