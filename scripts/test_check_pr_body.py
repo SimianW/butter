@@ -267,6 +267,103 @@ class ParseCapsTest(unittest.TestCase):
             parse_caps("const maxLinesCaps = makeCaps();\n")
 
 
+class HiddenTextTest(unittest.TestCase):
+    """Items inside HTML comments and fenced code blocks never render, so they do not count."""
+
+    ITEMS = f"{tier(2)}\n{REVIEWED}\n- **Cap raised:** `test/a.test.js` 600 → 610: more fixtures"
+    CAPS_BEFORE = {"test/a.test.js": 600}
+    CAPS_AFTER = {"test/a.test.js": 610}
+
+    def assert_hidden(self, body):
+        failures, _ = check_body(body, 2, ["scripts/a.py"])
+        self.assertEqual(len(failures), 2, failures)
+        self.assertIn("no `- **Tier:** N` item", failures[0])
+        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[1])
+        caps, _ = check_caps(body, self.CAPS_BEFORE, self.CAPS_AFTER)
+        self.assertEqual(len(caps), 1, caps)
+
+    def test_items_in_a_multi_line_comment_and_a_fence_do_not_count(self):
+        body = (
+            "## Review\n\n<!--\nTemplate:\n"
+            f"{self.ITEMS}\n-->\n\n```\n{REVIEWED}\n```\n"
+        )
+        self.assert_hidden(body)
+
+    def test_items_in_a_fence_with_an_info_string_do_not_count(self):
+        self.assert_hidden(f"```markdown\n{self.ITEMS}\n```\n")
+
+    def test_items_in_a_long_tilde_fence_do_not_count(self):
+        self.assert_hidden(f"~~~~text\n{self.ITEMS}\n~~~~\n")
+
+    def test_indented_fence_markers_count(self):
+        self.assert_hidden(f"  ```\n{self.ITEMS}\n  ```\n")
+
+    def test_real_items_win_over_example_items_in_a_fence(self):
+        body = f"```markdown\n{tier(0)}\n- **Verdict:** approved at `1111111`\n```\n\n{tier(2)}\n{REVIEWED}\n"
+        shas = []
+        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha: shas.append(sha) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(shas, ["abc1234"])
+
+    def test_real_cap_item_passes_next_to_an_example_in_a_fence(self):
+        body = f"~~~\n- **Cap raised:** `x.js` 1 → 2: example\n~~~\n{self.ITEMS}"
+        failures, passes = check_caps(body, self.CAPS_BEFORE, self.CAPS_AFTER)
+        self.assertEqual(failures, [])
+        self.assertEqual(len(passes), 1)
+
+    def test_a_one_line_comment_next_to_the_item_is_removed(self):
+        body = f"- **Tier:** 2 <!-- old: - **Tier:** 0 -->\n{REVIEWED}"
+        failures, _ = check_body(body, 2, ["scripts/a.py"])
+        self.assertEqual(failures, [])
+
+    def test_text_after_a_comment_on_the_same_line_stays(self):
+        failures, _ = check_body(f"<!-- x --> {tier(0)} <!-- y --><!-- z -->", 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_a_one_line_comment_holding_the_only_item_fails(self):
+        failures, _ = check_body(f"<!-- {tier(0)} -->", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+        self.assertIn("no `- **Tier:** N` item", failures[0])
+
+    def test_a_comment_marker_inside_a_fence_is_literal(self):
+        body = f"```\n<!--\n```\n{tier(0)}\n"
+        failures, _ = check_body(body, 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_a_fence_marker_inside_a_comment_has_no_effect(self):
+        body = f"<!--\n```\n-->\n{tier(0)}\n"
+        failures, _ = check_body(body, 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_a_backtick_run_closing_on_its_own_line_inside_a_tilde_fence_does_not_close_it(self):
+        failures, _ = check_body(f"~~~\n```\n{tier(0)}\n~~~\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+
+    def test_a_shorter_closer_does_not_close_the_fence(self):
+        failures, _ = check_body(f"````\n```\n{tier(0)}\n````\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+
+    def test_a_longer_closer_closes_the_fence(self):
+        failures, _ = check_body(f"```\nexample\n`````\n{tier(0)}\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_a_closer_with_an_info_string_does_not_close_the_fence(self):
+        failures, _ = check_body(f"```\n```text\n{tier(0)}\n```\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+
+    def test_inline_code_with_three_backticks_is_not_a_fence(self):
+        failures, _ = check_body(f"```x```\n{tier(0)}\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
+
+    def test_an_unclosed_fence_hides_the_rest_of_the_body(self):
+        failures, _ = check_body(f"```\n{tier(0)}\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+
+    def test_an_unclosed_comment_hides_the_rest_of_the_body(self):
+        failures, _ = check_body(f"<!-- never closed\n{tier(0)}\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(len(failures), 1)
+
+
 class LineEndingTest(unittest.TestCase):
     def test_crlf_body_passes(self):
         body = f"Summary\r\n\r\n## Review\r\n\r\n{tier(1)}\r\n{REVIEWED}\r\n{REVIEWERS}\r\n"

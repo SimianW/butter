@@ -38,6 +38,7 @@ The item names the path in backticks, the cap at the merge base (`new` for an ad
 object literal in eslint.config.mjs as Prettier formats it (`'path': N,` lines); any other line in
 it fails the check, so a cap cannot hide from it. A cap that drops or goes away needs no item, and
 raising a cap does not change the tier.
+Items inside HTML comments (`<!-- ... -->`) and fenced code blocks do not count: they never render.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
 import importlib.util
@@ -53,6 +54,7 @@ SPEC = importlib.util.spec_from_file_location(
 review_tier = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(review_tier)
 
+FENCE_OPENER = re.compile(r"(`{3,}|~{3,})(.*)")
 TIER_ITEM = re.compile(r"[-*] \*\*Tier:\*\* ([0-9]+)")
 ESLINT_CONFIG = "eslint.config.mjs"
 CAPS_BLOCK = re.compile(r"^export const maxLinesCaps = \{\n(.*?)^\};", re.M | re.S)
@@ -61,6 +63,48 @@ CAP_ITEM = re.compile(r"[-*] \*\*Cap raised:\*\* `([^`]+)` (new|[0-9]+) (?:→|-
 VERDICT_ITEM = re.compile(
     r"[-*] \*\*Verdict:\*\* (approved|overridden by [^`@\s]+) at (`?)([0-9a-fA-F]{7,40})\2"
 )
+
+
+def rendered_lines(body):
+    """Return the body's stripped lines without the text that Markdown does not render.
+
+    Drops HTML comments (`<!-- ... -->`, on one line or across several; the text around them on
+    a line stays) and fenced code blocks (``` or ~~~, with or without an info string; all fence
+    lines go). A fence closes on a line of only its own character, at least as long as the
+    opener; a backtick opener's info string has no backtick, so ```x``` is inline code. An unclosed
+    comment or fence hides the rest of the body. Fence markers inside a comment, and `<!--`
+    inside a fence, are literal. Indented code blocks are not recognised.
+    """
+    lines = []
+    fence = None  # (character, length) of the open fence
+    in_comment = False
+    for raw in (body or "").splitlines():
+        stripped = raw.strip()
+        if fence is not None:
+            if stripped and set(stripped) == {fence[0]} and len(stripped) >= fence[1]:
+                fence = None
+            continue
+        if not in_comment:
+            opener = FENCE_OPENER.match(stripped)
+            if opener and not (opener.group(1)[0] == "`" and "`" in opener.group(2)):
+                fence = (opener.group(1)[0], len(opener.group(1)))
+                continue
+        kept, i = [], 0
+        while i < len(raw):
+            if in_comment:
+                end = raw.find("-->", i)
+                if end < 0:
+                    break
+                in_comment, i = False, end + 3
+            else:
+                start = raw.find("<!--", i)
+                if start < 0:
+                    kept.append(raw[i:])
+                    break
+                kept.append(raw[i:start])
+                in_comment, i = True, start + 4
+        lines.append("".join(kept).strip())
+    return lines
 
 
 def tier_item(tier):
@@ -120,8 +164,8 @@ def cap_item(path, old, new):
 def check_caps(body, before, after):
     """Return (failures, passes): every cap added or raised from before to after needs its item."""
     items = set()
-    for line in (body or "").splitlines():
-        match = CAP_ITEM.fullmatch(line.strip())
+    for line in rendered_lines(body):
+        match = CAP_ITEM.fullmatch(line)
         if match:
             items.add((match.group(1), match.group(2), int(match.group(3))))
     failures, passes = [], []
@@ -151,7 +195,7 @@ def check_body(body, tier, reasons, review_gate=None, head=None):
     (failures, passes); main passes one, and without it only the body's lines are checked.
     head, when given, fills the sha in the Verdict item the failure messages suggest.
     """
-    lines = [line.strip() for line in (body or "").splitlines()]
+    lines = rendered_lines(body)
     failures, passes = [], []
 
     claimed = None
