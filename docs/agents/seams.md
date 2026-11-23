@@ -6,7 +6,7 @@ the behaviour.
 
 In order of preference:
 
-1. Unit test: `test/`, run with `node --test`. Catches logic that runs without a page: pure
+1. Unit test: `test/`, run with `npm test`. Catches logic that runs without a page: pure
    models, modules over the fake DOM in `test/helpers/`, and the page reader's contract over the
    HTML fixtures in `test/fixtures/page/`. Misses the loaded extension in a real browser and
    ChatGPT's live markup.
