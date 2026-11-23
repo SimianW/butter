@@ -450,7 +450,10 @@ class ReviewedCommitTest(unittest.TestCase):
         result = self.run_check(self.body("deadbeef"))
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("FAIL: reviewed commit deadbeef is not in this checkout", result.stdout)
-        self.assertIn("another review-loop round", result.stdout)
+        self.assertIn("rebase, amend or force-push", result.stdout)
+        self.assertIn("review-loop's After approval", result.stdout)
+        self.assertIn("never rebase", result.stdout)
+        self.assertNotIn("another review-loop round", result.stdout)
 
     def test_tier_one_change_after_the_sha_fails(self):
         self.write("extension/dev/capture.js", "export const a = 3;\n")
@@ -459,7 +462,9 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn(f"FAIL: changes after the reviewed commit {self.reviewed} reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
-        self.assertIn("update the sha in the Verdict item", result.stdout)
+        self.assertIn("review-loop's After approval", result.stdout)
+        self.assertIn("one merge round on the conflict resolution", result.stdout)
+        self.assertIn("otherwise run a new review-loop round", result.stdout)
 
     def test_tier_two_change_after_the_sha_fails(self):
         self.write("extension/storage/store.js", "export const s = 1;\n")
@@ -554,13 +559,15 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertIn("reach tier 1", result.stdout)
         self.assertIn("scripts/tool.py", result.stdout)
 
-    def test_rebased_onto_a_newer_base_passes(self):
+    def test_rebased_onto_a_newer_base_with_the_old_sha_fails(self):
         self.share_a_file_with_main()
         self.git("rebase", "-q", "main")
         self.assertNotEqual(self.rev("HEAD")[:7], self.reviewed)
         result = self.run_check(self.body(self.reviewed))
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("PASS: nothing changed after the reviewed commit", result.stdout)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(f"FAIL: reviewed commit {self.reviewed} is not an ancestor of HEAD", result.stdout)
+        self.assertIn("rebase, amend or force-push", result.stdout)
+        self.assertIn("review-loop's After approval", result.stdout)
 
     def test_base_merge_with_a_resolved_conflict_stays_strict(self):
         self.git("checkout", "-q", "main")
@@ -575,6 +582,51 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("reach tier 1", result.stdout)
         self.assertIn("extension/dev/capture.js", result.stdout)
+
+    def merge_main_with_a_readme_conflict(self):
+        """PR and main edit README.md's first line; review the PR, then merge main in. Returns
+        with the merge stopped on the conflict, its markers in the working tree."""
+        self.write("README.md", "Butter by pr\n")
+        self.commit("pr edits the readme")
+        self.reviewed = self.rev("HEAD")[:7]
+        self.git("checkout", "-q", "main")
+        self.write("README.md", "Butter by main\n")
+        self.commit("main edits the readme")
+        self.git("checkout", "-q", "pr")
+        merge = subprocess.run(["git", "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
+        self.assertNotEqual(merge.returncode, 0)
+
+    def test_base_merge_with_a_resolved_markdown_conflict_passes(self):
+        self.merge_main_with_a_readme_conflict()
+        self.write("README.md", "Butter by pr and main\n")
+        self.commit("resolve the readme")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: changes after the reviewed commit {self.reviewed} are tier 0", result.stdout)
+        self.assertIn("PASS: no leftover conflict markers", result.stdout)
+
+    def test_base_merge_with_conflict_markers_left_in_markdown_fails(self):
+        self.merge_main_with_a_readme_conflict()
+        self.commit("commit the merge with its markers")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("FAIL: leftover conflict markers at README.md:1, README.md:3, README.md:5", result.stdout)
+        self.assertIn("resolve the conflict", result.stdout)
+
+    def test_conflict_markers_fail_a_tier_zero_pr(self):
+        self.git("checkout", "-q", "-b", "docs", "main")
+        self.write("docs/guide.md", "Guide\n<<<<<<< HEAD\nA\n=======\nB\n>>>>>>> main\n")
+        self.commit("docs with markers")
+        result = self.run_check("## Review\n\n- **Tier:** 0")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("FAIL: leftover conflict markers at docs/guide.md:2, docs/guide.md:4", result.stdout)
+
+    def test_trailing_whitespace_is_not_a_conflict_marker(self):
+        self.write("README.md", "Butter \n\tand \t space before tab\n")
+        self.commit("whitespace after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: no leftover conflict markers", result.stdout)
 
     def review_a_stream_file(self):
         """The PR adds a tier 2 script and stylesheet; review at that commit."""
@@ -661,7 +713,7 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("adds a max-lines cap of 510 for extension/dev/capture.js", result.stdout)
 
-    def test_merge_base_without_a_caps_literal_asks_for_a_rebase(self):
+    def test_merge_base_without_a_caps_literal_asks_to_merge_the_base_in(self):
         self.git("checkout", "-q", "main")
         self.write("eslint.config.mjs", "export default [];\n")
         self.commit("main config before the ratchet")
@@ -670,7 +722,8 @@ class ReviewedCommitTest(unittest.TestCase):
         self.commit("work on the old base")
         result = self.run_check(self.body(self.rev("HEAD")[:7]))
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("rebase onto the base branch", result.stderr)
+        self.assertIn("merge the base branch in", result.stderr)
+        self.assertNotIn("rebase", result.stderr)
 
     def test_unreadable_caps_fail_the_check(self):
         self.write("eslint.config.mjs", "export const maxLinesCaps = {\n  ...more,\n};\n")

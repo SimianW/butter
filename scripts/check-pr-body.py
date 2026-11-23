@@ -19,12 +19,14 @@ backticks around the sha optional, 7 to 40 hex digits), or its override form
 `- **Verdict:** overridden by <user> at <sha>`, which records the user shipping a stuck
 review-loop (`<user>` is a login without `@`). When several Verdict items exist, the last
 one counts. The Reviewers item is for humans; the check does not read it. The sha must exist in
-this checkout, and nothing after it may reach tier 1 or 2: <sha> is
-replayed onto the current base with `git merge-tree` (so a base-branch merge or rebase after the
-review does not count, even in files the PR also changed), and the paths that differ between that
-tree and the working tree are classified with review_tier.classify. When the replay conflicts,
-the check falls back to the paths that differ between <sha> and the working tree, limited to paths
-the PR changed at review time or changes now. Markdown or notes added after the approval pass, and
+this checkout and be an ancestor of HEAD: a rebase, amend or force-push after the approval fails
+the check, because review-loop's After approval updates a PR only by merging the base branch in.
+Nothing after the sha may reach tier 1 or 2: <sha> is replayed onto the current base with
+`git merge-tree` (so a base-branch merge after the review does not count, even in files the PR
+also changed), and the paths that differ between that tree and the working tree are classified
+with review_tier.classify. When the replay conflicts, the check falls back to the paths that
+differ between <sha> and the working tree, limited to paths the PR changed at review time or
+changes now. Markdown or notes added after the approval pass, and
 so does a .js, .mjs, .cjs or .css file whose reviewed and current versions differ only in comments
 and whitespace (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
 
@@ -38,6 +40,11 @@ The item names the path in backticks, the cap at the merge base (`new` for an ad
 object literal in eslint.config.mjs as Prettier formats it (`'path': N,` lines); any other line in
 it fails the check, so a cap cannot hide from it. A cap that drops or goes away needs no item, and
 raising a cap does not change the tier.
+
+Also at any tier, the working tree may hold no leftover conflict markers the PR adds: the lines
+`git diff --check` reports as "leftover conflict marker" against the merge base fail the check,
+each named by path and line. Its whitespace findings do not count.
+
 Items inside HTML comments (`<!-- ... -->`) and fenced code blocks do not count: they never render.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
@@ -45,6 +52,7 @@ import importlib.util
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 
@@ -60,6 +68,7 @@ ESLINT_CONFIG = "eslint.config.mjs"
 CAPS_BLOCK = re.compile(r"^export const maxLinesCaps = \{\n(.*?)^\};", re.M | re.S)
 CAP_ENTRY = re.compile(r"'([^'\\]+)': ([0-9]+),")
 CAP_ITEM = re.compile(r"[-*] \*\*Cap raised:\*\* `([^`]+)` (new|[0-9]+) (?:→|->) ([0-9]+): \S.*")
+CONFLICT_MARKER = re.compile(r"(.+):([0-9]+): leftover conflict marker")
 VERDICT_ITEM = re.compile(
     r"[-*] \*\*Verdict:\*\* (approved|overridden by [^`@\s]+) at (`?)([0-9a-fA-F]{7,40})\2"
 )
@@ -159,7 +168,7 @@ def caps_at(rev, root):
     try:
         return parse_caps(text.decode("utf-8"))
     except CapsError as error:
-        raise CapsError(f"{error} at the merge base {rev[:7]}; rebase onto the base branch") from None
+        raise CapsError(f"{error} at the merge base {rev[:7]}; merge the base branch in") from None
 
 
 def working_caps(root):
@@ -197,6 +206,27 @@ def check_caps(body, before, after):
                 f"or add `{cap_item(path, old, new)}`"
             )
     return failures, passes
+
+
+def conflict_markers(merge_base, root):
+    """Return the `path:line` of each leftover conflict marker between merge_base and the working
+    tree, from `git diff --check`; its whitespace findings do not count."""
+    args = ("diff", "--check", merge_base, "--")
+    result = subprocess.run(["git", *args], capture_output=True, cwd=root)
+    if result.returncode not in (0, 1, 2):  # 2: --check found something, markers or whitespace
+        message = result.stderr.decode("utf-8", "replace").strip()
+        raise review_tier.GitError(f"git {' '.join(args)} failed: {message}")
+    found = map(CONFLICT_MARKER.fullmatch, result.stdout.decode("utf-8", "replace").splitlines())
+    return [f"{match.group(1)}:{match.group(2)}" for match in found if match]
+
+
+def check_conflict_markers(markers):
+    """Return (failures, passes): leftover conflict markers fail the PR at any tier."""
+    if markers:
+        return [
+            f"leftover conflict markers at {', '.join(markers)}; resolve the conflict and commit"
+        ], []
+    return [], ["no leftover conflict markers"]
 
 
 def check_body(body, tier, reasons, review_gate=None, head=None):
@@ -273,16 +303,33 @@ def post_review_paths(sha, base, paths, root):
     return [path for path in review_tier.changed_since(sha, root) if path in pr_paths], sha
 
 
+def is_ancestor(sha, root):
+    """Return whether sha is an ancestor of HEAD (or HEAD itself)."""
+    args = ("merge-base", "--is-ancestor", sha, "HEAD")
+    result = subprocess.run(["git", *args], capture_output=True, cwd=root)
+    if result.returncode > 1:
+        message = result.stderr.decode("utf-8", "replace").strip()
+        raise review_tier.GitError(f"git {' '.join(args)} failed: {message}")
+    return result.returncode == 0
+
+
 def check_after_review(sha, base, paths, root):
     """Return (failures, passes) for the changes made after the approved commit sha."""
     try:
         full = review_tier.git("rev-parse", "--verify", "--quiet", f"{sha}^{{commit}}", cwd=root)
     except review_tier.GitError:
         return [
-            f"reviewed commit {sha} is not in this checkout (for example after a force-push); "
-            "run another review-loop round and update the sha in the Verdict item"
+            f"reviewed commit {sha} is not in this checkout: the approved history was likely "
+            "rewritten (rebase, amend or force-push); follow review-loop's After approval: merge "
+            "the base branch in, never rebase"
         ], []
     full = full.decode().strip()
+    if not is_ancestor(full, root):
+        return [
+            f"reviewed commit {sha} is not an ancestor of HEAD: the approved history was rewritten "
+            "(rebase, amend or force-push); follow review-loop's After approval and merge the base "
+            "branch in instead of rebasing"
+        ], []
     changed, reviewed = post_review_paths(full, base, paths, root)
     if not changed:
         return [], [f"nothing changed after the reviewed commit {sha}"]
@@ -293,7 +340,8 @@ def check_after_review(sha, base, paths, root):
     if tier >= 1:
         return [
             f"changes after the reviewed commit {sha} reach tier {tier}: {'; '.join(reasons)}; "
-            "run another review-loop round on the current head and update the sha in the Verdict item"
+            "follow review-loop's After approval: if they come from merging the base branch in, "
+            "run one merge round on the conflict resolution; otherwise run a new review-loop round"
         ], []
     return [], [f"changes after the reviewed commit {sha} are tier 0: {'; '.join(reasons)}"]
 
@@ -308,6 +356,7 @@ def main(argv):
         merge_base, paths, before, after, format_only = review_tier.collect(base)
         head = review_tier.git("rev-parse", "--short", "HEAD", cwd=root).decode().strip()
         caps_before, caps_after = caps_at(merge_base, root), working_caps(root)
+        markers = conflict_markers(merge_base, root)
     except (review_tier.GitError, review_tier.ToolError, CapsError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
@@ -327,7 +376,9 @@ def main(argv):
         print(f"check-pr-body: {error}", file=sys.stderr)
         return 1
     cap_failures, cap_passes = check_caps(os.environ.get("PR_BODY", ""), caps_before, caps_after)
-    failures, passes = failures + cap_failures, passes + cap_passes
+    marker_failures, marker_passes = check_conflict_markers(markers)
+    failures = failures + cap_failures + marker_failures
+    passes = passes + cap_passes + marker_passes
     for message in failures:
         print(f"FAIL: {message}")
     if failures:

@@ -25,9 +25,11 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
   draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
   Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
-  final diff, at the round budget the tier sets. Do not wait for the Codex GitHub bot's review
-  before merging: if it has already posted when CI is green, handle its comments first; comments
-  that arrive after the merge become a follow-up issue.
+  final diff, at the round budget the tier sets. When `main` moves after approval, follow
+  review-loop's After approval: merge `origin/main` in, never rebase, and never edit the Verdict
+  sha yourself. Do not wait for the Codex GitHub bot's review before merging: if it has already
+  posted when CI is green, handle its comments first; comments that arrive after the merge become
+  a follow-up issue.
 - PR size: CI labels each PR from `size/XS` to `size/XXL` by the lines of code it changes; prose,
   lock files, binary files and the folders in the script's `SKIP_PREFIXES` (docs, assets and
   `lab/variants/`) do not count. `python3 scripts/pr-size.py` prints the label locally. The label
