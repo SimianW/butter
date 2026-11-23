@@ -1,8 +1,9 @@
 // MAIN world: stored layout records, the layout store side of seek/layout-cache-main.js. It loads
 // the conversation's stored records through the butter-layout-request/-response bridge
 // (storage/layout-bridge.js to storage/layout-worker.js), matches them to their source by hashed
-// identity and the fingerprint, queues and writes new records, and drops them on a page write
-// (butter-seek-write), on unsupported media (butter-seek-data), on an account change or a clear.
+// identity and the fingerprint, and queues and writes new records. It drops them on a page write
+// (butter-seek-write), an account change or a clear, and matches none for a conversation with
+// unsupported media (butter-seek-data).
 // Classic script, loaded after seek/layout-codec.js and before seek/layout-cache-main.js, which
 // calls the factory once; its listeners and observers register at that call.
 globalThis.__butterLayoutPersistence = ({ turns, conv, scroller, shownColumn }) => {
