@@ -73,10 +73,11 @@ def rendered_lines(body):
     lines go). A fence closes on a line of only its own character, at least as long as the
     opener; a backtick opener's info string has no backtick, so ```x``` is inline code. An unclosed
     fence, or an unclosed comment that opens at the start of its line, hides the rest of the
-    body; an unclosed `<!--` after other text on its line is literal. Fence markers inside a
-    comment, and `<!--` inside a fence, are literal. Indented code blocks are not recognised.
-    Fences that open on a list-marker line, and closers indented 4 or more spaces, are not
-    handled as CommonMark does.
+    body. A `<!--` after other text that does not close on its own line is kept as text, although
+    Markdown can carry it over the paragraph's next lines. Fence markers inside a comment, and
+    `<!--` inside a fence, are literal. Indented code blocks are not recognised. Fences that open
+    on a list-marker line, and closers indented 4 or more spaces, are not handled as CommonMark
+    does.
     """
     lines = []
     fence = None  # (character, length) of the open fence
