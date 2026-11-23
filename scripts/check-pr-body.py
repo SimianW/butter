@@ -29,6 +29,8 @@ with review_tier.classify. When the replay conflicts, the paths it conflicts on 
 so every resolution of a conflicted file counts as a change after the review, even one that keeps
 the tree's own copy (for a modify/delete or binary conflict, one side's version with no markers).
 A conflicted file is never format-only, and a conflicted extension/manifest.json is tier 2.
+Only conflicted file paths count: a directory-level conflict (a directory rename split) committed
+as git proposed it changes no file and passes.
 Markdown or notes added after the approval pass, and so does an unconflicted .js, .mjs, .cjs or
 .css file whose reviewed and current versions differ only in comments and whitespace
 (review-tier.py's rule, which needs node and `npm ci` for JavaScript).
