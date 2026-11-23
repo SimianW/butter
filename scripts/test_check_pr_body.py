@@ -295,7 +295,7 @@ class HiddenTextTest(unittest.TestCase):
     def test_items_in_a_long_tilde_fence_do_not_count(self):
         self.assert_hidden(f"~~~~text\n{self.ITEMS}\n~~~~\n")
 
-    def test_indented_fence_markers_count(self):
+    def test_indented_fence_markers_still_open_a_fence(self):
         self.assert_hidden(f"  ```\n{self.ITEMS}\n  ```\n")
 
     def test_real_items_win_over_example_items_in_a_fence(self):
@@ -362,6 +362,15 @@ class HiddenTextTest(unittest.TestCase):
     def test_an_unclosed_comment_hides_the_rest_of_the_body(self):
         failures, _ = check_body(f"<!-- never closed\n{tier(0)}\n", 0, ["README.md (Markdown)"])
         self.assertEqual(len(failures), 1)
+
+    def test_an_unclosed_comment_opener_after_text_is_literal(self):
+        body = f"Skip comments that start with `<!--` and fenced code.\n\n## Review\n\n{tier(2)}\n{REVIEWED}\n"
+        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha: ([], []))
+        self.assertEqual(failures, [])
+
+    def test_an_abrupt_empty_comment_closes(self):
+        failures, _ = check_body(f"<!-->\n{tier(0)}\n", 0, ["README.md (Markdown)"])
+        self.assertEqual(failures, [])
 
 
 class LineEndingTest(unittest.TestCase):

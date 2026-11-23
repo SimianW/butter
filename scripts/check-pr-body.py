@@ -72,8 +72,11 @@ def rendered_lines(body):
     a line stays) and fenced code blocks (``` or ~~~, with or without an info string; all fence
     lines go). A fence closes on a line of only its own character, at least as long as the
     opener; a backtick opener's info string has no backtick, so ```x``` is inline code. An unclosed
-    comment or fence hides the rest of the body. Fence markers inside a comment, and `<!--`
-    inside a fence, are literal. Indented code blocks are not recognised.
+    fence, or an unclosed comment that opens at the start of its line, hides the rest of the
+    body; an unclosed `<!--` after other text on its line is literal. Fence markers inside a
+    comment, and `<!--` inside a fence, are literal. Indented code blocks are not recognised.
+    Fences that open on a list-marker line, and closers indented 4 or more spaces, are not
+    handled as CommonMark does.
     """
     lines = []
     fence = None  # (character, length) of the open fence
@@ -101,8 +104,15 @@ def rendered_lines(body):
                 if start < 0:
                     kept.append(raw[i:])
                     break
+                end = raw.find("-->", start + 2)
+                if end < 0 and raw[:start].strip():
+                    kept.append(raw[i:])
+                    break
                 kept.append(raw[i:start])
-                in_comment, i = True, start + 4
+                if end < 0:
+                    in_comment = True
+                    break
+                i = end + 3
         lines.append("".join(kept).strip())
     return lines
 
