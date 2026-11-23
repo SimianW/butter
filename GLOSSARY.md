@@ -297,9 +297,9 @@ _Where_: `seek/preview-main.js`, `seek/core-main.js`
 
 **Release**:
 Letting go of the thumb: the last movement is coalesced, ChatGPT gets one destination scroll (the
-commit), and the real chat is revealed once the target is ready. A target that does not mount where
-the commit put it (an estimated answer next to it is longer or shorter than estimated) is looked
-for from the turns mounted there, at most four times.
+commit), and the real chat is revealed once the target is ready. An estimated target that does not
+mount where the commit put it (an estimated answer next to it is longer or shorter than estimated)
+is looked for from the turns mounted there, at most four times; a stored-layout target is not.
 _Where_: `seek/preview-main.js`, `seek/layout-check-main.js` (`findTurn`, `finder`)
 
 **Layout record**:

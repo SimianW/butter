@@ -1099,9 +1099,10 @@
       const pendingMath =
         el &&
         [...el.querySelectorAll('[data-math-source]')].some((n) => !n.querySelector('.katex'));
-      // Unmounted where the frozen model put it: look for it from the mounted turns.
+      // An estimated destination unmounted where the frozen model put it: look for it from the
+      // mounted turns. A stored-layout destination is not looked for (#134).
       const from = a.sc.scrollTop,
-        to = d ? find(now, el ? NaN : from, look) : null;
+        to = d && !d.layout ? find(now, el ? NaN : from, look) : null;
       if (to != null) {
         a.finds.push({ t: Math.round(now - a.end), from: Math.round(from), to: Math.round(to) });
         a.sc.scrollTop = to;
@@ -1110,12 +1111,6 @@
         quiet = prev = 0;
       }
       if (el && !pendingMath && d.layout && !a.semantic) {
-        // After a search the chat is at the turn's top: first go to its offset in the real row.
-        const landing = a.finds.length ? layoutCheck.findLanding(a, el) : null;
-        if (landing != null) {
-          a.sc.scrollTop = landing;
-          event('find-landing', { to: Math.round(landing) });
-        }
         // Aligned rows do not prove aligned text (fallback excerpts, transformed text): always check the anchor.
         const candidates =
           !est.hidden && a.estTurn === d.id
