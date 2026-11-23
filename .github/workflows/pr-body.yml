@@ -12,7 +12,9 @@ jobs:
     name: ${{ github.event.pull_request.draft && 'pr-body (draft, runs when ready)' || 'pr-body' }}
     runs-on: ubuntu-latest
     env:
-      BASE_REF: origin/${{ github.event.pull_request.base.ref }}
+      # The full ref: git resolves a short `origin/main` to a tag of that name first, and a
+      # pushed tag must not pick the gate scripts or the base the tier is measured against.
+      BASE_REF: refs/remotes/origin/${{ github.event.pull_request.base.ref }}
     steps:
       - if: github.event.pull_request.draft
         run: echo "Draft PR; pr-body runs when it is marked ready for review."
@@ -30,12 +32,13 @@ jobs:
       # because review-tier.py counts untracked files in the checkout as changes.
       - name: Copy the base branch's gate scripts
         if: ${{ !github.event.pull_request.draft }}
+        shell: bash
         run: |
           mkdir gate
           git -C head archive "$BASE_REF" scripts package.json package-lock.json | tar -x -C gate
           echo "The gate scripts at $BASE_REF ($(git -C head rev-parse --short "$BASE_REF")) judge this PR."
           merge_base="$(git -C head merge-base HEAD "$BASE_REF")"
-          changed="$(git -C head diff --name-only "$merge_base" HEAD -- scripts/review-tier.py scripts/check-pr-body.py scripts/same-code.mjs package-lock.json | paste -sd ' ' -)"
+          changed="$(git -C head diff --name-only "$merge_base" HEAD -- scripts/review-tier.py scripts/check-pr-body.py scripts/same-code.mjs | paste -sd ' ' -)"
           if [ -n "$changed" ]; then
             echo "::notice title=pr-body::This PR changes the review gate ($changed); the base branch's copy judges this PR, and the PR's own version applies after merge."
           fi

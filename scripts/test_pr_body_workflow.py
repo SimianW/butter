@@ -20,6 +20,7 @@ GATE_COPIES = (
     "scripts/same-code.mjs",
     "package.json",
     "package-lock.json",
+    ".gitignore",
 )
 DRAFT_ONLY = "github.event.pull_request.draft"
 NOT_DRAFT = "${{ !github.event.pull_request.draft }}"
@@ -181,6 +182,7 @@ class PrBodyWorkflowTest(unittest.TestCase):
             cwd = self.workspace / substitute(step.get("working-directory", ""), body)
             run = substitute(step["run"], body)
             if run.startswith("npm ci"):
+                self.assertTrue((cwd / "package-lock.json").exists(), f"`{run}` runs where no lock is")
                 # The tests' PRs touch no JavaScript, so node_modules is only lent when present.
                 if (ROOT / "node_modules").exists() and not (cwd / "node_modules").exists():
                     (cwd / "node_modules").symlink_to(ROOT / "node_modules")
@@ -200,19 +202,20 @@ class PrBodyWorkflowTest(unittest.TestCase):
                 return result.returncode, "".join(output)
         return 0, "".join(output)
 
+    def weaken_review_tier(self, head):
+        """Make head's review-tier.py classify every change as tier 0."""
+        path = head / "scripts" / "review-tier.py"
+        text = path.read_text(encoding="utf-8")
+        marker = 'if __name__ == "__main__":'
+        self.assertIn(marker, text)
+        weak = "def classify(paths, manifest_before, manifest_after, format_only=frozenset()):\n"
+        weak += '    return 0, ["weakened"]\n\n\n'
+        path.write_text(text.replace(marker, weak + marker), encoding="utf-8")
+
     def test_a_pr_cannot_lower_its_tier_by_editing_review_tier(self):
         # A head review-tier.py whose classify always returns tier 0 would pass a tier 0 body if
         # the check ran the PR's own copy; the base branch's copy still computes tier 2.
-        def weaken(head):
-            path = head / "scripts" / "review-tier.py"
-            text = path.read_text(encoding="utf-8")
-            marker = 'if __name__ == "__main__":'
-            self.assertIn(marker, text)
-            weak = "def classify(paths, manifest_before, manifest_after, format_only=frozenset()):\n"
-            weak += '    return 0, ["weakened"]\n\n\n'
-            path.write_text(text.replace(marker, weak + marker), encoding="utf-8")
-
-        self.open_pr(weaken)
+        self.open_pr(self.weaken_review_tier)
         code, output = self.run_workflow("## Review\n\n- **Tier:** 0")
         self.assertNotEqual(code, 0, output)
         self.assertIn("tier 2", output)
@@ -231,6 +234,23 @@ class PrBodyWorkflowTest(unittest.TestCase):
         code, output = self.run_workflow("## Review\n\n- **Tier:** 0")
         self.assertNotEqual(code, 0, output)
         self.assertIn("scripts/check-pr-body.py (review gate)", output)
+
+    def test_a_tag_named_like_the_base_branch_does_not_pick_the_gate(self):
+        # git resolves a short `origin/main` to a tag of that name before the remote-tracking
+        # branch, so a pushed tag `origin/main` on a weakened commit would supply the gate.
+        def touch(head):
+            path = head / "scripts" / "review-tier.py"
+            path.write_text(path.read_text(encoding="utf-8") + "# A harmless comment.\n", encoding="utf-8")
+
+        self.open_pr(touch)
+        git(self.head, "checkout", "-q", "-b", "weak", "main")
+        self.weaken_review_tier(self.head)
+        git(self.head, "commit", "-q", "-am", "weakened gate")
+        git(self.head, "tag", "origin/main")
+        git(self.head, "checkout", "-q", "pr")
+        code, output = self.run_workflow("## Review\n\n- **Tier:** 0")
+        self.assertNotEqual(code, 0, output)
+        self.assertIn("scripts/review-tier.py (review gate)", output)
 
     def test_a_reviewed_gate_change_still_passes(self):
         # Judging with the base branch's copy must not block a PR that legitimately changes the
