@@ -380,6 +380,10 @@ class LineEndingTest(unittest.TestCase):
         self.assertEqual(failures, [])
 
 
+# Commits and merges in the throwaway repos need an identity; CI has none configured.
+GIT_AS_TESTER = ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+
+
 class ReviewedCommitTest(unittest.TestCase):
     """Run the script against a throwaway repository with a PR branch reviewed at self.reviewed."""
 
@@ -399,7 +403,7 @@ class ReviewedCommitTest(unittest.TestCase):
 
     def git(self, *args):
         return subprocess.run(
-            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com", *args],
+            [*GIT_AS_TESTER, *args],
             cwd=self.root,
             check=True,
             capture_output=True,
@@ -578,7 +582,7 @@ class ReviewedCommitTest(unittest.TestCase):
         self.write("extension/dev/capture.js", "export const a = 5;\n")
         self.commit("main edits the same line")
         self.git("checkout", "-q", "pr")
-        merge = subprocess.run(["git", "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
+        merge = subprocess.run([*GIT_AS_TESTER, "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
         self.assertNotEqual(merge.returncode, 0)
         self.write("extension/dev/capture.js", "export const a = 2 + 5;\n")
         self.commit("resolve by combining both sides")
@@ -597,7 +601,7 @@ class ReviewedCommitTest(unittest.TestCase):
         self.write("README.md", "Butter by main\n")
         self.commit("main edits the readme")
         self.git("checkout", "-q", "pr")
-        merge = subprocess.run(["git", "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
+        merge = subprocess.run([*GIT_AS_TESTER, "merge", "-q", "--no-edit", "main"], cwd=self.root, capture_output=True)
         self.assertNotEqual(merge.returncode, 0)
 
     def test_base_merge_with_a_resolved_markdown_conflict_passes(self):
@@ -620,7 +624,7 @@ class ReviewedCommitTest(unittest.TestCase):
 
     def merge(self, branch):
         """Merge branch into the current one; returns whether git stopped on a conflict."""
-        merge = subprocess.run(["git", "merge", "-q", "--no-edit", branch], cwd=self.root, capture_output=True)
+        merge = subprocess.run([*GIT_AS_TESTER, "merge", "-q", "--no-edit", branch], cwd=self.root, capture_output=True)
         return merge.returncode != 0
 
     def test_base_merge_resolved_by_keeping_the_pr_side_of_a_code_conflict_fails(self):
