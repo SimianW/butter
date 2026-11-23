@@ -170,6 +170,7 @@ is exactly where Butter put it.
   at the top as on 11-19, and a scrollTop 0 write was back at the end 3 s later. No recorded Butter
   write went there, but Butter's unrecorded writes were not probed (no scroll probe ran), and there
   was no native control (`EXT=`). So whether ChatGPT does this without Butter is open.
+  Stage 2 ran that control: [seek-pull-control](../2026-11-22-seek-pull-control/report.md).
 - **A stored-layout destination that lands, with this build.** Only 1 release had `stored: true`,
   and it lost to the pull above. Whether a stored destination that does not mount reaches its
   question within 10 s without a search, when nothing pulls the chat away, was not seen.

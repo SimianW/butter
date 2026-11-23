@@ -1,0 +1,4 @@
+restored {"lab":2,"restarted":false,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":62036,"extensions":[],"flags":[]},"at":"2026-11-23T04:42:14.062Z","ok":true}
+lab-restore exit 0
+{"lab": 2, "lab_released": true, "perf_released": false}
+release exit 0
