@@ -6,6 +6,11 @@ const I = {
   list: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
   bookmark: '<path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>',
   db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+  // Lucide flask-conical, chevron-right and chevron-left: the Experimental row and page.
+  flask:
+    '<path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"/><path d="M6.453 15h11.094"/><path d="M8.5 2h7"/>',
+  right: '<path d="m9 18 6-6-6-6"/>',
+  left: '<path d="m15 18-6-6 6-6"/>',
 };
 const svg = (k, cls = '') =>
   `<svg ${cls ? `class="${cls}" ` : ''}viewBox="0 0 24 24" aria-hidden="true">${I[k]}</svg>`;
@@ -37,6 +42,10 @@ const T = {
     log: '更新日志',
     privacy: '隐私政策',
     policy: 'PRIVACY.zh-CN.md',
+    exp: '实验功能',
+    count: (n) => `已开启 ${n} 项`,
+    back: '返回全部功能',
+    lead: '尚未完成的功能。每项在你打开前都保持关闭，可能会出问题。',
   },
   en: {
     on: 'Enable Butter',
@@ -65,6 +74,10 @@ const T = {
     log: 'Changelog',
     privacy: 'Privacy policy',
     policy: 'PRIVACY.md',
+    exp: 'Experimental',
+    count: (n) => `${n} on`,
+    back: 'Back to all features',
+    lead: 'Unfinished features. Each stays off until you switch it on, and may misbehave.',
   },
 };
 // y = 1.25 is the centre line of the card's 2.5 px bottom border; the outline leaves and rejoins it horizontally.
@@ -81,6 +94,13 @@ const pat =
   '<svg aria-hidden="true" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg"><defs>    <linearGradient id="t1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6cc"/><stop offset="1" stop-color="#fde487"/></linearGradient>    <linearGradient id="l1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde07a"/><stop offset="1" stop-color="#f4c74a"/></linearGradient>    <linearGradient id="r1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2c23a"/><stop offset="1" stop-color="#e0a227"/></linearGradient>    <clipPath id="c1"><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z"/></clipPath></defs><g transform="translate(0 6)" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="64" cy="90" rx="50" ry="7" fill="rgb(27 23 15 / .12)"/><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="url(#r1)"/><g clip-path="url(#c1)"><path d="M0 0 L62 0 L62 128 L0 128 Z" fill="url(#l1)"/></g><path d="M19.65 37.97 Q14 40 19.6 42.1 L56.4 55.9 Q62 58 67.7 56 L108.3 41.96 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="url(#t1)"/><path d="M21.5 46.5 L55.5 59.5" stroke="#fff" stroke-opacity=".45" stroke-width="2"/><path d="M69 60 L106.5 47" stroke="#fff" stroke-opacity=".35" stroke-width="2"/><path d="M19.6 42.1 L56.4 55.9 Q62 58 67.7 56 L108.3 41.96 M62 59.5 L62 85.5" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M19.65 37.97 Q14 40 14 46 L14 65 Q14 70 19.6 72.1 L56.4 85.9 Q62 88 67.7 86 L108.3 71.96 Q114 70 114 65 L114 46 Q114 40 108.35 37.97 L69.65 24.03 Q64 22 58.35 24.03 Z" fill="none" stroke="#1b170f" stroke-width="5"/><path d="M24 43.75 C27 46.5 28.5 51 29.5 57 C30.5 63 37.5 64 38 58 C38.3 54 39.5 51.5 42 50.75 L42 47.25 L24 40.25 Z" fill="#fde487"/><path d="M24 43.75 C27 46.5 28.5 51 29.5 57 C30.5 63 37.5 64 38 58 C38.3 54 39.5 51.5 42 50.75" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M72 54.54 C74 56 74.5 58.5 75 61 C75.6 64 80.4 64 80.6 60.6 C80.8 57.5 81.2 53.8 83 51.08 L83 47.6 L72 51.2 Z" fill="#fde487"/><path d="M72 54.54 C74 56 74.5 58.5 75 61 C75.6 64 80.4 64 80.6 60.6 C80.8 57.5 81.2 53.8 83 51.08" fill="none" stroke="#1b170f" stroke-width="3"/><path d="M31.5 53 L32.3 57.5" stroke="#fff" stroke-width="2" stroke-opacity=".8"/><path d="M84 80.4 C87 81.5 88.5 84 88.5 89 L88.5 97 A4.75 4.75 0 0 0 98 97 L98 82 C98 78.5 98.8 76 100 74.85 L100 69.85 L84 75.4 Z" fill="#e8ad2e"/><path d="M84 80.4 C87 81.5 88.5 84 88.5 89 L88.5 97 A4.75 4.75 0 0 0 98 97 L98 82 C98 78.5 98.8 76 100 74.85" fill="none" stroke="#1b170f" stroke-width="5"/><path d="M91.6 86 L91.6 95.5" stroke="#fff" stroke-width="2.2" stroke-opacity=".85"/><path d="M25.5 41.2 C24 39.5 26 37.6 29 36.6 L39.5 32.8 C42.5 31.8 44.5 32.6 43.6 34.4 C43 35.6 41.6 36.3 40 36.9 L29.6 40.9 C27.8 41.6 26.4 41.9 25.5 41.2 Z" fill="#fff" fill-opacity=".92"/><circle cx="48" cy="32.2" r="1.9" fill="#fff" fill-opacity=".92"/></g></svg>';
 
 const groupKeys = Object.keys(ButterStatus.groups);
+// The groups each page lists, in display order. The popup always opens on the main page; which page
+// shows lives in memory only, so every re-render (polling, settings, language) keeps it.
+const pages = {
+  main: groupKeys.filter((k) => !ButterStatus.experimental.includes(k)),
+  experimental: ButterStatus.experimental,
+};
+let page = 'main';
 // The two storage rows, each with its usage, whether it could be read, and its own clear machine
 // (ButterPopup.clearFlow). `group` is its switch's group; `count` what its question names.
 const stores = {
@@ -117,6 +137,9 @@ let prefs = ButterStatus.normalize(),
   connected = false,
   // Bumped by every live settings change, so a slower startup read cannot overwrite it.
   settingsRevision = 0,
+  // False until the startup settings read lands: a click before it would save defaults over the
+  // stored settings, so switch, language and Clear clicks wait for it.
+  loaded = false,
   failuresRevision = 0;
 const root = document.getElementById('popup');
 const scheme = matchMedia('(prefers-color-scheme: dark)');
@@ -161,7 +184,12 @@ function askRow(t, name) {
 }
 // Preserve nodes so switches animate and keyboard focus survives live polling.
 function patch(old, next) {
-  if (old.nodeType !== next.nodeType || old.nodeName !== next.nodeName) {
+  // A page swap replaces the page whole, so no switch of one page animates into the other's.
+  if (
+    old.nodeType !== next.nodeType ||
+    old.nodeName !== next.nodeName ||
+    old.dataset?.page !== next.dataset?.page
+  ) {
     old.replaceWith(next.cloneNode(true));
     return;
   }
@@ -181,17 +209,19 @@ function render() {
   const t = T[prefs.lang],
     state = ButterStatus.masterState(prefs, connected),
     paused = state === 'paused';
-  const broken = groupKeys.filter((k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused);
+  // Faults show on the page that lists their group, so only that page's groups count here.
+  const broken = pages[page].filter(
+    (k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused,
+  );
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
   // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
   // A broken group says so in its own description, a live region so the change is announced.
-  // With two or more broken groups each says it in one line, so the popup stays under 600 px.
+  // With two or more broken groups each says it in one line, so the popup keeps its fixed height.
   const fault = broken.length > 1 ? t.faultShort : t.fault;
   // Its `for` names the switch: a storage row also holds a Clear button, which must not be the
   // label's control, and a click on Clear does not toggle the row.
-  const row = (i) => {
-    const [ic, n, d] = t.groups[i],
-      key = groupKeys[i],
+  const row = (key) => {
+    const [ic, n, d] = t.groups[groupKeys.indexOf(key)],
       bad = broken.includes(key),
       store = storeOf(key);
     if (store && ButterPopup.storageLine({ clear: stores[store].clear }) === 'confirm')
@@ -215,9 +245,17 @@ function render() {
   // Dev build only: dev/popup.js defines ButterDevPopup, and the store package leaves it out, so
   // this passive slot renders nothing there. Its markup goes through patch() like the rest.
   const dev = globalThis.ButterDevPopup?.render(prefs.lang) || {};
+  const card = (cls) =>
+    `<div class="card${cls}${paused ? ' paused' : ''}">${pages[page].map(row).join('')}${page === 'experimental' ? note : ''}</div>`;
+  // The Experimental row counts the experimental switches that are on, paused or not.
+  const on = ButterStatus.experimental.filter((k) => ButterStatus.groupOn(prefs, k)).length;
+  const main = `<div class="page" data-page="main"><div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
+    ${card('')}<button type="button" class="exp-row" data-go="experimental">${svg('flask', 'ic')}<span>${t.exp}</span><span class="cnt">${on ? t.count(on) : ''}</span>${svg('right', 'chev')}</button>${dev.card || ''}</div>`;
+  // Its title is the way back.
+  const experimental = `<div class="page" data-page="experimental"><button type="button" class="back" data-go="main" aria-label="${t.back}">${svg('left', 'chev')}<span>${t.exp}</span></button>
+    <p class="intro">${t.lead}</p>${card(' exp')}</div>`;
   const html = `<div class="hd">${pat}<div class="word">Butter</div>${dev.tag || ''}<a class="ver" target="_blank" rel="noopener" href="${repo}/blob/main/CHANGELOG.md" title="${t.log}">${ButterPopup.versionLabel(chrome.runtime.getManifest().version_name)}</a></div>
-    <div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
-    <div class="card${paused ? ' paused' : ''}">${groupKeys.map((k, i) => row(i)).join('')}${note}</div>${dev.card || ''}
+    ${page === 'main' ? main : experimental}
     <div class="ft"><a target="_blank" rel="noopener" href="${repo}">GitHub</a>${privacy}<div class="lang" aria-label="${prefs.lang === 'zh' ? '语言' : 'Language'}"><button data-lang="zh" aria-pressed="${prefs.lang === 'zh'}" class="${prefs.lang === 'zh' ? 'on' : ''}">中文</button><button data-lang="en" aria-pressed="${prefs.lang === 'en'}" class="${prefs.lang === 'en' ? 'on' : ''}">EN</button></div></div>`;
   const template = document.createElement('template');
   template.innerHTML = `<div>${html}</div>`;
@@ -262,10 +300,31 @@ async function clearStore(name) {
   }
   render();
 }
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+// Entering focuses the back button and going back the Experimental row. The incoming page fades
+// in and slides 10 px: from the right going in, from the left going back; never on re-renders.
+function go(next) {
+  page = next;
+  render();
+  if (!reducedMotion.matches)
+    root.querySelector('.page')?.animate?.(
+      [
+        { opacity: 0, transform: `translateX(${next === 'main' ? -10 : 10}px)` },
+        { opacity: 1, transform: 'none' },
+      ],
+      { duration: 160, easing: 'ease-out' },
+    );
+  root.querySelector(next === 'main' ? '.exp-row' : '.back')?.focus();
+}
 let saveQueue = Promise.resolve();
 root.addEventListener('click', (e) => {
-  const target = e.target.closest('[data-switch], [data-lang], [data-clear]');
+  const target = e.target.closest('[data-switch], [data-lang], [data-clear], [data-go]');
   if (!target) return;
+  if (target.dataset.go) {
+    go(target.dataset.go);
+    return;
+  }
+  if (!loaded) return;
   if (target.dataset.clear) {
     const name = target.dataset.store,
       st = stores[name];
@@ -334,6 +393,7 @@ Promise.all([
   chrome.storage.local.get('butter'),
   chrome.storage.session.get('butterFailures'),
 ]).then(([local, session]) => {
+  loaded = true;
   if (settingsRevision === startupRevision) prefs = ButterStatus.normalize(local.butter);
   if (failuresRevision === startupFailures) failures = session.butterFailures || {};
   render();

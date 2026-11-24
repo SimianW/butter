@@ -12,7 +12,11 @@ function worker(session) {
     TextEncoder,
     crypto: globalThis.crypto,
     chrome: {
-      runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
+      runtime: {
+        id: 'test',
+        onMessage: { addListener: (fn) => listeners.push(fn) },
+        onInstalled: { addListener() {} },
+      },
       commands: { onCommand: { addListener() {} } },
       storage: {
         local: { get: async () => ({}) },

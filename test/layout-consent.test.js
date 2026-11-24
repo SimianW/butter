@@ -7,6 +7,13 @@ const { workerFixture } = require('./helpers/layout-fixture.cjs');
 const codec = require('../extension/seek/layout-codec.js');
 const read = (file) => fs.readFileSync(require.resolve('../extension/' + file), 'utf8');
 const tick = () => new Promise(setImmediate);
+// A recorded layouts choice: what the popup's switch stores (granted), or a decline stored before
+// the consent card was removed (#158).
+const choose = (value, granted) => ({
+  ...value,
+  layoutConsent: granted ? 'granted' : 'declined',
+  opts: { ...value?.opts, layout: granted },
+});
 
 test('consent migration starts new and existing users pending without trusting the old layout option', () => {
   for (const value of [
@@ -22,13 +29,26 @@ test('consent migration starts new and existing users pending without trusting t
     assert.equal(status.groupOn(next, 'layout'), false);
   }
   for (const granted of [true, false]) {
-    const choice = status.chooseLayout({ lang: 'zh', enabled: false }, granted);
-    assert.equal(choice.layoutConsent, granted ? 'granted' : 'declined');
-    assert.equal(choice.opts.layout, granted);
-    assert.equal(choice.lang, 'zh');
-    assert.equal(choice.enabled, false);
-    assert.deepEqual(status.normalize(choice), choice);
+    const choice = choose({ lang: 'zh', enabled: false }, granted);
+    assert.equal(status.normalize(choice).layoutConsent, granted ? 'granted' : 'declined');
+    assert.equal(status.normalize(choice).opts.layout, granted);
+    assert.deepEqual(status.normalize(choice), status.normalize(status.normalize(choice)));
   }
+  assert.equal(status.chooseLayout, undefined, 'only the removed card recorded a choice');
+});
+
+test('no consent card: the manifest loads no layout consent script, and the file is gone', () => {
+  const manifest = JSON.parse(read('manifest.json'));
+  const scripts = manifest.content_scripts.flatMap((c) => c.js);
+  assert.ok(!scripts.some((f) => /layout-consent/.test(f)), scripts.join(', '));
+  assert.ok(scripts.includes('consent/card.js'), 'the bookmark notice still uses the card shell');
+  assert.ok(
+    !fs.existsSync(
+      require
+        .resolve('../extension/manifest.json')
+        .replace('manifest.json', 'consent/layout-consent.js'),
+    ),
+  );
 });
 
 test('pending worker performs no persisted I/O; grant enables it and decline deletes and disables', async () => {
@@ -66,11 +86,11 @@ test('pending worker performs no persisted I/O; grant enables it and decline del
     f.restart();
     assert.equal((await usage()).bytes, 0);
     assert.deepEqual(f.counters, { opens: 0, reads: 0, writes: 0 });
-    f.changeSettings(status.chooseLayout(initialSettings, true));
+    f.changeSettings(choose(initialSettings, true));
     const { generation } = await load();
     await put(generation);
     assert.ok((await usage()).bytes > 0);
-    f.changeSettings(status.chooseLayout(initialSettings, false));
+    f.changeSettings(choose(initialSettings, false));
     await usage();
     assert.equal(f.disk.size, 0);
     const counts = { ...f.counters };
@@ -127,12 +147,12 @@ test('pending ISOLATED bridge blocks page load/put requests and announces grant 
   assert.equal(requests.length, 0);
   assert.equal(responses[0].enabled, false);
   assert.equal(migrations.length, 0);
-  changed({ butter: { newValue: status.chooseLayout({}, true) } }, 'local');
+  changed({ butter: { newValue: choose({}, true) } }, 'local');
   assert.equal(responses.at(-1).enabled, true);
   assert.deepEqual(migrations, ['butter-seek-cold-geometry-v1']);
   await send('load');
   assert.equal(requests.length, 1);
-  changed({ butter: { newValue: status.chooseLayout({}, false) } }, 'local');
+  changed({ butter: { newValue: choose({}, false) } }, 'local');
   assert.equal(responses.at(-1).enabled, false);
   await send('put');
   assert.equal(requests.length, 1);
@@ -155,137 +175,6 @@ function sharedStorage(initial) {
     value: () => butter,
   };
 }
-function cardTab(shared) {
-  const events = {},
-    timers = [];
-  let host, clicked;
-  const card = { setAttribute() {} };
-  const shadow = {
-    append() {},
-    querySelector: () => card,
-    addEventListener: (type, fn) => (clicked = fn),
-  };
-  const ctx = {
-    ButterStatus: status,
-    FontFace: class {
-      load() {
-        return Promise.resolve();
-      }
-    },
-    innerHeight: 900,
-    chrome: { storage: shared.storage, runtime: { getURL: (p) => 'chrome-extension://test/' + p } },
-    document: {
-      readyState: 'complete',
-      fonts: { add() {} },
-      documentElement: { classList: { contains: () => false }, append() {} },
-      querySelectorAll: () => [],
-      createElement: (type) => {
-        if (type === 'chatgpt-butter-consent')
-          host = {
-            hidden: true,
-            attachShadow: () => shadow,
-            toggleAttribute() {},
-            removeAttribute() {},
-            setAttribute() {},
-            style: { setProperty() {} },
-            getBoundingClientRect: () => ({ left: 1110, right: 1410 }),
-          };
-        return host && type === 'chatgpt-butter-consent'
-          ? host
-          : { append() {}, setAttribute() {} };
-      },
-    },
-    getComputedStyle: () => ({ colorScheme: 'light' }),
-    matchMedia: () => ({ matches: false, addEventListener() {} }),
-    MutationObserver: class {
-      observe() {}
-    },
-    ResizeObserver: class {
-      observe() {}
-    },
-    setTimeout: (fn, ms) => {
-      const timer = { fn, ms };
-      timers.push(timer);
-      return timer;
-    },
-    clearTimeout: (timer) => {
-      if (timer) timer.fn = () => {};
-    },
-    requestAnimationFrame: (fn) => fn(),
-    addEventListener: (type, fn) => (events[type] = fn),
-  };
-  vm.createContext(ctx);
-  vm.runInContext(read('consent/card.js'), ctx);
-  vm.runInContext(read('consent/layout-consent.js'), ctx);
-  return {
-    host: () => host,
-    card,
-    elapse: (ms) =>
-      timers
-        .filter((t) => t.ms === ms)
-        .splice(0)
-        .forEach((t) => {
-          const fn = t.fn;
-          t.fn = () => {};
-          fn();
-        }),
-    click: async (yes, trusted = true) => {
-      clicked({
-        isTrusted: trusted,
-        target: { closest: () => ({ dataset: { choice: yes ? 'yes' : 'no' } }) },
-      });
-      await tick();
-    },
-  };
-}
-
-test('card waits for load delay, never steals focus, and choices hide live in every tab and on revisit', async () => {
-  for (const yes of [true, false]) {
-    const shared = sharedStorage({ lang: 'zh' });
-    const a = cardTab(shared),
-      b = cardTab(shared);
-    await tick();
-    assert.equal(a.host(), undefined);
-    a.elapse(1000);
-    b.elapse(1000);
-    assert.equal(a.host().hidden, false);
-    assert.equal(b.host().hidden, false);
-    assert.match(a.card.innerHTML, /好的/);
-    await a.click(yes, false);
-    assert.equal(
-      shared.value().layoutConsent,
-      undefined,
-      'Page-script clicks cannot grant consent',
-    );
-    await a.click(yes);
-    assert.equal(shared.value().layoutConsent, yes ? 'granted' : 'declined');
-    assert.equal(shared.value().opts.layout, yes);
-    assert.equal(a.host().inert, true);
-    assert.equal(b.host().inert, true);
-    a.elapse(160);
-    b.elapse(160);
-    assert.equal(a.host().hidden, true);
-    assert.equal(b.host().hidden, true);
-    const revisit = cardTab(shared);
-    await tick();
-    revisit.elapse(1000);
-    assert.equal(revisit.host(), undefined);
-  }
-});
-
-test('master off hides the pending card and re-enabling restores it without deciding consent', async () => {
-  const shared = sharedStorage({ enabled: false });
-  const tab = cardTab(shared);
-  await tick();
-  tab.elapse(1000);
-  assert.equal(tab.host(), undefined);
-  await shared.storage.local.set({ butter: { enabled: true } });
-  assert.equal(tab.host().hidden, false);
-  await shared.storage.local.set({ butter: { enabled: false } });
-  assert.equal(tab.host().hidden, true);
-  assert.equal(status.normalize(shared.value()).layoutConsent, 'pending');
-});
-
 test('actual popup pending switch is off, displays the consent note, and grants consent on click', async () => {
   const shared = sharedStorage({ lang: 'en', opts: { layout: true } });
   let click, html;
@@ -293,6 +182,7 @@ test('actual popup pending switch is off, displays the consent note, and grants 
     classList: { toggle() {} },
     addEventListener: (type, fn) => (click = fn),
     append() {},
+    querySelector: () => null,
   };
   const ctx = {
     ButterStatus: status,
@@ -321,6 +211,8 @@ test('actual popup pending switch is off, displays the consent note, and grants 
   };
   vm.runInNewContext(read('popup/popup.js'), ctx);
   await tick();
+  assert.doesNotMatch(html, /class="note"/, 'the main page has no layouts row');
+  click({ target: { closest: () => ({ dataset: { go: 'experimental' } }) } });
   assert.match(html, /<div class="note">Off until you turn it on\./);
   assert.match(html, /aria-checked="false"[^>]*data-switch="layout"/);
   click({ target: { closest: () => ({ dataset: { switch: 'layout' } }) } });
@@ -333,9 +225,6 @@ test('actual popup pending switch is off, displays the consent note, and grants 
 test('a delayed popup startup read cannot undo a newer consent choice', async () => {
   const pending = { lang: 'en', opts: { layout: true } };
   const shared = sharedStorage(pending);
-  const tab = cardTab(shared);
-  await tick();
-  tab.elapse(1000);
   let resolveInitialGet, click;
   const root = {
     classList: { toggle() {} },
@@ -373,8 +262,8 @@ test('a delayed popup startup read cannot undo a newer consent choice', async ()
     clearTimeout() {},
     addEventListener() {},
   });
-  await tab.click(true);
-  tab.elapse(160);
+  // Another popup grants consent while this one's startup read is still out.
+  await shared.storage.local.set({ butter: status.toggleGroup(pending, 'layout') });
   assert.equal(shared.value().layoutConsent, 'granted');
   resolveInitialGet({ butter: pending });
   await tick();
@@ -385,5 +274,4 @@ test('a delayed popup startup read cannot undo a newer consent choice', async ()
     'granted',
     'the stale startup snapshot must not be saved back',
   );
-  assert.equal(tab.host().hidden, true, 'the card must stay hidden after a choice');
 });

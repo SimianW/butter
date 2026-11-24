@@ -125,7 +125,7 @@ try {
 }
 try {
   await worker.evaluate(() =>
-    chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined' } }),
+    chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } } }),
   );
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(L.fixture(lab, 'math12'), { waitUntil: 'domcontentloaded' });

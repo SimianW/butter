@@ -31,6 +31,8 @@
   --knob: #fffdf6;
   --knob-shadow: rgb(0 0 0 / 0.22);
   --highlight: rgb(255 255 255 / 0.7);
+  /* The popup's one height, the tallest state's; a new row (#128) must raise it. */
+  --popup-height: 456px;
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .09 0 0 0 0 .06 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 :root.dark {
@@ -57,10 +59,18 @@
 * {
   box-sizing: border-box;
 }
-/* Chromium owns the square popup frame and caps its height at 600 px. */
+/* Chromium owns the square popup frame and caps its height at 600 px. A state that ever outgrows
+   --popup-height scrolls rather than clips. */
 html {
   overflow-y: auto;
   scrollbar-width: none;
+}
+/* Every state is --popup-height tall: the page follows the header, and the free space falls above
+   the footer, so the footer stays put across page swaps, notes and faults. */
+.popup > div {
+  display: flex;
+  flex-direction: column;
+  height: var(--popup-height);
 }
 html,
 body {
@@ -211,7 +221,7 @@ button {
 .note {
   border-top: 1px solid var(--hair);
 }
-.row .ic {
+.ic {
   width: 18px;
   height: 18px;
   flex: none;
@@ -352,8 +362,9 @@ button {
   opacity: 0.6;
 }
 
-/* Footer: links and the language switch, quiet. */
+/* Footer: links and the language switch, quiet, pinned to the popup's bottom. */
 .ft {
+  margin-top: auto;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -408,6 +419,94 @@ button {
 }
 .card.paused .ic {
   stroke: var(--ink-3);
+}
+
+/* The Experimental row: the main page's only way to the Experimental page. A dashed outline on the
+   paper, no fill, muted ink: the dashed --line border is the popup's mark for "not part of the
+   finished product" (the dev build's card). */
+.exp-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 32px);
+  margin: 0 16px 10px;
+  padding: 8px 12px 8px 14px;
+  border: 1.5px dashed var(--line);
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  text-align: left;
+}
+.exp-row .ic,
+.exp-row .chev {
+  stroke: var(--ink-3);
+}
+.exp-row .cnt {
+  margin-left: auto;
+  color: var(--ink-3);
+}
+.exp-row .cnt:empty + .chev {
+  margin-left: 0;
+}
+.chev {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  margin-left: -6px;
+}
+.exp-row:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+.exp-row:hover .ic,
+.exp-row:hover .chev {
+  stroke: var(--ink-2);
+}
+
+/* The Experimental page: its title is the way back, in the master card's title type. */
+.back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 12px 2px;
+  padding: 4px 10px 4px 2px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.back .chev {
+  width: 20px;
+  height: 20px;
+  stroke: var(--ink);
+  margin: 0;
+  transition: transform 160ms;
+}
+.back:hover .chev {
+  transform: translateX(-2px);
+}
+.intro {
+  margin: 0 18px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.card.exp {
+  border-style: dashed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .back .chev {
+    transition: none;
+  }
+  .back:hover .chev {
+    transform: none;
+  }
 }
 
 /* Fault: a broken group explains itself in its own row. */

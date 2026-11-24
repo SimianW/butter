@@ -1,4 +1,4 @@
-// Isolated world, document_start. Absence of off markers means on while storage loads.
+// Isolated world, document_start. Before storage loads, normalize()'s defaults apply.
 (() => {
   const { keys, normalize, classify } = ButterStatus;
   let settings = normalize(),

@@ -34,6 +34,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as fixture from './dev-capture-fixture.mjs';
+import { installed } from './runner/chromium.mjs';
 import { evidenceShot } from './runner/shot.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)),
@@ -90,7 +91,7 @@ const context = await chromium.launchPersistentContext(profile, {
     `--load-extension=${extension}`,
     '--window-position=0,0',
     // The fixed toast draws grayscale text on its own layer; without this the mockup panel would
-    // get LCD text, and every glyph edge would count as a difference (as in consent-qa.mjs).
+    // get LCD text, and every glyph edge would count as a difference.
     '--disable-lcd-text',
   ],
   // Real scrollbars: the drag presses the native thumb.
@@ -143,10 +144,9 @@ const worker =
   context.serviceWorkers().find((w) => w.url().includes(extensionId)) ||
   (await context.waitForEvent('serviceworker'));
 assert.equal(new URL(worker.url()).pathname, '/dev/worker.js');
-await worker.evaluate(
-  (butter) => chrome.storage.local.set({ butter }),
-  { enabled: true, lang: 'en', layoutConsent: 'declined' },
-);
+// After the install event's own settings write (its marker, #158), so it cannot land over ours.
+await installed(worker);
+await worker.evaluate(() => chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true }, defaultsVersion: 1 } }));
 const commands = await worker.evaluate(() => chrome.commands.getAll());
 assert.equal(commands.find((c) => c.name === 'save-bug')?.shortcut, 'Alt+Shift+B');
 
@@ -670,7 +670,7 @@ pass(`toast hosts on the chat for 4 saves: ${shown.length}, showing ${shown.map(
 const shots = path.join(out, 'screenshots');
 await fs.mkdir(shots, { recursive: true });
 const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
-// Share of pixels that differ by more than 24 in any channel (as in consent-qa.mjs).
+// Share of pixels that differ by more than 24 in any channel.
 const compare = async (p, a, b) =>
   p.evaluate(
     async ([a, b]) => {

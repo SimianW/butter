@@ -177,7 +177,7 @@ export async function launchLive({ L, mode, source, fixture, record, defer }) {
       return get(...args);
     };
     return chrome.storage.local.set({
-      butter: { enabled: true, lang: 'en', layoutConsent: 'declined' },
+      butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
     });
   });
   summary.shortcut = await worker.evaluate(async () => (await chrome.commands.getAll()).find((c) => c.name === 'bookmark')?.shortcut);
