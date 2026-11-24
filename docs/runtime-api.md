@@ -225,8 +225,7 @@ key (Alt+Shift+M), the Ask in branch key (Alt+Shift+Q), nor the dev build's Alt+
 
 `new-chat/content.js` hands its navigation to the MAIN world as a `butter-new-chat-go` event on
 `document`, whose `detail` is the path (a same-origin path starting with `/`); `new-chat/go-main.js`
-runs `history.pushState(null, '', path)` and dispatches `popstate`. A path listed in its `RELOAD`
-takes a full `location.assign` instead (none today).
+runs `history.pushState(null, '', path)` and dispatches `popstate`.
 
 ## Ask in branch handoff API
 
