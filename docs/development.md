@@ -86,8 +86,10 @@ right before `seek/preview-main.js`, which calls their factories.
   Work-mode detection, menu matching), `test/branch-shortcut.test.js` (the shortcut's action, row by
   row and in order), `test/branch-run.test.js` (state machine with a fake page and virtual clock)
   and `test/branch-worker.test.mjs` run under `node --test`. The command keys module has
-  `test/command-keys.test.js` (the page side: reader and formatters) and
-  `test/command-worker.test.mjs` (the worker side over a fake `chrome`).
+  `test/command-keys.test.js` (the page side: the key read from the worker, the hint and its
+  `aria-keyshortcuts` form, a relayed command reaching its handler) and
+  `test/command-worker.test.mjs` (the worker side over a fake `chrome`: the command relay to the
+  tab it was pressed in, and the key query).
   The fixture QA, `lab/harness/branch-qa.mjs`, loads the real extension in its own headless
   Chromium over the synthetic page in `lab/harness/branch/fixture.mjs` (no ChatGPT requests; query
   parameters such as `lang=zh`, `stream=<ms>`, `work` and `fail=<type>` select ChatGPT variants, each
@@ -137,12 +139,12 @@ right before `seek/preview-main.js`, which calls their factories.
   code block's or a table's one box 3 px beyond it with its corners and its border left clear, faded
   in over 160 ms, at once under reduced motion),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
-  CJK text, the viewport-top rule, the key hint and its `aria-keyshortcuts` form), `test/bookmark-card.test.js` (the hover card's meta
+  CJK text, the viewport-top rule), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names; a tick's card for several bookmarks, one, a stale one and more
   than five, its group name and the tick's name, in English and Chinese), `test/bookmark-stale.test.js` (live and stale resolution: a
   regenerated answer, an edited one, a vanished message, a version switched back; the dot solid,
-  hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
-  relay and the key query), `test/bookmark-session.test.js` (the bookmark session through its
+  hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store; the command
+  relay and the key query are in `test/command-worker.test.mjs`), `test/bookmark-session.test.js` (the bookmark session through its
   interface, over an async in-memory store with held replies and planted pages: an account or chat
   switch mid-read, seek deferral, a streamed answer unmounted and its raw id and staleness kept, the
   earlier-to-loaded transfer, a duplicate save, delete and Undo, Undo after navigation, the
