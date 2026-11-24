@@ -216,7 +216,7 @@ function render() {
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
   // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
   // A broken group says so in its own description, a live region so the change is announced.
-  // With two or more broken groups each says it in one line, so the popup stays under 600 px.
+  // With two or more broken groups each says it in one line, so the popup keeps its fixed height.
   const fault = broken.length > 1 ? t.faultShort : t.fault;
   // Its `for` names the switch: a storage row also holds a Clear button, which must not be the
   // label's control, and a click on Clear does not toggle the row.

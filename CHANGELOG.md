@@ -5,7 +5,8 @@
 ### Changed
 
 - Moved the question rail, Bookmarks and Remember long-chat layouts to a new Experimental page in
-  the popup, opened from an "Experimental" row that says how many of them are on.
+  the popup, opened from an "Experimental" row that says how many of them are on. The popup now
+  stays one height on both pages, so its links and language switch no longer jump.
 - Changed the question rail, Bookmarks and Remember long-chat layouts to start off on a new
   install; if you update, they stay as you had them.
 
