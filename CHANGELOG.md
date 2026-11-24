@@ -5,18 +5,19 @@
 ### Changed
 
 - Moved the question rail, Bookmarks and Remember long-chat layouts to a new Experimental page in
-  the popup, opened from an "Experimental" row that says how many of them are on. On a new install
-  all three start off; if you update, they stay as you had them.
-
-### Removed
-
-- Removed the card on the ChatGPT page that asked to remember long-chat layouts. Switching the
-  layouts row on in the Experimental page is now how you agree.
+  the popup, opened from an "Experimental" row that says how many of them are on.
+- Changed the question rail, Bookmarks and Remember long-chat layouts to start off on a new
+  install; if you update, they stay as you had them.
 
 ### Fixed
 
 - Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on
   the question the preview showed.
+
+### Removed
+
+- Removed the card on the ChatGPT page that asked to remember long-chat layouts. Switching the
+  layouts row on in the Experimental page is now how you agree.
 
 ### Known issues
 
