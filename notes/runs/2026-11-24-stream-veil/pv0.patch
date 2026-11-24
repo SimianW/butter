@@ -1,0 +1,86 @@
+diff -ruN a/extension/stream/containment.css b-pv0/extension/stream/containment.css
+--- a/extension/stream/containment.css
++++ b-pv0/extension/stream/containment.css
+@@ -42,6 +42,13 @@
+ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
+   content-visibility: auto;
+ }
++/* Veil (prototype pv): a held block that has never rendered computes opacity 0, so ChatGPT's
++   paint-readiness walk stops at it (stream/offscreen.js). It is skipped, so nothing changes on
++   screen; the attribute goes when the block stops being skipped. */
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-veil]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-veil]:not([data-wide-block]):not([class*="TableFrame-"]) {
++  opacity: 0;
++}
+ 
+ /* With content-visibility skipping on, the browser's scroll anchoring is off on the chat's content.
+    Chromium's anchoring, adjusting for turns and blocks that skip or render, moved a long chat to
+diff -ruN a/extension/stream/offscreen.js b-pv0/extension/stream/offscreen.js
+--- a/extension/stream/offscreen.js
++++ b-pv0/extension/stream/offscreen.js
+@@ -12,6 +12,12 @@
+ // The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+ // skipped in the same task that marks the answer complete, before any observer callback runs, so
+ // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
++// Veil (prototype pv, 2026-11-24): an answer block that starts being skipped before it ever
++// rendered gets data-butter-veil, which makes it compute opacity 0 (containment.css). A skipped
++// block paints nothing either way, but ChatGPT's paint-readiness telemetry stops its walk at an
++// element whose computed opacity is "0", so it no longer forces style and layout inside held
++// blocks. The veil comes off first thing when the block stops being skipped (also when ChatGPT's
++// completion lets a queued block render), at the flush that marks it seen, and when cv goes off.
+ (() => {
+   const off = () =>
+     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+@@ -33,6 +39,7 @@
+     // placeholder for the seek recorder however often it was read.
+     shown = new WeakSet();
+   let scheduled = false;
++  const VEIL = 'data-butter-veil';
+   const flush = () => {
+     scheduled = false;
+     if (off()) {
+@@ -45,6 +52,7 @@
+       else {
+         el.setAttribute('data-butter-seen', '');
+         el.removeAttribute('data-butter-unrendered');
++        el.removeAttribute(VEIL);
+       }
+     queue.clear();
+   };
+@@ -62,7 +70,18 @@
+   };
+   document.addEventListener(
+     'contentvisibilityautostatechange',
+-    (e) => (e.skipped ? skipped.add(e.target) : rendered(e.target)),
++    (e) => {
++      const el = e.target;
++      if (!e.skipped) {
++        el.removeAttribute(VEIL); // first: a block that renders must never paint veiled
++        rendered(el);
++        return;
++      }
++      skipped.add(el);
++      // A never-rendered answer block (turns have data-turn-key) is veiled while skipped.
++      if (!el.hasAttribute('data-turn-key') && !shown.has(el) && !el.hasAttribute('data-butter-seen'))
++        el.setAttribute(VEIL, '');
++    },
+     true,
+   );
+   const ro = new ResizeObserver((entries) => {
+@@ -98,7 +117,7 @@
+         if (t && !t.matches(busy) && !t.querySelector(busy)) {
+           for (const el of queue)
+             if (skipped.has(el) && t.contains(el))
+-              (queue.delete(el), waiting.add(el), rendered(el));
++              (queue.delete(el), waiting.add(el), el.removeAttribute(VEIL), rendered(el));
+           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
+         }
+       }
+@@ -114,6 +133,7 @@
+       ro.disconnect();
+       queue.clear();
+       waiting.clear();
++      for (const el of document.querySelectorAll('[data-butter-veil]')) el.removeAttribute(VEIL);
+     } else if (document.documentElement) scan(document.documentElement);
+   });
+   if (document.documentElement) scan(document.documentElement);

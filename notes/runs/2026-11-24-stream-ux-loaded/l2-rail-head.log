@@ -1,0 +1,33 @@
+l2-rail-head math12 from=top to=4 phase=reload class=clean samples=174
+l2-rail-head math12 from=bottom to=0 phase=reload class=clean samples=179
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+l2-rail-head math12 from=top to=0 phase=reload-setup class=failed positions=[[1098,347398],[1121,347377],[1143,347254],[1178,347172],[1191,347117],[1214,347050],[1236,347028],[1280,346986],[1300,346977],[1324,20],[2342,385],[3266,347409],[4454,20],[4533,385],[5464,347409],[6614,20],[6690,385],[7635,347409]] targetTop=null reversals=5
+l2-rail-head math12 from=top to=1 phase=settled class=failed positions=[[1044,347398],[1065,347377],[1071,347334],[1089,347254],[1124,347172],[1137,347117],[1157,347050],[1180,347028],[1203,346997],[1225,346986],[1250,32995],[3667,32859],[3782,32126],[5026,347397],[7653,31761],[7852,32126],[7965,32250],[9061,347521],[11685,31761],[11862,32126],[11952,32250],[13072,347521]] targetTop=null reversals=5
+l2-rail-head math12 from=top to=2 phase=settled class=failed positions=[[1122,347501],[1148,347458],[1154,347378],[1195,347296],[1207,347202],[1231,347174],[1260,347135],[1285,347110],[1315,64997],[6115,347545],[8213,65930],[9448,347533],[11405,65928],[12591,347545]] targetTop=null reversals=5
+l2-rail-head math12 from=top to=3 phase=settled class=clean samples=199
+l2-rail-head math12 from=top to=4 phase=settled class=clean samples=170
+l2-rail-head math12 from=top to=5 phase=settled class=clean samples=170
+l2-rail-head math12 from=top to=6 phase=settled class=clean samples=184
+l2-rail-head math12 from=top to=7 phase=settled class=clean samples=184
+l2-rail-head math12 from=top to=8 phase=settled class=clean samples=179
+l2-rail-head math12 from=top to=9 phase=settled class=clean samples=204
+l2-rail-head math12 from=top to=10 phase=settled class=clean samples=180
+l2-rail-head math12 from=top to=11 phase=settled class=clean samples=204
+l2-rail-head math12 from=bottom to=0 phase=settled class=failed positions=[[90,348827],[98,348806],[112,348763],[136,348683],[178,348546],[210,348457],[231,348440],[253,348426],[274,348406],[298,20],[1279,385],[2188,348838],[3354,20],[3435,385],[4378,348838],[5536,20],[5617,385],[6514,348838]] targetTop=null reversals=5
+l2-rail-head math12 from=bottom to=1 phase=settled class=failed positions=[[81,348827],[100,348806],[119,348763],[140,348601],[173,348546],[186,348507],[207,348457],[231,348440],[251,348426],[273,348406],[296,31885],[2778,31749],[2895,32126],[2989,32250],[3966,348826],[6482,31625],[6661,32126],[6750,32250],[7638,348826],[10141,31625],[10319,32126],[10414,32250],[11315,348826]] targetTop=null reversals=5
+l2-rail-head math12 from=bottom to=2 phase=settled class=failed positions=[[88,348815],[109,348794],[132,348751],[154,348589],[187,348534],[220,348445],[243,348428],[267,348414],[275,348403],[291,348394],[314,78852],[2934,78728],[3071,79081],[3158,79205],[4125,348838],[6782,78580],[6960,79081],[7027,79205],[7919,348838],[10574,78704],[10763,79081],[10834,79205],[11767,348838]] targetTop=null reversals=5
+l2-rail-head math12 from=bottom to=3 phase=settled class=clean samples=162
+l2-rail-head math12 from=bottom to=4 phase=settled class=clean samples=178
+l2-rail-head math12 from=bottom to=5 phase=settled class=clean samples=177
+l2-rail-head math12 from=bottom to=6 phase=settled class=clean samples=180
+l2-rail-head math12 from=bottom to=7 phase=settled class=clean samples=177
+l2-rail-head math12 from=bottom to=8 phase=settled class=clean samples=181
+l2-rail-head math12 from=bottom to=9 phase=settled class=clean samples=174
+l2-rail-head math12 from=bottom to=10 phase=settled class=clean samples=173
+l2-rail-head math12 from=bottom to=11 phase=settled class=clean samples=144
+l2-rail-head math12 from=previous to=0 phase=settled class=clean samples=170
+l2-rail-head math12 from=previous to=1 phase=settled class=clean samples=160
+l2-rail-head math12 from=previous to=11 phase=settled class=clean samples=170
+l2-rail-head math12 from=previous to=10 phase=settled class=clean samples=180
+SUMMARY {"jumps":30,"failed":6,"visibleDetour":0,"native":0,"gated":6,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":23,"rawReversalCount":65,"unpinChecks":27,"anchoringOn":0,"cvOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-stream-ux-loaded/l2-rail-head.json

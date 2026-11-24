@@ -1,0 +1,11 @@
+FIXTURE math12 {"streamingStyles":{"container":"inline-size","turn":null,"block":null,"contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"container cv throttle layout","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+r2-head-smoother-off math12 from=top to=0 phase=reload-setup class=failed positions=[[1148,347398],[1174,347334],[1199,347254],[1244,347117],[1259,347050],[1286,347011],[1310,346997],[1335,346977],[1362,20],[2527,385],[3611,347409],[4922,20],[5042,385],[6118,347409],[7515,20],[7625,385],[8638,347409]] targetTop=null reversals=5
+r2-head-smoother-off math12 from=top to=1 phase=settled class=failed positions=[[1068,347377],[1092,347334],[1115,347172],[1152,347117],[1166,347050],[1191,347028],[1216,346997],[1242,32995],[3743,32859],[3900,32126],[4254,32250],[5260,347533],[7879,31625],[8118,32126],[8349,32250],[9406,347533],[12055,31749],[12361,32126],[12599,32250],[13639,347533]] targetTop=null reversals=5
+r2-head-smoother-off math12 from=top to=2 phase=settled class=failed positions=[[1084,347522],[1106,347501],[1129,347458],[1153,347296],[1188,347241],[1202,347174],[1226,347152],[1250,347121],[1273,347110],[1299,64997],[4118,347545],[6059,65930],[7286,347545],[9246,65930],[10493,347545],[12539,65930],[13789,347545]] targetTop=null reversals=7
+r2-head-smoother-off math12 from=top to=3 phase=settled class=clean samples=211
+r2-head-smoother-off math12 from=bottom to=0 phase=settled class=clean samples=178
+r2-head-smoother-off math12 from=bottom to=1 phase=settled class=clean samples=193
+r2-head-smoother-off math12 from=bottom to=2 phase=settled class=clean samples=187
+r2-head-smoother-off math12 from=bottom to=3 phase=settled class=clean samples=181
+SUMMARY {"jumps":8,"failed":3,"visibleDetour":0,"native":0,"gated":3,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":8,"rawReversalCount":27,"unpinChecks":9,"anchoringOn":0,"cvOff":9}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-fail/r2-head-smoother-off.json

@@ -1,0 +1,25 @@
+ChatGPT program code (not chat text), read-only. Bundle 299268.5b3cdf27e2.js, the same hash as in stage 2 (2026-11-24),
+fetched with a plain curl of its public /cdn/assets/ URL as the page names it (generic browser user agent, no cookies): HTTP 200, 72022 bytes, sha256 27506c492ebae0a0d5fcc07bc496d082e8e0a1ab90c8e2a6ae1ee7a9bbc5091b.
+The whole bundle is one line. Each excerpt is 200 characters before and after the column (1-based), with the column marked <<HERE>>.
+All seven sites are in webpack module "AORd" (characters 38195-52807): ChatGPT's paint-readiness telemetry for a streamed answer.
+
+=== 1:41434  A: getComputedStyle(d) (the probe saw this call)
+font),u(d.letterSpacing),u(d.textTransform),u(d.textShadow)))},A=function(d,f){let i=!(arguments.length>2)||void 0===arguments[2]||arguments[2];if(!(d instanceof Element)||d.matches(e))return;let n=g.<<HERE>>getComputedStyle(d);if("none"===n.display||"0"===n.opacity)return;let x=w(d,f,n);if(x.right<=x.left||x.bottom<=x.top)return;if(i&&d!==a&&d.matches("p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol, 
+
+=== 1:41468  A: "none"===n.display, the read after it where the trace puts the forced layouts
+ransform),u(d.textShadow)))},A=function(d,f){let i=!(arguments.length>2)||void 0===arguments[2]||arguments[2];if(!(d instanceof Element)||d.matches(e))return;let n=g.getComputedStyle(d);if("none"===n.<<HERE>>display||"0"===n.opacity)return;let x=w(d,f,n);if(x.right<=x.left||x.bottom<=x.top)return;if(i&&d!==a&&d.matches("p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol, table, div, section, article, figu
+
+=== 1:41839  A: A(d,f,!1), recursion into a block whose rect/clip cache missed
+, div, section, article, figure, figcaption, dl")){let a=d.getBoundingClientRect(),b=h.get(d);if(!b||!l(b.rect,a)||!l(b.clip,x)||b.originX!==o.x||b.originY!==o.y){let c=q,e=r,g=s,i=t;q=0,r=1,s=!1,t=0,<<HERE>>A(d,f,!1),b={rect:a,clip:x,originX:o.x,originY:o.y,hash:q,multiplier:r,visible:s,textCount:t},h.set(d,b),q=c,r=e,s=g,t=i}b.visible&&(s=!0,t+=b.textCount,q=Math.imul(q,b.multiplier)+b.hash|0,r=Math.imu
+
+=== 1:42317  A: A(a,x), recursion into child elements
+y:d.checkVisibility({opacityProperty:!0,visibilityProperty:!0,contentVisibilityAuto:!0}),B=q,C=t;for(let a of(d.shadowRoot&&c(d.shadowRoot),(d.shadowRoot??d).childNodes))a instanceof Text?y&&z(a,x,n):<<HERE>>A(a,x);if(!y)return;if(b||t===C||"none"===n.textDecorationLine||u(n.textDecoration),q!==B&&b){if(d.matches("p, h1, h2, h3, h4, h5, h6, strong, b, em, i, s, del, sub, sup, a, blockquote, pre, code, ul,
+
+=== 1:50555  u: d.left!==c.scrollLeft (the scrollLeft read)
+(","),s=new Map;function t(a){s.has(a)||s.set(a,{left:a.scrollLeft,top:a.scrollTop})}function u(){let a=[k.innerWidth,k.innerHeight].join(","),b=r!==a;for(let[c,d]of(r=a,s))c.isConnected&&(d.left!==c.<<HERE>>scrollLeft||d.top!==c.scrollTop)&&(b=!0,d.left=c.scrollLeft,d.top=c.scrollTop);return b}for(let a=d;a;a=n(a))t(a);let v=new WeakMap,w=new Set,x=new MutationObserver(a=>{y(a),A()});function y(a){if(a.l
+
+=== 1:51055  the completion rAF callback: ()=>B()
+subtree:!0,childList:!0,characterData:!0,attributes:!0}),a.addEventListener("transitionrun",C,!0),a.addEventListener("animationstart",C,!0))}function A(){l||void 0!==b||(b=k.requestAnimationFrame(()=><<HERE>>B()))}function B(){let a=arguments.length>0&&void 0!==arguments[0]?arguments[0]:k.performance.now();if(l)return;if(void 0!==b&&k.cancelAnimationFrame(b),b=void 0,j.hidden){E(),i();return}let n=g();if(
+
+=== 1:51325  B: let r=u()
+uments[0]:k.performance.now();if(l)return;if(void 0!==b&&k.cancelAnimationFrame(b),b=void 0,j.hidden){E(),i();return}let n=g();if(!d.isConnected||"closed"===n)return void E();y(x.takeRecords());let r=<<HERE>>u();if(p&&r){E(),i();return}if((q!==f()||r)&&(q=f(),v=new WeakMap,m=!0),m||void 0===c){let a=0x811c9dc5,b=!1;for(let c of e()){let d=v.get(c);d||(d=o(c,q,z,t),v.set(c,d));let e=d.read();void 0!==e&&(b

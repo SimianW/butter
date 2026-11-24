@@ -1,0 +1,10 @@
+REPORT load ats12 #1: firstAfterRestart=true retried=false openedAtEnd=true fromEnd=0 scrollTop=9546 scrollHeight=10458 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #1: reached the end in 58 steps
+REPORT load ats12 #2: firstAfterRestart=false retried=false openedAtEnd=true fromEnd=0 scrollTop=9526 scrollHeight=10438 clientHeight=912 overflowAnchor=none children=T:none,none butterOff=layout turns=3
+PASS load ats12 #2: reached the end in 58 steps
+REPORT scrollHeight range 10438–10458 over 2 loads
+REPORT overflow-anchor scroller [children]: none [T:none,none]
+REPORT not opened at the end: none
+REPORT build=0.1.0-alpha.22+streamaudit.1 chromium=157.0.8103.50 mode=default restartEach=false flags=[] guard={"enabled":true,"blockedMutations":81,"sendAttempts":0}
+SUMMARY l4-wheel-pvh: 0/2 loads failed
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-stream-ux-loaded/l4-wheel-pvh.json

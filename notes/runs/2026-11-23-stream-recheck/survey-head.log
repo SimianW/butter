@@ -1,0 +1,135 @@
+REPORT ats12 entries {"depth":10,"entries":12,"keys":["branchingMessageId","browserConversationId","conversationId","errorMessage","feedbackEnabled","hasLaterSitesPreview","hasStreamingFinalText","id","isMostRecentTurn","isReadOnly","isTemporaryChat","isWorkConversation","onEditUserMessage","onFork","onRegenerateResponse","paragen","pendingSubmissionAttachments","readAloudEnabled","safetyReview","shareEnabled","showPendingLoadingMessage","showRequestUserInputStatus","showSharedConversationPrivateDisclaimer","streamingDilFinalId","timestampSeparatorAtMs","timestampTurns","turn","turnKey"],"rowComponent":false,"propKeys":["conversationId","entries","hasVisibleContent","isInlinePreview","isTurnActive","onVisibleContentReady","readingPosition","responseSpacerState","viewportRef"]}
+REPORT ats12 opened scroller {"y":9414,"h":10326,"vh":912,"anchor":"none","children":["T:none","none"],"turns":3,"cvAuto":3}
+REPORT ats12 opened container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT ats12 top scroller {"y":0,"h":40720,"vh":912,"anchor":"none","children":["T:none","none"],"turns":3,"cvAuto":3}
+REPORT ats12 top container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT ats12 middle scroller {"y":19904,"h":40720,"vh":912,"anchor":"none","children":["T:none","none"],"turns":1,"cvAuto":1}
+REPORT ats12 middle container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT ats12 end scroller {"y":39808,"h":40720,"vh":912,"anchor":"none","children":["T:none","none"],"turns":3,"cvAuto":3}
+REPORT ats12 end container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT ats12 count scroller .thread-scroll-container = 0/0/0/0
+REPORT ats12 count turn [data-turn-key] = 3/3/1/3
+REPORT ats12 count turn (old) [data-testid^=conversation-turn-] = 0/0/0/0
+REPORT ats12 count article = 0/0/0/0
+REPORT ats12 count markdown root (COLUMN) = 3/3/1/3
+REPORT ats12 count Dil response root = 0/0/0/0
+REPORT ats12 count Dil source wrapper [data-dil-source-message-id] = 0/0/0/0
+REPORT ats12 count answer root (ANSWER) = 3/3/1/3
+REPORT ats12 count paragraphs (ANSWER > :not(ul,ol), ANSWER > :is(ul,ol) > li) = 125/88/126/125
+REPORT ats12 count old message wrapper [data-message-author-role=assistant][data-message-id] = 0/0/0/0
+REPORT ats12 count [data-message-author-role=assistant] = 0/0/0/0
+REPORT ats12 count [data-message-author-role=user] = 0/0/0/0
+REPORT ats12 count [data-message-id] = 0/0/0/0
+REPORT ats12 count selection id [data-chatgpt-selection-message-id] = 3/3/1/3
+REPORT ats12 count selection conv id [data-chatgpt-selection-conversation-id] = 3/3/1/3
+REPORT ats12 count question bubble [data-user-message-bubble] = 3/3/1/3
+REPORT ats12 count cv blocks (COLUMN > :not(dil) KEEP) = 122/83/123/122
+REPORT ats12 count cv blocks (Dil > KEEP) = 0/0/0/0
+REPORT ats12 count seek blocks (ANSWER > KEEP:not(hr)) = 118/81/118/118
+REPORT ats12 count [data-wide-block] = 2/1/2/2
+REPORT ats12 count [class*=TableFrame-] = 0/0/0/0
+REPORT ats12 count table = 2/1/2/2
+REPORT ats12 count pre = 0/0/0/0
+REPORT ats12 count [data-code-block] = 0/0/0/0
+REPORT ats12 count [data-talvt-turn-state] = 3/3/1/3
+REPORT ats12 count [data-talvt-turn-state=in_progress] = 0/0/0/0
+REPORT ats12 count [data-talvt-turn-state=complete] = 3/3/1/3
+REPORT ats12 count [class*=AdaptiveStreaming] = 0/0/0/0
+REPORT ats12 count .katex = 45/42/55/45
+REPORT ats12 count .katex-display = 36/18/36/36
+REPORT ats12 count annotation[encoding=application/x-tex] = 45/42/55/45
+REPORT ats12 count [data-math-source] = 45/42/55/45
+REPORT ats12 count [data-testid=chatgpt-citation] = 0/1/0/0
+REPORT ats12 count inline-size container div.[container-type:inline-size].min-h-full = 1/1/1/1
+REPORT ats12 count container (harness form) div[class*=container-type][class~=min-h-full] = 1/1/1/1
+REPORT ats12 doc composer .ProseMirror[contenteditable=true] = 1/1/1/1
+REPORT ats12 doc composer #prompt-textarea[contenteditable=true] = 0/0/0/0
+REPORT ats12 doc composer .ProseMirror[contenteditable=true][role=textbox] = 1/1/1/1
+REPORT ats12 doc #thread-bottom-container = 0/0/0/0
+REPORT ats12 doc form:has(.ProseMirror[contenteditable=true]) = 1/1/1/1
+REPORT ats12 doc form[data-composer-placement] = 1/1/1/1
+REPORT ats12 doc [data-testid=send-button] = 0/0/0/0
+REPORT ats12 doc #composer-submit-button = 0/0/0/0
+REPORT ats12 doc button[type=submit] = 0/0/0/0
+REPORT ats12 doc [data-testid=stop-button] = 0/0/0/0
+REPORT ats12 doc button[aria-label=Send prompt] = 0/0/0/0
+REPORT ats12 doc header = 2/2/2/2
+REPORT ats12 doc form = 1/1/1/1
+REPORT ats12 doc use[href*=chat-bubble-checkmark-dashed] = 0/0/0/0
+REPORT ats12 doc html.dark = 0/0/0/0
+REPORT ats12 doc html.light = 0/0/0/0
+REPORT ats12 doc chatgpt-butter-nav = 1/1/1/1
+REPORT ats12 doc chatgpt-butter-nav[data-on] = 1/1/1/1
+REPORT ats12 doc butter-seek-preview = 0/0/0/0
+REPORT ats12 doc [data-turn-key][data-butter-seen] = 3/3/1/3
+REPORT ats12 doc [data-butter-seen] = 121/84/119/121
+REPORT ats12 doc [data-butter-unrendered] = 0/0/0/0
+REPORT ats12 api [{"path":"/backend-api/conversations/<id>?num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["async_status","atlas_mode_enabled","blocked_urls","context_scopes","context_truncation_continuation","conversation_id","conversation_origin","conversation_template_id","create_time","current_node","default_model_slug","disabled_tool_ids","gizmo_id","gizmo_type","is_archived","is_do_not_remember","is_read_only","is_starred","is_study_mode","is_temporary_chat","memory_scope","messages","moderation_results","owner","page_info","pinned_time","plugin_ids","safe_urls","sectioned_conversation","sugar_item_id","sugar_item_visible","title","update_time","voice"],"messages":15,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>?num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["async_status","atlas_mode_enabled","blocked_urls","context_scopes","context_truncation_continuation","conversation_id","conversation_origin","conversation_template_id","create_time","current_node","default_model_slug","disabled_tool_ids","gizmo_id","gizmo_type","is_archived","is_do_not_remember","is_read_only","is_starred","is_study_mode","is_temporary_chat","memory_scope","messages","moderation_results","owner","page_info","pinned_time","plugin_ids","safe_urls","sectioned_conversation","sugar_item_id","sugar_item_visible","title","update_time","voice"],"messages":15,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations?exclude_conversation_origin&expand&hide_snorlax&is_archived&is_starred&limit&order&offset","status":200,"method":"GET","matchesPAGE":false,"keys":["items","limit","offset","total"],"items":20,"itemsKeys":["async_status","blocked_urls","context_scopes","context_scopes_v2","conversation_origin","conversation_template_id","create_time","current_node","gizmo_id","id","is_archived","is_do_not_remember","is_starred","is_temporary_chat","latest_assistant_turn_created_at","mapping","memory_scope","pinned_time","safe_urls","snippet","sugar_item_id","sugar_item_visible","summary_metadata","title","trial_conversation_type","update_time","workspace_id"]},{"path":"/backend-api/conversations?conversation_origin&expand&hide_snorlax&is_archived&is_starred&limit&order&offset","status":200,"method":"GET","matchesPAGE":false,"keys":["items","limit","offset","total"],"items":20,"itemsKeys":["async_status","blocked_urls","context_scopes","context_scopes_v2","conversation_origin","conversation_template_id","create_time","current_node","gizmo_id","id","is_archived","is_do_not_remember","is_starred","is_temporary_chat","latest_assistant_turn_created_at","mapping","memory_scope","pinned_time","safe_urls","snippet","sugar_item_id","sugar_item_visible","summary_metadata","title","trial_conversation_type","update_time","workspace_id"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":3,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":3,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":3,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":3,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":8,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":7,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":4,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]}]
+REPORT math9 entries {"depth":10,"entries":9,"keys":["branchingMessageId","browserConversationId","conversationId","errorMessage","feedbackEnabled","hasLaterSitesPreview","hasStreamingFinalText","id","isMostRecentTurn","isReadOnly","isTemporaryChat","isWorkConversation","onEditUserMessage","onFork","onRegenerateResponse","paragen","pendingSubmissionAttachments","readAloudEnabled","safetyReview","shareEnabled","showPendingLoadingMessage","showRequestUserInputStatus","showSharedConversationPrivateDisclaimer","streamingDilFinalId","timestampSeparatorAtMs","timestampTurns","turn","turnKey"],"rowComponent":false,"propKeys":["conversationId","entries","hasVisibleContent","isInlinePreview","isTurnActive","onVisibleContentReady","readingPosition","responseSpacerState","viewportRef"]}
+REPORT math9 opened scroller {"y":142097,"h":143009,"vh":912,"anchor":"none","children":["T:none","none"],"turns":3,"cvAuto":3}
+REPORT math9 opened container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT math9 top scroller {"y":0,"h":294689,"vh":912,"anchor":"none","children":["T:none","none"],"turns":1,"cvAuto":1}
+REPORT math9 top container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT math9 middle scroller {"y":146889,"h":294689,"vh":912,"anchor":"none","children":["T:none","none"],"turns":1,"cvAuto":1}
+REPORT math9 middle container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT math9 end scroller {"y":293777,"h":294689,"vh":912,"anchor":"none","children":["T:none","none"],"turns":1,"cvAuto":1}
+REPORT math9 end container chain {"scroller":"normal","chain":["div[[container-type:inline-size] min-h-full]:normal","div:normal","div[min-h-full]:normal","div:normal","div:normal","div:normal","div:normal"],"sizeContainerAboveTurn":false}
+REPORT math9 count scroller .thread-scroll-container = 0/0/0/0
+REPORT math9 count turn [data-turn-key] = 3/1/1/1
+REPORT math9 count turn (old) [data-testid^=conversation-turn-] = 0/0/0/0
+REPORT math9 count article = 0/0/0/0
+REPORT math9 count markdown root (COLUMN) = 3/1/1/1
+REPORT math9 count Dil response root = 0/0/0/0
+REPORT math9 count Dil source wrapper [data-dil-source-message-id] = 0/0/0/0
+REPORT math9 count answer root (ANSWER) = 3/1/1/1
+REPORT math9 count paragraphs (ANSWER > :not(ul,ol), ANSWER > :is(ul,ol) > li) = 2298/555/657/806
+REPORT math9 count old message wrapper [data-message-author-role=assistant][data-message-id] = 0/0/0/0
+REPORT math9 count [data-message-author-role=assistant] = 0/0/0/0
+REPORT math9 count [data-message-author-role=user] = 0/0/0/0
+REPORT math9 count [data-message-id] = 0/0/0/0
+REPORT math9 count selection id [data-chatgpt-selection-message-id] = 3/1/1/1
+REPORT math9 count selection conv id [data-chatgpt-selection-conversation-id] = 3/1/1/1
+REPORT math9 count question bubble [data-user-message-bubble] = 3/1/1/1
+REPORT math9 count cv blocks (COLUMN > :not(dil) KEEP) = 2231/541/644/782
+REPORT math9 count cv blocks (Dil > KEEP) = 0/0/0/0
+REPORT math9 count seek blocks (ANSWER > KEEP:not(hr)) = 2123/521/613/741
+REPORT math9 count [data-wide-block] = 10/1/3/6
+REPORT math9 count [class*=TableFrame-] = 0/0/0/0
+REPORT math9 count table = 10/1/3/6
+REPORT math9 count pre = 0/0/0/0
+REPORT math9 count [data-code-block] = 0/0/0/0
+REPORT math9 count [data-talvt-turn-state] = 3/1/1/1
+REPORT math9 count [data-talvt-turn-state=in_progress] = 0/0/0/0
+REPORT math9 count [data-talvt-turn-state=complete] = 3/1/1/1
+REPORT math9 count [class*=AdaptiveStreaming] = 0/0/0/0
+REPORT math9 count .katex = 1082/272/309/461
+REPORT math9 count .katex-display = 816/194/237/292
+REPORT math9 count annotation[encoding=application/x-tex] = 1082/272/309/461
+REPORT math9 count [data-math-source] = 1082/272/309/461
+REPORT math9 count [data-testid=chatgpt-citation] = 0/0/0/0
+REPORT math9 count inline-size container div.[container-type:inline-size].min-h-full = 1/1/1/1
+REPORT math9 count container (harness form) div[class*=container-type][class~=min-h-full] = 1/1/1/1
+REPORT math9 doc composer .ProseMirror[contenteditable=true] = 1/1/1/1
+REPORT math9 doc composer #prompt-textarea[contenteditable=true] = 0/0/0/0
+REPORT math9 doc composer .ProseMirror[contenteditable=true][role=textbox] = 1/1/1/1
+REPORT math9 doc #thread-bottom-container = 0/0/0/0
+REPORT math9 doc form:has(.ProseMirror[contenteditable=true]) = 1/1/1/1
+REPORT math9 doc form[data-composer-placement] = 1/1/1/1
+REPORT math9 doc [data-testid=send-button] = 0/0/0/0
+REPORT math9 doc #composer-submit-button = 0/0/0/0
+REPORT math9 doc button[type=submit] = 0/0/0/0
+REPORT math9 doc [data-testid=stop-button] = 0/0/0/0
+REPORT math9 doc button[aria-label=Send prompt] = 0/0/0/0
+REPORT math9 doc header = 2/2/2/2
+REPORT math9 doc form = 1/1/1/1
+REPORT math9 doc use[href*=chat-bubble-checkmark-dashed] = 0/0/0/0
+REPORT math9 doc html.dark = 0/0/0/0
+REPORT math9 doc html.light = 0/0/0/0
+REPORT math9 doc chatgpt-butter-nav = 1/1/1/1
+REPORT math9 doc chatgpt-butter-nav[data-on] = 1/1/1/1
+REPORT math9 doc butter-seek-preview = 0/0/0/0
+REPORT math9 doc [data-turn-key][data-butter-seen] = 3/1/1/1
+REPORT math9 doc [data-butter-seen] = 1602/521/614/742
+REPORT math9 doc [data-butter-unrendered] = 0/0/0/0
+REPORT math9 api [{"path":"/backend-api/conversations/<id>?num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["async_status","atlas_mode_enabled","blocked_urls","context_scopes","context_truncation_continuation","conversation_id","conversation_origin","conversation_template_id","create_time","current_node","default_model_slug","disabled_tool_ids","gizmo_id","gizmo_type","is_archived","is_do_not_remember","is_read_only","is_starred","is_study_mode","is_temporary_chat","memory_scope","messages","moderation_results","owner","page_info","pinned_time","plugin_ids","safe_urls","sectioned_conversation","sugar_item_id","sugar_item_visible","title","update_time","voice"],"messages":24,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>?num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["async_status","atlas_mode_enabled","blocked_urls","context_scopes","context_truncation_continuation","conversation_id","conversation_origin","conversation_template_id","create_time","current_node","default_model_slug","disabled_tool_ids","gizmo_id","gizmo_type","is_archived","is_do_not_remember","is_read_only","is_starred","is_study_mode","is_temporary_chat","memory_scope","messages","moderation_results","owner","page_info","pinned_time","plugin_ids","safe_urls","sectioned_conversation","sugar_item_id","sugar_item_visible","title","update_time","voice"],"messages":24,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations?exclude_conversation_origin&expand&hide_snorlax&is_archived&is_starred&limit&order&offset","status":200,"method":"GET","matchesPAGE":false,"keys":["items","limit","offset","total"],"items":20,"itemsKeys":["async_status","blocked_urls","context_scopes","context_scopes_v2","conversation_origin","conversation_template_id","create_time","current_node","gizmo_id","id","is_archived","is_do_not_remember","is_starred","is_temporary_chat","latest_assistant_turn_created_at","mapping","memory_scope","pinned_time","safe_urls","snippet","sugar_item_id","sugar_item_visible","summary_metadata","title","trial_conversation_type","update_time","workspace_id"]},{"path":"/backend-api/conversations?conversation_origin&expand&hide_snorlax&is_archived&is_starred&limit&order&offset","status":200,"method":"GET","matchesPAGE":false,"keys":["items","limit","offset","total"],"items":20,"itemsKeys":["async_status","blocked_urls","context_scopes","context_scopes_v2","conversation_origin","conversation_template_id","create_time","current_node","gizmo_id","id","is_archived","is_do_not_remember","is_starred","is_temporary_chat","latest_assistant_turn_created_at","mapping","memory_scope","pinned_time","safe_urls","snippet","sugar_item_id","sugar_item_visible","summary_metadata","title","trial_conversation_type","update_time","workspace_id"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":4,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":4,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":3,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]},{"path":"/backend-api/conversations/<id>/messages?before&num_turns&include_has_versions","status":200,"method":"GET","matchesPAGE":true,"keys":["blocked_urls","messages","page_info","safe_urls"],"messages":4,"messagesKeys":["author","channel","content","create_time","end_turn","id","metadata","recipient","status","update_time","weight"]}]
+REPORT wrote ~/.local/share/chatgpt-lab/captures/2026-11-23-stream-recheck/structure-head.json

@@ -1,0 +1,5 @@
+REPORT typing l5-typing-pvh ats12: started 3097 ms after the first turn, 44 keys over 5795.8 ms; keydown to next frame p50 10.9 ms, p95 57.9 ms, max 180 ms; Event Timing entries >= 16 ms {"keydown":{"n":44,"max":160},"keypress":{"n":41,"max":160},"beforeinput":{"n":44,"max":56},"input":{"n":44,"max":56},"pointerout":{"n":1,"max":16},"pointerover":{"n":1,"max":16},"pointerenter":{"n":1,"max":16},"mouseout":{"n":1,"max":16},"mouseover":{"n":1,"max":16}}
+REPORT typing laf: LoAF 5, total 486.8 ms, blocking 224 ms, longest 148.5 ms at +2138.6 ms, >=100/200/500/1000 ms 2/0/0/0; script ms (forced) by source {"chatgpt":{"ms":130.7,"forced":5.8}}
+REPORT typing counters [hydrated, pending, unrendered]: before ["0","0",0], after ["0","0",0]; composer cleared true
+REPORT guard: blocked mutations 31, send attempts 0, prepare requests 1 (all blocked)
+SUMMARY l5-typing-pvh: exit 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-stream-ux-loaded/l5-typing-pvh.json

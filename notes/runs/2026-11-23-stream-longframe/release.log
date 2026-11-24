@@ -1,0 +1,5 @@
+{"lab": 2, "lab_released": true, "perf_released": true}
+release exit=0
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}

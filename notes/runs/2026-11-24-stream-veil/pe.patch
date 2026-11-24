@@ -1,0 +1,76 @@
+diff -ruN a/extension/stream/offscreen.js b-pe/extension/stream/offscreen.js
+--- a/extension/stream/offscreen.js
++++ b-pe/extension/stream/offscreen.js
+@@ -12,6 +12,15 @@
+ // The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+ // skipped in the same task that marks the answer complete, before any observer callback runs, so
+ // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
++// Veil (prototype pv, 2026-11-24): an answer block that starts being skipped before it ever
++// rendered gets data-butter-veil, which makes it compute opacity 0 (containment.css). A skipped
++// block paints nothing either way, but ChatGPT's paint-readiness telemetry stops its walk at an
++// element whose computed opacity is "0", so it no longer forces style and layout inside held
++// blocks. The veil comes off first thing when the block stops being skipped (also when ChatGPT's
++// completion lets a queued block render), at the flush that marks it seen, and when cv goes off.
++// Prototype pe (2026-11-24): instead of an opacity rule, the veil is data-cot, which ChatGPT's
++// paint-readiness walk excludes by selector before it reads any style. Butter removes it only
++// from blocks it set it on (`veiled`), never from ChatGPT's own data-cot elements.
+ (() => {
+   const off = () =>
+     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+@@ -33,6 +42,9 @@
+     // placeholder for the seek recorder however often it was read.
+     shown = new WeakSet();
+   let scheduled = false;
++  const VEIL = 'data-cot';
++  const veiled = new WeakSet();
++  const unveil = (el) => veiled.has(el) && (veiled.delete(el), el.removeAttribute(VEIL));
+   const flush = () => {
+     scheduled = false;
+     if (off()) {
+@@ -45,6 +57,7 @@
+       else {
+         el.setAttribute('data-butter-seen', '');
+         el.removeAttribute('data-butter-unrendered');
++        unveil(el);
+       }
+     queue.clear();
+   };
+@@ -62,7 +75,18 @@
+   };
+   document.addEventListener(
+     'contentvisibilityautostatechange',
+-    (e) => (e.skipped ? skipped.add(e.target) : rendered(e.target)),
++    (e) => {
++      const el = e.target;
++      if (!e.skipped) {
++        unveil(el); // first: a block that renders drops the mark
++        rendered(el);
++        return;
++      }
++      skipped.add(el);
++      // A never-rendered answer block (turns have data-turn-key) is veiled while skipped.
++      if (!el.hasAttribute('data-turn-key') && !shown.has(el) && !el.hasAttribute('data-butter-seen') && !el.hasAttribute(VEIL))
++        (veiled.add(el), el.setAttribute(VEIL, ''));
++    },
+     true,
+   );
+   const ro = new ResizeObserver((entries) => {
+@@ -98,7 +122,9 @@
+         if (t && !t.matches(busy) && !t.querySelector(busy)) {
+           for (const el of queue)
+             if (skipped.has(el) && t.contains(el))
+-              (queue.delete(el), waiting.add(el), rendered(el));
++              (queue.delete(el), waiting.add(el), unveil(el), rendered(el));
++          // Blocks that were never held (no data-butter-unrendered) render now: unveil them.
++          for (const el of t.querySelectorAll('[data-cot]')) if (!waiting.has(el)) unveil(el);
+           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
+         }
+       }
+@@ -114,6 +140,7 @@
+       ro.disconnect();
+       queue.clear();
+       waiting.clear();
++      for (const el of document.querySelectorAll('[data-cot]')) unveil(el);
+     } else if (document.documentElement) scan(document.documentElement);
+   });
+   if (document.documentElement) scan(document.documentElement);

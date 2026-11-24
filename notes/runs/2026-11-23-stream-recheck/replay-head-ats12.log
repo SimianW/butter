@@ -1,0 +1,36 @@
+REPORT build 0.1.0-alpha.22+streamaudit.1 (stream-audit-1123), fixture ats12, 357 chunks over 107 s
+REPORT opened: scrollTop 9446 of 10358 (fromEnd 0), entries 5, rail 5 ticks, lit [3,4], data-butter-off "layout", fetch hook outermost false, rAF hook outermost false
+REPORT buttons, empty composer: <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=button aria-label="Start Voice" data=[data-composer-voice-start data-state] icons=[#codex-icon-voice-regular-20] RIGHTMOST matches=[]>
+REPORT buttons, typed (12 chars): <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=submit aria-label="Send" data=[] icons=[] RIGHTMOST matches=[pre-jump SEND_BUTTON; branch SEND (testid + aria-labels); branch structural button[type=submit]]>
+REPORT selector counts, typed: {"pre-jump SEND_BUTTON":1,"branch SEND (testid + aria-labels)":1,"branch structural button[type=submit]":1,"[data-testid=\"send-button\"]":0,"#composer-submit-button":0,"[data-testid=\"stop-button\"]":0}
+REPORT pre-jump condition with text typed: SEND_BUTTON in form true, would fire on Enter true
+PASS replay-hook
+REPORT long animation frames, Enter to stream complete (107790.6 ms): LoAF 377, total 34271.6 ms, blocking 11063.5 ms, longest 2101.4 ms; longtask 345, total 28305 ms, blocking 11055 ms, longest 1460 ms
+REPORT replay: started true, chunks 357/357, done true, local answers [/backend-api/conversation/init, /backend-api/sentinel/chat-requirements/prepare, /backend-api/f/conversation/prepare, /__replay_selftest, /backend-api/sentinel/chat-requirements/prepare, /backend-api/f/conversation/prepare], denied in page 39: ["POST /v1/initialize","POST /ces/v1/rgstr","POST /ces/v1/telemetry/intake","POST /ces/statsc/flush"], request keys ["turn_attribution","conversation_id","action","model","parent_message_id","timezone","timezone_offset_min","is_do_not_remember","client_contextual_info","conversation_mode","gizmo_id","local_function_names","messages","supported_encodings","genui_state_snapshots","client_prepare_state"]
+PASS replay-streams
+PASS in-progress
+REPORT in_progress in 437/449 samples; mid-stream: turn 5/6, 281 blocks, 281 computed content-visibility auto, seen 23, unrendered 244, AdaptiveStreaming 1, turn cv auto
+REPORT streaming turn blocks over time (blocks/cvAuto/seen/unrendered): 1/1/0/0 72/72/23/40 157/157/23/123 189/189/23/155 277/277/23/244 368/368/23/330 436/436/23/392 535/535/25/485 610/610/25/558
+REPORT after completion: turn 5/6, in_progress 0, 612 blocks, cv auto 592, seen 27, unrendered 565, answer 248 chars, scrollTop 9622 of 94948 (fromEnd 84414)
+PASS cv-blocks
+PASS seen-marks
+REPORT marks on the streamed answer: max during stream seen 25, unrendered 565; after: seen 27, unrendered 565
+PASS throttle-matched
+REPORT __butterStats {"smootherFrames":349,"published":348}
+REPORT answer DOM updates while streaming: 320, interval p10 255.1, median 267.7, p90 392.5 ms
+REPORT native smoother rAF callbacks seen by the harness hook: 0 (hook outermost false), interval median null ms; other publish/flush-like callbacks: [["(t) => {\n      pending.delete(handle);\n      if (entry.canceled) return;\n      lastRun = performance.now();\n      stats.published++;\n      cb(t);\n    }",324]]
+REPORT view while streaming: at the end (within 4 px) in 0/437 samples; fromEnd min 26, median 37209, max 84624; scrollTop first 9622, last 9622; after completion fromEnd 84414
+PASS stream-no-jump
+REPORT buttons mid-stream: <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=button aria-label="Stop" data=[] icons=[] RIGHTMOST matches=[]>; counts {"pre-jump SEND_BUTTON":0,"branch SEND (testid + aria-labels)":0,"branch structural button[type=submit]":0,"[data-testid=\"send-button\"]":0,"#composer-submit-button":0,"[data-testid=\"stop-button\"]":0}
+PASS rail-new-tick
+PASS rail-new-tick-lit
+REPORT rail after completion: 6 ticks, lit [3,4,5]; during stream ticks 6
+REPORT wheel phase: last turn 81566 px high, 60 steps up
+REPORT view shift up (60 steps): 10/60 over 4px (842, 1106, 482, 882, 731, 978, 928, 950, 1203, -700 px), median 0.25, max 1203 (lost 0, none 0, clamped 0); in the streamed answer: 10/58 over 4px (842, 1106, 482, 882, 731, 978, 928, 950, 1203, -700 px), median 0.3, max 1203 (lost 0, none 0, clamped 0)
+REPORT view shift down (60 steps, ended fromEnd 0): 0/59 over 4px, median 0, max 0 (lost 0, none 0, clamped 1); in the streamed answer: 0/55 over 4px, median 0, max 0 (lost 0, none 0, clamped 1)
+PASS wheel-no-jump
+PASS no-escape
+REPORT network: guard-blocked non-GET 5 [["POST /v1/sdk_exception",1],["POST /ces/v1/rgstr",2],["POST /backend-api/codex/notification/subscriptions",1],["POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>",1]], WebSockets closed 46
+PASS server-unchanged
+REPORT composer after reload: 0 chars
+SUMMARY head-ats12: 0 FAILs
