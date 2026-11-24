@@ -170,6 +170,19 @@ the composer's label ("Work with ChatGPT", "使用 ChatGPT Work") or an "Ask in 
 ChatGPT's selection toolbar. While the only reply is still streaming (no actions yet), the button
 stays available.
 
+The shortcut is **Alt+Shift+Q** (Option+Shift+Q on a Mac), the `branch` command, which you can
+change or remove in `chrome://extensions/shortcuts`; the cell's label shows its current key in
+grey, or none when it has no key. The extension worker relays the press to the tab it was made in
+(`commands/worker.js`), and the press is the cell's click by key. It reads the selection at that
+moment by the cell's rule above (one reply, quotable, a page where ChatGPT can branch), not the
+pill's last read, so it works the moment you finish selecting, and also when ChatGPT's button, and
+so the pill, isn't showing; the box then opens under the quote. It has three outcomes
+(`ButterBranch.shortcutAction`), checked in order: with Ask in branch off, Butter paused or the new
+tab's overlay up it does nothing; with the question box open it puts focus back in the box's input;
+with a selection that qualifies it opens the box exactly as the cell does, with the same quote,
+draft, highlight and keys. Anything else does nothing. Doing nothing is silent: no notice, no
+focus change, and the selection is left as it is.
+
 Enter opens a new tab of the same conversation synchronously, inside the key press, so pop-up
 blocking doesn't apply. The URL carries only a job id (`#butter-branch=<uuid>`). The quote, the
 question, the original conversation id and title go to the extension worker, which keeps them in
