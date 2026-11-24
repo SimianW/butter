@@ -165,7 +165,7 @@ try {
     if (here() === normalPath) {
       // The press did not navigate: the draft is still in this chat. Restore it here, no Back.
       verdict('no-stray-key', false, `no navigation, so no way to tell a stray key from the draft; page keydowns ${nc.keysO}`);
-      await setDraft(nb.text);
+      await setDraft(nb.text.trim());
     } else {
       await page.goBack({ waitUntil: 'domcontentloaded' });
       await pause(3000);
@@ -176,7 +176,7 @@ try {
         const back = await state(page);
         verdict('no-stray-key', !nc.keysO && back.text === DRAFT, `page keydowns ${nc.keysO}, draft ${back.text === DRAFT ? 'same' : `differs (${DRAFT.length} → ${back.text.length})`}`);
         // Put the composer back to what it held before the check.
-        await setDraft(nb.text);
+        await setDraft(nb.text.trim());
       }
     }
   }
