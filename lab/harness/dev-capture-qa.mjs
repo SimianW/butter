@@ -34,6 +34,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as fixture from './dev-capture-fixture.mjs';
+import { installed } from './runner/chromium.mjs';
 import { evidenceShot } from './runner/shot.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)),
@@ -144,9 +145,8 @@ const worker =
   (await context.waitForEvent('serviceworker'));
 assert.equal(new URL(worker.url()).pathname, '/dev/worker.js');
 // After the install event's own settings write (its marker, #158), so it cannot land over ours.
-await worker.evaluate(async (butter) => { while (!(await chrome.storage.local.get('butter')).butter?.defaultsVersion) await new Promise((r) => setTimeout(r, 50)); await chrome.storage.local.set({ butter: { ...butter, defaultsVersion: 1 } }); },
-  { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
-);
+await installed(worker);
+await worker.evaluate(() => chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true }, defaultsVersion: 1 } }));
 const commands = await worker.evaluate(() => chrome.commands.getAll());
 assert.equal(commands.find((c) => c.name === 'save-bug')?.shortcut, 'Alt+Shift+B');
 
