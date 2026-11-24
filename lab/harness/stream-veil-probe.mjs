@@ -3,6 +3,8 @@
 // verdict; structure only, no chat text.
 //
 // - TAIL_MS (default 5000): how long the observation window stays open after the stream completes.
+//   Use 5000 or more. Below 5000 the standard window is not cut at 5 s, and below 3000 the
+//   long-frame probe still runs to 3 s (the verdicts' snapshot) while the ticks stop at TAIL_MS.
 //   splitTail() cuts the long-animation-frame entries at the standard window's end (5 s after the
 //   harness saw the stream complete), so every standard REPORT line keeps its meaning;
 //   tailReport() sums the frames after it: long frames, blocking, the longest frame, frames of at

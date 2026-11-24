@@ -7,7 +7,7 @@
 //   [PHASES=stream] [OPTS=<settings json>] [TRACE_AT=<ms>] [APIPROBE=1] [TAIL_MS=5000] [VEILPROBE=1] node lab/harness/stream-replay-live.mjs
 // PHASES=stream skips the wheel phase; OPTS sets Butter's options, put back as found at the end; TRACE_AT
 // traces 10 s around it; APIPROBE=1 times layout-dependent DOM calls from 100 s on (stream-api-probe.mjs);
-// TAIL_MS keeps observing after completion, VEILPROBE=1 hit-tests veiled blocks while wheeling (stream-veil-probe.mjs); UX=u1,u2,u3,u4 probes the view around completion (stream-ux-probe.mjs).
+// TAIL_MS (5000 or more) keeps observing after completion, VEILPROBE=1 hit-tests veiled blocks while wheeling (stream-veil-probe.mjs); UX=u1,u2,u3,u4 probes the view around completion (stream-ux-probe.mjs).
 //
 // Safety, in three layers: the lab's send guard (aborts every non-GET request to chatgpt.com) on
 // the connection, every WebSocket closed, the service worker bypassed; in the page, the hook answers
