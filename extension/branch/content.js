@@ -7,7 +7,8 @@
 // Nothing here types into or sends in the original tab.
 (() => {
   const B = ButterBranch,
-    P = ButterBranchPage;
+    P = ButterBranchPage,
+    K = ButterCommandKeys; // the `branch` command's key and its relay: commands/keys.js
   // Read before ChatGPT's router can touch the URL.
   const incoming = B.jobId(location.hash);
   let ui;
@@ -180,18 +181,44 @@
       .catch(() => handoffFailed(id));
   };
 
-  // The pill's Ask in branch cell: the branch icon, its label on hover. It opens the question box
-  // on a primary pointerdown or a keyboard click.
+  // The pill's Ask in branch cell: the branch icon, its label on hover with the key Chrome reports
+  // for the `branch` command. It opens the question box on a primary pointerdown or a keyboard
+  // click.
   ButterPill.register({
     id: 'branch',
     feature: 'branch',
     icon: ButterBranchUI.ICON.branch,
     label: () => ButterBranchUI.strings().ask,
-    wants: () => !!(sel = P.selection()),
+    keys: () => K.keyHint(K.key('branch')),
+    shortcut: () => K.ariaKeys(K.key('branch')),
+    wants() {
+      if (!(sel = P.selection())) return false;
+      K.read('branch', () => ButterPill.update()); // read each time the cell shows
+      return true;
+    },
     activate: () => openBox(),
     reset() {
       if (!boxOpen) sel = null;
     },
+  });
+  // The shortcut (#126): the cell's activate by key, with the selection read at the press by the
+  // cell's own rule, so it works before the pill shows and with no pill at all (the box then opens
+  // under the quote). With the box open it puts focus back in the box's input. A press that does
+  // nothing is silent and leaves the page selection as it is.
+  K.on('branch', () => {
+    const next = P.selection();
+    const action = B.shortcutAction({
+      off: off(),
+      overlay: !!ui?.overlay.shown,
+      boxOpen,
+      qualifies: !!next,
+    });
+    if (action === 'focus')
+      ui.question.el?.querySelector('textarea')?.focus({ preventScroll: true });
+    else if (action === 'open') {
+      sel = next;
+      openBox();
+    }
   });
   document.addEventListener('butter-settings', () => {
     if (!off()) return;
