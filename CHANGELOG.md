@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on
+  the question the preview showed.
+
 ### Known issues
 
 - With "Remember long-chat layouts" on, letting go of the scrollbar in a long chat can again

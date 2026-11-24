@@ -38,6 +38,7 @@
     active = null,
     pendingCommit = null,
     held = false,
+    releaseScroll = null,
     lastPointerDown = -1e9;
   const act = core.createActivation();
   let revealOwner = null,
@@ -715,6 +716,7 @@
   addEventListener(
     'scroll',
     (e) => {
+      if (e === releaseScroll) return;
       const a = active || pendingCommit;
       if (!a && candidate && e.target === candidate.sc) {
         const r = act.scroll({
@@ -779,6 +781,11 @@
       event('candidate-end', { why: 'up' });
       candidate = null;
     }
+    if (active && type === 'pointerup') {
+      // ChatGPT unpins the chat's end only on a scroll its listener sees before its own pointerup;
+      // the drag's were swallowed. Sent before finish, so the release still reads the same top.
+      active.sc.dispatchEvent((releaseScroll = new Event('scroll')));
+    }
     if (active) finish(type);
   };
   addEventListener('pointerup', up('pointerup'), true);
@@ -816,41 +823,19 @@
     },
     true,
   );
-  addEventListener(
-    'pointercancel',
-    () => {
-      held = false;
-      act.cancel();
-      candidate = null;
-      finish('pointercancel');
-      pendingCommit?.flush?.();
-    },
-    true,
-  );
-  addEventListener('blur', () => {
+  // Endings with no thumb release to coalesce: release and commit at once.
+  const endNow = (reason) => {
     held = false;
     act.cancel();
     candidate = null;
-    finish('blur');
+    finish(reason);
     pendingCommit?.flush?.();
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      held = false;
-      act.cancel();
-      candidate = null;
-      finish('hidden');
-      pendingCommit?.flush?.();
-    }
-  });
+  };
+  addEventListener('pointercancel', () => endNow('pointercancel'), true);
+  addEventListener('blur', () => endNow('blur'));
+  document.addEventListener('visibilitychange', () => document.hidden && endNow('hidden'));
   addEventListener('popstate', () => finish('navigation', false));
-  addEventListener('resize', () => {
-    held = false;
-    act.cancel();
-    candidate = null;
-    finish('resize');
-    pendingCommit?.flush?.();
-  });
+  addEventListener('resize', () => endNow('resize'));
   setInterval(() => {
     const a = active || pendingCommit;
     if (a && (a.conv !== conv() || !a.sc.isConnected)) finish('chat-switch', false);

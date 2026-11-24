@@ -1,0 +1,4 @@
+restore lab 2: restarting browser (now {"pid":2676618,"extensions":["~/snap/chromium/common/seekpin-1123-dev/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 2681867)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":2681867,"extensions":[],"flags":[]},"at":"2026-11-24T00:57:59.906Z","ok":true}

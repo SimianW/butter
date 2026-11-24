@@ -1,0 +1,6 @@
+BROWSER {"pid":2646182,"extensions":[],"flags":[]}
+HARNESS ERROR: locator.waitFor: Timeout 60000ms exceeded.
+Call log:
+  - waiting for locator('.thread-scroll-container:visible [data-turn-key]').first()
+
+    at ~/.local/share/chatgpt-lab/captures/2026-11-23-seek-pin-cause/adhoc/pin.mjs:72:82

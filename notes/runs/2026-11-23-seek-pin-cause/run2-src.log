@@ -1,0 +1,8 @@
+BROWSER {"pid":2649422,"extensions":[],"flags":[]}
+OPENED {"y":67168,"h":68080,"vh":912,"end":67168,"at":3,"top":0,"right":1599,"left":341,"bottom":912}
+HISTORY 12 entries {"y":347338,"h":348250,"vh":912,"end":347338,"at":10,"top":0,"right":1599,"left":341,"bottom":912}
+HISTORY+3s {"y":347338,"h":348250,"vh":912,"end":347338,"at":10,"top":0,"right":1599,"left":341,"bottom":912}
+REPORT src hold scrollTop=0: before 347338 (end 347338); first 0; last 347338 at 6074 ms; PULLED at 1836 ms (scrollTop 347338); samples 45; scroll events 2; writes near end 1 [[1015,"scrollTo",347338]]
+TRACE src [[0,0,348250,null],[2138,347338,348250,10],[2643,347338,348250,10],[3148,347338,348250,10],[3652,347338,348250,10],[4157,347338,348250,10],[4661,347338,348250,10],[5166,347338,348250,10],[5671,347338,348250,10],[6074,347338,348250,10]]
+REPORT src: 1 pull writes, 832 listener registrations, 0 observers, 22 scripts saved
+REGS (832 listener registrations; frames with script locations kept in the local raw capture only)

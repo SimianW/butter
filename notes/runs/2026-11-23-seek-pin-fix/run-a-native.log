@@ -1,0 +1,12 @@
+REPORT math12: history loaded, 12 entries; no extension; trials ["write@0.66","write@0.05","write@0.7"]
+REPORT trial 1 write@0.66: after re-pin scrollTop 314068 of end 314068 (distance 0)
+REPORT control #1 pulled (back at the end at 2432 ms); after settle question 10, scrollTop 314016
+REPORT trial 1 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[1389,207285,314784,7],[2742,314016,314928,10],[3258,314016,314928,10],[3773,314016,314928,10],[4288,314016,314928,10],[4803,314016,314928,10],[5321,314016,314928,10],[5836,314016,314928,10],[6352,314016,314928,10],[6866,314016,314928,10],[7381,314016,314928,10],[7897,314016,314928,10],[8000,314016,314928,10]]
+REPORT trial 2 write@0.05: after re-pin scrollTop 314016 of end 314016 (distance 0)
+REPORT control #2 pulled (back at the end at 1929 ms); after settle question 10, scrollTop 314016
+REPORT trial 2 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[998,15701,314792,0],[2347,314016,314928,10],[2862,314016,314928,10],[3378,314016,314928,10],[3894,314016,314928,10],[4409,314016,314928,10],[4924,314016,314928,10],[5439,314016,314928,10],[5955,314016,314928,10],[6470,314016,314928,10],[6986,314016,314928,10],[7501,314016,314928,10],[7913,314016,314928,10]]
+REPORT trial 3 write@0.7: after re-pin scrollTop 314016 of end 314016 (distance 0)
+REPORT control #3 pulled (back at the end at 2565 ms); after settle question 10, scrollTop 314016
+REPORT trial 3 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[1506,219811,314784,7],[2874,314016,314928,10],[3389,314016,314928,10],[3905,314016,314928,10],[4421,314016,314928,10],[4937,314016,314928,10],[5453,314016,314928,10],[5969,314016,314928,10],[6484,314016,314928,10],[7000,314016,314928,10],[7515,314016,314928,10],[7927,314016,314928,10]]
+REPORT summary: releases 0 (pulled 0, landed on the previewed question 0; destinations {"estimated":0,"layout stored":0,"layout session":0,"none":0}); controls 3 (pulled 3)
+SUMMARY seek-pin: 0 FAILs
