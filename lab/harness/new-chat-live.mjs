@@ -38,6 +38,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const env = process.env;
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 let failed = false;
+let keyOk = false; // the TEMP_SEND send happens only after PASS key-assigned (2026-11-24: a send was spent on an unbound key)
 const verdict = (name, ok, why) => (ok ? console.log(`PASS ${name}`) : ((failed = true), console.log(`FAIL ${name}: ${why}`)));
 const report = (what) => console.log(`REPORT ${what}`);
 
@@ -105,7 +106,8 @@ try {
   if (!worker) verdict('key-assigned', false, 'worker not reachable over CDP, key not read');
   else {
     const key = await worker.evaluate(() => chrome.commands.getAll()).then((cs) => cs.find((c) => c.name === 'new-chat')?.shortcut ?? '');
-    verdict('key-assigned', key === 'Alt+Shift+O', key ? `Chrome reports ${JSON.stringify(key)}` : 'no key assigned to new-chat');
+    keyOk = key === 'Alt+Shift+O';
+    verdict('key-assigned', keyOk, key ? `Chrome reports ${JSON.stringify(key)}` : 'no key assigned to new-chat');
   }
 
   const projChat = L.fixture(lab, FIXTURE);
@@ -168,6 +170,7 @@ try {
 
   // ---- temporary: needs a Temporary Chat with turns, so one send.
   if (env.TEMP_SEND !== '1') report('temporary: not run (needs one send in Temporary Chat; TEMP_SEND=1 on a lab that allows sends)');
+  else if (!keyOk) report('temporary: not run, nothing sent (key-assigned did not pass, so the key would not be the command)');
   else {
     L.sendsAllowed(lab, true); // throws unless this lab's labs.json allows sends
     let guardBack = false;

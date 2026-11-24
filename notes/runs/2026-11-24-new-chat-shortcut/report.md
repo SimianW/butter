@@ -235,3 +235,91 @@ The read-only draft check after the last recording found: project page 0, `ats12
 0, `math12` 38, all as before the session. `lab-restore --lab 2` restarted the browser without
 extensions, opened the home URL with an empty composer, and returned `ok: true`.
 `lab-lock release` succeeded, and `lab-lock status` showed no lab held.
+
+## 2026-11-24, 22:59–23:02 UTC: Temporary Chat with the key bound
+
+Lab 2, Chromium 157.0.8103.50 (snap). One lock, owner `new-chat-temp2`, taken with
+`--needs-fixture ats12` and held for the whole sequence (22:59:34–23:01:51). Three harness runs:
+a no-send probe, `new-chat-live.mjs` with `TEMP_SEND=1`, and a read-only draft check. The probe
+and the draft check are local scripts and are not committed. **One send**, in Temporary Chat. No
+Work mode, and no project or chat created, renamed or deleted. `lab-restore` ok, lock released.
+
+**Result: `PASS temporary`**, client-side (no reload). Every check passes on `ef6792f`, plus the
+script fix below. Exit code 0.
+
+### Build and key
+
+The build is `feat/new-chat-shortcut` at `ef6792f`, version `0.1.0.22`. It was loaded from the
+directory the profile binds Alt+Shift+O to, the one the earlier runs used. Its contents already
+matched `extension/`: `diff -r` was clean before each run, so nothing was copied. Both runs
+printed `PASS key-assigned` before anything else.
+
+### Script fix
+
+`new-chat-live.mjs` used to send with `TEMP_SEND=1` even after `FAIL key-assigned`; the 22:48 run
+spent its send that way. The send is now gated on the key: with `TEMP_SEND=1` and no
+`PASS key-assigned`, the script prints
+`REPORT temporary: not run, nothing sent (key-assigned did not pass, ...)` and sends nothing. The
+`temporary` verdict's logic is unchanged.
+
+### Is "temporary on" valid on an empty Temporary Chat?
+
+The verdict reads `temporaryOn` (a `button[aria-label="Turn off temporary chat"]` exists) and the
+URL shape `/?temporary-chat=true`. A probe with the bound build and the guard on checked this
+before the send. It loaded each page with nothing typed and nothing sent:
+
+```
+PASS key-assigned
+REPORT {"path":"/?temporary-chat=true","turns":0,"len":0,"temporaryOn":true,"tempButtons":["Turn off temporary chat (shown)"]}
+REPORT {"path":"/","turns":0,"len":0,"temporaryOn":false,"tempButtons":["Temporary chat (shown)"]}
+```
+
+An empty Temporary Chat shows "Turn off temporary chat"; a normal new chat shows "Temporary chat"
+instead. A Temporary Chat with turns has neither (`temporaryOn: false` in its `before` state), so
+the signal separates the empty Temporary Chat from both. The check needed no change.
+
+### Verdict lines
+
+Command: `LAB_ID=2 LAB_OWNER=new-chat-temp2 EXT=<bound directory> FIXTURE=ats12 TEMP_SEND=1 node lab/harness/new-chat-live.mjs`.
+Verbatim; the script masks the ids:
+
+```
+PASS key-assigned
+REPORT project page loaded {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+REPORT project-page after {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":16,"focused":true,"temporaryOn":false,"keysO":0}
+PASS project-page
+REPORT project-chat before {"href":"/g/g-p-<id>-<slug>/c/<id>","reloaded":false,"turns":3,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+PASS project-chat
+REPORT normal-chat before {"href":"/c/<id>","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/","reloaded":false,"turns":0,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+PASS normal-chat
+PASS no-stray-key
+REPORT temporary before {"href":"/c/<id>?temporary-chat=true","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/?temporary-chat=true","reloaded":false,"turns":0,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":true,"keysO":0}
+PASS temporary
+REPORT temporary navigation: client-side
+REPORT work: not run (no Work-mode page without changing account settings; WORK_URL=...)
+```
+
+Key press from `/c/<id>?temporary-chat=true` with 1 turn: the page landed on
+`/?temporary-chat=true` with no reload, 0 turns, an empty composer that had focus, and "Turn off
+temporary chat" visible. The page saw no Alt+O keydown.
+
+### The send
+
+- The script's own prompt, `Reply with the single word: ok`, in `/?temporary-chat=true`.
+  Count: 1. Lab 2 is `"sends": "opt-in"` in labs.json, and the brief allowed this one send. The
+  script lifts the guard (`unrouteAll`) for this send only, so the lab's config did not change.
+- **Guard put back.** The script reinstalls the guard in `finally`. If that fails, it prints
+  `FAIL temporary: send guard could not be put back` and stops with a setup error. It printed the
+  `temporary` lines and exited 0, so the guard was back. The draft check after it installed the
+  guard on its own connection (`REPORT guard installed`).
+
+### Drafts and restore
+
+The run's typed text (16 characters on the project page and the normal chat's marker draft) was
+removed by the script. The Temporary Chat is not saved. The read-only check afterwards, with the
+guard on, read `{"projectPage":0,"ats12":0,"normal":0,"math12":38}`, the same as before the
+session. `lab-restore --lab 2` restarted the browser without extensions, opened the home URL with
+an empty composer, and returned `ok: true`. `lab-lock release` succeeded, and `lab-lock status`
+showed no lab held.
+
+The raw log is `lab/harness/results/new-chat-live-2026-11-24T2300-temp2.log` (local, git-ignored).
