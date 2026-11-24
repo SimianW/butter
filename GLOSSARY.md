@@ -118,6 +118,12 @@ view.
 _Avoid_: unseen
 _Where_: `stream/offscreen.js`
 
+**Veil**:
+The `opacity: 0` that a streamed answer block computes while it is skipped and has never rendered,
+so that ChatGPT's paint-readiness telemetry does not read into it. It is off before the block
+renders. A block is **veiled** or not; the attribute is `data-butter-veil`.
+_Where_: `stream/offscreen.js`, `stream/containment.css`
+
 ## History rail
 
 **Rail**:

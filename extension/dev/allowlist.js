@@ -290,7 +290,7 @@
     ...['data-turn-key', 'data-turn', 'data-testid', 'data-message-author-role'],
     ...['data-message-id', 'data-message-model-slug', 'data-start', 'data-end'],
     ...['data-math-source', 'data-user-message-bubble', 'data-markdown-text-style'],
-    ...['data-talvt-turn-state', 'data-butter-seen', 'data-butter-unrendered'],
+    ...['data-talvt-turn-state', 'data-butter-seen', 'data-butter-unrendered', 'data-butter-veil'],
     ...['data-chatgpt-selection-message-id', 'data-is-last-node', 'data-is-only-node'],
     ...['data-scroll-anchor', 'data-state'],
   ];
