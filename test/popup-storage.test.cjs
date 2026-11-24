@@ -1,5 +1,6 @@
 // The popup's two storage rows (#108), Bookmarks and Remember long-chat layouts: what each says it
-// holds, its Clear, the question that asks first, and "Cleared", over the worker's answers.
+// holds, its Clear, the question that asks first, and "Cleared", over the worker's answers. Both
+// rows are on the Experimental page (#158), so each popup here opens it first.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { popup, rows, descriptions, tick } = require('./helpers/popup-fixture.cjs');
@@ -12,13 +13,17 @@ const started = async (butter = { layoutConsent: 'granted' }, answers = saved) =
   const f = popup(answers);
   f.finish({ butter }, {});
   await tick();
+  f.go('experimental');
   return f;
 };
 
-test('one card holds all six rows; the usage bar and the storage line are gone', async () => {
+test('the Experimental page has one card with its three rows; the usage bar and the storage line are gone', async () => {
   const f = await started();
   assert.equal([...f.html().matchAll(/<div class="card[ "]/g)].length, 1);
-  assert.equal(rows(f.html()).length, 6);
+  assert.deepEqual(
+    rows(f.html()).map((r) => r.key),
+    ['rail', 'bookmarks', 'layout'],
+  );
   assert.doesNotMatch(f.html(), /class="(?:jar|use)/);
   // Each row's label points at its own switch, so the Clear button inside it is not the label's control.
   for (const key of ['bookmarks', 'layout'])
@@ -70,17 +75,14 @@ test('the layouts row shows no usage while layouts are off; the note stays under
 });
 
 test('with the rail off and Bookmarks on and nothing saved, the row says it needs the rail', async () => {
-  const f = await started({ layoutConsent: 'granted', opts: { rail: false } }, {});
+  const f = await started({ layoutConsent: 'granted', opts: { bookmark: true } }, {});
   assert.equal(descriptions(f.html()).bookmarks, 'Needs the question rail');
   f.changed(
-    { butter: { newValue: { layoutConsent: 'granted', lang: 'zh', opts: { rail: false } } } },
+    { butter: { newValue: { layoutConsent: 'granted', lang: 'zh', opts: { bookmark: true } } } },
     'local',
   );
   assert.equal(descriptions(f.html()).bookmarks, '需要先打开问题导航条');
-  f.changed(
-    { butter: { newValue: { layoutConsent: 'granted', opts: { rail: false, bookmark: false } } } },
-    'local',
-  );
+  f.changed({ butter: { newValue: { layoutConsent: 'granted', opts: {} } } }, 'local');
   assert.equal(descriptions(f.html()).bookmarks, 'Select text, mark the spot to jump back');
 });
 
@@ -118,7 +120,7 @@ test('Clear on bookmarks asks first with the count; Cancel puts the row back; th
     'Clear',
     'Cancel',
   ]);
-  assert.equal(rows(f.html()).length, 5, 'the question replaces the whole row, switch and icon');
+  assert.equal(rows(f.html()).length, 2, 'the question replaces the whole row, switch and icon');
   assert.equal(
     descriptions(f.html()).layout,
     '14 chats, about 3.4 MB [Clear]',
@@ -175,7 +177,7 @@ test('a failed clear says Unavailable and offers Clear again', async () => {
 });
 
 test('toggling a storage row’s switch puts its own question away, not the other’s', async () => {
-  const f = await started();
+  const f = await started({ layoutConsent: 'granted', opts: { bookmark: true } });
   f.clear('bookmarks', 'ask');
   f.clear('layouts', 'ask');
   f.toggle('bookmarks');
@@ -205,6 +207,7 @@ test('a layouts fault with layouts saved keeps Clear beside the fault text', asy
     { butterFailures: { layout: { layout: true } } },
   );
   await tick();
+  f.go('experimental');
   assert.match(descriptions(f.html()).layout, /^Unavailable for now\..* \[Clear\]$/);
   assert.match(f.html(), /<label class="row bad" for="sw-layout">/);
   // With nothing saved the faulted row offers no Clear.
@@ -214,5 +217,6 @@ test('a layouts fault with layouts saved keeps Clear beside the fault text', asy
     { butterFailures: { layout: { layout: true } } },
   );
   await tick();
+  g.go('experimental');
   assert.match(descriptions(g.html()).layout, /^Unavailable for now\.[^[]*$/);
 });

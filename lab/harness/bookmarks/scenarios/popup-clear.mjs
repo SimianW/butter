@@ -36,7 +36,7 @@ export default {
         focus: document.activeElement?.dataset.clear,
       };
     });
-    const switchOn = await p.evaluate(async () => (await chrome.storage.local.get('butter')).butter.opts?.bookmark !== false);
+    const switchOn = await p.evaluate(async () => (await chrome.storage.local.get('butter')).butter.opts?.bookmark === true);
     check('Clear asks first, naming the count, with focus on the red Clear; the switch stays on',
       asked.n === 'Clear 3 bookmarks?' && asked.d === "This can't be undone." && asked.focus === 'confirm' && switchOn,
       { asked, switchOn });

@@ -43,11 +43,11 @@ other website.
 **1. Your settings,** in Chrome's extension storage (`chrome.storage.local`): the on/off switches
 and the language.
 
-**2. Saved layouts,** only after you agree and only while "Remember long-chat layouts" is on. The
-first time you open ChatGPT with this version of Butter, a small card asks whether Butter may
-remember layouts. It shows while you have not answered and Butter is turned on. Nothing is saved
-until you agree. Butter remembers your answer, also across later updates, and you can change it at
-any time with the switch in the popup. Saved layouts live in Butter's own database in
+**2. Saved layouts,** only after you agree and only while "Remember long-chat layouts" is on. It is
+off until you switch it on, on the Experimental page of Butter's popup; switching it on is your
+agreement. Nothing is saved until then. Butter remembers your choice, also across later updates,
+and you can change it at any time with the same switch. (Earlier versions asked with a small card
+on the ChatGPT page; an answer you gave there is kept.) Saved layouts live in Butter's own database in
 the extension (IndexedDB), not in ChatGPT's site storage. For each answer you have viewed, Butter
 saves:
 

@@ -8,12 +8,20 @@ const tick = () => new Promise(setImmediate);
 
 // Loads the real popup with startup storage reads the test resolves by hand.
 // `answers[type]` is the worker's answer to a runtime message of that type (a function of the
-// message, or a value); `timers` holds the popup's timeouts for the test to run.
-function popup(answers = {}) {
+// message, or a value); `timers` holds the popup's timeouts for the test to run. `focused` lists
+// the selectors the popup focused, and `animations` each [selector, keyframes, options] it played;
+// `reducedMotion` answers the prefers-reduced-motion query.
+function popup(answers = {}, { reducedMotion = false } = {}) {
   let changed, resolveLocal, resolveSession, click, html;
   const saved = [],
     sent = [],
-    timers = [];
+    timers = [],
+    focused = [],
+    animations = [];
+  const element = (selector) => ({
+    focus: () => focused.push(selector),
+    animate: (keyframes, options) => animations.push([selector, keyframes, options]),
+  });
   const usage = {
     'butter-layout-usage': { conversations: 0, bytes: 0 },
     'butter-bookmark-usage': { count: 0, bytes: 0 },
@@ -47,7 +55,7 @@ function popup(answers = {}) {
         classList: { toggle() {} },
         addEventListener: (type, fn) => (click = fn),
         append() {},
-        querySelector: () => null,
+        querySelector: element,
       }),
       documentElement: { classList: { toggle() {} } },
       createElement: () => ({
@@ -57,7 +65,10 @@ function popup(answers = {}) {
         content: {},
       }),
     },
-    matchMedia: () => ({ matches: false, addEventListener() {} }),
+    matchMedia: (query) => ({
+      matches: /reduced-motion: reduce/.test(query) && reducedMotion,
+      addEventListener() {},
+    }),
     crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000000' },
     setInterval() {},
     clearInterval() {},
@@ -77,7 +88,13 @@ function popup(answers = {}) {
     saved,
     sent,
     timers,
+    focused,
+    animations,
+    // The Experimental row ('experimental') or the Experimental page's back button ('main').
+    go: (page) => click({ target: { closest: () => ({ dataset: { go: page } }) } }),
     toggle: (key) => click({ target: { closest: () => ({ dataset: { switch: key } }) } }),
+    // A footer language button ('en' or 'zh').
+    language: (lang) => click({ target: { closest: () => ({ dataset: { lang } }) } }),
     // A Clear, red Clear or Cancel button of a storage row ('bookmarks' or 'layouts').
     clear: (store, step) =>
       click({ target: { closest: () => ({ dataset: { clear: step, store } }) } }),

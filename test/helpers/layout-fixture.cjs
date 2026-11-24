@@ -15,9 +15,11 @@ function workerFixture({
     marks = new Map(),
     changes = [],
     events = [],
-    settings = { butter: initialSettings };
+    // `initialSettings: null` stores no settings at all, as on a new install.
+    settings = initialSettings === null ? {} : { butter: initialSettings };
   let changed;
   const listeners = [],
+    installListeners = [],
     commandListeners = [],
     tabMessages = [];
   const counters = { opens: 0, reads: 0, writes: 0 };
@@ -79,6 +81,7 @@ function workerFixture({
       id: 'butter-test',
       getURL: (file = '') => `chrome-extension://butter-test/${file}`,
       onMessage: { addListener: (fn) => listeners.push(fn) },
+      onInstalled: { addListener: (fn) => installListeners.push(fn) },
     },
     commands: {
       getAll: async () => [
@@ -150,6 +153,7 @@ function workerFixture({
     marks,
     restart: () => {
       listeners.length = 0; // the old worker is gone
+      installListeners.length = 0;
       commandListeners.length = 0;
       boot({ ...ctx });
     },
@@ -178,6 +182,10 @@ function workerFixture({
       changed({ butter: { newValue: butter } }, 'local');
     },
     advance: (ms) => (now += ms),
+    installListeners,
+    // Chrome installs or updates the extension: its install event, with `reason`.
+    installed: (reason, previousVersion) =>
+      installListeners.forEach((fn) => fn({ reason, previousVersion })),
     // Chrome runs an extension command (its key was pressed) in this tab.
     command: (name, tab) => commandListeners.forEach((fn) => fn(name, tab)),
     tabMessages,

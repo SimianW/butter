@@ -206,7 +206,7 @@ try {
     previousSettings = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter ?? null);
     const opts = process.env.OPTS ? JSON.parse(process.env.OPTS) : { container: false, cv: false, throttle: false };
     summary.opts = opts;
-    await worker.evaluate(async opts => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, container: true, cv: true, throttle: true, ...opts } } }); }, opts);
+    await worker.evaluate(async opts => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, container: true, cv: true, throttle: true, rail: true, ...opts } } }); }, opts);
   }
   page = context.pages().find(p => p !== worker) || await context.newPage();
   for (const other of context.pages()) if (other !== page && other !== worker) await other.close();
