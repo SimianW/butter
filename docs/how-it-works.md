@@ -172,7 +172,9 @@ stays available.
 
 The shortcut is **Alt+Shift+Q** (Option+Shift+Q on a Mac), the `branch` command, which you can
 change or remove in `chrome://extensions/shortcuts`; the cell's label shows its current key in
-grey, or none when it has no key. The extension worker relays the press to the tab it was made in
+grey, in key symbols (⌥⇧Q) on every system, or none when it has no key. When Chrome names the
+modifiers in a language whose names Butter can't tell apart (German `Strg+Umschalttaste+Q`), the
+label shows Chrome's words instead (`Strg Umschalttaste Q`). The extension worker relays the press to the tab it was made in
 (`commands/worker.js`), and the press is the cell's click by key. It reads the selection at that
 moment by the cell's rule above (one reply, quotable, a page where ChatGPT can branch), not the
 pill's last read, so it works the moment you finish selecting, and also when ChatGPT's button, and
@@ -344,7 +346,8 @@ The worker serializes operations, prunes expired records, and caps serialized re
 size, including stored metadata; IndexedDB's physical/index overhead is browser-dependent.
 `unlimitedStorage` removes Chrome's quota/eviction risk; Butter still enforces its own limit.
 `ButterStatus.normalize` keeps `opts.layout` off until the user grants `layoutConsent`
-through the in-page card or popup switch. Pending or declined consent prevents persisted
+by switching layouts on in the popup's Experimental page (the in-page consent card was removed in
+#158; an answer given there stays recorded). Pending or declined consent prevents persisted
 geometry reads/writes. Setting layout false deletes every account's saved layouts and stops
 persisted reads/writes while keeping the in-session cache. Clear increments a durable generation
 so delayed writes from other tabs cannot repopulate cleared data. The bridge retires disk-backed

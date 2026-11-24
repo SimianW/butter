@@ -16,13 +16,14 @@
 // and the status failures) cleared, and a storage patch a scenario left in the worker undone. It
 // hands the scenario `t`: context, worker, `check`, `pass(name)` (a passing check: the scenario
 // asserts as it goes, and a failed assert throws), `log` (verbose only), `open`, `ask`, `askCard`,
-// `capture`, `settings`, `failures`, `shortcut(page)` (press the `branch` command's key in that
-// page), `commandKey()` and `setCommandKey(key)` (the key Chrome reports for it, and setting it
-// through the shortcuts page's own API, '' to remove it), the fixture's ids and text, and the Ask in
-// branch driver (driver.mjs).
+// `capture` (a screenshot, or with `{ target, margin }` an evidence shot), `settings`, `failures`,
+// `shortcut(page)` (press the `branch` command's key in that page), `commandKey()` and
+// `setCommandKey(key)` (the key Chrome reports for it, and setting it through the shortcuts page's
+// own API, '' to remove it), the fixture's ids and text, and the Ask in branch driver (driver.mjs).
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { freshPage, launchButter } from '../runner/chromium.mjs';
+import { evidenceShot } from '../runner/shot.mjs';
 import { inShadow, chipOf, select, settle, xkeys } from './driver.mjs';
 import { fixtureHtml, ORIGINAL, BRANCH, QUOTE, LATEST, MATH } from './fixture.mjs';
 
@@ -57,6 +58,9 @@ export async function launchBranch({ shots, defer, keys = false, verbose = !!pro
       lang: 'en',
       layoutConsent: 'declined',
       ...value,
+      // The rail and Bookmarks start off on a new install (#158); the pill's Bookmark action and
+      // the scenarios assume both on unless they say otherwise.
+      opts: { rail: true, bookmark: true, ...value?.opts },
     });
   const failures = async () =>
     (await worker.evaluate(() => chrome.storage.session.get('butterFailures'))).butterFailures || {};
@@ -132,9 +136,12 @@ export async function launchBranch({ shots, defer, keys = false, verbose = !!pro
       await inShadow(dest, '.card').waitFor();
       return dest;
     };
-    const capture = async (page, state, width, theme) => {
+    // A full-viewport screenshot; with `evidence` ({ target, margin }, as evidenceShot takes them),
+    // an evidence shot cropped to that region, with its `.json` sidecar (lab/README.md).
+    const capture = async (page, state, width, theme, evidence) => {
       const file = `${state}-${width}-${theme}.png`;
-      await page.screenshot({ path: path.join(shots, file), animations: 'disabled' });
+      if (evidence) await evidenceShot(page, path.join(shots, file), { ...evidence, animations: 'disabled' });
+      else await page.screenshot({ path: path.join(shots, file), animations: 'disabled' });
       files.push(file);
     };
     return {

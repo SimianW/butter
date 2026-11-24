@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 
 export const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
 
-// Share of pixels that differ by more than 24 in any channel (as consent-qa.mjs measures it).
+// Share of pixels that differ by more than 24 in any channel.
 // `radius`: the images are a card's own box with that corner radius; the corners outside it (the
 // page and the shadow behind the card, which differ between the two) are left out.
 // With `plain` ([a's page, b's page] without the drawing under test), pixels where those two

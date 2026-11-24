@@ -43,7 +43,7 @@ export default {
       // The name and, since #126, the `branch` command's key hint (the default Alt+Shift+Q).
       const label = p.tip && { text: p.tip.text, kbd: p.tip.kbd, top: p.tip.top, pill: p.box?.bottom };
       assert.equal(label?.text, 'Ask in branch', 'hover label');
-      assert.equal(label?.kbd, 'Alt Shift Q', 'hover label key hint');
+      assert.equal(label?.kbd, '⌥⇧Q', 'hover label key hint');
       assert.equal(Math.round(label.top - label.pill), 8, 'label 8 px below the pill');
       await page.mouse.move(5, 790);
       await settle(page);

@@ -14,9 +14,11 @@ function workerFixture({
     marks = new Map(),
     changes = [],
     events = [],
-    settings = { butter: initialSettings };
+    // `initialSettings: null` stores no settings at all, as on a new install.
+    settings = initialSettings === null ? {} : { butter: initialSettings };
   let changed;
-  const listeners = [];
+  const listeners = [],
+    installListeners = [];
   const counters = { opens: 0, reads: 0, writes: 0 };
   let storageFailures = 0; // chrome.storage.local.set calls still to fail
   const database = {
@@ -76,6 +78,7 @@ function workerFixture({
       id: 'butter-test',
       getURL: (file = '') => `chrome-extension://butter-test/${file}`,
       onMessage: { addListener: (fn) => listeners.push(fn) },
+      onInstalled: { addListener: (fn) => installListeners.push(fn) },
     },
     storage: {
       local: {
@@ -139,6 +142,7 @@ function workerFixture({
     marks,
     restart: () => {
       listeners.length = 0; // the old worker is gone
+      installListeners.length = 0;
       boot({ ...ctx });
     },
     counters,
@@ -166,6 +170,10 @@ function workerFixture({
       changed({ butter: { newValue: butter } }, 'local');
     },
     advance: (ms) => (now += ms),
+    installListeners,
+    // Chrome installs or updates the extension: its install event, with `reason`.
+    installed: (reason, previousVersion) =>
+      installListeners.forEach((fn) => fn({ reason, previousVersion })),
     // Chrome runs an extension command (its key was pressed) in this tab.
     // The next `n` chrome.storage.local writes fail, as when the worker stops mid-request.
     failStorageWrites: (n = 1) => (storageFailures = n),

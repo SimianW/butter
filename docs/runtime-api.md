@@ -38,7 +38,8 @@ its original result; query usage again if subsequent measurements may already ha
 
 `layoutConsent` starts as `pending`, and `ButterStatus.normalize` keeps `opts.layout` false
 unless consent is `granted` and the saved layout option is not false. Persisted reads/writes
-require both. The in-page card asks first; the popup switch also records consent. While pending,
+require both. Only the popup's layouts switch, on its Experimental page, records consent; no card
+on the ChatGPT page asks. While pending,
 usage reports zero and no layout data is saved. Setting layout false deletes layouts for all
 accounts and stops reads/writes; it is independent of the master optimization switch.
 The popup shows usage on the second line of Remember long-chat layouts, with Clear, and asks before it clears.
@@ -198,8 +199,14 @@ Mac: a new chat in the current project, see
 
 Content scripts can't read `chrome.commands`, so a cell asks for its key each time it shows
 (`ButterCommandKeys.read`, one read at a time per command, calling back only when the key changed)
-and shows it with `keyHint` (its label, `Alt Shift Q`; macOS's symbols, `⌥⇧Q`, as given) and
-`ariaKeys` (`aria-keyshortcuts`, `Alt+Shift+Q`). `ButterCommandKeys.on(command, fn)` runs a
+and shows it with `keyHint` (its label, in key symbols: `Alt+Shift+Q` reads `⌥⇧Q`, `Alt+Shift+Up Arrow`
+`⌥⇧↑`; macOS's symbols as given) and `ariaKeys` (`aria-keyshortcuts` in UI Events key names,
+`Alt+Shift+Q`, `Alt+Shift+ArrowUp`). Both read Chrome's text, whose modifier names are in the
+browser's language on Windows, Linux and ChromeOS: a name that is not English is read only when
+Chromium's fixed order and an extension key's rules (Ctrl, Alt or Search; never Alt with Ctrl or
+Search; Shift only beside one) leave one modifier, so German `Alt+Umschalttaste+Q` reads `⌥⇧Q`;
+otherwise the label shows Chrome's words (`Strg Umschalttaste Q`) and the cell has no
+`aria-keyshortcuts`. `ButterCommandKeys.on(command, fn)` runs a
 feature's handler for a relayed command. A new command is one list entry, its manifest entry, its
 locale message and its handler. The dev build's `save-bug` is not in the list: `dev/worker.js` has
 its own listener, and `--dev` zips keep `bookmark`, `branch` and `new-chat` beside it. Chrome
@@ -210,8 +217,13 @@ one fewer elsewhere). `new-chat` has no cell, so it never reads its key back.
 Alt+Shift+Q, checked 2026-11-16: Chromium's accelerator table binds Alt+Shift with A, B, C, D, I, N,
 P, R, T, W, X and Z on Windows and Linux and with no letter on a Mac, so Q is free. No ChatGPT web
 shortcut found uses Alt+Shift (third-party lists only: OpenAI's help page could not be fetched, so
-the live lab run confirms ChatGPT does nothing with it). It is neither the Bookmark key
-(Alt+Shift+M) nor the dev build's Alt+Shift+B. An update assigns a new command's suggested key as
+the live lab run checked). It is neither the Bookmark key
+(Alt+Shift+M) nor the dev build's Alt+Shift+B. The live run of 2026-11-23
+(`notes/runs/2026-11-23-branch-shortcut/`) saw two things: with Butter's command assigned, Chrome
+takes the chord before ChatGPT's page sees the Q; with no extension loaded, ChatGPT's page received
+the Alt+Shift+Q keydown, prevented its default, and the selection was gone about 800 ms later. So
+ChatGPT, or something on its page, does handle the chord; a reader who removes Butter's key gets
+that behaviour, as before this command. An update assigns a new command's suggested key as
 an install does, unless the reader changed it or another extension holds the key; then the command
 has no key and the cell's label shows none.
 
@@ -262,7 +274,7 @@ The popup uses the layout runtime API above, retries the same request three time
 the same UUID when retrying clear. Clear confirms inline and shows completion for two seconds.
 Usage uses decimal KB/MB and the 50,000,000-byte payload cap. Layout-off still deletes saved
 layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration
-and [`design/palette.md`](../design/palette.md) for the popup and consent card's colours, type
+and [`design/palette.md`](../design/palette.md) for the popup's and the bookmark notice's colours, type
 and contrast ratios.
 
 ## Dev card

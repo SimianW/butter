@@ -79,9 +79,22 @@ Butter's main switch off: every feature stops, though the fetch wrapper stays in
 _Avoid_: disabled
 _Where_: `popup/popup.js`
 
+**Experimental page**:
+The popup's second page, with the unfinished features: the question rail, Bookmarks and Remember
+long-chat layouts (`ButterStatus.experimental`), each off until the user switches it on. Its title is
+the back button. Held in memory only; the popup always opens on the main page.
+_Avoid_: settings page, advanced page
+_Where_: `shared/status.js` (`experimental`, `migrate`), `popup/popup.js`
+
+**Experimental row**:
+The main page's button, under the feature card, that opens the Experimental page. It counts the
+experimental switches that are on ("2 on"), paused or not, and shows no count at zero.
+_Avoid_: more row, experimental toggle
+_Where_: `popup/popup.js`
+
 **Storage row**:
 A popup row whose second line says what a store holds, then its Clear: Bookmarks ("12 saved, about
-7 KB") and Remember long-chat layouts ("14 chats, about 3.4 MB").
+7 KB") and Remember long-chat layouts ("14 chats, about 3.4 MB"). Both are on the Experimental page.
 _Avoid_: storage line, usage bar (the separate line and bar it replaced)
 _Where_: `popup/popup.js`, `popup/model.js`
 
@@ -257,8 +270,9 @@ _Avoid_: badge, indicator
 _Where_: `rail/model.js`, `rail/rail.js`
 
 **Bookmarks switch**:
-The popup's Bookmarks row (the `bookmark` key, group `bookmarks`). Bookmarks show only while Butter,
-the rail and this switch are on; off hides them and keeps the saved ones.
+The Bookmarks row on the popup's Experimental page (the `bookmark` key, group `bookmarks`), off until
+switched on. Bookmarks show only while Butter, the rail and this switch are on; off hides them and
+keeps the saved ones.
 _Avoid_: bookmark toggle
 _Where_: `shared/status.js` (`bookmarksOn`), `popup/popup.js`
 
@@ -369,8 +383,9 @@ _Avoid_: hotkey
 _Where_: `commands/keys.js`, `commands/worker.js`, `manifest.json`
 
 **Key hint**:
-A command's current key as a cell's label shows it, in grey after the name ("Alt Shift Q"); none
-when the command has no key.
+A command's current key as a cell's label shows it, in grey after the name, in key symbols
+("⌥⇧Q", as Chrome shows keys on a Mac), or Chrome's own words when its modifier names (in the
+browser's language) can't be read without guessing; none when the command has no key.
 _Where_: `commands/keys.js`, `selection/pill.js`
 
 **Hold**:

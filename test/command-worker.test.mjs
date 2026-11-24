@@ -29,6 +29,7 @@ function worker({
         id: 'butter',
         getURL: (file = '') => `chrome-extension://butter/${file}`,
         onMessage: { addListener: (fn) => listeners.push(fn) },
+        onInstalled: { addListener() {} },
       },
       commands: {
         getAll: async () => [

@@ -51,7 +51,7 @@ file/index overhead and the bounded control values above are outside that logica
 
 | Key | Shape | Derivation/retention |
 |---|---|---|
-| `butter` | `{enabled:true,opts:{container:true,cv:true,throttle:true,older:true,seek:true,rail:true,layout:false},lang:"en",layoutConsent:"pending"}` | Normalized settings include default-true `opts.seek`; `opts.layout` stays false until `layoutConsent: "granted"` and the saved layout option is not false. Not derived from chat text. Defaults need not be written. Retained until changed or extension data removal. |
+| `butter` | `{enabled:true,opts:{container:true,cv:true,throttle:true,older:true,seek:true,branch:true,rail:false,bookmark:false,layout:false},lang:"en",layoutConsent:"pending",defaultsVersion:1}` | Normalized settings include default-true `opts.seek`; the experimental `opts.rail` and `opts.bookmark` are on only when stored `true`, and `opts.layout` stays false until `layoutConsent: "granted"` and the saved layout option is not false. `defaultsVersion` records that the worker applied the experimental defaults at install or first update (`ButterStatus.migrate`, #158). Not derived from chat text. Other defaults need not be written. Retained until changed or extension data removal. |
 | `butterLayoutMigrated` | `true` | Successful deletion marker for the legacy site database. No chat-derived data; retained until extension data removal. |
 | `butterLayoutCleared` | Random UUID string | Change notification for open tabs, replaced on clear. No chat/account-derived data; retained until the next clear or extension data removal. |
 | `butterBookmarksCleared` | Random UUID string | Change notification for open tabs, replaced on every accepted bookmark Clear request. No chat/account-derived data; retained until the next clear or extension data removal. |
@@ -64,8 +64,9 @@ setting or switching chats preserves it. Browser shutdown clears it.
 
 ## Consent
 
-`butter.layoutConsent` is `pending`, `granted` or `declined`. The in-page card records the answer;
-the popup layout switch can update it. Pending or declined consent prevents persisted geometry
+`butter.layoutConsent` is `pending`, `granted` or `declined`. Switching layouts on in the popup's
+Experimental page grants it. `declined` is kept from the in-page card that earlier versions showed
+(removed in #158); nothing writes it now. Pending or declined consent prevents persisted geometry
 reads/writes regardless of a saved layout option. Consent is a local setting, not derived
 from chat text. Pending usage returns zero.
 

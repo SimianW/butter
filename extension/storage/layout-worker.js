@@ -9,6 +9,19 @@ importScripts(
   '../commands/keys.js',
   '../commands/worker.js',
 );
+// Install and update (#158): a new install keeps the experimental defaults (the rail and Bookmarks
+// off); the first update to this version keeps an existing user's rail and Bookmarks as they were.
+// ButterStatus.migrate decides, once per install; this writes its answer over the current value.
+// Registered at the top level so Chrome finds it when it wakes the worker for the event.
+chrome.runtime.onInstalled.addListener(({ reason }) =>
+  chrome.storage.local
+    .get('butter')
+    .then(({ butter }) => {
+      const next = ButterStatus.migrate(butter, reason);
+      if (next) return chrome.storage.local.set({ butter: next });
+    })
+    .catch(() => {}),
+);
 let statusQueue = Promise.resolve();
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (sender.id !== chrome.runtime.id || message?.type !== 'butter-status-record') return;

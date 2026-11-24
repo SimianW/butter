@@ -3,7 +3,7 @@
 | Path | What |
 |---|---|
 | `extension/` | The extension. |
-| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | Single-page 360 px popup, bundled fonts, inline SVGs and translations: the master card and one card of six rows. The two storage rows, Bookmarks and Remember long-chat layouts, show what their store holds and a Clear button on their second line, each with its own clear machine. |
+| `extension/popup/popup.html`, `extension/popup/popup.css`, `extension/popup/popup.js` | 360 px popup of two pages, bundled fonts, inline SVGs and translations. The main page has the master card, a card of the three finished features and the Experimental row (with how many experimental switches are on); the Experimental page has the question rail, Bookmarks and Remember long-chat layouts, with the privacy note while layout consent is pending. Every state is a fixed 456 px tall (`--popup-height`) with the footer pinned to the bottom. The two storage rows, Bookmarks and Remember long-chat layouts, show what their store holds and a Clear button on their second line, each with its own clear machine. |
 | `extension/popup/model.js` | The popup's pure parts (`ButterPopup`): size and saved-line formatting (a non-zero size under 1 KB reads 1 KB), the confirm question, a storage row's second line in priority order (`storageLine`), the clear machine (`clearFlow`) and the retried store request (`storeRequest`). |
 | `extension/shared/status.js` | Pure settings migration, four-group mapping, probes and session-failure merging. |
 | `extension/shared/settings.js` | Storage, live off markers and on-request page probes. |
@@ -32,11 +32,11 @@
 | `extension/bookmarks/session.js` | The bookmark session (`ButterBookmarkSession`), isolated world, no DOM or `chrome.*`: a factory over injected adapters (the store, the hash, page facts, the bookmarks-off check (the rail or Bookmarks off, or Butter paused), the account request, `publish` toward the rail and `outcome` toward the notification). It owns the account and conversation in view, the list read once per (account, conversation) and again after it was unavailable, after bookmarks were off and after the popup's Clear (`cleared`), the raw ids behind hashed ones (kept across unmounts), staleness last seen in the tab, fresh dots and the earlier-to-loaded transfer, the supersession serial, seek deferral, the quiet re-check, and create, remove and their Undo. It publishes `{ revision, groups }` to `ButterRail.setMarks`. Loads after `client.js`. |
 | `extension/bookmarks/content.js` | Bookmarks on the page: the Bookmark cell of the selection pill, the shortcut, the landing wash in its own layer, and the DOM the bookmark session works from: text nodes, line measuring, the selection's anchor, the top paragraph and `locate`. It builds the session over the page reader and `ButterBookmarkStore`, and turns page events (`butter-account`, `butter-seek-state`, `butter-settings`, clicks, the pointer or focus reaching the rail) into session calls. |
 | `extension/bookmarks/worker.js` | Loaded by the service worker: the `bookmarks` object store and its runtime messages. |
-| `extension/commands/keys.js` | Command keys (`ButterCommandKeys`, #126), a content script and loaded by the service worker: the closed list of Butter's Chrome commands (`COMMANDS`: `bookmark`, `branch`, `new-chat`), a cell's key hint (`keyHint`) and `aria-keyshortcuts` (`ariaKeys`), the page's key reader (`read(command, changed)`, `key(command)`) and a feature's handler for a relayed command (`on(command, fn)`). Loads before `selection/pill.js`. |
+| `extension/commands/keys.js` | Command keys (`ButterCommandKeys`, #126), a content script and loaded by the service worker: the closed list of Butter's Chrome commands (`COMMANDS`: `bookmark`, `branch`, `new-chat`), a cell's key hint in key symbols (`keyHint`, `Alt+Shift+Q` → `⌥⇧Q`) and `aria-keyshortcuts` (`ariaKeys`), the page's key reader (`read(command, changed)`, `key(command)`) and a feature's handler for a relayed command (`on(command, fn)`). Loads before `selection/pill.js`. |
 | `extension/commands/worker.js` | Loaded by the service worker after `commands/keys.js`: relays a listed command to the tab it was pressed in (`butter-command`) and answers `butter-command-key` with the key Chrome reports ([runtime-api.md](runtime-api.md#command-keys)). |
 | `extension/new-chat/logic.js`, `extension/new-chat/content.js`, `extension/new-chat/go-main.js` | New chat shortcut (#163), the `new-chat` command (Alt+Shift+O). `logic.js`, pure (`ButterNewChat.decide`): none, focus or go to a path, from the URL, paused, Work mode and whether turns are shown (project page and project chat from the `g-p-` segment). `content.js`, isolated, after `branch/page.js`: reads those facts at the press (visible turns from the page reader; the visible composer and Work mode from `branch/page.js`), focuses the composer or asks `go-main.js` (MAIN world) to navigate client-side ([runtime-api.md](runtime-api.md#command-keys)). |
 | `extension/bookmarks/notice.js` | The bookmark notification (#77), top right: "Bookmark saved", "Bookmark removed" or "Already bookmarked", the first words and Undo, which runs the action the bookmark session handed over (a save's deletes it, a remove's stores it again); it never writes the store itself; 4 s, held by the pointer or focus; the first save ever expands it with the privacy text and Got it, which sets `bookmarkNotice: 'acknowledged'` in settings. |
-| `extension/consent/card.js` | `ButterCard`, the shell the layout consent card and the bookmark notification share: look, font, themes and motion; bottom-right cards stack, the `top` card (the notification) sits top right outside that stack. |
+| `extension/consent/card.js` | `ButterCard`, the shell of the bookmark notification on the page (the layout consent card that shared it was removed in #158): look, font, themes and motion; bottom-right cards stack, the `top` card (the notification) sits top right outside that stack. |
 | `extension/dev/` | Dev build only, left out of the store and `--test` zips: `allowlist.js` (`ButterDevAllowlist`: the privacy filter's keys, event types and closed list of strings), `recorder.js` (pure bug-capture recorder and privacy filter), `sources.js` (the snapshot's `turns` and `usage`, read from the page with injected page objects), `recorder-main.js` (MAIN world, listens to the seek and layout-cache hooks and the rail trace, and builds the snapshot's `rail` part from the rail trace's answer and ChatGPT's turn order), `rail-trace.js` (isolated world, before `rail/rail.js`: the rail trace, which defines the rail's trace hook `__butterRailTrace`, turns a jump's steps into `rail-*` events and reads the rail's state and tick boxes; both go to `recorder-main.js` as document events), `content.js` (relays a snapshot request), `toast.js` (isolated world: the on-page "Bug N saved" toast the worker asks for once a file is written), `worker.js` (service worker: loads the store worker, handles the save-bug shortcut, the popup's save and New round, and the download), `popup.js` and `popup.css` (the popup's DEV tag and dev card, rendered through `popup.js`'s passive dev slot). |
 | `docs/` | User docs, test report, media. |
 | `results/` | Earlier published result tables, made by `lab/summarize.py`. |
@@ -64,31 +64,35 @@ right before `seek/preview-main.js`, which calls their factories.
 - Page reader contract: `test/page-reader-contract.test.mjs` loads every `test/fixtures/page/*.html` in headless Chromium (Playwright, one browser for the file), injects each adapter listed in its `ADAPTERS` (`extension/page/reader.js`, isolated; `extension/page/reader-main.js`, MAIN) and runs each check written for a fact the adapter implements: message identity for both; answer roots, questions, paragraphs, replies, loose turns and every text node for the isolated reader; seek's blocks, preview items and markdown columns for the MAIN reader; all against the page's `data-expect-*` marks ([test/fixtures/page/README.md](../test/fixtures/page/README.md)). Run it alone with `node --test test/page-reader-contract.test.mjs`.
 - Streaming style cost: `test/stream-style-cost.test.mjs` streams blocks into the last answer of a synthetic long chat (nine 300-block history answers) in headless Chromium, one per frame, with the real `extension/stream/containment.css` and `stream/offscreen.js`, and counts the elements restyled per update (the `elementCount` of `UpdateLayoutTree` trace events, a count that does not vary between runs). A containment selector that restyles a whole answer per insertion fails it ([notes/runs/2026-11-11-replay-blocking](../notes/runs/2026-11-11-replay-blocking/report.md)).
 - Chat anchoring: `test/chat-anchoring.test.mjs` grows a turn above the view of a synthetic chat in headless Chromium with the real `extension/stream/containment.css`, and checks that the browser's scroll anchoring does not move the chat with Smoother streaming's `cv` setting on, and does with it off ([notes/runs/2026-11-16-wheel-jump-top](../notes/runs/2026-11-16-wheel-jump-top/cause.md)).
-- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 22 states in both themes at 360 px under `/tmp/butter-popup-build/` (set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states).
-- Popup storage rows (#108): `node lab/harness/popup-bookmarks-shots.mjs` shoots the real popup at 360 px for each panel of `mockups/popup-bookmarks.html` (plus paused and needs-rail), seeding synthetic bookmarks and layouts through the worker, and records each state's height in English and Chinese; `MOCKUP=mockups/popup-bookmarks.html` also compares every box with the mockup's (1 px tolerance). `OUT=<dir>` overrides the default `notes/runs/2026-11-13-popup-bookmarks/`.
+- Popup in the lab browser: `node lab/harness/popup-qa.mjs` uses an isolated headless Chromium to capture all 44 states (main page and Experimental page) in both themes at 360 px under `/tmp/butter-popup-build/` (`BUTTER_SHOTS` overrides; set `BUTTER_MOCKUP` to also capture approved references, and `BUTTER_CASES=13,16` to run only those states). Its fresh profile is a real install, so it first checks that the rail and Bookmarks start off with no card on a fixture ChatGPT page; it also checks the Experimental page's swap, focus and reduced motion (`lab/harness/popup/experimental.mjs`). `BUTTER_EXPERIMENTAL_MOCKUP=<path>` (#158's `experimental-page.html`) compares the in-scope `after-*` and `fixed-*` panels with their states and copies each state's shot to `<shots>/panels/<id>.png`. Every state must be exactly 456 px with nothing overflowing it, and the footer's top must not move between the pages, mid-swap, or when the privacy note goes.
+- Popup storage rows (#108): `node lab/harness/popup-bookmarks-shots.mjs` opens the Experimental page and shoots the real popup at 360 px for each panel of `mockups/popup-bookmarks.html` (plus paused and needs-rail), seeding synthetic bookmarks and layouts through the worker, and records each state's height in English and Chinese; `MOCKUP=mockups/popup-bookmarks.html` compares every box with the mockup's (1 px tolerance), but that #108 mockup draws the rows on the old single page, so since #158 the comparison fails; check the Experimental page against #158's mockup with `popup-qa.mjs` instead. `OUT=<dir>` overrides the default `notes/runs/2026-11-13-popup-bookmarks/` (set it, or the run overwrites that run's committed shots).
   `BUTTER_REDESIGN_MOCKUP=<path>` compares the built states with the #35 redesign mockup
   (`gh issue artifact download 35 1 -R SimianW/butter`), and `BUTTER_REDESIGN_SIDE=before|after`
   (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,
   branch off, branch fault, dark and Chinese, where that side has them. Each panel must match its
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
-  version label and the storage rows' saved lines masked; the run prints every panel's height and diff ratio,
-  then fails with a summary if any differ.
+  version label and the storage rows' saved lines masked; the run prints every panel's height and diff ratio.
+  That mockup draws the single-page popup from before #158, so its panels no longer match: the
+  comparison is historical and report-only, and never fails the run. `BUTTER_EXPERIMENTAL_MOCKUP`
+  is the current visual check, and fails the run if a compared panel differs.
   The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
   it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
   states (recording, just saved, not on a ChatGPT tab, the tallest state, Chinese recording and
-  tallest) in both themes, each at most 600 px with the dev row unclipped. It also drives the card:
+  tallest) in both themes, each exactly 456 px with nothing overflowing and the dev row unclipped. It also drives the card:
   New round survives a reload, Open round folder, and the save button through the real worker.
   `BUTTER_DEV_MOCKUP=<path>` (`gh issue artifact download 32 1 -R SimianW/butter`) compares the
-  English and dark dev states with that mockup's `dev-*-after` panels the same way.
+  English and dark dev states with that mockup's `dev-*-after` panels the same way; it too draws
+  the pre-#158 popup, so it is historical and report-only.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
-- Consent card in the lab browser: `BUTTER_CONSENT_MOCKUP=<approved #35 mockup> node lab/harness/consent-qa.mjs` loads the real extension in its own headless Chromium over a synthetic page (no ChatGPT requests), compares the pending card in light/English and dark/Chinese with the mockup's consent panels, and checks the dark shadow, the secondary hover and the focus ring; screenshots go to `/tmp/butter-consent-qa/` (`SHOTS=` overrides).
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,
   Work-mode detection, menu matching), `test/branch-shortcut.test.js` (the shortcut's action, row by
   row and in order), `test/branch-run.test.js` (state machine with a fake page and virtual clock)
   and `test/branch-worker.test.mjs` run under `node --test`. The command keys module has
-  `test/command-keys.test.js` (the page side: reader and formatters) and
-  `test/command-worker.test.mjs` (the worker side over a fake `chrome`).
+  `test/command-keys.test.js` (the page side: the key read from the worker, the hint and its
+  `aria-keyshortcuts` form, a relayed command reaching its handler) and
+  `test/command-worker.test.mjs` (the worker side over a fake `chrome`: the command relay to the
+  tab it was pressed in, and the key query).
   The fixture QA, `lab/harness/branch-qa.mjs`, loads the real extension in its own headless
   Chromium over the synthetic page in `lab/harness/branch/fixture.mjs` (no ChatGPT requests; query
   parameters such as `lang=zh`, `stream=<ms>`, `work` and `fail=<type>` select ChatGPT variants, each
@@ -104,7 +108,8 @@ right before `seek/preview-main.js`, which calls their factories.
     `/tmp/butter-branch-qa/`. Set `SHOTS=notes/runs/2026-11-07-ask-in-branch-29/screenshots` to
     refresh that run's committed screenshots.
   - The `shortcut` scenario presses the `branch` command's key, which must be real input: run
-    `ONLY=shortcut xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs`, and
+    `ONLY=shortcut xvfb-run -n 201 -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs` (a
+    fixed display: `-a` can take a stopped lab's `:98` or `:99`), and
     the browser runs headed while XTest (`xtest-keys.py`) presses Alt+Shift+Q. A run that selects
     other scenarios too, or has no display, stays headless and asks the worker to relay the command.
 
@@ -147,12 +152,12 @@ right before `seek/preview-main.js`, which calls their factories.
   code block's or a table's one box 3 px beyond it with its corners and its border left clear, faded
   in over 160 ms, at once under reduced motion),
   `test/bookmark-anchor.test.js` (a selection's anchor within one paragraph, across paragraphs and in
-  CJK text, the viewport-top rule, the key hint and its `aria-keyshortcuts` form), `test/bookmark-card.test.js` (the hover card's meta
+  CJK text, the viewport-top rule), `test/bookmark-card.test.js` (the hover card's meta
   line, rows, five-row limit and names; a tick's card for several bookmarks, one, a stale one and more
   than five, its group name and the tick's name, in English and Chinese), `test/bookmark-stale.test.js` (live and stale resolution: a
   regenerated answer, an edited one, a vanished message, a version switched back; the dot solid,
-  hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store, the command
-  relay and the key query), `test/bookmark-session.test.js` (the bookmark session through its
+  hollow when all are stale, or faint under 4 px; the stale card in both languages), `test/bookmark-store.test.js` (the worker store; the command
+  relay and the key query are in `test/command-worker.test.mjs`), `test/bookmark-session.test.js` (the bookmark session through its
   interface, over an async in-memory store with held replies and planted pages: an account or chat
   switch mid-read, seek deferral, a streamed answer unmounted and its raw id and staleness kept, the
   earlier-to-loaded transfer, a duplicate save, delete and Undo, Undo after navigation, the

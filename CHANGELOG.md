@@ -10,10 +10,25 @@
   on a Mac) opens a new chat in the current project, a new Temporary Chat in Temporary Chat, and a
   normal new chat anywhere else.
 
+### Changed
+
+- Moved the question rail, Bookmarks and Remember long-chat layouts to a new Experimental page in
+  the popup, opened from an "Experimental" row that says how many of them are on. The popup now
+  stays one height on both pages, so its links and language switch no longer jump.
+- Changed the question rail, Bookmarks and Remember long-chat layouts to start off on a new
+  install; if you update, they stay as you had them.
+- Changed the key hints in the selection pill's labels to show key symbols (⌥⇧M) instead of key
+  names on Windows and Linux, as they already did on a Mac.
+
 ### Fixed
 
 - Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on
   the question the preview showed.
+
+### Removed
+
+- Removed the card on the ChatGPT page that asked to remember long-chat layouts. Switching the
+  layouts row on in the Experimental page is now how you agree.
 
 ### Known issues
 

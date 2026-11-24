@@ -15,7 +15,7 @@ const id = await popup.evaluate(() => new Promise(r => chrome.developerPrivate.g
 await popup.goto(`chrome-extension://${id}/popup/popup.html`);
 await chat.bringToFront();
 const tabId = await popup.evaluate(async () => (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id);
-const defaults = { enabled: true, opts: { container: true, cv: true, throttle: true, older: true, rail: true }, lang: 'en' };
+const defaults = { enabled: true, opts: { container: true, cv: true, throttle: true, older: true, rail: true, bookmark: true }, lang: 'en' };
 const store = value => popup.evaluate(value => chrome.storage.local.set({ butter: value }), value);
 const status = () => popup.evaluate(id => chrome.tabs.sendMessage(id, { type: 'butter-status' }), tabId);
 await store(defaults);

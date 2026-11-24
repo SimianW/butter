@@ -9,7 +9,8 @@
 // Run: npm ci && node lab/harness/branch-qa.mjs
 // The `shortcut` scenario presses the `branch` command's key (Alt+Shift+Q), which must be real
 // keyboard input (chrome.commands ignores DevTools key events): run it under an X display, as
-//   ONLY=shortcut xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs
+//   ONLY=shortcut xvfb-run -n 201 -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs
+// (a fixed display away from the labs' :98 and :99: `-a` takes one of them while that lab is stopped)
 // and the browser runs headed while xtest-keys.py presses the key. A run that also selects other
 // scenarios, or has no display, stays headless as before, and the worker relays the command instead
 // (the run says which).

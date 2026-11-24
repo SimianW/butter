@@ -33,13 +33,48 @@ const plain = (x) => JSON.parse(JSON.stringify(x));
 
 test('the hint shows the key Chrome reports for the command, and nothing when it has none', () => {
   const { keyHint } = page().keys;
-  assert.equal(keyHint('Alt+Shift+Q'), 'Alt Shift Q'); // Windows and Linux, as the mockup writes keys
-  assert.equal(keyHint('Alt+Shift+M'), 'Alt Shift M');
-  assert.equal(keyHint('⌥⇧Q'), '⌥⇧Q'); // macOS reports symbols
-  assert.equal(keyHint('Ctrl+Shift+Comma'), 'Ctrl Shift Comma');
+  assert.equal(keyHint('Alt+Shift+Q'), '⌥⇧Q'); // Windows and Linux: names become symbols
+  assert.equal(keyHint('Alt+Shift+M'), '⌥⇧M');
+  assert.equal(keyHint('⌥⇧Q'), '⌥⇧Q'); // macOS reports symbols, shown as given
   assert.equal(keyHint(''), '');
   assert.equal(keyHint(undefined), '');
   assert.equal(keyHint(null), '');
+});
+
+// Chrome names keys as Accelerator::KeyCodeToName does in English: "Up Arrow", "Page Up", "Comma".
+test('the hint writes modifiers, Comma, Period and arrows as symbols, other keys as Chrome names them', () => {
+  const { keyHint } = page().keys;
+  assert.equal(keyHint('Ctrl+Shift+Comma'), '⌃⇧,');
+  assert.equal(keyHint('Ctrl+Up Arrow'), '⌃↑');
+  assert.equal(keyHint('Alt+Down Arrow'), '⌥↓');
+  assert.equal(keyHint('Shift+Left Arrow'), '⇧←');
+  assert.equal(keyHint('Shift+Right Arrow'), '⇧→');
+  assert.equal(keyHint('Alt+Shift+Up Arrow'), '⌥⇧↑');
+  assert.equal(keyHint('MacCtrl+Period'), '⌃.');
+  assert.equal(keyHint('Command+Shift+1'), '⌘⇧1');
+  assert.equal(keyHint('Search+Shift+Q'), '⌘⇧Q'); // ChromeOS's Search key
+  assert.equal(keyHint('Alt+Home'), '⌥Home');
+  assert.equal(keyHint('Ctrl+Page Up'), '⌃Page Up');
+  assert.equal(keyHint('Media Next Track'), 'Media Next Track'); // a media key, no modifier
+});
+
+// Windows and Linux name modifiers in the browser's language, always in Chromium's order (Win or
+// Super or Search, Alt, Ctrl, Shift); an extension's key has Ctrl, Alt or Search, never Alt with
+// Ctrl or Search, and Shift only beside one of them. A name that is not English is read when only
+// one such list fits; otherwise the hint is Chrome's own words, and there is no aria-keyshortcuts.
+test("modifiers named in the browser's language read as symbols when only one modifier fits", () => {
+  const { keyHint, ariaKeys } = page().keys;
+  assert.equal(keyHint('Alt+Umschalttaste+Q'), '⌥⇧Q'); // German: after Alt, only Shift can follow
+  assert.equal(ariaKeys('Alt+Umschalttaste+Q'), 'Alt+Shift+Q');
+  assert.equal(keyHint('Alt+Maj+Q'), '⌥⇧Q'); // French
+  assert.equal(ariaKeys('Alt+Maj+Q'), 'Alt+Shift+Q');
+  assert.equal(keyHint('Ctrl+Maj+Comma'), '⌃⇧,');
+  assert.equal(keyHint('Strg+Shift+Q'), 'Strg Shift Q'); // Strg could be Alt, Ctrl or Search
+  assert.equal(ariaKeys('Strg+Shift+Q'), '');
+  assert.equal(keyHint('Strg+Umschalttaste+Q'), 'Strg Umschalttaste Q');
+  assert.equal(ariaKeys('Strg+Umschalttaste+Q'), '');
+  assert.equal(keyHint('Strg+Q'), 'Strg Q');
+  assert.equal(ariaKeys('Strg+Q'), '');
 });
 
 // A cell's aria-keyshortcuts (#77): the same key in ARIA's names.
@@ -53,6 +88,28 @@ test('aria-keyshortcuts spells the key in ARIA names, and is empty when there is
   assert.equal(ariaKeys('Command+Period'), 'Meta+.');
   assert.equal(ariaKeys(''), '');
   assert.equal(ariaKeys(undefined), '');
+  assert.equal(ariaKeys(null), '');
+});
+
+test('aria-keyshortcuts names keys as UI Events does, one shortcut with no spaces', () => {
+  const { ariaKeys } = page().keys;
+  assert.equal(ariaKeys('Alt+Shift+Up Arrow'), 'Alt+Shift+ArrowUp');
+  assert.equal(ariaKeys('⌥⇧↑'), 'Alt+Shift+ArrowUp'); // macOS's arrow
+  assert.equal(ariaKeys('Ctrl+Down Arrow'), 'Control+ArrowDown');
+  assert.equal(ariaKeys('Ctrl+Left Arrow'), 'Control+ArrowLeft');
+  assert.equal(ariaKeys('Ctrl+Right Arrow'), 'Control+ArrowRight');
+  assert.equal(ariaKeys('Ctrl+Page Up'), 'Control+PageUp');
+  assert.equal(ariaKeys('Ctrl+Page Down'), 'Control+PageDown');
+  assert.equal(ariaKeys('⌘⇞'), 'Meta+PageUp');
+  assert.equal(ariaKeys('Alt+Space'), 'Alt+Space');
+  assert.equal(ariaKeys('Alt+Tab'), 'Alt+Tab');
+  assert.equal(ariaKeys('Alt+Home'), 'Alt+Home');
+  assert.equal(ariaKeys('⌃↘'), 'Control+End');
+  assert.equal(ariaKeys('Alt+Ins'), 'Alt+Insert');
+  assert.equal(ariaKeys('Alt+Del'), 'Alt+Delete');
+  assert.equal(ariaKeys('Search+Shift+Q'), 'Meta+Shift+Q');
+  assert.equal(ariaKeys('Media Next Track'), 'MediaTrackNext');
+  assert.equal(ariaKeys('Ctrl+Shift+Bild auf'), 'Control+Shift+Bildauf'); // a key name not in the table
 });
 
 test('a key is read from the worker, and a change is reported once', async () => {

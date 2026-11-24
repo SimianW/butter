@@ -43,7 +43,7 @@ test('seek follows the master and seek switches independently of the rail and ot
     CustomEvent: class {},
     chrome: {
       storage: {
-        local: { get: async () => ({ butter: { opts: { rail: false } } }) },
+        local: { get: async () => ({ butter: { opts: { rail: false, bookmark: true } } }) },
         onChanged: {
           addListener: (fn) => {
             changed = fn;

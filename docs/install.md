@@ -24,16 +24,19 @@ reload icon on its extension card, then reload ChatGPT. Keep the folder at the s
 ## Settings
 
 Click Butter's toolbar icon to open the popup. **Enable Butter** pauses or resumes the extension.
-Four switches control **Smoother streaming**, **Smoother scrolling** (including drag preview),
-**Question rail**, and **Remember long-chat layouts**. Changes apply to all open ChatGPT tabs
+Switches control **Smoother streaming**, **Smoother scrolling** (including drag preview) and
+**Ask in branch**. The **Experimental** row opens the Experimental page, with the unfinished
+features: **Question rail**, **Bookmarks** and **Remember long-chat layouts**. On a new install all
+three are off until you switch them on; an update keeps the rail and Bookmarks as they were.
+Changes apply to all open ChatGPT tabs
 immediately. Status shows whether Butter is working in this chat, paused, or waiting for a chat.
 A feature warning appears only after a failure is observed; an unused feature has no warning.
 
 Choose **English** or **中文** at the top; the question rail uses the same language. Switch and
 language settings stay in your browser.
 
-Saved layouts are optional: Butter asks for permission in ChatGPT before saving any. After consent,
-you can change this in the popup. Layout data contains numbers, formatting and one-way hashes,
+Saved layouts are optional: nothing is saved until you switch **Remember long-chat layouts** on in
+the popup's Experimental page, which is your consent. You can switch it off there again. Layout data contains numbers, formatting and one-way hashes,
 never chat text; it expires after 30 days and is capped at 50 MB. The popup shows storage use and
 an inline-confirmed **Clear** action. Clear deletes saved layouts for all accounts; new ones can
 save again while the option is on. Turning the option off deletes saved layouts and stops saving.
