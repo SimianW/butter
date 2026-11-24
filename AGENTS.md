@@ -45,8 +45,8 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
   runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
   it (see New features).
 - Merged branches: once a thread's PR has merged, the thread drops its local branch from its own
-  worktree with `git fetch --prune origin && git switch --detach origin/main && git branch -d <branch>`;
-  `-d` (never `-D`) refuses a branch that is unmerged or still checked out, and T3 keeps the worktree.
+  worktree: `git fetch --prune origin && git switch --detach origin/main && git branch -d <branch>`.
+  `-d` (never `-D`) refuses a branch that is unmerged or still checked out; T3 keeps the worktree.
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.
 - Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams and the skills
@@ -54,7 +54,8 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
 - Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
 - Dev docs: [docs/development.md](docs/development.md) has the setup and test commands, and links
   out per topic (runtime API, releasing). `npm run check` runs every CI check locally.
-  `test/agent-doc-size.test.mjs` holds it under 46,000 bytes and this file under 100 lines.
+  `test/agent-doc-size.test.mjs` holds docs/development.md within 46,000 bytes and this file
+  within 100 lines.
 - Frontend: before any visible frontend change, use the `mockup-first` skill: show the user a
   mockup and wait for approval. Mockups are saved in `mockups/`. The UI's default language is
   English (`extension/_locales/en/`; `zh_CN` is the second locale), and its fonts, colours and
