@@ -99,3 +99,139 @@ lab held.
   received the keydown: Chrome consumed it as the extension command.
 - The raw log is `lab/harness/results/new-chat-live-2026-11-24T2230.log` (local, git-ignored). It
   holds only masked shapes, lengths and flags.
+
+## 2026-11-24, 22:48–22:56 UTC: Temporary Chat and the before/after GIFs
+
+Lab 2, Chromium 157.0.8103.50 (snap). One lock, owner `new-chat-temp`, taken with
+`--needs-fixture ats12` and held for the whole sequence (22:48:37–22:55:58). Six harness runs:
+`new-chat-live.mjs` twice, one temporary re-check, and `new-chat-demo.mjs` three times. Small
+helper scripts read the tab and the drafts. **One send**, in Temporary Chat. No Work mode, and no
+project or chat created, renamed or deleted. `lab-restore` ok, lock released.
+
+**Result: `temporary` is still not verified.** Every other check passes again on `d01f811`. The
+one authorized send was spent on a run where the key was not bound, so `temporary` needs another
+authorized send.
+
+### Builds and the key binding
+
+- After: `feat/new-chat-shortcut` at `d01f811`, version `0.1.0.22`. `extension/` was copied
+  unchanged to a snap-readable directory (`diff -r` clean).
+- Before: `main` at `b2df865`, taken with `git archive b2df865 extension | tar -x` into a new
+  empty directory. Nothing was checked out.
+- An unpacked extension's id comes from its directory. This profile's `extensions.commands` binds
+  `linux:Alt+Shift+O` to the id of the directory the first run used (`new-chat` from that build).
+  An extension loaded from a new directory gets a new id. Chrome leaves its suggested key unbound
+  because another extension id already holds that key. The first run below used a new directory
+  and got `FAIL key-assigned`. Every later run loads `d01f811`'s `extension/` from the first run's
+  directory (contents replaced, `diff -r` clean). The id is the same, and the key is bound with no
+  profile change.
+
+### Job 1: Temporary Chat with turns
+
+**Run 1** (`TEMP_SEND=1`, new directory, so no key). Exit 1. Verbatim; the script masks the ids:
+
+```
+FAIL key-assigned: no key assigned to new-chat
+REPORT project page loaded {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+REPORT project-page after {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":17,"focused":true,"temporaryOn":false,"keysO":2}
+FAIL project-page: url /g/g-p-<id>/project, reloaded false, text differs (17/16), focused true, page keydowns 2
+REPORT project-chat before {"href":"/g/g-p-<id>-<slug>/c/<id>","reloaded":false,"turns":3,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/g/g-p-<id>-<slug>/c/<id>","reloaded":false,"turns":3,"label":"Ask ChatGPT","len":1,"focused":true,"temporaryOn":false,"keysO":1}
+FAIL project-chat: url /g/g-p-<id>-<slug>/c/<id>, reloaded false, label differs, focused true, turns 3, page keydowns 1
+REPORT normal-chat before {"href":"/c/<id>","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/c/<id>","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":24,"focused":true,"temporaryOn":false,"keysO":2}
+FAIL normal-chat: url /c/<id>, reloaded false, turns 1, temporary false
+FAIL no-stray-key: page keydowns 2, draft differs (23 → 1)
+REPORT temporary before {"href":"/c/<id>?temporary-chat=true","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/c/<id>?temporary-chat=true","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":1,"focused":true,"temporaryOn":false,"keysO":2}
+FAIL temporary: turns before 1, url /c/<id>?temporary-chat=true, temporary false, turns 1, composer 1
+REPORT temporary navigation: client-side
+REPORT work: not run (no Work-mode page without changing account settings; WORK_URL=...)
+```
+
+With no command bound, the key reached the page as a typed character. These FAILs measure the
+missing binding, not the build. `temporary navigation: client-side` only means nothing happened.
+
+- **The send.** The script's own prompt, `Reply with the single word: ok`, in
+  `/?temporary-chat=true`. Count: 1. Lab 2 is `"sends": "opt-in"` in labs.json, and the brief
+  allowed this one send. The script lifts the guard (`unrouteAll`) for this send only, so nothing
+  in the lab's config changed.
+- **Guard put back.** The script reinstalls the guard in `finally` and stops with a setup error
+  if that fails. The run went on to print its `temporary` lines, so the guard was back. Every
+  later connection installed the guard again.
+- **Drafts the run changed.** The stray character went into `ats12`'s composer. On the normal
+  chat, browser Back returned to `ats12`, so the script's draft reset cleared `ats12` (0) and
+  left the normal chat holding the 24-character marker draft. A helper, with the guard on,
+  cleared only that marker draft (`normal: 24 (marker draft) -> cleared to 0`). The Temporary
+  Chat's stray character went with the chat, which is not saved.
+
+**Run 2** (no `TEMP_SEND`, the first run's directory, so the key is bound). Exit 0. Verbatim:
+
+```
+PASS key-assigned
+REPORT project page loaded {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+REPORT project-page after {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":16,"focused":true,"temporaryOn":false,"keysO":0}
+PASS project-page
+REPORT project-chat before {"href":"/g/g-p-<id>-<slug>/c/<id>","reloaded":false,"turns":3,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/g/g-p-<id>/project","reloaded":false,"turns":0,"label":"New chat in <project>","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+PASS project-chat
+REPORT normal-chat before {"href":"/c/<id>","reloaded":false,"turns":1,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0} after {"href":"/","reloaded":false,"turns":0,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":false,"keysO":0}
+PASS normal-chat
+PASS no-stray-key
+REPORT temporary: not run (needs one send in Temporary Chat; TEMP_SEND=1 on a lab that allows sends)
+REPORT work: not run (no Work-mode page without changing account settings; WORK_URL=...)
+```
+
+**Temporary re-check, without a send.** A local script (not committed) reopened the Temporary
+Chat that run 1 made, with the guard on and the bound build loaded, to run the same `temporary`
+check on it:
+
+```
+PASS key-assigned
+REPORT temporary reopen: no turns {"href":"/?temporary-chat=true","reloaded":false,"turns":0,"label":"Ask ChatGPT","len":0,"focused":true,"temporaryOn":true,"keysO":0}; not run
+```
+
+ChatGPT does not reopen a Temporary Chat by its URL: it opened a new, empty one. So the
+`temporary` check (PASS/FAIL, and client-side or reload) needs one more authorized send. Next
+time, load the build from the bound directory (`PASS key-assigned`) before sending.
+
+### Job 2: before/after GIFs
+
+- Recorder: `lab/harness/new-chat-demo.mjs`, on the same lock. It runs `ffmpeg -f x11grab` on the
+  lab's display (`:98`) at 30 fps, as `rail-demo.mjs` does. The X cursor is not drawn.
+- Steps, the same on both builds: restart the browser with only that build, open `ats12`, wait
+  6 s, click the composer (focus in the message box), and wait 1.5 s. Then record: 1.0 s, press
+  Alt+Shift+O as XTest input (`xtest-keys.py`, with the pointer on the tab strip), and hold 3.5 s.
+- Crop, measured on the page: the chat column under ChatGPT's header, down to the viewport's
+  bottom, as wide as the composer plus 16 px a side. That is 800 × 860 at x 570, y 139 on the
+  1600 × 1000 display, the same in both runs. It leaves out the URL bar, tab strip, header (where
+  the chat title is), sidebar and account.
+- Masking, in post from the raw MP4:
+  - Everything but the composer is pixelated in 20 px blocks: the chat turns, and the project
+    page's heading and chat list.
+  - The composer is sharp only in frames where its rect matches the settled page, within 0.3 % of
+    pixels changing by more than 40 grey levels. The chat's composer is matched against the first
+    frame, the new chat's against the last. Frames in between are pixelated whole: 7 frames of
+    30 fps in the after run, 47–53 of 0–137.
+  - The project name after "New chat in " is a solid grey box. It is measured with a canvas in the
+    placeholder's own font, so "New chat in" stays readable.
+- Caption strip: the build, "Alt+Shift+O pressed" from the press on, and "Page pixelated outside
+  the composer for privacy".
+- GIF: 12 fps, 128-colour palette.
+- The raw MP4s and measured rects stay out of the repo, under the lab's `captures/new-chat-demo/`.
+
+| | Build | What happens | File |
+|---|---|---|---|
+| Before | `main` at `b2df865` | nothing: same chat, composer "Ask ChatGPT", no character typed | `before.gif`, 800 × 924, 4.58 s, 95,911 bytes |
+| After | `d01f811` | the page changes about 0.6 s after the press (frame 47; press at frame 30), and by 0.8 s it is the project's new chat: composer "New chat in ▇" at the top, focused | `after.gif`, 800 × 924, 4.58 s, 92,003 bytes |
+
+A first after-recording had the name box in the wrong place. The `::before` `font` shorthand came
+back unusable, so the canvas measured at 10 px. The box covered "at i" and left the name readable.
+That GIF was replaced before any commit. The recorder now builds the font from its longhands, and
+a third run made the committed `after.gif`.
+
+Every frame of both committed GIFs (55 each) was extracted and looked at. They show no account
+name, URL, chat or project title, or readable chat text.
+
+### Drafts and restore
+
+The read-only draft check after the last recording found: project page 0, `ats12` 0, normal chat
+0, `math12` 38, all as before the session. `lab-restore --lab 2` restarted the browser without
+extensions, opened the home URL with an empty composer, and returned `ok: true`.
+`lab-lock release` succeeded, and `lab-lock status` showed no lab held.
