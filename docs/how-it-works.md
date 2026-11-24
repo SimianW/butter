@@ -233,6 +233,41 @@ alone. That text is found by hit-testing a 30 px band above the composer
 (`document.elementsFromPoint`), skipping the conversation's turns, so no selector of ChatGPT's is
 needed. With no such text, the line sits in its own row 8 px above the composer.
 
+## New chat shortcut
+
+**Alt+Shift+O** (Option+Shift+O on a Mac), the `new-chat` command, starts a new chat where you
+are. ChatGPT's own Ctrl+Shift+O (Command+Shift+O on a Mac) always opens a new chat on its home page,
+which leaves a project and Temporary Chat; it keeps working as ChatGPT made it. You can change or
+remove Butter's key in `chrome://extensions/shortcuts`; there is no popup switch, label or notice,
+and Butter paused turns it off. The worker relays the press to the tab it was made in
+(`commands/worker.js`); in a tab that isn't ChatGPT it does nothing.
+
+`ButterNewChat.decide` (`new-chat/logic.js`) picks one action from the page at the press, with
+these rules checked in order:
+
+1. Butter paused, or the page in Work mode (the test Ask in branch uses): nothing.
+2. A **project page** or **project chat** (the path starts with `/g/g-p-<id>`): on the project
+   page with no turns shown, focus the message box; otherwise go to the project page,
+   `/g/g-p-<id>/project`. That page is the new chat inside the project: ChatGPT's "New chat in
+   <project>" button and the project link in a project chat's header open it, and its message box
+   reads "New chat in <project>". The project comes only from the `g-p-` segment, so a custom GPT's
+   chat (`/g/g-<id>/c/<id>`) is not in a project.
+3. Temporary Chat (`temporary-chat=true` in the query): with no turns shown, focus the message
+   box; otherwise go to `/?temporary-chat=true`, a new Temporary Chat.
+4. The home page `/` with no turns shown: focus the message box.
+5. Anywhere else: go to `/`, a normal new chat.
+
+"No turns shown" counts only visible turns: after a client-side navigation ChatGPT keeps the chat
+you left in the DOM as a hidden chat, its turns and message box hidden. Focus goes to the visible
+message box with the caret at the end of its text, which is left as it is, so a press on a new chat
+never loses what you've typed. Going is the client-side navigation ChatGPT's own project link
+makes, without a reload: `history.pushState` of the path and then a `popstate` event, run in the
+page's main world (`new-chat/go-main.js`) so that ChatGPT's router takes it as its own. ChatGPT
+focuses the new chat's message box on arrival. Unsent text in the chat you leave stays as that
+chat's draft, as ChatGPT keeps a draft per chat. Chrome takes the key before the page sees it, so
+ChatGPT's type-to-focus handler never types an "O" into the chat you leave. A press that does
+nothing is silent: no notice, no focus change, nothing typed.
+
 ## Landing on a bookmark
 
 When a jump from a bookmark row in the rail's card lands on a live bookmark, `bookmarks/content.js`

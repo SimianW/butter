@@ -8,7 +8,7 @@
 //   Chrome reports ('' for none), since content scripts can't read chrome.commands.
 // A new command is one entry in COMMANDS, its manifest entry and its handler (`on`).
 (() => {
-  const COMMANDS = Object.freeze(['bookmark', 'branch']);
+  const COMMANDS = Object.freeze(['bookmark', 'branch', 'new-chat']);
 
   // chrome.commands' `shortcut` read as `{ modifiers, key }` (modifiers as 'meta', 'alt', 'ctrl',
   // 'shift'), as Accelerator::GetShortcutText writes it. macOS: the glyphs ⌃⌥⇧⌘, then the key, run

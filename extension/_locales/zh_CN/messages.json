@@ -14,5 +14,9 @@
   "branchCommand": {
     "message": "就选中内容在分支中问",
     "description": "Name of the Ask in branch keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
+  },
+  "newChatCommand": {
+    "message": "新建聊天，在当前项目中时就在该项目中新建",
+    "description": "Name of the new chat keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

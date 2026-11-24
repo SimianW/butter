@@ -14,5 +14,9 @@
   "branchCommand": {
     "message": "Ask in branch about the selection",
     "description": "Name of the Ask in branch keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
+  },
+  "newChatCommand": {
+    "message": "New chat, in the current project if there is one",
+    "description": "Name of the new chat keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

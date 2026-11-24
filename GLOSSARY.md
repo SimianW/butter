@@ -44,6 +44,16 @@ also the bookmark group (`EARLIER`) shown beside those dots.
 _Avoid_: older history, unloaded messages
 _Where_: `history/conversation-main.js`, `bookmarks/model.js`
 
+**Project page**:
+A ChatGPT project's own page, `/g/g-p-<id>/project` (or with the project's slug after the id); with
+no turns it is the new chat inside that project, its composer labelled "New chat in <project>".
+_Where_: `new-chat/logic.js`
+
+**Project chat**:
+A saved conversation that belongs to a project, under `/g/g-p-<id>/c/<id>`.
+_Avoid_: project conversation
+_Where_: `new-chat/logic.js`
+
 **Answer root**:
 The element whose children are an answer's blocks: the markdown root, or the nested Dil response
 root in ChatGPT's Dil renderer; the wrappers around it are not blocks.
@@ -366,8 +376,9 @@ One feature's button in the pill: Ask in branch or Bookmark.
 _Where_: `selection/pill.js`
 
 **Command**:
-One of Butter's keys as Chrome knows it (`bookmark`, Alt+Shift+M; `branch`, Alt+Shift+Q), rebindable
-or removable in Chrome's shortcut settings; the worker relays a press to the tab it was pressed in.
+One of Butter's keys as Chrome knows it (`bookmark`, Alt+Shift+M; `branch`, Alt+Shift+Q;
+`new-chat`, Alt+Shift+O), rebindable or removable in Chrome's shortcut settings; the worker relays a
+press to the tab it was pressed in.
 _Avoid_: hotkey
 _Where_: `commands/keys.js`, `commands/worker.js`, `manifest.json`
 

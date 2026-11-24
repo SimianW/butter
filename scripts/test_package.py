@@ -143,9 +143,12 @@ class PackageTests(unittest.TestCase):
             command = manifest["commands"]["save-bug"]
             self.assertEqual(command["suggested_key"]["default"], "Alt+Shift+B")
             self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
-            # The dev build keeps the store's two reader shortcuts beside its own.
-            self.assertEqual(list(manifest["commands"]), ["bookmark", "branch", "save-bug"])
-            for name in ("bookmark", "branch"):
+            # The dev build keeps the store's three reader shortcuts beside its own: four, the
+            # most Chrome suggests keys for.
+            self.assertEqual(
+                list(manifest["commands"]), ["bookmark", "branch", "new-chat", "save-bug"]
+            )
+            for name in ("bookmark", "branch", "new-chat"):
                 self.assertEqual(manifest["commands"][name], self.source_commands()[name])
             # Every script the dev manifest names is in the zip, after the store scripts it hooks.
             isolated, main = manifest["content_scripts"]
@@ -201,13 +204,20 @@ class PackageTests(unittest.TestCase):
     def test_store_and_test_packages_leave_dev_build_out(self):
         self.use_real_extension()
         source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
-        # The store manifest's commands are the two reader shortcuts; save-bug is dev-only.
-        self.assertEqual(list(source["commands"]), ["bookmark", "branch"])
+        # The store manifest's commands are the three reader shortcuts; save-bug is dev-only.
+        self.assertEqual(list(source["commands"]), ["bookmark", "branch", "new-chat"])
         self.assertEqual(
             source["commands"]["branch"],
             {
                 "suggested_key": {"default": "Alt+Shift+Q", "mac": "Alt+Shift+Q"},
                 "description": "__MSG_branchCommand__",
+            },
+        )
+        self.assertEqual(
+            source["commands"]["new-chat"],
+            {
+                "suggested_key": {"default": "Alt+Shift+O", "mac": "Alt+Shift+O"},
+                "description": "__MSG_newChatCommand__",
             },
         )
         self.assertNotIn("downloads", source["permissions"])

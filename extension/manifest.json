@@ -46,7 +46,9 @@
         "branch/run.js",
         "branch/page.js",
         "branch/ui.js",
-        "branch/content.js"
+        "branch/content.js",
+        "new-chat/logic.js",
+        "new-chat/content.js"
       ],
       "run_at": "document_start"
     },
@@ -67,7 +69,8 @@
         "seek/preview-texts-main.js",
         "seek/landing-main.js",
         "seek/seek-diagnostics-main.js",
-        "seek/preview-main.js"
+        "seek/preview-main.js",
+        "new-chat/go-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"
@@ -82,6 +85,10 @@
     "branch": {
       "suggested_key": { "default": "Alt+Shift+Q", "mac": "Alt+Shift+Q" },
       "description": "__MSG_branchCommand__"
+    },
+    "new-chat": {
+      "suggested_key": { "default": "Alt+Shift+O", "mac": "Alt+Shift+O" },
+      "description": "__MSG_newChatCommand__"
     }
   },
   "action": {

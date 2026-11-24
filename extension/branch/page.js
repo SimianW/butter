@@ -136,11 +136,23 @@
     return null;
   };
 
+  // Whether the page is in Work mode (ButterBranch.isWorkMode), read from the visible composer and
+  // ChatGPT's selection toolbar. The new chat shortcut (new-chat/content.js) reads it here too.
+  const work = () => {
+    const editor = composer(),
+      form = editor?.closest('form');
+    return B.isWorkMode({
+      composer: form && {
+        placement: form.hasAttribute('data-composer-placement'),
+        chat: form.hasAttribute('data-chatgpt-composer'),
+      },
+      label: editor?.getAttribute('aria-label'),
+      sideChat: !!R.nativeAsk()?.sideChat,
+    });
+  };
   // What decides whether ChatGPT can branch here (ButterBranch.hiddenReason). Evidence for each
   // signal is in notes/runs/2026-11-07-ask-in-branch-29/report.md.
   const facts = () => {
-    const editor = composer(),
-      form = editor?.closest('form');
     const replies = R.replies().filter(visible);
     const branchAction = replies.some((r) => moreOf(r)) ? true : streaming() ? null : false;
     return {
@@ -148,14 +160,7 @@
         B.temporaryUrl(location.href) ||
         // The Temporary Chat switch while it's on.
         [...document.querySelectorAll('use[href*="chat-bubble-checkmark-dashed"]')].some(visible),
-      work: B.isWorkMode({
-        composer: form && {
-          placement: form.hasAttribute('data-composer-placement'),
-          chat: form.hasAttribute('data-chatgpt-composer'),
-        },
-        label: editor?.getAttribute('aria-label'),
-        sideChat: !!R.nativeAsk()?.sideChat,
-      }),
+      work: work(),
       branchAction,
     };
   };
@@ -285,6 +290,7 @@
     composerBox,
     disclaimerRow,
     replyKeys,
+    work,
     facts,
     quoteDom,
     FORMULA,

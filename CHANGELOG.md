@@ -6,6 +6,9 @@
 
 - Added a keyboard shortcut for Ask in branch: Alt+Shift+Q (Option+Shift+Q on a Mac) opens the
   question box for the selected text.
+- Added a keyboard shortcut for a new chat that stays in your project: Alt+Shift+O (Option+Shift+O
+  on a Mac) opens a new chat in the current project, a new Temporary Chat in Temporary Chat, and a
+  normal new chat anywhere else.
 
 ### Changed
 
