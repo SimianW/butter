@@ -19,7 +19,6 @@
         "storage/layout-bridge.js",
         "shared/settings.js",
         "consent/card.js",
-        "consent/layout-consent.js",
         "seek/seek-meta.js",
         "bookmarks/model.js",
         "bookmarks/wash.js",

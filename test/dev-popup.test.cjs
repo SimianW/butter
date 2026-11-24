@@ -50,6 +50,7 @@ function profile({ local = {}, shortcut = 'Alt+Shift+B', chat = true } = {}) {
       getURL: (file) => `chrome-extension://butter/${file}`,
       getManifest: () => ({ version_name: '0.1.0-alpha.15+dev.1' }),
       onMessage: { addListener: (fn) => messageListeners.push(fn) },
+      onInstalled: { addListener() {} },
       // The popup's runtime messages reach the worker's listeners, as from an extension page.
       sendMessage: (message) =>
         new Promise((resolve) => {
@@ -161,8 +162,8 @@ test('without a dev renderer the slot renders nothing: no DEV tag, no dev card',
   await settle();
   const html = popup.html();
   assert.match(html, /<div class="word">Butter<\/div><a class="ver"/);
-  // The feature card's last row closes it, and the footer follows.
-  assert.match(html, /data-switch="layout"><\/button><\/label><\/div>\s*<div class="ft">/s);
+  // The Experimental row closes the main page, and the footer follows.
+  assert.match(html, /<button type="button" class="more"[^]*?<\/button><\/div>\s*<div class="ft">/);
   assert.doesNotMatch(html, /devtag|card dev|DEV|Round 2/);
 });
 

@@ -11,7 +11,7 @@ test('a stale startup session read cannot bring back a failure that was already 
   assert.doesNotMatch(f.html(), /class="row bad"|Unavailable for now/);
 });
 
-test('rows are labels wrapping their switches, in order, with the new copy in both languages', async () => {
+test('rows are labels wrapping their switches, in order on each page, with the copy in both languages', async () => {
   const f = popup();
   f.finish({ butter: { layoutConsent: 'granted' } }, {});
   await tick();
@@ -29,22 +29,25 @@ test('rows are labels wrapping their switches, in order, with the new copy in bo
       on: true,
     },
     {
-      key: 'rail',
-      name: 'Question rail',
-      description: 'Click a question on the right to jump',
-      on: true,
-    },
-    {
       key: 'branch',
       name: 'Ask in branch',
       description: 'Select text, ask about it in a new branch',
       on: true,
     },
+  ]);
+  f.go('experimental');
+  assert.deepEqual(rows(f.html()), [
+    {
+      key: 'rail',
+      name: 'Question rail',
+      description: 'Click a question on the right to jump',
+      on: false,
+    },
     {
       key: 'bookmarks',
       name: 'Bookmarks',
       description: 'Select text, mark the spot to jump back',
-      on: true,
+      on: false,
     },
     {
       key: 'layout',
@@ -54,9 +57,24 @@ test('rows are labels wrapping their switches, in order, with the new copy in bo
     },
   ]);
   f.changed(
-    { butter: { newValue: { layoutConsent: 'granted', lang: 'zh', opts: { branch: false } } } },
+    {
+      butter: {
+        newValue: { layoutConsent: 'granted', lang: 'zh', opts: { branch: false, rail: true } },
+      },
+    },
     'local',
   );
+  assert.deepEqual(rows(f.html()), [
+    {
+      key: 'rail',
+      name: '问题导航条',
+      description: '右侧列出你问过的问题，点一下就跳过去',
+      on: true,
+    },
+    { key: 'bookmarks', name: '书签', description: '选中文字，标记位置，随时跳回', on: false },
+    { key: 'layout', name: '记住长对话的布局', description: '再次打开时跳转更快', on: true },
+  ]);
+  f.go('main');
   assert.deepEqual(rows(f.html()), [
     { key: 'streaming', name: '回答生成时更顺', description: '长回答输出时页面不卡', on: true },
     {
@@ -65,15 +83,7 @@ test('rows are labels wrapping their switches, in order, with the new copy in bo
       description: '拖动滚动条先看预览，松手再加载',
       on: true,
     },
-    {
-      key: 'rail',
-      name: '问题导航条',
-      description: '右侧列出你问过的问题，点一下就跳过去',
-      on: true,
-    },
     { key: 'branch', name: '在分支中问', description: '选中文字，在新分支里提问', on: false },
-    { key: 'bookmarks', name: '书签', description: '选中文字，标记位置，随时跳回', on: true },
-    { key: 'layout', name: '记住长对话的布局', description: '再次打开时跳转更快', on: true },
   ]);
 });
 
@@ -107,6 +117,7 @@ test('pending consent shows the note with the privacy link for the language, and
   const f = popup();
   f.finish({ butter: { lang: 'en', opts: { layout: true } } }, {});
   await tick();
+  f.go('experimental');
   // The note follows the layouts row's label and closes the card.
   const note = (html) =>
     html.match(
@@ -160,7 +171,7 @@ test('a recorded failure replaces its row description with the fault text, in pl
   await tick();
   assert.deepEqual(faulted(f.html()), ['branch']);
   assert.equal(descriptions(f.html()).branch, faultEn);
-  assert.equal(descriptions(f.html()).rail, 'Click a question on the right to jump');
+  assert.equal(descriptions(f.html()).streaming, 'Long answers stream without lag');
   // The description is a live region, so the fault text is announced when it appears.
   assert.match(f.html(), /<div class="d" role="status">Unavailable for now\./);
   assert.doesNotMatch(f.html(), /class="(?:warn|chip|warning-slot)"|<b>/);
@@ -179,20 +190,28 @@ test('with two or more broken groups, each faulted row shows the short one-line 
   const f = popup();
   f.finish(
     { butter: { layoutConsent: 'granted' } },
-    { butterFailures: { rail: { rail: true }, branch: { branch: true } } },
+    { butterFailures: { streaming: { cv: true }, branch: { branch: true } } },
   );
   await tick();
-  assert.deepEqual(faulted(f.html()), ['rail', 'branch']);
-  assert.equal(descriptions(f.html()).rail, 'Unavailable; resumes on its own.');
+  assert.deepEqual(faulted(f.html()), ['streaming', 'branch']);
+  assert.equal(descriptions(f.html()).streaming, 'Unavailable; resumes on its own.');
   assert.equal(descriptions(f.html()).branch, 'Unavailable; resumes on its own.');
-  assert.equal(descriptions(f.html()).streaming, 'Long answers stream without lag');
+  assert.equal(descriptions(f.html()).scrolling, 'Preview while you drag the scrollbar');
   assert.match(f.html(), /<div class="d" role="status">Unavailable; resumes/);
   f.changed({ butter: { newValue: { layoutConsent: 'granted', lang: 'zh' } } }, 'local');
-  assert.equal(descriptions(f.html()).rail, '暂时不可用，Butter 会自动恢复。');
+  assert.equal(descriptions(f.html()).streaming, '暂时不可用，Butter 会自动恢复。');
   assert.equal(descriptions(f.html()).branch, '暂时不可用，Butter 会自动恢复。');
   // Back to one broken group: its row shows the full text again.
   f.changed(
-    { butter: { newValue: { layoutConsent: 'granted', lang: 'zh', opts: { rail: false } } } },
+    {
+      butter: {
+        newValue: {
+          layoutConsent: 'granted',
+          lang: 'zh',
+          opts: { container: false, cv: false, throttle: false },
+        },
+      },
+    },
     'local',
   );
   assert.deepEqual(faulted(f.html()), ['branch']);
@@ -215,10 +234,7 @@ test('paused marks the features card paused, keeps every switch as set, and show
     [
       ['streaming', true],
       ['scrolling', true],
-      ['rail', false],
       ['branch', true],
-      ['bookmarks', true],
-      ['layout', true],
     ],
   );
   assert.deepEqual(faulted(f.html()), []);
