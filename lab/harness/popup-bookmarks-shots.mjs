@@ -63,7 +63,7 @@ try {
   const { context, worker, errors } = await launchButter({ defer, name: 'butter-popup-shots', viewport: { width: 360, height: 900 } });
   const page = await context.newPage();
   await page.goto(worker.url().replace('/storage/layout-worker.js', '/popup/popup.html'));
-  await page.locator('.more').click();
+  await page.locator('.exp-row').click();
   await page.waitForSelector('#sw-bookmarks');
   await page.evaluate(() => document.fonts.ready);
   if (process.env.MOCKUP) {

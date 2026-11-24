@@ -413,7 +413,7 @@ button {
 /* The Experimental row: the main page's only way to the Experimental page. A dashed outline on the
    paper, no fill, muted ink: the dashed --line border is the popup's mark for "not part of the
    finished product" (the dev build's card). */
-.more {
+.exp-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -427,15 +427,15 @@ button {
   color: var(--ink-2);
   text-align: left;
 }
-.more .ic,
-.more .chev {
+.exp-row .ic,
+.exp-row .chev {
   stroke: var(--ink-3);
 }
-.more .cnt {
+.exp-row .cnt {
   margin-left: auto;
   color: var(--ink-3);
 }
-.more .cnt:empty + .chev {
+.exp-row .cnt:empty + .chev {
   margin-left: 0;
 }
 .chev {
@@ -448,12 +448,12 @@ button {
   stroke-linejoin: round;
   margin-left: -6px;
 }
-.more:hover {
+.exp-row:hover {
   color: var(--ink);
   border-color: var(--ink-3);
 }
-.more:hover .ic,
-.more:hover .chev {
+.exp-row:hover .ic,
+.exp-row:hover .chev {
   stroke: var(--ink-2);
 }
 

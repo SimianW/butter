@@ -94,7 +94,7 @@ export async function checkPages(page) {
   const swap = () => page.evaluate(() => document.querySelector('.page').getAnimations().map((a) => ({ duration: a.effect.getTiming().duration, easing: a.effect.getTiming().easing, from: a.effect.getKeyframes()[0] })));
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.evaluate(() => go('main'));
-  await page.locator('.more').click();
+  await page.locator('.exp-row').click();
   assert.equal(await showing(), 'experimental');
   assert.equal(await focused(), 'back', 'entering focuses the back button');
   const [entering] = await swap();
@@ -113,7 +113,7 @@ export async function checkPages(page) {
   await page.locator('.back').focus();
   await page.keyboard.press('Enter');
   assert.equal(await showing(), 'main');
-  assert.equal(await focused(), 'more', 'going back focuses the Experimental row');
+  assert.equal(await focused(), 'exp-row', 'going back focuses the Experimental row');
   const [leaving] = await swap();
   assert.equal(leaving?.from.transform, 'translateX(-10px)');
   await page.evaluate(() => document.getAnimations().forEach((a) => a.finish()));
@@ -129,6 +129,6 @@ export async function checkPages(page) {
   assert.equal(await page.locator('.back .chev').evaluate((e) => getComputedStyle(e).transitionDuration), '0s');
   await page.locator('.back').click();
   assert.deepEqual(await swap(), []);
-  assert.equal(await focused(), 'more');
+  assert.equal(await focused(), 'exp-row');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 }

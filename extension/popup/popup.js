@@ -250,7 +250,7 @@ function render() {
   // The Experimental row counts the experimental switches that are on, paused or not.
   const on = ButterStatus.experimental.filter((k) => ButterStatus.groupOn(prefs, k)).length;
   const main = `<div class="page" data-page="main"><div class="master ${paused ? 'off' : ''}"><div class="t"><div class="k">${t.on}</div><div class="s" role="status">${t.st[state]}</div></div>${switchButton('master', prefs.enabled, t.on)}${drip}</div>
-    ${card('')}<button type="button" class="more" data-go="experimental">${svg('flask', 'ic')}<span>${t.exp}</span><span class="cnt">${on ? t.count(on) : ''}</span>${svg('right', 'chev')}</button>${dev.card || ''}</div>`;
+    ${card('')}<button type="button" class="exp-row" data-go="experimental">${svg('flask', 'ic')}<span>${t.exp}</span><span class="cnt">${on ? t.count(on) : ''}</span>${svg('right', 'chev')}</button>${dev.card || ''}</div>`;
   // Its title is the way back.
   const experimental = `<div class="page" data-page="experimental"><button type="button" class="back" data-go="main" aria-label="${t.back}">${svg('left', 'chev')}<span>${t.exp}</span></button>
     <p class="intro">${t.lead}</p>${card(' exp')}</div>`;
@@ -314,7 +314,7 @@ function go(next) {
       ],
       { duration: 160, easing: 'ease-out' },
     );
-  root.querySelector(next === 'main' ? '.more' : '.back')?.focus();
+  root.querySelector(next === 'main' ? '.exp-row' : '.back')?.focus();
 }
 let saveQueue = Promise.resolve();
 root.addEventListener('click', (e) => {

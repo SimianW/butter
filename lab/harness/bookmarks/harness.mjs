@@ -167,7 +167,7 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       const p = await context.newPage();
       await p.setViewportSize({ width: 360, height: 600 });
       await p.goto(`chrome-extension://${new URL(worker.url()).host}/popup/popup.html`);
-      await p.locator('.more').click();
+      await p.locator('.exp-row').click();
       await p.waitForSelector('#sw-bookmarks');
       return p;
     }

@@ -135,7 +135,7 @@ try {
       assert.equal(await page.locator('.row.bad [data-switch="branch"]').count(), [config.broken].flat().includes('branch') ? 1 : 0);
       // The Experimental row counts the experimental switches that are on, and shows no fault.
       const on = await page.evaluate(() => ButterStatus.experimental.filter(k => ButterStatus.groupOn(prefs, k)).length);
-      assert.equal(await page.locator('.more .cnt').textContent(), on ? (config.lang === 'en' ? `${on} on` : `已开启 ${on} 项`) : '');
+      assert.equal(await page.locator('.exp-row .cnt').textContent(), on ? (config.lang === 'en' ? `${on} on` : `已开启 ${on} 项`) : '');
     } else assert.equal(await page.locator('.card.exp').count(), 1);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
     // With two or more faults on the page showing, every faulted row's short text fits on one line.
@@ -215,7 +215,7 @@ try {
   await page.locator('[data-switch="branch"]').click();
   await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.branch === true);
   // Each row is a label around its switch: a click on its description toggles exactly that group.
-  await page.locator('.more').click();
+  await page.locator('.exp-row').click();
   const opts = async () => (await page.evaluate(() => chrome.storage.local.get('butter'))).butter.opts;
   const railRow = page.locator('.row', { has: page.locator('[data-switch="rail"]') });
   const beforeRow = await opts();
@@ -277,7 +277,7 @@ try {
   // The Experimental page: swap, focus, motion, and its survival across polling and language.
   await page.evaluate(() => document.activeElement?.blur());
   await checkPages(page);
-  await page.locator('.more').click();
+  await page.locator('.exp-row').click();
   // Clear and Cancel work from the Experimental page, with focus moving as on the main page.
   await page.locator('[data-store="layouts"][data-clear="ask"]').click();
   assert.equal(await page.evaluate(() => document.activeElement?.dataset.clear), 'confirm');

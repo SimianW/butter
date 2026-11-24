@@ -6,9 +6,9 @@ const { popup, rows, descriptions, tick } = require('./helpers/popup-fixture.cjs
 
 const keys = (html) => rows(html).map((r) => r.key);
 // The Experimental row: its text and count, or undefined when the page has none.
-const more = (html) => {
+const experimentalRow = (html) => {
   const m = html.match(
-    /<button type="button" class="more" data-go="experimental"><svg class="ic"[^>]*>.*?<\/svg><span>(.*?)<\/span><span class="cnt">(.*?)<\/span><svg class="chev"[^>]*>.*?<\/svg><\/button>/,
+    /<button type="button" class="exp-row" data-go="experimental"><svg class="ic"[^>]*>.*?<\/svg><span>(.*?)<\/span><span class="cnt">(.*?)<\/span><svg class="chev"[^>]*>.*?<\/svg><\/button>/,
   );
   return m && { text: m[1], count: m[2] };
 };
@@ -29,12 +29,12 @@ const started = async (butter = {}, session = {}, options) => {
 test('on a fresh install the main page lists the three finished features and a quiet Experimental row', async () => {
   const f = await started();
   assert.deepEqual(keys(f.html()), ['streaming', 'scrolling', 'branch']);
-  assert.deepEqual(more(f.html()), { text: 'Experimental', count: '' });
+  assert.deepEqual(experimentalRow(f.html()), { text: 'Experimental', count: '' });
   assert.match(f.html(), /class="master/);
   assert.equal(back(f.html()), undefined);
   assert.equal(lead(f.html()), undefined);
   // The Experimental row is a real button, not a switch or a label.
-  assert.doesNotMatch(f.html(), /class="more"[^>]*role=/);
+  assert.doesNotMatch(f.html(), /class="exp-row"[^>]*role=/);
   assert.doesNotMatch(f.html(), /class="note"/, 'the privacy note lives on the Experimental page');
 });
 
@@ -49,10 +49,10 @@ test('the Experimental row counts the experimental switches that are on, even wh
   ];
   for (const [butter, count] of cases) {
     const f = await started(butter);
-    assert.equal(more(f.html()).count, count, JSON.stringify(butter));
+    assert.equal(experimentalRow(f.html()).count, count, JSON.stringify(butter));
   }
   const f = await started({ lang: 'zh', opts: { rail: true, bookmark: true } });
-  assert.deepEqual(more(f.html()), { text: '实验功能', count: '已开启 2 项' });
+  assert.deepEqual(experimentalRow(f.html()), { text: '实验功能', count: '已开启 2 项' });
 });
 
 test('the Experimental row opens the Experimental page and its title goes back, moving focus', async () => {
@@ -65,7 +65,7 @@ test('the Experimental row opens the Experimental page and its title goes back, 
     'Unfinished features. Each stays off until you switch it on, and may misbehave.',
   );
   assert.doesNotMatch(f.html(), /class="master/, 'no Enable Butter card');
-  assert.equal(more(f.html()), null);
+  assert.equal(experimentalRow(f.html()), null);
   assert.match(f.html(), /<div class="card exp">/);
   // The header and footer stay.
   assert.match(f.html(), /class="hd".*class="word">Butter<.*class="ver"/s);
@@ -78,7 +78,7 @@ test('the Experimental row opens the Experimental page and its title goes back, 
   assert.deepEqual(f.focused, ['.back']);
   f.go('main');
   assert.deepEqual(keys(f.html()), ['streaming', 'scrolling', 'branch']);
-  assert.deepEqual(f.focused, ['.back', '.more']);
+  assert.deepEqual(f.focused, ['.back', '.exp-row']);
 });
 
 test('the Experimental page stays open through settings, failures, polling and a language switch', async () => {
@@ -132,8 +132,8 @@ test('faults show only in their own row, and the short text counts the broken gr
   const long = 'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
   // Main page: only Ask in branch is broken here; the Experimental row shows no fault.
   assert.equal(descriptions(f.html()).branch, long);
-  assert.doesNotMatch(f.html(), /class="more[^"]*bad/);
-  assert.deepEqual(more(f.html()), { text: 'Experimental', count: '1 on' });
+  assert.doesNotMatch(f.html(), /class="exp-row[^"]*bad/);
+  assert.deepEqual(experimentalRow(f.html()), { text: 'Experimental', count: '1 on' });
   f.go('experimental');
   assert.equal(descriptions(f.html()).rail, long);
   assert.match(f.html(), /<label class="row bad" for="sw-rail">/);
@@ -178,5 +178,5 @@ test('the page swap slides in from the right going in and from the left going ba
   g.go('experimental');
   g.go('main');
   assert.deepEqual(g.animations, [], 'nothing under reduced motion');
-  assert.deepEqual(g.focused, ['.back', '.more'], 'focus still moves');
+  assert.deepEqual(g.focused, ['.back', '.exp-row'], 'focus still moves');
 });
