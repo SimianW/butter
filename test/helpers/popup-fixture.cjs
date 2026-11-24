@@ -93,6 +93,8 @@ function popup(answers = {}, { reducedMotion = false } = {}) {
     // The Experimental row ('experimental') or the Experimental page's back button ('main').
     go: (page) => click({ target: { closest: () => ({ dataset: { go: page } }) } }),
     toggle: (key) => click({ target: { closest: () => ({ dataset: { switch: key } }) } }),
+    // A footer language button ('en' or 'zh').
+    language: (lang) => click({ target: { closest: () => ({ dataset: { lang } }) } }),
     // A Clear, red Clear or Cancel button of a storage row ('bookmarks' or 'layouts').
     clear: (store, step) =>
       click({ target: { closest: () => ({ dataset: { clear: step, store } }) } }),

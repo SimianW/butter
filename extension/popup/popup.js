@@ -137,6 +137,9 @@ let prefs = ButterStatus.normalize(),
   connected = false,
   // Bumped by every live settings change, so a slower startup read cannot overwrite it.
   settingsRevision = 0,
+  // False until the startup settings read lands: a click before it would save defaults over the
+  // stored settings, so switch, language and Clear clicks wait for it.
+  loaded = false,
   failuresRevision = 0;
 const root = document.getElementById('popup');
 const scheme = matchMedia('(prefers-color-scheme: dark)');
@@ -321,6 +324,7 @@ root.addEventListener('click', (e) => {
     go(target.dataset.go);
     return;
   }
+  if (!loaded) return;
   if (target.dataset.clear) {
     const name = target.dataset.store,
       st = stores[name];
@@ -389,6 +393,7 @@ Promise.all([
   chrome.storage.local.get('butter'),
   chrome.storage.session.get('butterFailures'),
 ]).then(([local, session]) => {
+  loaded = true;
   if (settingsRevision === startupRevision) prefs = ButterStatus.normalize(local.butter);
   if (failuresRevision === startupFailures) failures = session.butterFailures || {};
   render();

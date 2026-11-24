@@ -154,6 +154,39 @@ test('the branch switch writes only the branch setting', async () => {
   assert.equal(f.saved.at(-1).butter.opts.branch, true);
 });
 
+test('switch and language clicks before the startup settings read are ignored, so they cannot save defaults', async () => {
+  const f = popup();
+  const stored = {
+    defaultsVersion: 1,
+    layoutConsent: 'granted',
+    opts: { rail: true, bookmark: true },
+  };
+  f.toggle('branch');
+  f.toggle('master');
+  f.language('zh');
+  await tick();
+  assert.deepEqual(f.saved, [], 'nothing is saved before the settings are read');
+  f.finish({ butter: stored }, {});
+  await tick();
+  assert.deepEqual(rows(f.html())[0], {
+    key: 'streaming',
+    name: 'Smoother streaming',
+    description: 'Long answers stream without lag',
+    on: true,
+  });
+  f.toggle('branch');
+  await tick();
+  const { butter } = f.saved.at(-1);
+  assert.equal(f.saved.length, 1);
+  assert.equal(butter.defaultsVersion, 1);
+  assert.deepEqual(
+    [butter.opts.rail, butter.opts.bookmark, butter.opts.branch],
+    [true, true, false],
+  );
+  assert.equal(butter.enabled, true);
+  assert.equal(butter.lang, 'en');
+});
+
 const faultEn =
   'Unavailable for now. ChatGPT may have changed its page; Butter resumes on its own.';
 const faultZh = '暂时不可用。ChatGPT 可能更新了页面，恢复后 Butter 会自动继续。';
