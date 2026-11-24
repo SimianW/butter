@@ -5,7 +5,7 @@
 // two replies, Temporary Chat, an unsaved chat or branch, Ask in branch off, Butter paused; the same
 // element keeps focus and the selection keeps its exact range. With the box open, the key puts focus back in its input; a
 // draft left with Esc comes back when the key reopens the box. The cell's label reads "Ask in
-// branch" + "Alt Shift Q" with the key set (aria-keyshortcuts too), and "Ask in branch" alone with
+// branch" + "⌥⇧Q" with the key set (aria-keyshortcuts too), and "Ask in branch" alone with
 // the key removed in the profile.
 // The key is real X input when the run is headed (an X display: run it under xvfb-run, see
 // branch-qa.mjs); without a display the worker relays the command, which checks the page side only.
@@ -137,14 +137,14 @@ export default {
         const p = await hoverLabel(page);
         const cell = p?.cells.find((c) => c.id === 'branch');
         assert.equal(p?.tip?.text, 'Ask in branch', `${theme}: label`);
-        assert.equal(p?.tip?.kbd, 'Alt Shift Q', `${theme}: key hint`);
+        assert.equal(p?.tip?.kbd, '⌥⇧Q', `${theme}: key hint`);
         assert.ok(p?.tip?.kbdShown, `${theme}: key hint shown`);
         assert.equal(cell?.keys, KEY, `${theme}: aria-keyshortcuts`);
         await capture(page, 'shortcut-label', 1280, theme, { target: await labelArea(page, p), margin: 24 });
         assert.ok((await butter(page).pill()).tip, `${theme}: the label still shows after the shot`);
         await page.close();
       }
-      pass('shortcut: the cell’s label shows "Ask in branch" + "Alt Shift Q", and aria-keyshortcuts carries it');
+      pass('shortcut: the cell’s label shows "Ask in branch" + "⌥⇧Q", and aria-keyshortcuts carries it');
 
       // Spec story 8: the key works right after selecting, before the pill shows. ChatGPT's button
       // (which the pill follows) is held back, so the press reliably comes first; every frame until

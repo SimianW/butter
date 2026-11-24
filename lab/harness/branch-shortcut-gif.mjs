@@ -1,7 +1,7 @@
 // Records the Ask in branch key (#126) on the branch fixture, for a PR's before/after GIFs: the
 // quote selected, Alt+Shift+Q pressed as real X input (a caption shows the press), Esc, then Ask in
 // branch's cell hovered so its label shows. On a build with the key the box opens and the label reads
-// "Ask in branch" + "Alt Shift Q"; on one without, nothing happens and the label has no key.
+// "Ask in branch" + "⌥⇧Q"; on one without, nothing happens and the label has no key.
 // EXT_DIR picks the unpacked build (default this checkout's extension/), so the same steps run on
 // another build, e.g. a `git worktree` of main. Headed, so run it under an X display:
 //   EXT_DIR=/tmp/main/extension OUT=/tmp/before.gif \

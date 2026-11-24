@@ -19,7 +19,7 @@ export default {
     const selHover = await bookmark(2, 2, false, { keep: true });
     const selTip = await hoverCell('bookmark');
     check('with a selection, the Bookmark cell is named "Bookmark selection" and its label shows the key',
-      selHover.kept?.name === 'Bookmark selection' && selTip?.tip?.text === 'Bookmark selection' && selTip.tip.kbd === 'Alt Shift M',
+      selHover.kept?.name === 'Bookmark selection' && selTip?.tip?.text === 'Bookmark selection' && selTip.tip.kbd === '⌥⇧M',
       { name: selHover.kept?.name, tip: selTip?.tip });
     await page.screenshot({ path: `${shots}/button-selection-light.png`, clip: { x: selHover.b.x - 60, y: selHover.b.y - 50, width: 820, height: 260 } });
     await selHover.click();
