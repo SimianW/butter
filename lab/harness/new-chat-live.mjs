@@ -7,10 +7,10 @@
 // - `key-assigned`: Chrome reports Alt+Shift+O for `new-chat`;
 // - `project-chat`: from a project chat, lands on its project page without a reload, the visible
 //   composer labelled as the project page's own ("New chat in <project>") and focused;
-// - `project-page`: on a fresh project page with typed text, URL and text unchanged, composer focused;
+// - `project-page`: on an empty project page with typed text, URL and text unchanged, composer focused;
 // - `normal-chat`: from a normal chat, lands on / without a reload;
-// - `no-stray-key`: in that normal chat, the page saw no Alt+Shift+O keydown, and its draft is the
-//   same length when you go back (ChatGPT's type-to-focus never got the key);
+// - `no-stray-key`: in that normal chat, the page saw no Alt+Shift+O keydown, and a known draft is
+//   exactly the same text when you go back (ChatGPT's type-to-focus never got the key);
 // - `temporary`: from a Temporary Chat with turns, lands on an empty Temporary Chat; the line says
 //   whether that took a client-side navigation or a reload. It needs one send in Temporary Chat, so
 //   it runs only with TEMP_SEND=1 on a lab whose labs.json allows sends; otherwise a REPORT line.
@@ -27,7 +27,7 @@
 //   lab-restore --lab $LAB --owner <owner>; lab-lock release --lab $LAB --owner <owner>
 //
 // Output: PASS/FAIL/REPORT lines (URL shapes with ids masked, lengths and flags; never page text);
-// exit 1 on FAIL, 2 on a setup error. The report goes to notes/runs/<date>-new-chat-shortcut/.
+// exit 1 on FAIL (a key that cannot be confirmed too), 2 on a setup error. The report goes to notes/runs/<date>-new-chat-shortcut/.
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -69,12 +69,13 @@ const state = (page) =>
       turns: [...document.querySelectorAll('[data-turn-key]')].filter(shown).length,
       label: ed?.getAttribute('aria-label') ?? null,
       len: (ed?.innerText || '').trim().length,
+      text: ed?.innerText ?? '',
       focused: !!ed && (document.activeElement === ed || ed.contains(document.activeElement)),
       temporaryOn: !!document.querySelector('button[aria-label="Turn off temporary chat"]'),
       keysO: (window.__nc?.keys || []).filter((k) => k.code === 'KeyO' && k.alt).length,
     };
   }, ED);
-const brief = (s) => JSON.stringify({ ...s, href: shape(s.href), label: s.label ? (s.label.startsWith('New chat in ') ? 'New chat in <project>' : s.label) : null });
+const brief = ({ text: _text, ...s }) => JSON.stringify({ ...s, href: shape(s.href), label: s.label ? (s.label.startsWith('New chat in ') ? 'New chat in <project>' : s.label) : null });
 
 // Press the key as X input with the pointer on the tab strip (no window manager: X focus follows it).
 async function press(page, { body = true } = {}) {
@@ -101,10 +102,11 @@ let browser, context, page;
 try {
   ({ browser, context, page } = await startLab(L, lab, env, env.EXT));
   const worker = context.serviceWorkers().find((w) => w.url().startsWith('chrome-extension://'));
-  if (worker) {
+  if (!worker) verdict('key-assigned', false, 'worker not reachable over CDP, key not read');
+  else {
     const key = await worker.evaluate(() => chrome.commands.getAll()).then((cs) => cs.find((c) => c.name === 'new-chat')?.shortcut ?? '');
-    verdict('key-assigned', key === 'Alt+Shift+O', `Chrome reports ${JSON.stringify(key)}`);
-  } else report('new-chat key: worker not reachable over CDP, not read');
+    verdict('key-assigned', key === 'Alt+Shift+O', key ? `Chrome reports ${JSON.stringify(key)}` : 'no key assigned to new-chat');
+  }
 
   const projChat = L.fixture(lab, FIXTURE);
   const id = /\/g\/g-p-([0-9a-f]+)/.exec(projChat)?.[1];
@@ -115,17 +117,17 @@ try {
   await open(page, projPage);
   const home = await state(page);
   report(`project page loaded ${brief(home)}`);
-  if (home.turns || home.len) throw Error('the project page is not fresh (turns or a draft): left as it is');
+  if (home.turns || home.len) throw Error('the project page has turns or a draft): left as it is');
 
-  // ---- project-page: fresh, typed text, body focused → nothing but focus.
+  // ---- project-page: empty, typed text, body focused → nothing but focus.
   await page.locator(`${ED}:visible`).first().click();
   await page.keyboard.type(TEXT);
   await arm(page);
   await press(page);
   const pp = await state(page);
   report(`project-page after ${brief(pp)}`);
-  verdict('project-page', shape(pp.href) === shape(projPage) && !pp.reloaded && pp.len === TEXT.length && pp.focused && !pp.keysO,
-    `url ${shape(pp.href)}, reloaded ${pp.reloaded}, text ${pp.len}/${TEXT.length}, focused ${pp.focused}, page keydowns ${pp.keysO}`);
+  verdict('project-page', shape(pp.href) === shape(projPage) && !pp.reloaded && pp.text === TEXT && pp.focused && !pp.keysO,
+    `url ${shape(pp.href)}, reloaded ${pp.reloaded}, text ${pp.text === TEXT ? 'same' : `differs (${pp.text.length}/${TEXT.length})`}, focused ${pp.focused}, page keydowns ${pp.keysO}`);
   await clearComposer(page);
 
   // ---- project-chat → the project page, client-side, labelled and focused.
@@ -143,6 +145,14 @@ try {
   else {
     await open(page, new URL(normal, 'https://chatgpt.com').href);
     const nb = await state(page);
+    const DRAFT = 'butter stray-key marker';
+    const setDraft = async (text) => {
+      await clearComposer(page);
+      if (text) await page.keyboard.type(text);
+      await pause(800);
+    };
+    await setDraft(DRAFT);
+    await arm(page);
     await press(page);
     const nc = await state(page);
     report(`normal-chat before ${brief(nb)} after ${brief(nc)}`);
@@ -151,21 +161,34 @@ try {
     await page.goBack({ waitUntil: 'domcontentloaded' });
     await pause(3000);
     const back = await state(page);
-    verdict('no-stray-key', !nc.keysO && back.len === nb.len, `page keydowns ${nc.keysO}, draft ${nb.len} → ${back.len}`);
+    verdict('no-stray-key', !nc.keysO && back.text === DRAFT, `page keydowns ${nc.keysO}, draft ${back.text === DRAFT ? 'same' : `differs (${DRAFT.length} → ${back.text.length})`}`);
+    // Put the composer back to what it held before the check.
+    await setDraft(nb.text.trim());
   }
 
   // ---- temporary: needs a Temporary Chat with turns, so one send.
   if (env.TEMP_SEND !== '1') report('temporary: not run (needs one send in Temporary Chat; TEMP_SEND=1 on a lab that allows sends)');
   else {
     L.sendsAllowed(lab, true); // throws unless this lab's labs.json allows sends
-    await open(page, 'https://chatgpt.com/?temporary-chat=true');
-    await context.unrouteAll({ behavior: 'ignoreErrors' });
-    await page.locator(`${ED}:visible`).first().click();
-    await page.keyboard.type('Reply with the single word: ok');
-    await page.keyboard.press('Enter');
-    await page.locator('[data-turn-key]:visible').first().waitFor({ timeout: 60000 });
-    await pause(8000);
-    if (typeof (await L.sendGuard(context, lab)) !== 'function') throw Error('send guard not put back');
+    let guardBack = false;
+    try {
+      await open(page, 'https://chatgpt.com/?temporary-chat=true');
+      await context.unrouteAll({ behavior: 'ignoreErrors' });
+      await page.locator(`${ED}:visible`).first().click();
+      await page.keyboard.type('Reply with the single word: ok');
+      await page.keyboard.press('Enter');
+      await page.locator('[data-turn-key]:visible').first().waitFor({ timeout: 60000 });
+      await pause(8000);
+    } finally {
+      // Whatever happened above (timeout, throw), the send guard goes back before anything else.
+      try {
+        guardBack = typeof (await L.sendGuard(context, lab)) === 'function';
+      } catch {}
+    }
+    if (!guardBack) {
+      verdict('temporary', false, 'send guard could not be put back');
+      throw Error('send guard not put back');
+    }
     await arm(page);
     const tb = await state(page);
     await press(page);
