@@ -9,7 +9,10 @@ const extension = new URL('../extension/', import.meta.url).pathname;
 
 // The real service worker over a fake chrome. `shortcuts` is what chrome.commands.getAll reports;
 // `failSend` makes chrome.tabs.sendMessage reject (no content script in that tab).
-function worker({ shortcuts = { bookmark: 'Alt+Shift+M', branch: 'Alt+Shift+Q' }, failSend } = {}) {
+function worker({
+  shortcuts = { bookmark: 'Alt+Shift+M', branch: 'Alt+Shift+Q', 'new-chat': 'Alt+Shift+O' },
+  failSend,
+} = {}) {
   const listeners = [],
     commands = [],
     sent = [],
@@ -69,10 +72,12 @@ test('each listed command is relayed to the tab it was pressed in, by name', asy
   const w = worker();
   w.press('branch', tab);
   w.press('bookmark', { ...tab, id: 9 });
+  w.press('new-chat', { ...tab, id: 11 });
   await settle();
   assert.deepEqual(w.sent, [
     { tabId: 7, version: 1, type: 'butter-command', command: 'branch' },
     { tabId: 9, version: 1, type: 'butter-command', command: 'bookmark' },
+    { tabId: 11, version: 1, type: 'butter-command', command: 'new-chat' },
   ]);
 });
 
@@ -92,7 +97,8 @@ test('a tab that is not ChatGPT rejects the relay, and the worker swallows it', 
   process.on('unhandledRejection', onUnhandled);
   const w = worker({ failSend: true });
   w.press('branch', tab);
-  assert.equal(w.rejected.length, 1);
+  w.press('new-chat', { id: 3, url: 'https://example.com/' });
+  assert.equal(w.rejected.length, 2);
   await settle();
   await settle();
   process.off('unhandledRejection', onUnhandled);

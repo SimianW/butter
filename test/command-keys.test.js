@@ -121,5 +121,5 @@ test('a relayed command reaches its own handler only', () => {
 });
 
 test('the commands are a closed list', () => {
-  assert.deepEqual(plain(page().keys.COMMANDS), ['bookmark', 'branch']);
+  assert.deepEqual(plain(page().keys.COMMANDS), ['bookmark', 'branch', 'new-chat']);
 });

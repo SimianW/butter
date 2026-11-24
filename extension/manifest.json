@@ -83,6 +83,10 @@
     "branch": {
       "suggested_key": { "default": "Alt+Shift+Q", "mac": "Alt+Shift+Q" },
       "description": "__MSG_branchCommand__"
+    },
+    "new-chat": {
+      "suggested_key": { "default": "Alt+Shift+O", "mac": "Alt+Shift+O" },
+      "description": "__MSG_newChatCommand__"
     }
   },
   "action": {

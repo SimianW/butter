@@ -8,7 +8,7 @@
 //   Chrome reports ('' for none), since content scripts can't read chrome.commands.
 // A new command is one entry in COMMANDS, its manifest entry and its handler (`on`).
 (() => {
-  const COMMANDS = Object.freeze(['bookmark', 'branch']);
+  const COMMANDS = Object.freeze(['bookmark', 'branch', 'new-chat']);
 
   // A cell's key hint, from chrome.commands' `shortcut`: "Alt+Shift+Q" reads "Alt Shift Q", as the
   // mockup writes keys; macOS reports symbols ("⌥⇧Q"), shown as given; no key, no hint.
