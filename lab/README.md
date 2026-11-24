@@ -10,6 +10,9 @@ removing private data. Raw captures stay local.
 The live lab runs outside the repo: two headed Chromium instances, one per ChatGPT account, with
 locks, fixtures and a send guard. Its README, `~/.local/share/chatgpt-lab/README.md`, is the source
 of truth (it is kept out of the repo because it holds account chat URLs). Read it before any lab run.
+The lab exists on one machine. A copy of its folder on another machine has no browser and no
+logged-in profile: `lab status` there shows Chromium stopped, and it does not start. Send the lab
+run to the lab's machine, or stop and tell the user.
 Before starting a run, take a lock and wait for it, rather than polling `lock.d` yourself:
 
 ```sh

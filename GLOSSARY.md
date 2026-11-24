@@ -409,6 +409,13 @@ exits non-zero when any `FAIL` was printed; a `REPORT` line is a measurement tha
 _Avoid_: result line
 _Where_: `lab/README.md` (Rules for lab runs); `rail-tick-thin.mjs`, `dev-capture-live.mjs`
 
+**Recording**:
+A GIF of a visible behaviour happening, made by a harness script so the same steps run on another
+build. A bug claim has one; a PR with a visible change has a before and an after. The rules are in
+`docs/agents/recordings.md`.
+_Avoid_: screencast, demo (the demo videos in `docs/media/` are for the store page)
+_Where_: `rail-demo.mjs`, `nav-video.mjs`
+
 **Precondition**:
 What a live harness's scenario needs from the ones before it (the fixture loaded, two stored test
 bookmarks, a top-level list in the fixture), checked against the live page and store after `start`.
