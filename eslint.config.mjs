@@ -235,6 +235,7 @@ export default [
       'extension/seek/core-main.js',
       'extension/branch/logic.js',
       'extension/branch/run.js',
+      'extension/new-chat/logic.js',
       'extension/bookmarks/model.js',
       'extension/bookmarks/wash.js',
       'extension/bookmarks/session.js',
