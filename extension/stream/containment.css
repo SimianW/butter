@@ -42,6 +42,51 @@ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"]
 html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
   content-visibility: auto;
 }
+/* Veil (GLOSSARY.md): an answer block skipped since before it ever rendered computes opacity 0, so
+   ChatGPT's paint-readiness telemetry, whose walk returns at an element with computed opacity "0",
+   does not force style and layout inside it. A skipped block paints nothing either way.
+   stream/offscreen.js sets data-butter-veil when the block is skipped and removes it before the
+   block renders. The selectors are the two rules above for unmarked blocks with the attribute
+   added, so a block that leaves them (and renders, without a state-change event) is never veiled
+   by an attribute left on it. Screen only: print is never veiled. */
+@media screen {
+  html:not([data-butter-off~='cv'])
+    [data-talvt-turn-state='in_progress']
+    [data-markdown-text-style='assistant-message']
+    > [data-butter-veil]:not([data-dil-source-message-id]):not([data-wide-block]):not(
+      [class*='TableFrame-']
+    ),
+  html:not([data-butter-off~='cv'])
+    [data-talvt-turn-state='in_progress']
+    [data-markdown-text-style='assistant-message']
+    [class*='DilResponseRoot']
+    > [data-butter-veil]:not([data-wide-block]):not([class*='TableFrame-']),
+  html:not([data-butter-off~='cv'])
+    [data-markdown-text-style='assistant-message']
+    > [data-butter-veil][data-butter-unrendered]:not([data-dil-source-message-id]):not(
+      [data-wide-block]
+    ):not([class*='TableFrame-']),
+  html:not([data-butter-off~='cv'])
+    [data-markdown-text-style='assistant-message']
+    [class*='DilResponseRoot']
+    > [data-butter-veil][data-butter-unrendered]:not([data-wide-block]):not(
+      [class*='TableFrame-']
+    ) {
+    opacity: 0;
+  }
+}
+
+/* Neither the veil nor its removal may start an opacity transition when ChatGPT's styles put one
+   on a block: a fade from opacity 0 would show a rendered block blank, and a transition start in
+   the turn schedules another telemetry sample. Transitions are off on a veiled block, and for a
+   frame after stream/offscreen.js unveils it (data-butter-unveiled). The first selector also
+   covers a veiled block whose answer completes: it renders in ChatGPT's completion task, before
+   the marker unveils it. An attribute left on a block outside the veil's rules only turns its
+   transitions off. */
+html:not([data-butter-off~='cv']) [data-butter-veil],
+[data-butter-unveiled] {
+  transition: none !important;
+}
 
 /* With content-visibility skipping on, the browser's scroll anchoring is off on the chat's content.
    Chromium's anchoring, adjusting for turns and blocks that skip or render, moved a long chat to
