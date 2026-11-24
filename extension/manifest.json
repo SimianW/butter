@@ -47,7 +47,9 @@
         "branch/run.js",
         "branch/page.js",
         "branch/ui.js",
-        "branch/content.js"
+        "branch/content.js",
+        "new-chat/logic.js",
+        "new-chat/content.js"
       ],
       "run_at": "document_start"
     },
@@ -68,7 +70,8 @@
         "seek/preview-texts-main.js",
         "seek/landing-main.js",
         "seek/seek-diagnostics-main.js",
-        "seek/preview-main.js"
+        "seek/preview-main.js",
+        "new-chat/go-main.js"
       ],
       "world": "MAIN",
       "run_at": "document_start"

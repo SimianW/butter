@@ -204,6 +204,18 @@ export default [
     languageOptions: { globals: { require: 'readonly' } }, // falls back to logic.js under node
   },
   {
+    // New chat (#163): after page/reader.js, commands/keys.js, branch/page.js and new-chat/logic.js.
+    files: ['extension/new-chat/content.js'],
+    languageOptions: {
+      globals: {
+        ButterNewChat: 'readonly', // new-chat/logic.js
+        ButterPageReader: 'readonly', // page/reader.js
+        ButterBranchPage: 'readonly', // branch/page.js
+        ButterCommandKeys: 'readonly', // commands/keys.js
+      },
+    },
+  },
+  {
     // Fall back to allowlist.js under node.
     files: ['extension/dev/sources.js', 'extension/dev/recorder.js'],
     languageOptions: { globals: { require: 'readonly' } },
