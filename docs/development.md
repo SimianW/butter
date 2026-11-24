@@ -68,15 +68,18 @@ right before `seek/preview-main.js`, which calls their factories.
   (default `after`) picks its panels: default, paused, rail fault, layouts pending, clear confirm,
   branch off, branch fault, dark and Chinese, where that side has them. Each panel must match its
   state's height and differ in under 0.1% of pixels (by more than 24 in a channel), with the
-  version label and the storage rows' saved lines masked; the run prints every panel's height and diff ratio,
-  then fails with a summary if any differ.
+  version label and the storage rows' saved lines masked; the run prints every panel's height and diff ratio.
+  That mockup draws the single-page popup from before #158, so its panels no longer match: the
+  comparison is historical and report-only, and never fails the run. `BUTTER_EXPERIMENTAL_MOCKUP`
+  is the current visual check, and fails the run if a compared panel differs.
   The same run then builds the dev zip (`BUTTER_DEV_ZIP` names an existing one; `BUTTER_DEV=0` skips
   it), loads it unpacked in its own profile with the save-bug binding seeded, and captures the dev
   states (recording, just saved, not on a ChatGPT tab, the tallest state, Chinese recording and
   tallest) in both themes, each at most 600 px with the dev row unclipped. It also drives the card:
   New round survives a reload, Open round folder, and the save button through the real worker.
   `BUTTER_DEV_MOCKUP=<path>` (`gh issue artifact download 32 1 -R SimianW/butter`) compares the
-  English and dark dev states with that mockup's `dev-*-after` panels the same way.
+  English and dark dev states with that mockup's `dev-*-after` panels the same way; it too draws
+  the pre-#158 popup, so it is historical and report-only.
   `popup-probes.mjs` checks status failures with a fixture, and `popup-live.mjs` checks live switches
   in an existing chat. The probe/live scripts need `extension/` loaded in the shared lab browser first (see `lab/README.md`); acquire its lock before using them. The QA script starts its own browser.
 - Ask in branch: `test/branch-logic.test.js`, `test/branch-rules.test.js` (hidden-button rules,

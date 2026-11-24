@@ -23,7 +23,9 @@ const browser = await chromium.launchPersistentContext(profile, {
 const errors = [], requests = [], files = [], comparisons = [], heights = {}, liveRects = {}, cleanup = [];
 const { compareMockup, compareFigures } = mockupComparer({ browser, shots, profile, heights, liveRects, errors });
 // BUTTER_REDESIGN_MOCKUP=<#35 Mockup.html> compares built states with the mockup's panels on the
-// BUTTER_REDESIGN_SIDE (`before` or `after`, default `after`). Panel key -> built state.
+// BUTTER_REDESIGN_SIDE (`before` or `after`, default `after`). Panel key -> built state. Historical
+// and report-only: that mockup draws the single-page popup from before #158, so its panels no
+// longer match; BUTTER_EXPERIMENTAL_MOCKUP is the current visual check.
 const redesignMockup = process.env.BUTTER_REDESIGN_MOCKUP, redesignSide = process.env.BUTTER_REDESIGN_SIDE || 'after';
 assert.ok(['before', 'after'].includes(redesignSide), `BUTTER_REDESIGN_SIDE must be before or after, not ${redesignSide}`);
 const redesignStates = {
@@ -192,10 +194,11 @@ try {
     }
   }
   const redesignRefs = redesignMockup
-    ? await compareMockup(redesignMockup, Object.entries(redesignStates).map(([key, state]) => [`${key}-${redesignSide}`, state, redesignExcluded[`${key}-${redesignSide}`]]), `Redesign mockup, ${redesignSide} panels`)
+    ? await compareMockup(redesignMockup, Object.entries(redesignStates).map(([key, state]) => [`${key}-${redesignSide}`, state, redesignExcluded[`${key}-${redesignSide}`]]), `Redesign mockup (#35), ${redesignSide} panels (historical, report-only)`)
     : [];
   const experimentalRefs = experimentalMockup
-    ? await compareFigures(experimentalMockup, Object.entries(experimentalPanels), 'Experimental page mockup (#158), in-scope panels')
+    // Only the panels whose state this run built (BUTTER_CASES may leave some out).
+    ? await compareFigures(experimentalMockup, Object.entries(experimentalPanels).filter(([, state]) => heights[state]), 'Experimental page mockup (#158), in-scope panels')
     : [];
   // One screenshot of the real popup per panel, named by the panel's id.
   await fs.mkdir(`${shots}/panels`, { recursive: true });
@@ -294,14 +297,10 @@ try {
   await fs.writeFile(`${shots}/geometry.json`, JSON.stringify(comparisons, null, 2));
   await fs.writeFile(`${shots}/heights.json`, JSON.stringify({ heights, redesignRefs, experimentalRefs, fresh, devRefs: dev?.refs ?? [], devRows: dev?.rows ?? {} }, null, 2));
   await fs.writeFile(`${shots}/screenshots.json`, JSON.stringify({ popupUrl, files, errors, remoteRequests: [] }, null, 2));
-  // Fail only after every panel has been compared and reported.
-  const mismatched = redesignRefs.filter(r => r.ok === false && !r.excluded);
-  assert.equal(mismatched.length, 0, `${mismatched.length} of ${redesignRefs.length} ${redesignSide} panels differ from the redesign mockup: ${mismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
+  // Fail only after every panel has been compared and reported; #35's and #32's are report-only.
   const experimentalMismatched = experimentalRefs.filter(r => r.ok !== true);
   assert.equal(experimentalMismatched.length, 0, `${experimentalMismatched.length} of ${experimentalRefs.length} panels differ from the Experimental page mockup: ${experimentalMismatched.map(r => r.skipped ? `${r.panel} (skipped: ${r.skipped})` : `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  const devMismatched = (dev?.refs ?? []).filter(r => r.ok === false && !r.excluded);
-  assert.equal(devMismatched.length, 0, `${devMismatched.length} of ${dev?.refs.length} dev panels differ from the #32 mockup: ${devMismatched.map(r => `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, a fresh install with the rail and Bookmarks off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${Object.keys(experimentalPanels).length} Experimental page mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.filter(r => r.ok).length} redesign-mockup matches${dev ? `, ${dev.refs.filter(r => r.ok).length} dev-mockup matches, dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, a fresh install with the rail and Bookmarks off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${experimentalMockup ? experimentalRefs.length : Object.keys(experimentalPanels).length} Experimental page mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.length} redesign-mockup panels compared (historical, report-only)${dev ? `, ${dev.refs.length} dev-mockup panels compared (historical, report-only), dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
   for (const dir of cleanup) await fs.rm(dir, { recursive: true, force: true });
@@ -311,7 +310,8 @@ try {
 // Builds the dev zip (python3 scripts/package.py --dev) unless BUTTER_DEV_ZIP names one, loads it
 // unpacked in its own headless profile, and captures the dev states. BUTTER_DEV_MOCKUP=<#32
 // Mockup.html> (gh issue artifact download 32 1 -R SimianW/butter) compares the English and dark
-// states with its dev-*-after panels. BUTTER_DEV=0 skips the dev build.
+// states with its dev-*-after panels; historical and report-only, since that mockup draws the
+// single-page popup from before #158. BUTTER_DEV=0 skips the dev build.
 async function devPopup() {
   const zip = process.env.BUTTER_DEV_ZIP || execFileSync('python3', [path.join(repo, 'scripts/package.py'), '--dev'], { encoding: 'utf8' }).split('\n')[0].trim();
   const unpacked = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-dev-')); cleanup.push(unpacked);
@@ -437,7 +437,7 @@ async function devPopup() {
     assert.equal(heights['d4-en-tallest-light'], 456);
     console.log('Dev states:');
     for (const [name, , color] of devCases) console.log(`  ${`${name}-${color}`.padEnd(24)} ${heights[`${name}-${color}`]} px  row "${rows[`${name}-${color}`].text}"`);
-    const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels') : [];
+    const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels (historical, report-only)') : [];
 
     // ---- actions, keyboard, focus and motion ----
     await page.bringToFront();
