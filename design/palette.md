@@ -1,12 +1,14 @@
 # Butter's palette
 
 The custom properties at the top of `extension/popup/popup.css` are the implementation of record.
-The consent card (`extension/consent/layout-consent.js`) copies the tokens it uses from them. If
+The card shell on the ChatGPT page (`extension/consent/card.js`, the bookmark notice's card) copies
+the tokens it uses from them. If
 this page and the stylesheet disagree, the stylesheet wins. Fix the page.
 
 ## Which surface uses which palette
 
-- **Butter's palette:** the popup and the "remember layouts" consent card on the ChatGPT page.
+- **Butter's palette:** the popup and the bookmark notice's card on the ChatGPT page. (The
+  "remember layouts" consent card that also used it was removed in #158.)
 - **ChatGPT's colours:** the question rail and Ask in branch. They sit inside ChatGPT's page, so
   they take its theme variables, not these tokens. The rail's bookmark marks are the exception;
   see [The rail's bookmark dot](#the-rails-bookmark-dot).
@@ -30,20 +32,20 @@ name. The dot beside the rail's earlier-history dots takes the same colour.
 | Token            | Light                   | Dark                     | Used for                                                                                |
 | ---------------- | ----------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
 | `--paper`        | `#f6f1e3`               | `#1d1914`                | popup background, under the noise texture                                               |
-| `--card`         | `#fffdf6`               | `#26211b`                | features and layouts cards, paused master card, consent card                            |
+| `--card`         | `#fffdf6`               | `#26211b`                | features and layouts cards, paused master card, the notice's card                      |
 | `--ink`          | `#1b170f`               | `#ece3cf`                | titles, footer links, the clear question                                                |
-| `--ink-2`        | `#5c5240`               | `#b3a78e`                | descriptions, icons, consent body and No thanks                                         |
+| `--ink-2`        | `#5c5240`               | `#b3a78e`                | descriptions, icons, the notice's body and Undo                                         |
 | `--ink-3`        | `#776c58`               | `#948870`                | muted text: version label, paused rows, paused status                                   |
-| `--line`         | `rgb(27 23 15 / .16)`   | `rgb(236 227 207 / .14)` | card borders, small buttons, segmented control, consent card border                     |
+| `--line`         | `rgb(27 23 15 / .16)`   | `rgb(236 227 207 / .14)` | card borders, the Experimental row's and card's dashed borders, small buttons, segmented control, the notice's card border |
 | `--hair`         | `rgb(27 23 15 / .10)`   | `rgb(236 227 207 / .09)` | dividers between rows and above the layouts card's second line                          |
 | `--edge`         | `#1b170f`               | `#4f4638`                | master card outline and hard shadow, switch on track, selected language segment (light) |
-| `--butter`       | `#fbe07a`               | `#e3c766`                | master card on, switch knob on, selected segment text (light), Sounds good              |
+| `--butter`       | `#fbe07a`               | `#e3c766`                | master card on, switch knob on, selected segment text (light), the notice's Got it     |
 | `--butter-deep`  | `#f2c23a`               | `#c9a53f`                | focus ring, link underlines, storage bar fill, dark-theme switch on track               |
 | `--butter-light` | `#fff4c2`               | `#2f2816`                | the consent note band, and nothing else                                                 |
 | `--on-butter-2`  | `#4d3d10`               | `#3f3312`                | master card status line while on                                                        |
 | `--warn`         | `#b8321a`               | `#f0917a`                | fault text and icon, destructive Clear, the dev build's recording dot                   |
 | `--warn-bg`      | `#ffe3d8`               | `#3d241b`                | destructive Clear background                                                            |
-| `--track`        | `#e3dac3`               | `#3a3328`                | switch off track, storage bar, No thanks hover                                          |
+| `--track`        | `#e3dac3`               | `#3a3328`                | switch off track, storage bar, the notice's Undo hover                                  |
 | `--knob`         | `#fffdf6`               | `#1d1914`                | switch knob off (`--paper` is the dark-theme knob on)                                   |
 | `--knob-shadow`  | `rgb(0 0 0 / .22)`      | `rgb(0 0 0 / .22)`       | the knob's 1 px shadow                                                                  |
 | `--highlight`    | `rgb(255 255 255 / .7)` | `rgb(255 255 255 / .35)` | the master card's highlight bar                                                         |
@@ -51,6 +53,10 @@ name. The dot beside the rail's earlier-history dots takes the same colour.
 The dev build's popup card (`extension/dev/popup.css`, dev zip only) uses the same tokens: a
 dashed `--line` border, `--ink-2` text and icons, `--ink-3` with a hollow `--ink-3` dot while not
 recording, and a pulsing `--warn` dot while recording. The dot is the card's only new use of a token.
+
+The Experimental row and the Experimental page's card (#158) take the same sign: a dashed `--line`
+border; the row has no fill, `--ink-2` text and `--ink-3` icon, chevron and count (`--ink` and
+`--ink-2` on hover), and the page's back title is `--ink` at the master card's title type.
 
 Dark ink on butter: text on a butter surface is `#1b170f` in both themes. This is the only literal
 colour in state rules.

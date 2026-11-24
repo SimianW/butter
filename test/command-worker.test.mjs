@@ -26,6 +26,7 @@ function worker({ shortcuts = { bookmark: 'Alt+Shift+M', branch: 'Alt+Shift+Q' }
         id: 'butter',
         getURL: (file = '') => `chrome-extension://butter/${file}`,
         onMessage: { addListener: (fn) => listeners.push(fn) },
+        onInstalled: { addListener() {} },
       },
       commands: {
         getAll: async () => [

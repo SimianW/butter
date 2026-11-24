@@ -311,7 +311,8 @@ The worker serializes operations, prunes expired records, and caps serialized re
 size, including stored metadata; IndexedDB's physical/index overhead is browser-dependent.
 `unlimitedStorage` removes Chrome's quota/eviction risk; Butter still enforces its own limit.
 `ButterStatus.normalize` keeps `opts.layout` off until the user grants `layoutConsent`
-through the in-page card or popup switch. Pending or declined consent prevents persisted
+by switching layouts on in the popup's Experimental page (the in-page consent card was removed in
+#158; an answer given there stays recorded). Pending or declined consent prevents persisted
 geometry reads/writes. Setting layout false deletes every account's saved layouts and stops
 persisted reads/writes while keeping the in-session cache. Clear increments a durable generation
 so delayed writes from other tabs cannot repopulate cleared data. The bridge retires disk-backed

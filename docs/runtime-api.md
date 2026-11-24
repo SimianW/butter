@@ -38,7 +38,8 @@ its original result; query usage again if subsequent measurements may already ha
 
 `layoutConsent` starts as `pending`, and `ButterStatus.normalize` keeps `opts.layout` false
 unless consent is `granted` and the saved layout option is not false. Persisted reads/writes
-require both. The in-page card asks first; the popup switch also records consent. While pending,
+require both. Only the popup's layouts switch, on its Experimental page, records consent; no card
+on the ChatGPT page asks. While pending,
 usage reports zero and no layout data is saved. Setting layout false deletes layouts for all
 accounts and stops reads/writes; it is independent of the master optimization switch.
 The popup shows usage on the second line of Remember long-chat layouts, with Clear, and asks before it clears.
@@ -257,7 +258,7 @@ The popup uses the layout runtime API above, retries the same request three time
 the same UUID when retrying clear. Clear confirms inline and shows completion for two seconds.
 Usage uses decimal KB/MB and the 50,000,000-byte payload cap. Layout-off still deletes saved
 layouts through the existing worker listener. See `design/icon/REGENERATING.md` for icon regeneration
-and [`design/palette.md`](../design/palette.md) for the popup and consent card's colours, type
+and [`design/palette.md`](../design/palette.md) for the popup's and the bookmark notice's colours, type
 and contrast ratios.
 
 ## Dev card

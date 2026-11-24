@@ -29,7 +29,11 @@ function worker(
     Date: { now },
     setTimeout: schedule,
     chrome: {
-      runtime: { id: 'test', onMessage: { addListener: (fn) => listeners.push(fn) } },
+      runtime: {
+        id: 'test',
+        onMessage: { addListener: (fn) => listeners.push(fn) },
+        onInstalled: { addListener() {} },
+      },
       commands: { onCommand: { addListener() {} } },
       storage: { local: area(local), session: area(session), onChanged: { addListener() {} } },
       tabs: {

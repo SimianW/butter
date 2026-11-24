@@ -16,8 +16,10 @@ const ACCOUNT = 'a'.repeat(64),
   CONV = '11111111-2222-4333-8444-555555555555';
 const EXCERPT = 'Postgres skips an index when it expects';
 
+// The rail and Bookmarks start off on a new install (#158); these tabs start with both on, over
+// whatever `initial` says.
 function sharedStorage(initial) {
-  let butter = initial;
+  let butter = { ...initial, opts: { rail: true, bookmark: true, ...initial?.opts } };
   const listeners = [];
   return {
     storage: {

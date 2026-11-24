@@ -140,7 +140,7 @@ const shot = async (page, file, masks = []) => {
       [data-butter-capture], [data-butter-capture] *,
       chatgpt-butter-pill, chatgpt-butter-pill *,
       chatgpt-butter-branch, chatgpt-butter-branch * { visibility: visible !important; }
-      chatgpt-butter-consent, chatgpt-butter-nav { display: none !important; }`,
+      chatgpt-butter-nav { display: none !important; }`,
   });
   return file;
 };

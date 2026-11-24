@@ -1,8 +1,8 @@
-// ISOLATED world. The shell Butter's cards share: the layout consent card
-// (consent/layout-consent.js) and the bookmark notification (bookmarks/notice.js). One look,
+// ISOLATED world. The shell for Butter's cards on the page: today only the bookmark notification
+// (bookmarks/notice.js; the layout consent card that also used it was removed in #158). One look,
 // palette, font, width and themes; each caller fills in its own copy and buttons.
-// Bottom-right cards (the consent card) rise in from below and stack upwards in the order they
-// were created, so they never overlap. A top-right card (`top`, the notification, #77) sits 12 px
+// Bottom-right cards rise in from below and stack upwards in the order they were created, so they
+// never overlap; no caller places one there now. A top-right card (`top`, the notification, #77) sits 12 px
 // below ChatGPT's 52 px header and 8 px left of the rail, outside that stack; it slides 16 px in
 // from the right while it fades in, and under reduced motion only fades.
 (() => {

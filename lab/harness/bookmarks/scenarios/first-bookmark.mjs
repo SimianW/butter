@@ -1,6 +1,6 @@
 // The first bookmark ever (#56, #77): the notification expanded with the privacy text at top right
-// (12 px below the header, 8 px left of the rail, 300 px, Butter's font), staying past 4 s, the
-// pending consent card staying bottom right apart from it; Undo deletes the bookmark and its dot,
+// (12 px below the header, 8 px left of the rail, 300 px, Butter's font), staying past 4 s, with
+// no layout consent card beside it while consent is pending (#158 removed that card); Undo deletes the bookmark and its dot,
 // and the next save expands it again (light and dark, English and Chinese, with layout consent
 // pending, declined, granted and switched off). Got it leaves only the small card on a third save
 // and after a reload; the pointer on the card holds it.
@@ -9,17 +9,13 @@ const TURN = 6,
 
 export default {
   name: 'first-bookmark',
-  description: 'The first bookmark ever (#56, #77): the expanded card, consent pending beside it, Undo, Got it, then the small card',
+  description: 'The first bookmark ever (#56, #77): the expanded card, no consent card while pending (#158), Undo, Got it, then the small card',
   settings: { bookmarkNotice: undefined },
   async run(qa) {
     const { open, stored, rail, page, shots, check, waitNote, noteCard, pressNote, worker, settings, bookmark } = qa;
-    const consentCard = () =>
-      page.evaluate(() => {
-        const host = document.querySelector('chatgpt-butter-consent');
-        if (!host || host.hidden) return null;
-        const r = host.shadowRoot.querySelector('.card').getBoundingClientRect();
-        return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, z: getComputedStyle(host).zIndex };
-      });
+    // Butter's consent hosts on the page: none since #158 removed the layout consent card.
+    const consentHosts = () =>
+      page.evaluate(() => [...document.querySelectorAll('*')].map((e) => e.localName).filter((t) => /^chatgpt-butter-.*consent/.test(t)));
     const acknowledged = () =>
       worker.evaluate(() => chrome.storage.local.get('butter').then(({ butter }) => butter.bookmarkNotice));
     const COPY = {
@@ -61,12 +57,10 @@ export default {
           n.font.includes('ButterConsentNunito'),
         { top: n.top, right: 1400 - n.right, railInset: n.railInset, width: n.width, z: n.z });
       if (run.consent === 'pending') {
-        await page.waitForSelector('chatgpt-butter-consent[data-visible]', { state: 'attached', timeout: 5000 });
-        await page.waitForTimeout(400);
-        const [m, k] = [await noteCard(), await consentCard()];
-        check(`first bookmark (${name}): the consent card stays bottom right, apart from the notification`,
-          k && m.shown && Math.round(1400 - k.right) === 30 && Math.round(900 - k.bottom) >= 82 && m.bottom < k.top,
-          { notice: m, consent: k });
+        // The removed card showed 1 s after load.
+        await page.waitForTimeout(1400);
+        const hosts = await consentHosts();
+        check(`first bookmark (${name}): no consent card shows beside the notification`, hosts.length === 0 && (await noteCard()).shown, hosts);
       }
       if (i === 0) {
         await page.waitForTimeout(4500);

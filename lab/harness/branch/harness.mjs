@@ -58,6 +58,9 @@ export async function launchBranch({ shots, defer, keys = false, verbose = !!pro
       lang: 'en',
       layoutConsent: 'declined',
       ...value,
+      // The rail and Bookmarks start off on a new install (#158); the pill's Bookmark action and
+      // the scenarios assume both on unless they say otherwise.
+      opts: { rail: true, bookmark: true, ...value?.opts },
     });
   const failures = async () =>
     (await worker.evaluate(() => chrome.storage.session.get('butterFailures'))).butterFailures || {};
