@@ -120,13 +120,15 @@ export async function checkPages(page) {
   // Re-renders play nothing.
   await page.evaluate(() => render());
   assert.deepEqual(await swap(), []);
-  // Reduced motion: no swap, and the back chevron's nudge has no transition.
+  // Reduced motion: no swap, and the back chevron neither nudges on hover nor transitions.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.keyboard.press('Enter');
   assert.equal(await showing(), 'experimental');
   assert.deepEqual(await swap(), [], 'reduced motion swaps without motion');
   assert.equal(await focused(), 'back');
   assert.equal(await page.locator('.back .chev').evaluate((e) => getComputedStyle(e).transitionDuration), '0s');
+  await page.locator('.back').hover();
+  assert.equal(await page.locator('.back .chev').evaluate((e) => getComputedStyle(e).transform), 'none', 'reduced motion: the back chevron stays put on hover');
   await page.locator('.back').click();
   assert.deepEqual(await swap(), []);
   assert.equal(await focused(), 'exp-row');

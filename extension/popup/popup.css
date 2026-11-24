@@ -493,6 +493,9 @@ button {
   .back .chev {
     transition: none;
   }
+  .back:hover .chev {
+    transform: none;
+  }
 }
 
 /* Fault: a broken group explains itself in its own row. */
