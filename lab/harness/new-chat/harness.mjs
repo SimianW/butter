@@ -1,4 +1,4 @@
-// The new chat harness: one Chromium with Butter for the run, and for each scenario a fresh page on
+// The new chat harness: one Chromium with Butter for the run, and for each scenario a new page on
 // the fixture (fixture.mjs) at the route it declares. Every chatgpt.com request is answered with
 // the fixture page; any other request is aborted and reported as foreign, which fails the run.
 // With `keys` (an X display) it runs headed and xtest-keys.py presses the `new-chat` command's key

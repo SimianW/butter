@@ -17,10 +17,10 @@
   // - url: the page's URL;
   // - paused: Butter's main switch is off;
   // - work: the page is in Work mode (ButterBranch.isWorkMode);
-  // - fresh: no turns are shown (the page holds no sent message yet).
+  // - noTurns: no turns are shown (the page holds no sent message yet).
   // Returns { kind: 'none' }, { kind: 'focus' } (focus the visible message box) or
   // { kind: 'go', path } (navigate to path). The rules are checked in this order.
-  const decide = ({ url, paused, work, fresh } = {}) => {
+  const decide = ({ url, paused, work, noTurns } = {}) => {
     let page;
     try {
       page = new URL(url);
@@ -30,10 +30,11 @@
     if (page.origin !== 'https://chatgpt.com' || paused || work) return NONE;
     const path = page.pathname;
     const project = PROJECT.exec(path)?.[1];
-    if (project) return PROJECT_PAGE.test(path) && fresh ? FOCUS : go(`/g/g-p-${project}/project`);
+    if (project)
+      return PROJECT_PAGE.test(path) && noTurns ? FOCUS : go(`/g/g-p-${project}/project`);
     if (page.searchParams.get('temporary-chat') === 'true')
-      return fresh ? FOCUS : go('/?temporary-chat=true');
-    if (path === '/' && fresh) return FOCUS;
+      return noTurns ? FOCUS : go('/?temporary-chat=true');
+    if (path === '/' && noTurns) return FOCUS;
     return go('/');
   };
 

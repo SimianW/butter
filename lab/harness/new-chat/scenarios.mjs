@@ -1,5 +1,5 @@
 // The new chat harness's scenarios (#163), in run order: the spec's fixture cases. Each starts on a
-// fresh page at its `route` (harness.mjs) and states what the reader sees after the key: the URL,
+// new page at its `route` (harness.mjs) and states what the reader sees after the key: the URL,
 // whether the page reloaded, the visible message box (label, text, focus) and whether the page
 // itself saw the key (it must not: the Chrome command takes it).
 import { PROJECT, CHAT, GPT } from './fixture.mjs';
@@ -36,13 +36,13 @@ const goes = (name, route, to, { scene, label = 'Ask ChatGPT' } = {}) => ({
 // the end of the text.
 const focuses = (name, route) => ({
   name,
-  description: `fresh ${route} with typed text → URL and text unchanged, composer focused`,
+  description: `${route} without turns with typed text → URL and text unchanged, composer focused`,
   route,
   async run(t) {
     await t.type(DRAFT);
     await t.blur();
     const before = await t.state();
-    t.check(`${name}: starts fresh, composer not focused`, before.turns === 0 && !before.focused, before);
+    t.check(`${name}: starts empty, composer not focused`, before.turns === 0 && !before.focused, before);
     await t.press();
     const s = await t.state();
     t.check(`${name}: URL unchanged`, s.route === route, { route: s.route });
@@ -98,7 +98,7 @@ export const scenarios = [
   goes('custom-gpt', `/g/g-${GPT}/c/${CHAT}`, '/'),
   focuses('project-page', PROJECT_PAGE),
   focuses('home', '/'),
-  focuses('temporary-fresh', '/?temporary-chat=true'),
+  focuses('temporary-empty', '/?temporary-chat=true'),
   nothing('work', `/g/g-p-${PROJECT}/c/${CHAT}`, { scene: 'work' }),
   nothing('paused', `/g/g-p-${PROJECT}/c/${CHAT}`, { settings: { enabled: false } }),
 ];

@@ -30,7 +30,7 @@
       paused: document.documentElement.hasAttribute('data-butter-disabled'),
       work: P.work(),
       // A client-side navigation leaves the old chat's turns in the DOM, hidden: only shown ones count.
-      fresh: !R.turns().some(R.visible),
+      noTurns: !R.turns().some(R.visible),
     });
     if (action.kind === 'focus') focus();
     // ChatGPT's router lives in the main world: new-chat/go-main.js navigates there. ChatGPT
