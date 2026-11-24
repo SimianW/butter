@@ -95,7 +95,7 @@ Both builds exited 1.
 - **Head reference, 11-19 `live-recheck/wheel-ats12.log`:** 4 of 4 PASS, 57, 57, 25 and 57 steps,
   scrollHeight 10306–10358.
 
-## L5: typing (`ats12`, 41 keys starting 3.1 s after the first turn)
+## L5: typing (`ats12`, 44 keys, 41 characters and 3 Backspace, starting 3.1 s after the first turn)
 
 | | pvh | head (typing part of the L1 head run) |
 |---|---|---|

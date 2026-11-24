@@ -113,23 +113,31 @@ function startVeil() {
       V.n++; V.onBlock += blocks;
       if (veiled || op0) { V.hit++; V.frames.push({ i: V.n, t: Math.round(performance.now()), phase: V.phase, veiled, op0 }); }
     }
-    requestAnimationFrame(tick);
+    V.raf = requestAnimationFrame(tick);
   };
   V.tick = tick;
-  requestAnimationFrame(tick);
+  V.raf = requestAnimationFrame(tick);
 }
-function stopVeil() { const V = window.__veilProbe; V.on = false; return { n: V.n, hit: V.hit, onBlock: V.onBlock, frames: V.frames, up: V.up, down: V.down }; }
-// A scrollTop write to the middle of the streamed answer (the last turn), then the test for 30 frames.
+// Cancels the sampler's queued frame, so a later jumpMid runs one sampling loop, not two.
+function stopVeil() {
+  const V = window.__veilProbe;
+  V.on = false;
+  cancelAnimationFrame(V.raf);
+  return { n: V.n, hit: V.hit, onBlock: V.onBlock, frames: V.frames, up: V.up, down: V.down };
+}
+// A scrollTop write to the middle of the streamed answer (the last turn), then the test for 30
+// frames (at most 300 frames: n counts only frames with the scroller and an answer column).
 async function jumpMid() {
   const s = [...document.querySelectorAll('.thread-scroll-container')].find(x => x.clientHeight > 0);
   const t = [...s.querySelectorAll('[data-turn-key]')].at(-1), V = window.__veilProbe;
   const sr = s.getBoundingClientRect(), tr = t.getBoundingClientRect();
   Object.assign(V, { on: true, phase: 'mid', n: 0, hit: 0, onBlock: 0, frames: [] });
   const from = s.scrollTop;
-  requestAnimationFrame(V.tick);
+  V.raf = requestAnimationFrame(V.tick);
   s.scrollTop = Math.round(s.scrollTop + tr.top - sr.top + tr.height / 2 - s.clientHeight / 2);
   const to = s.scrollTop;
-  await new Promise(res => { const f = () => (V.n >= 30 ? res() : requestAnimationFrame(f)); requestAnimationFrame(f); });
+  let k = 0;
+  await new Promise(res => { const f = () => (V.n >= 30 || ++k >= 300 ? res() : requestAnimationFrame(f)); requestAnimationFrame(f); });
   const r = window.__veilStop();
   return { ...r, from: Math.round(from), to: Math.round(to) };
 }

@@ -209,6 +209,11 @@ function installUx(cfg) {
   }, 250);
 }
 
+// The harness's stream-no-jump rule for one sample: scrollTop fell by more than a viewport since the
+// last sample. uxActs (window.__ux.acts.length; 0 without UX) > 0: the probe has written scrollTop
+// itself (u1, u2, u3), so the harness stops counting.
+export const isStreamDrop = (lastY, s, uxActs = 0) => !uxActs && lastY != null && !!s && lastY - s.y > s.vh;
+
 async function waitFor(page, fn, ms) {
   for (const t0 = Date.now(); Date.now() - t0 < ms; await pause(50)) if (await page.evaluate(fn).catch(() => false)) return true;
   return false;

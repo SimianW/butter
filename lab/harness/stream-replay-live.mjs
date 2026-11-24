@@ -33,11 +33,11 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
 import { installScrollProbe } from './rail-jump-scroll-probe.mjs';
-import { startLafProbe, stopLafProbe, summarizeLaf, fmtLaf } from './stream-laf-probe.mjs';
-import { lafDetail, fmtLafDetail } from './stream-laf-report.mjs';
+import { startLaf, tailWindow, lafReport } from './stream-laf-report.mjs';
 import { prepareOpts, putBack } from './stream-run-opts.mjs';
 import { streamWindows } from './stream-api-probe.mjs';
-import { veilProbe } from './stream-veil-probe.mjs'; import { uxProbe } from './stream-ux-probe.mjs';
+import { veilProbe } from './stream-veil-probe.mjs';
+import { uxProbe, isStreamDrop } from './stream-ux-probe.mjs';
 
 const env = process.env;
 const label = env.LABEL || 'replay';
@@ -63,7 +63,8 @@ const reqBody = JSON.parse(s0.reqBody);
 const schedule = []; { let t = 300, prev = s0.chunks[0][0]; for (const [ct, txt] of s0.chunks) { t += Math.min(GAP_CAP, ct - prev); prev = ct; schedule.push([Math.round(t), txt]); } }
 const REPLAY = { inputId: reqBody.messages[0].id, convId: reqBody.conversation_id, schedule };
 
-const summary = { label, at: new Date().toISOString(), lab: lab.id, fixture: FIXTURE, chunks: schedule.length, net: { blocked: [], escapes: 0, wsClosed: 0 } }, save = () => { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, JSON.stringify(summary, null, 1)); };
+const summary = { label, at: new Date().toISOString(), lab: lab.id, fixture: FIXTURE, chunks: schedule.length, net: { blocked: [], escapes: 0, wsClosed: 0 } };
+const save = () => { fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, JSON.stringify(summary, null, 1)); };
 
 // ---- in the page, before ChatGPT's scripts ----
 function replayHook(R) {
@@ -322,7 +323,6 @@ try {
   const rail0 = await page.evaluate(() => window.__rp.rail());
   const st0 = await page.evaluate(() => window.__rp.state());
   summary.open = { geo: g0, entries: entries0, rail: rail0, state: st0 };
-  report(`data-butter-off ${st0.off ?? 'none'}`);
   report(`opened: scrollTop ${g0.y} of ${g0.h} (fromEnd ${g0.fromEnd}), entries ${entries0}, rail ${rail0 ? `${rail0.ticks} ticks, lit [${rail0.lit}]` : 'none'}, data-butter-off ${JSON.stringify(st0.off)}, fetch hook outermost ${st0.fetchOuter}, rAF hook outermost ${st0.rafOuter}`);
 
   // ---- composer and buttons ----
@@ -349,15 +349,16 @@ try {
     verdict(hookOk, 'replay-hook', `self-test POST answered ${JSON.stringify(self)}, not by the hook`);
     if (!hookOk) throw Object.assign(Error('replay hook not in the fetch chain; nothing pressed'), { setup: true });
     await page.evaluate(() => window.__rp.watch());
-    await page.evaluate(startLafProbe); const ux = await uxProbe(page, env, summary, schedule.at(-1)[0]);
+    await startLaf(page);
+    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0]);
     await page.keyboard.press('Enter');
     const samples = []; let stopSeen = null, t0 = Date.now(), lastY = null, drops = [];
     const total = schedule.at(-1)[0];
     for (;;) {
       await tw.tick(Date.now() - t0);
-      const s = await page.evaluate(() => ({ s: window.__rp.stream(), r: window.__replay.started ? { c: window.__replay.chunksSent, d: window.__replay.done } : null, rail: window.__rp.rail() }));
+      const s = await page.evaluate(() => ({ s: window.__rp.stream(), r: window.__replay.started ? { c: window.__replay.chunksSent, d: window.__replay.done } : null, rail: window.__rp.rail(), ux: window.__ux?.acts.length ?? 0 }));
       samples.push({ ...s.s, chunks: s.r?.c ?? 0, done: !!s.r?.d, rail: s.rail });
-      if (lastY != null && s.s && lastY - s.s.y > s.s.vh) drops.push([lastY, s.s.y]);
+      if (isStreamDrop(lastY, s.s, s.ux)) drops.push([lastY, s.s.y]);
       lastY = s.s?.y ?? lastY;
       if (!stopSeen && s.r && s.r.c > schedule.length / 3) stopSeen = await page.evaluate(() => window.__rp.buttons());
       const el = Date.now() - t0;
@@ -366,12 +367,9 @@ try {
       if (!s.r && el > 20000) { report('replay never started within 20 s'); break; }
       await pause(200);
     }
-    for (const t1 = Date.now(), tEnd = t1 + Number(env.TAIL_MS || 5000); Date.now() < tEnd; await pause(200)) await tw.tick(Date.now() - t0, Date.now() - t1); // 5 s (TAIL_MS) past completion
-    const rawLaf = tw.split(await page.evaluate(stopLafProbe));
-    summary.laf = summarizeLaf(rawLaf); summary.lafDetail = lafDetail(rawLaf);
-    report(fmtLaf(summary.laf)); for (const l of [...fmtLafDetail(summary.lafDetail), ...await tw.finish(rawLaf, summary), ...await ux.finish()]) report(l);
-    const pubTimes = await page.evaluate(() => window.__rp.unwatch()); await pause(3000);
-    const after = await page.evaluate(() => ({ s: window.__rp.stream(), rail: window.__rp.rail(), state: window.__rp.state(), denied: window.__rp.denied(), raf: window.__rp.rafTimes() }));
+    const pubTimes = await page.evaluate(() => window.__rp.unwatch());
+    const after = await tailWindow((a, b) => tw.tick(a, b), () => page.evaluate(() => ({ s: window.__rp.stream(), rail: window.__rp.rail(), state: window.__rp.state(), denied: window.__rp.denied(), raf: window.__rp.rafTimes() })), t0, Number(env.TAIL_MS || 5000), { pause }); // ticks for TAIL_MS, `after` at 3 s
+    for (const l of await lafReport(page, tw, ux, summary)) report(l);
     summary.stream = { samples, stopProbe: stopSeen, after, drops, pubIntervals: intervals(pubTimes) };
     const rs = after.state.replay;
     report(`replay: started ${!!rs.started}, chunks ${rs.chunksSent}/${schedule.length}, done ${rs.done}, local answers [${rs.local.join(', ')}], denied in page ${after.denied.length}: ${JSON.stringify([...new Set(after.denied.map(d => `${d.method} ${template(d.path)}`))])}, request keys ${JSON.stringify(rs.reqKeys ?? null)}`);
@@ -418,7 +416,8 @@ try {
 
     // ---- wheel up through the streamed answer and back down, view shift per step ----
     if (env.PHASES === 'stream') report('PHASES=stream: wheel phase skipped'); else {
-    const vp = await veilProbe(page, env, summary); for (let i = 0; i < 3; i++) { await page.evaluate(() => window.__rp.toEnd()); await pause(600); }
+    const vp = await veilProbe(page, env, summary);
+    for (let i = 0; i < 3; i++) { await page.evaluate(() => window.__rp.toEnd()); await pause(600); }
     await pause(1500);
     const g = await page.evaluate(() => window.__rp.geo());
     const x = Math.round((g.box.left + g.box.right) / 2 - 150), y = Math.round((g.box.top + g.box.bottom) / 2);
@@ -463,7 +462,8 @@ try {
     }
     await pause(1500);
     const gEnd = await page.evaluate(() => window.__rp.geo());
-    summary.wheel = { upSteps, up, down, wheelDrops, end: gEnd }; if (vp) for (const l of await vp.finish()) report(l);
+    summary.wheel = { upSteps, up, down, wheelDrops, end: gEnd };
+    if (vp) for (const l of await vp.finish()) report(l);
     const su = shiftStats(up), sd = shiftStats(down);
     const inLast = rows => shiftStats(rows.filter(r => r?.inLast));
     report(`view shift up (${up.length} steps): ${fmtShift(su)}; in the streamed answer: ${fmtShift(inLast(up))}`);

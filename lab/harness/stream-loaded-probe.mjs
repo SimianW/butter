@@ -12,7 +12,7 @@
 //     Long Animation Frames from the document's start: load window (before the first turn) and
 //     idle window (MS ms after it): count, total, blocking, longest, script time by source.
 //   Typing phase (TYPE_AT > 0): opens TYPE_FIXTURE (default FIXTURE) fresh, waits TYPE_AT ms after the first turn,
-//     clicks the composer (refuses when it holds a draft), types 41 keys (as typing-lag.mjs, never
+//     clicks the composer (refuses when it holds a draft), types 44 keys, 41 characters and 3 Backspace (as typing-lag.mjs, never
 //     Enter), then selects all and deletes. Reports keydown-to-next-frame times, Event Timing
 //     entries >= 16 ms, Long Animation Frames in the typing window and the hydration counters.
 // IDLE=0 skips the idle phase. REPORT lines only, no verdicts. Exit 2 on a setup error. Counts, pixels and ms only: no page text,

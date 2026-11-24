@@ -2,6 +2,7 @@
 // found afterwards), a fingerprint of the extension's storage to confirm that, and a CDP trace of a
 // window of the stream (TRACE_AT=<ms after Enter>). Measurement plumbing only; no verdicts.
 import fs from 'node:fs';
+import path from 'node:path';
 
 async function inPopup(context, extId, fn, arg) {
   const w = await context.newPage();
@@ -78,6 +79,7 @@ export async function stopTrace(cdp, t, file) {
   await cdp.send('Tracing.end');
   await done;
   cdp.off('Tracing.dataCollected', t.on);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify({ traceEvents: t.chunks }));
   return t.chunks.length;
 }

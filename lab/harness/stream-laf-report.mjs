@@ -3,8 +3,44 @@
 // blocking per 10 s bucket, script time by source). Measurement only; nothing here is a verdict.
 //
 //   const d = lafDetail(raw); for (const line of fmtLafDetail(d)) report(line); summary.lafDetail = d;
+//
+// stream-replay-live.mjs drives the probe through startLaf (just before Enter), tailWindow (after
+// the replay loop) and lafReport (after the tail).
+import { startLafProbe, stopLafProbe, summarizeLaf, fmtLaf } from './stream-laf-probe.mjs';
 
 const r1 = v => Math.round(v * 10) / 10;
+
+export const startLaf = page => page.evaluate(startLafProbe);
+
+// After the replay loop: tick(el, sinceDone) every 200 ms for tailMs past completion (this call),
+// el counted from t0. snap() runs once, 3 s past completion, as it did before the tail existed
+// (after a shorter tail, the rest of the 3 s is waited out). Returns snap()'s value.
+export async function tailWindow(tick, snap, t0, tailMs, { now = Date.now, pause }) {
+  const t1 = now(), tEnd = t1 + tailMs, snapAt = t1 + 3000;
+  let taken = false, after;
+  const take = async () => {
+    const w = snapAt - now();
+    if (w > 0) await pause(w);
+    after = await snap();
+    taken = true;
+  };
+  while (now() < tEnd) {
+    await tick(now() - t0, now() - t1);
+    if (!taken && snapAt - now() <= 200) await take();
+    else await pause(200);
+  }
+  if (!taken) await take();
+  return after;
+}
+
+// After the tail: stops the probe, cuts it at the standard window (tw.split), and returns the
+// REPORT lines of the probe, the stream windows (tw.finish) and the UX probe (ux.finish).
+export async function lafReport(page, tw, ux, summary) {
+  const raw = tw.split(await page.evaluate(stopLafProbe));
+  summary.laf = summarizeLaf(raw);
+  summary.lafDetail = lafDetail(raw);
+  return [fmtLaf(summary.laf), ...fmtLafDetail(summary.lafDetail), ...(await tw.finish(raw, summary)), ...(await ux.finish())];
+}
 
 export function lafDetail(raw) {
   if (!raw) return null;
