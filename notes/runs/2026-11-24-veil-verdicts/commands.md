@@ -87,5 +87,5 @@ $B/lab-lock status                                  # release.log: labs 1, 2 and
 The logs here are the raw logs with URLs, ids and the home path replaced. Checked with:
 
 ```sh
-grep -lE "https?://|/home/simon|[0-9a-f]{8}-[0-9a-f]{4}-|g-p-[0-9a-f]|chrome-extension://[a-p]{32}" notes/runs/2026-11-24-veil-verdicts/*; echo $?   # 1: no match
+grep -lE "https?://|$HOME|[0-9a-f]{8}-[0-9a-f]{4}-|g-p-[0-9a-f]|chrome-extension://[a-p]{32}" notes/runs/2026-11-24-veil-verdicts/*; echo $?   # 1: no match
 ```
