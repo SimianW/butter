@@ -172,15 +172,25 @@ quote; label "Ask in branch  Alt Shift Q". 800 × 500, 12 fps, 5.7 s / 6.3 s, 11
 
 | File | Mockup panel (#126) |
 |---|---|
-| `shortcut-label-1280-light.png` | `after-light`: the label "Ask in branch" + "Alt Shift Q" |
+| `shortcut-label-1280-light.png` | `after-light`: the label "Ask in branch" + "⌥⇧Q" |
 | `shortcut-label-1280-dark.png` | `after-dark` |
 | `shortcut-label-1280-nokey.png` | the no-key half of `after-mac`: "Ask in branch" alone (the ⌥⇧Q half can't render on Linux) |
+| `bookmark-label-1400-light.png` | `after-light`'s Bookmark cell: "Bookmark selection" + "⌥⇧M" (bookmark fixture, 1400 px viewport) |
 
 From run 1 (`SHOTS=/tmp/b126/run1`).
 
 After review (round 0), the three label shots were re-taken with `evidenceShot` (cropped to the
 selection, the pill and the label, 24 px margin, each with its `.json` sidecar) in a headed
 `ONLY=shortcut` run at 8/8.
+
+Key symbols (the user's follow-up to the approved mockup, `mockups/key-hint-symbols.html`): the
+cells' key hints now show key symbols run together (`⌥⇧Q`, `⌥⇧M`) on Windows and Linux too, as
+Chrome already reports them on a Mac; `aria-keyshortcuts` is unchanged. The three label shots were
+re-taken (`ONLY=shortcut` headed, 8/8), `bookmark-label-1400-light.png` was added (an evidence shot
+in the bookmark harness's `save` scenario, 31/31 in both markups), and `after.gif` was re-recorded
+(800 × 500, 12 fps, 6.3 s, 166 KB; its label reads "Ask in branch  ⌥⇧Q"). `before.gif` is
+unchanged. The `Alt Shift Q`/`Alt Shift M` hints quoted elsewhere in this report are from the runs
+before this change.
 
 Privacy: every image is the synthetic fixture page; no account, chat title, URL or real chat text.
 The live run saved no images and printed lengths and counts only.
