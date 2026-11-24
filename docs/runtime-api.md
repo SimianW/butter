@@ -38,7 +38,8 @@ its original result; query usage again if subsequent measurements may already ha
 
 `layoutConsent` starts as `pending`, and `ButterStatus.normalize` keeps `opts.layout` false
 unless consent is `granted` and the saved layout option is not false. Persisted reads/writes
-require both. The in-page card asks first; the popup switch also records consent. While pending,
+require both. Only the popup's layouts switch, on its Experimental page, records consent; no card
+on the ChatGPT page asks. While pending,
 usage reports zero and no layout data is saved. Setting layout false deletes layouts for all
 accounts and stops reads/writes; it is independent of the master optimization switch.
 The popup shows usage on the second line of Remember long-chat layouts, with Clear, and asks before it clears.
