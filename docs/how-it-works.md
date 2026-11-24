@@ -172,7 +172,7 @@ stays available.
 
 The shortcut is **Alt+Shift+Q** (Option+Shift+Q on a Mac), the `branch` command, which you can
 change or remove in `chrome://extensions/shortcuts`; the cell's label shows its current key in
-grey, or none when it has no key. The extension worker relays the press to the tab it was made in
+grey, in key symbols (⌥⇧Q) on every system, or none when it has no key. The extension worker relays the press to the tab it was made in
 (`commands/worker.js`), and the press is the cell's click by key. It reads the selection at that
 moment by the cell's rule above (one reply, quotable, a page where ChatGPT can branch), not the
 pill's last read, so it works the moment you finish selecting, and also when ChatGPT's button, and

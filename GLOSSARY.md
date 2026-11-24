@@ -358,8 +358,8 @@ _Avoid_: hotkey
 _Where_: `commands/keys.js`, `commands/worker.js`, `manifest.json`
 
 **Key hint**:
-A command's current key as a cell's label shows it, in grey after the name ("Alt Shift Q"); none
-when the command has no key.
+A command's current key as a cell's label shows it, in grey after the name, in key symbols
+("⌥⇧Q", as Chrome shows keys on a Mac); none when the command has no key.
 _Where_: `commands/keys.js`, `selection/pill.js`
 
 **Hold**:

@@ -196,7 +196,7 @@ a Mac: Ask in branch's question box for the selection, see
 
 Content scripts can't read `chrome.commands`, so a cell asks for its key each time it shows
 (`ButterCommandKeys.read`, one read at a time per command, calling back only when the key changed)
-and shows it with `keyHint` (its label, `Alt Shift Q`; macOS's symbols, `⌥⇧Q`, as given) and
+and shows it with `keyHint` (its label, in key symbols: `Alt+Shift+Q` reads `⌥⇧Q`; macOS's symbols as given) and
 `ariaKeys` (`aria-keyshortcuts`, `Alt+Shift+Q`). `ButterCommandKeys.on(command, fn)` runs a
 feature's handler for a relayed command. A new command is one list entry, its manifest entry, its
 locale message and its handler. The dev build's `save-bug` is not in the list: `dev/worker.js` has

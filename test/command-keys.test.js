@@ -33,13 +33,26 @@ const plain = (x) => JSON.parse(JSON.stringify(x));
 
 test('the hint shows the key Chrome reports for the command, and nothing when it has none', () => {
   const { keyHint } = page().keys;
-  assert.equal(keyHint('Alt+Shift+Q'), 'Alt Shift Q'); // Windows and Linux, as the mockup writes keys
-  assert.equal(keyHint('Alt+Shift+M'), 'Alt Shift M');
-  assert.equal(keyHint('⌥⇧Q'), '⌥⇧Q'); // macOS reports symbols
-  assert.equal(keyHint('Ctrl+Shift+Comma'), 'Ctrl Shift Comma');
+  assert.equal(keyHint('Alt+Shift+Q'), '⌥⇧Q'); // Windows and Linux: names become symbols
+  assert.equal(keyHint('Alt+Shift+M'), '⌥⇧M');
+  assert.equal(keyHint('⌥⇧Q'), '⌥⇧Q'); // macOS reports symbols, shown as given
   assert.equal(keyHint(''), '');
   assert.equal(keyHint(undefined), '');
   assert.equal(keyHint(null), '');
+});
+
+test('the hint writes modifiers, Comma, Period and arrows as symbols, other keys as Chrome names them', () => {
+  const { keyHint } = page().keys;
+  assert.equal(keyHint('Ctrl+Shift+Comma'), '⌃⇧,');
+  assert.equal(keyHint('Ctrl+Up'), '⌃↑');
+  assert.equal(keyHint('Alt+Down'), '⌥↓');
+  assert.equal(keyHint('Shift+Left'), '⇧←');
+  assert.equal(keyHint('Shift+Right'), '⇧→');
+  assert.equal(keyHint('MacCtrl+Period'), '⌃.');
+  assert.equal(keyHint('Command+Shift+1'), '⌘⇧1');
+  assert.equal(keyHint('Alt+Home'), '⌥Home');
+  assert.equal(keyHint('Ctrl+PageUp'), '⌃PageUp');
+  assert.equal(keyHint('MediaNextTrack'), 'MediaNextTrack'); // a media key, no modifier
 });
 
 // A cell's aria-keyshortcuts (#77): the same key in ARIA's names.

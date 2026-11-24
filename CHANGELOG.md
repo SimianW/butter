@@ -7,6 +7,11 @@
 - Added a keyboard shortcut for Ask in branch: Alt+Shift+Q (Option+Shift+Q on a Mac) opens the
   question box for the selected text.
 
+### Changed
+
+- Changed the key hints in the selection pill's labels to show key symbols (⌥⇧M) instead of key
+  names on Windows and Linux, as they already did on a Mac.
+
 ### Fixed
 
 - Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on

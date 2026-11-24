@@ -10,9 +10,31 @@
 (() => {
   const COMMANDS = Object.freeze(['bookmark', 'branch']);
 
-  // A cell's key hint, from chrome.commands' `shortcut`: "Alt+Shift+Q" reads "Alt Shift Q", as the
-  // mockup writes keys; macOS reports symbols ("⌥⇧Q"), shown as given; no key, no hint.
-  const keyHint = (shortcut) => (typeof shortcut === 'string' ? shortcut.split('+').join(' ') : '');
+  // A cell's key hint, from chrome.commands' `shortcut`, in key symbols run together: Windows and
+  // Linux report names ("Alt+Shift+Q" reads "⌥⇧Q"), macOS reports symbols ("⌥⇧Q"), shown as given;
+  // keys with no symbol here (letters, Home, PageUp, media keys…) keep Chrome's name; no key, no hint.
+  const SYMBOL = {
+    Alt: '⌥',
+    Shift: '⇧',
+    Ctrl: '⌃',
+    MacCtrl: '⌃',
+    Command: '⌘',
+    Comma: ',',
+    Period: '.',
+    Up: '↑',
+    Down: '↓',
+    Left: '←',
+    Right: '→',
+  };
+  const keyHint = (shortcut) =>
+    typeof shortcut !== 'string'
+      ? ''
+      : shortcut.includes('+')
+        ? shortcut
+            .split('+')
+            .map((k) => SYMBOL[k] ?? k)
+            .join('')
+        : shortcut;
   // The same key for a cell's aria-keyshortcuts (#77), in ARIA's key names: macOS's symbols and
   // Chrome's modifier and key names spelled out.
   const ARIA = {
