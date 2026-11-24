@@ -1,0 +1,23 @@
+REPORT math12: history loaded, 12 entries; Butter; trials ["release@0.66","release@0.62","release@0.7","release@0.05"]
+REPORT trial 1 release@0.66: after re-pin scrollTop 346165 of end 346165 (distance 0)
+REPORT trial 1 release@0.66: thumb 887 → 594; held scrollTop 320144; preview shown true, top question 9 (layout false); destination estimated {"turn":9,"top":315651,"offset":-52,"known":false,"stored":false,"layout":false}; session reason pointerup, canceled false, timedOut false, readable 5630 ms
+REPORT trial 1 landing: on the previewed question (previewed 9, landed question 9 +1 px, scrollTop 319703)
+REPORT trial 1 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[12,319883,347077,null],[3272,347194,348106,10],[5595,319703,348106,9],[6236,319703,348106,9],[6761,319703,348106,9],[7289,319703,348106,9],[7811,319703,348106,9],[7915,319703,348106,9]]
+FAIL seek-pin #1: pulled to the end at 3272 ms
+REPORT trial 2 release@0.62: after re-pin scrollTop 347194 of end 347194 (distance 0)
+REPORT trial 2 release@0.62: thumb 887 → 559; held scrollTop 320903; preview shown true, top question 9 (layout false); destination estimated {"turn":9,"top":316640,"offset":-52,"known":false,"stored":false,"layout":false}; session reason pointerup, canceled false, timedOut false, readable 2382 ms
+REPORT trial 2 landing: on the previewed question (previewed 9, landed question 9 +1 px, scrollTop 319703)
+REPORT trial 2 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[13,320622,348106,null],[2346,319703,348106,9],[3002,319703,348106,9],[3523,319703,348106,9],[4045,319703,348106,9],[4566,319703,348106,9],[5088,319703,348106,9],[5610,319703,348106,9],[6133,319703,348106,9],[6655,319703,348106,9],[7175,319703,348106,9],[7697,319703,348106,9],[7905,319703,348106,9]]
+PASS seek-pin #2
+REPORT trial 3 release@0.7: after re-pin scrollTop 347194 of end 347194 (distance 0)
+REPORT trial 3 release@0.7: thumb 887 → 628; held scrollTop 321104; preview shown true, top question 9 (layout false); destination estimated {"turn":9,"top":316640,"offset":-52,"known":false,"stored":false,"layout":false}; session reason pointerup, canceled false, timedOut false, readable 2381 ms
+REPORT trial 3 landing: on the previewed question (previewed 9, landed question 9 +1 px, scrollTop 319703)
+REPORT trial 3 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[11,320836,348106,null],[2356,319703,348106,9],[2920,319703,348106,9],[3443,319703,348106,9],[3975,319703,348106,9],[4498,319703,348106,9],[5019,319703,348106,9],[5541,319703,348106,9],[6062,319703,348106,9],[6585,319703,348106,9],[7107,319703,348106,9],[7629,319703,348106,9],[7942,319703,348106,9]]
+PASS seek-pin #3
+REPORT trial 4 release@0.05: after re-pin scrollTop 347194 of end 347194 (distance 0)
+REPORT trial 4 release@0.05: thumb 887 → 68; held scrollTop 322319; preview shown true, top question 9 (layout false); destination estimated {"turn":9,"top":316640,"offset":-52,"known":false,"stored":false,"layout":false}; session reason pointerup, canceled false, timedOut false, readable 2649 ms
+REPORT trial 4 landing: on the previewed question (previewed 9, landed question 9 +1 px, scrollTop 319703)
+REPORT trial 4 trace [ms, scrollTop, scrollHeight, question at the view's top] every 500 ms: [[12,322047,348106,null],[2621,319703,348106,9],[3188,319703,348106,9],[3710,319703,348106,9],[4233,319703,348106,9],[4756,319703,348106,9],[5279,319703,348106,9],[5801,319703,348106,9],[6323,319703,348106,9],[6845,319703,348106,9],[7367,319703,348106,9],[7889,319703,348106,9],[7993,319703,348106,9]]
+PASS seek-pin #4
+REPORT summary: releases 4 (pulled 1, landed on the previewed question 4; destinations {"estimated":4,"layout stored":0,"layout session":0,"none":0}); controls 0 (pulled 0)
+SUMMARY seek-pin: 1 FAIL

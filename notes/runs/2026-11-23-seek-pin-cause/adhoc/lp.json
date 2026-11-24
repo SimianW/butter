@@ -1,0 +1,86 @@
+[
+ {
+  "label": "scroll",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 274145,
+  "expr": "{d:d&&Math.round(d.scrollTopPx),dist:Math.round(b$.scrollHeight-b$.clientHeight-b$.scrollTop),cA:cA(b$),pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "pdown",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 272657,
+  "expr": "{pt:a.pointerType,onSc:a.target===b$,pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "pup",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 272591,
+  "expr": "{d:!!d}"
+ },
+ {
+  "label": "RO",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 269029,
+  "expr": "{a:Math.round(a),n:Math.round(n),h:Math.round(h),k:k,b:b,c:c,pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cu",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 254369,
+  "expr": "{to:Math.round(a),pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cE",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 259980,
+  "expr": "{a:Math.round(a),b:Math.round(b),pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cy",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 255808,
+  "expr": "{pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cO",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 270310,
+  "expr": "{type:a&&a.type,dir:b,c:c,pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cH",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 261006,
+  "expr": "{a:a,b:b,c:c,pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "cF",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 260236,
+  "expr": "{pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "ah",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 260364,
+  "expr": "{beh:a,pin:cc.current.bottom,b3:Math.round(b3.current),b5:b5.current==null?null:Math.round(b5.current),st:bV.current&&Math.round(bV.current.scrollTop),cb:cb.current&&cb.current.direction,ck:ck.current,b4:b4.current}"
+ },
+ {
+  "label": "ROtail",
+  "urlRegex": "<the conversation-scroll chunk named in the pull frames>",
+  "line": 0,
+  "col": 269336,
+  "expr": "{n:Math.round(n),o:o,k:k,p:Math.round(p),m:Math.round(m),i:i,pin:cc.current.bottom}"
+ }
+]
