@@ -245,6 +245,9 @@ try {
     for (const pos of ['opened', 'top', 'middle', 'end']) {
       const p = fx.positions[pos];
       console.log(`REPORT ${name} ${pos} scroller ${JSON.stringify({ y: p.scroller?.scrollTop, h: p.scroller?.scrollHeight, vh: p.scroller?.clientHeight, anchor: p.scroller?.style.overflowAnchor, children: p.scrollerChildren?.map(c => `${c.holdsTurns ? 'T:' : ''}${c.style.overflowAnchor}`), turns: p.mountedTurns, cvAuto: p.turnsCvAuto })}`);
+      // Smoother streaming's container rule: computed container-type of each wrapper from the scroller to a turn.
+      const ct = (p.chain || []).map(c => `${c.tag}${c.attrs.class && /container-type|min-h-full/.test(c.attrs.class) ? '[' + c.attrs.class.split(/\s+/).filter(k => /container-type|min-h-full/.test(k)).join(' ') + ']' : ''}:${c.style.containerType}`);
+      console.log(`REPORT ${name} ${pos} container chain ${JSON.stringify({ scroller: p.scroller?.style.containerType, chain: ct, sizeContainerAboveTurn: (p.chain || []).some(c => c.style.containerType !== 'normal') })}`);
     }
     for (const [k, v] of Object.entries(o.counts)) console.log(`REPORT ${name} count ${k} = ${['opened', 'top', 'middle', 'end'].map(p => fx.positions[p].counts[k]).join('/')}`);
     for (const [k, v] of Object.entries(o.doc)) console.log(`REPORT ${name} doc ${k} = ${['opened', 'top', 'middle', 'end'].map(p => fx.positions[p].doc[k]).join('/')}`);
