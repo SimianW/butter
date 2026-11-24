@@ -119,7 +119,7 @@ try {
   await open(page, projPage);
   const home = await state(page);
   report(`project page loaded ${brief(home)}`);
-  if (home.turns || home.len) throw Error('the project page has turns or a draft): left as it is');
+  if (home.turns || home.len) throw Error('the project page has turns or a draft: left as it is');
 
   // ---- project-page: empty, typed text, body focused → nothing but focus.
   await page.locator(`${ED}:visible`).first().click();
@@ -130,7 +130,7 @@ try {
   report(`project-page after ${brief(pp)}`);
   verdict('project-page', shape(pp.href) === shape(projPage) && !pp.reloaded && pp.text === TEXT && pp.focused && !pp.keysO,
     `url ${shape(pp.href)}, reloaded ${pp.reloaded}, text ${pp.text === TEXT ? 'same' : `differs (${pp.text.length}/${TEXT.length})`}, focused ${pp.focused}, page keydowns ${pp.keysO}`);
-  await clearComposer(page);
+  if (new URL(page.url()).pathname === new URL(projPage).pathname) await clearComposer(page);
 
   // ---- project-chat → the project page, client-side, labelled and focused.
   await open(page, projChat);
@@ -160,12 +160,25 @@ try {
     report(`normal-chat before ${brief(nb)} after ${brief(nc)}`);
     verdict('normal-chat', new URL(nc.href).pathname === '/' && !nc.temporaryOn && !nc.reloaded && nc.turns === 0,
       `url ${shape(nc.href)}, reloaded ${nc.reloaded}, turns ${nc.turns}, temporary ${nc.temporaryOn}`);
-    await page.goBack({ waitUntil: 'domcontentloaded' });
-    await pause(3000);
-    const back = await state(page);
-    verdict('no-stray-key', !nc.keysO && back.text === DRAFT, `page keydowns ${nc.keysO}, draft ${back.text === DRAFT ? 'same' : `differs (${DRAFT.length} → ${back.text.length})`}`);
-    // Put the composer back to what it held before the check.
-    await setDraft(nb.text.trim());
+    const normalPath = new URL(normal, 'https://chatgpt.com').pathname;
+    const here = () => new URL(page.url()).pathname;
+    if (here() === normalPath) {
+      // The press did not navigate: the draft is still in this chat. Restore it here, no Back.
+      verdict('no-stray-key', false, `no navigation, so no way to tell a stray key from the draft; page keydowns ${nc.keysO}`);
+      await setDraft(nb.text);
+    } else {
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await pause(3000);
+      if (here() !== normalPath) {
+        console.log('FAIL no-stray-key: back did not return to the normal chat; draft not restored');
+        failed = true;
+      } else {
+        const back = await state(page);
+        verdict('no-stray-key', !nc.keysO && back.text === DRAFT, `page keydowns ${nc.keysO}, draft ${back.text === DRAFT ? 'same' : `differs (${DRAFT.length} → ${back.text.length})`}`);
+        // Put the composer back to what it held before the check.
+        await setDraft(nb.text);
+      }
+    }
   }
 
   // ---- temporary: needs a Temporary Chat with turns, so one send.

@@ -94,7 +94,7 @@ export const scenarios = [
     },
   },
   goes('normal-chat', `/c/${CHAT}`, '/'),
-  goes('temporary', '/?temporary-chat=true', '/?temporary-chat=true', { scene: 'turns=2' }),
+  goes('temporary', `/c/${CHAT}?temporary-chat=true`, '/?temporary-chat=true', { scene: 'turns=2' }),
   goes('custom-gpt', `/g/g-${GPT}/c/${CHAT}`, '/'),
   focuses('project-page', PROJECT_PAGE),
   focuses('home', '/'),

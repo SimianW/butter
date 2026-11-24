@@ -3,14 +3,15 @@
 // and Alt+Shift+O. Read-only with the send guard on; never sends, never creates or renames.
 //
 // On a lock you hold (lab/README.md, "One lock per sequence"):
-//   LAB_ID=2 LAB_OWNER=<owner> [EXT=] [STEPS=survey,controls,nav,keys,draft,alt,work] \
+//   LAB_ID=2 LAB_OWNER=<owner> [EXT=] [STEPS=survey,controls,nav,keys,draft,work] \
 //     node lab/harness/new-chat-probe.mjs
 // EXT set (empty = none) restarts the lab browser with exactly those extensions; unset uses the
 // browser as it is. PROJECT_CHAT=<fixture name> (default math12) is the project chat. Prints
 // `REPORT <step> <json>` lines with ids replaced by placeholders and chat/project titles masked;
 // judges nothing. Raw lines also go to lab/harness/results/new-chat-probe-<time>.log (local).
 // Exit 2 on a setup error.
-// Side effects to know: the `alt` step with the page body focused makes ChatGPT type "O" into the
+// Side effects to know: `alt` is opt-in (not in the default STEPS) and must be followed by `undo-alt`:
+// the `alt` step with the page body focused makes ChatGPT type "O" into the
 // chat's draft (type-to-focus); `undo-alt` with UNDO_LENS='{"normalChat":1,"projectChat":<n+1>}'
 // removes it. `restore-row` re-expands the project's sidebar row if a row click collapsed it.
 // The sidebar's two "New chat" buttons take `js:<selector>` in CONTROLS (element.click()), since
@@ -25,7 +26,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const L = await import(pathToFileURL(path.join(os.homedir(), '.local/share/chatgpt-lab/lib/lab.mjs')).href);
 const env = process.env;
 const pause = ms => new Promise(r => setTimeout(r, ms));
-const STEPS = (env.STEPS || 'survey,controls,nav,keys,draft,alt,work').split(',').filter(Boolean);
+const STEPS = (env.STEPS || 'survey,controls,nav,keys,draft,work').split(',').filter(Boolean);
 const lab = heldLab(L, env);
 fs.mkdirSync(path.join(here, 'results'), { recursive: true });
 const logFile = path.join(here, 'results', `new-chat-probe-${new Date().toISOString().replace(/[:.]/g, '-')}.log`);
