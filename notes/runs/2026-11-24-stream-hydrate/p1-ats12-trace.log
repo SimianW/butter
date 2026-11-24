@@ -1,0 +1,56 @@
+REPORT storage before the run: sha256 42ba610a86d15094, local keys [], sync keys [], opts null; OPTS none
+REPORT build 0.1.0-alpha.22+streamaudit.1 (p1), fixture ats12, 357 chunks over 107 s
+REPORT data-butter-off layout
+REPORT opened: scrollTop 9446 of 10358 (fromEnd 0), entries 5, rail 5 ticks, lit [3,4], data-butter-off "layout", fetch hook outermost false, rAF hook outermost false
+REPORT buttons, empty composer: <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=button aria-label="Start Voice" data=[data-composer-voice-start data-state] icons=[#codex-icon-voice-regular-20] RIGHTMOST matches=[]>
+REPORT buttons, typed (12 chars): <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=submit aria-label="Send" data=[] icons=[] RIGHTMOST matches=[pre-jump SEND_BUTTON; branch SEND (testid + aria-labels); branch structural button[type=submit]]>
+REPORT selector counts, typed: {"pre-jump SEND_BUTTON":1,"branch SEND (testid + aria-labels)":1,"branch structural button[type=submit]":1,"[data-testid=\"send-button\"]":0,"#composer-submit-button":0,"[data-testid=\"stop-button\"]":0}
+REPORT pre-jump condition with text typed: SEND_BUTTON in form true, would fire on Enter true
+PASS replay-hook
+REPORT long animation frames, Enter to 5 s after stream complete (112634.4 ms): LoAF 460, total 35736.2 ms, blocking 8679.6 ms, longest 1963.7 ms; longtask 403, total 28984 ms, blocking 8834 ms, longest 1350 ms
+REPORT laf marks (ms after Enter): replay POST 49.6, first chunk 556.7, last chunk 107409.9, in_progress on 2539.8, in_progress gone 105584.3, observed until 112633; in_progress transitions 2; butter mark batches 83 (seen +593, unrendered +575)
+REPORT laf top 1: start 105023.8 ms (before in_progress gone), duration 1963.7, blocking 1912.8, script part 621.7, rAF part 1329.2, render part 12.8, scripts 2; top script 1319.8 ms chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback" fn "" forced 1238.3 pause 0; nearest mark inProgressGone -560.5 ms; nearest butter batch -810.5 ms (+6s/+5u)
+REPORT laf top 2: start 76271.7 ms (before in_progress gone), duration 334.1, blocking 283.4, script part 276.2, rAF part 47.6, render part 10.3, scripts 2; top script 275.5 ms other user-callback "TimerHandler:setTimeout" fn "" forced 64.7 pause 0; nearest mark inProgressGone -29312.6 ms; nearest butter batch 573.7 ms (+6s/+1u)
+REPORT laf top 3: start 42145 ms (before in_progress gone), duration 293.3, blocking 242.6, script part 0.8, rAF part 288.6, render part 3.9, scripts 1; top script 264.2 ms chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback" fn "" forced 237.6 pause 0; nearest mark inProgressOn +39605.2 ms; nearest butter batch -1504.7 ms (+4s/+0u)
+REPORT laf top 4: start 106996.1 ms (after in_progress gone), duration 281.8, blocking 0, script part 271.9, rAF part 0.9, render part 9, scripts 0; top script none; nearest mark lastChunk -413.8 ms; nearest butter batch 326.9 ms (+6s/+0u)
+REPORT laf top 5: start 0.1 ms (before in_progress gone), duration 243.4, blocking 192.5, script part 232.9, rAF part 6, render part 4.5, scripts 1; top script 230.6 ms chatgpt:257798.18e3fd1164.js event-listener "DIV.onkeydown" fn "" forced 41.9 pause 0; nearest mark enter +0.1 ms; nearest butter batch 1258.7 ms (+1s/+0u)
+REPORT laf top 6: start 307.1 ms (before in_progress gone), duration 242.2, blocking 0, script part 241.1, rAF part 0.7, render part 0.4, scripts 0; top script none; nearest mark firstChunk -249.6 ms; nearest butter batch 951.7 ms (+1s/+0u)
+REPORT laf top 7: start 103530 ms (before in_progress gone), duration 226.8, blocking 175.4, script part 101.1, rAF part 117.6, render part 8.1, scripts 2; top script 99.6 ms other user-callback "TimerHandler:setTimeout" fn "" forced 0.4 pause 0; nearest mark inProgressGone -2054.3 ms; nearest butter batch -459.3 ms (+1s/+6u)
+REPORT laf top 8: start 71079 ms (before in_progress gone), duration 223.1, blocking 27.3, script part 179.5, rAF part 41.6, render part 2, scripts 1; top script 40 ms chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback" fn "" forced 0.9 pause 0; nearest mark inProgressGone -34505.3 ms; nearest butter batch -222.5 ms (+4s/+7u)
+REPORT laf top 9: start 101119.1 ms (before in_progress gone), duration 175.4, blocking 107.5, script part 49.9, rAF part 115.7, render part 9.8, scripts 3; top script 54.6 ms chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback" fn "" forced 0 pause 0; nearest mark inProgressGone -4465.2 ms; nearest butter batch -676.2 ms (+11s/+7u)
+REPORT laf top 10: start 54398 ms (before in_progress gone), duration 171.9, blocking 20.6, script part 135.9, rAF part 34.7, render part 1.3, scripts 1; top script 34.1 ms chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback" fn "" forced 2.5 pause 0; nearest mark inProgressGone -51186.3 ms; nearest butter batch -10.8 ms (+2s/+6u)
+REPORT laf histogram: >=200 ms 8, >=500 ms 1, >=1000 ms 1 (before in_progress gone {"ge200":7,"ge500":1,"ge1000":1}, after {"ge200":1,"ge500":0,"ge1000":0})
+REPORT laf blocking per 10 s from Enter: 0s:343 10s:21 20s:67 30s:84 40s:440 50s:264 60s:276 70s:894 80s:1260 90s:2002 100s:3030 110s:0
+REPORT laf sums over 460 frames (total 35736.2, blocking 8679.6): script by source {"chatgpt:*":20874.1,"other":1582.6}; forced style/layout 4067.1; script part 9661.2; rAF part 23894.4; render part 2180.6
+REPORT laf butter files: {}
+REPORT laf totals: before in_progress gone {"frames":459,"blockingMs":8679.6,"longestMs":1963.7}, after {"frames":1,"blockingMs":0,"longestMs":281.8}
+REPORT trace: 24419 events, started at page time 130373.89999997616 (101018 ms after Enter)
+REPORT hydration over time (s after Enter: hydrated/pending/measuring/unrendered/seen in the last turn): 0s:0/0/0/0/0 11s:0/12/12/12/23 20s:80/5/5/5/103 31s:139/0/0/0/162 41s:172/5/4/5/195 51s:244/5/5/5/267 61s:311/8/3/8/334 71s:363/4/4/4/386 81s:416/20/12/20/441 91s:490/9/6/8/515 101s:547/7/7/7/572 111s:566/0/0/0/592
+REPORT hydration at completion: first sample after in_progress gone (107504 ms) 566/0/0/0/592; 5 s later (110537.7 ms) 566/0/0/0/592; most blocks measuring at once 16
+REPORT completion frame: start 105023.8 ms, duration 1963.7, blocking 1912.8, script part 621.7, rAF part 1329.2, render part 12.8; scripts 1319.8/1238.3 forced chatgpt:299268.5b3cdf27e2.js user-callback "FrameRequestCallback"; 620.8/177.9 forced other user-callback "TimerHandler:setTimeout"
+REPORT answer height after the window: last turn 36503 px, answer root 0 px, scrollHeight 46873 px
+REPORT replay: started true, chunks 357/357, done true, local answers [/backend-api/conversation/init, /backend-api/sentinel/chat-requirements/prepare, /backend-api/f/conversation/prepare, /__replay_selftest, /backend-api/sentinel/chat-requirements/prepare, /backend-api/f/conversation/prepare], denied in page 45: ["POST /v1/initialize","POST /ces/v1/rgstr","POST /ces/v1/telemetry/intake","POST /ces/statsc/flush"], request keys ["turn_attribution","conversation_id","action","model","parent_message_id","timezone","timezone_offset_min","is_do_not_remember","client_contextual_info","conversation_mode","gizmo_id","local_function_names","messages","supported_encodings","genui_state_snapshots","client_prepare_state"]
+PASS replay-streams
+PASS in-progress
+REPORT in_progress in 440/453 samples; mid-stream: turn 5/6, 285 blocks, 280 computed content-visibility auto, seen 267, unrendered 5, AdaptiveStreaming 1, turn cv auto
+REPORT streaming turn blocks over time (blocks/cvAuto/seen/unrendered): 1/1/0/0 74/71/63/8 166/160/143/16 195/187/178/8 285/280/267/5 374/369/354/5 437/433/418/4 542/539/515/9
+REPORT after completion: turn 5/6, in_progress 0, 612 blocks, cv auto 592, seen 592, unrendered 0, answer 248 chars, scrollTop 9622 of 46873 (fromEnd 36339)
+PASS cv-blocks
+PASS seen-marks
+REPORT marks on the streamed answer: max during stream seen 586, unrendered 30; after: seen 592, unrendered 0
+PASS throttle-matched
+REPORT __butterStats {"smootherFrames":349,"published":348}
+REPORT answer DOM updates while streaming: 325, interval p10 252.8, median 269.70000000000005, p90 357.8 ms
+REPORT native smoother rAF callbacks seen by the harness hook: 0 (hook outermost false), interval median null ms; other publish/flush-like callbacks: [["(t) => {\n      pending.delete(handle);\n      if (entry.canceled) return;\n      lastRun = performance.now();\n      stats.published++;\n      cb(t);\n    }",340]]
+REPORT view while streaming: at the end (within 4 px) in 0/440 samples; fromEnd min 26, median 16183.5, max 36921; scrollTop first 9622, last 9622; after completion fromEnd 36339
+PASS stream-no-jump
+REPORT buttons mid-stream: <button id=- type=button aria-label="Add files and more" data=[data-composer-navigation-target data-state] icons=[#codex-icon-plus-lg-regular-16 #codex-icon-plus-lg-regular-20] matches=[]> <button id=radix-_r_eh_ type=button aria-label="Select ChatGPT model" data=[data-state data-composer-navigation-target data-selected-reasoning-effort] icons=[#codex-icon-chevron-down-md-light-16] matches=[]> <button id=- type=button aria-label="Dictate" data=[data-dictation-button data-state] icons=[#codex-icon-microphone-light-16 #codex-icon-microphone-light-20] matches=[]> <button id=- type=button aria-label="Stop" data=[] icons=[] RIGHTMOST matches=[]>; counts {"pre-jump SEND_BUTTON":0,"branch SEND (testid + aria-labels)":0,"branch structural button[type=submit]":0,"[data-testid=\"send-button\"]":0,"#composer-submit-button":0,"[data-testid=\"stop-button\"]":0}
+PASS rail-new-tick
+PASS rail-new-tick-lit
+REPORT rail after completion: 6 ticks, lit [3,4,5]; during stream ticks 6
+REPORT PHASES=stream: wheel phase skipped
+PASS no-escape
+REPORT network: guard-blocked non-GET 5 [["POST /ces/v1/rgstr",4],["POST /cdn-cgi/challenge-platform/h/b/jsd/oneshot/<id>",1]], WebSockets closed 40
+PASS server-unchanged
+REPORT composer after reload: 0 chars
+SUMMARY p1-ats12-trace: 0 FAILs

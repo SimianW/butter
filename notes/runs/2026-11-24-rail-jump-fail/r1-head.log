@@ -1,0 +1,11 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+r1-head math12 from=top to=0 phase=reload-setup class=failed positions=[[1087,347398],[1112,347377],[1119,347334],[1135,347254],[1170,347172],[1184,347078],[1206,347050],[1251,346997],[1273,346986],[1297,346970],[1320,20],[2344,385],[3316,347409],[4492,20],[4585,385],[5530,347409],[6732,20],[6803,385],[7723,347409]] targetTop=null reversals=5
+r1-head math12 from=top to=1 phase=settled class=failed positions=[[1074,347398],[1097,347334],[1121,347254],[1156,347117],[1170,347078],[1196,347028],[1224,347011],[1249,346986],[1280,32995],[3785,32859],[3897,32126],[5372,347397],[7966,31761],[8157,32126],[9357,347409],[11916,31761],[12113,32126],[12211,32250],[13307,347521]] targetTop=null reversals=5
+r1-head math12 from=top to=2 phase=settled class=failed positions=[[1043,347522],[1068,347501],[1088,347378],[1123,347296],[1137,347241],[1157,347174],[1181,347152],[1205,347121],[1228,347110],[1254,64997],[3943,347545],[5853,65930],[7351,347545],[9420,65930],[10731,347533],[12667,65928],[14013,347545]] targetTop=null reversals=7
+r1-head math12 from=top to=3 phase=settled class=clean samples=201
+r1-head math12 from=bottom to=0 phase=settled class=clean samples=182
+r1-head math12 from=bottom to=1 phase=settled class=clean samples=178
+r1-head math12 from=bottom to=2 phase=settled class=clean samples=179
+r1-head math12 from=bottom to=3 phase=settled class=clean samples=183
+SUMMARY {"jumps":8,"failed":3,"visibleDetour":0,"native":0,"gated":3,"postCompletion":1,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":8,"rawReversalCount":29,"unpinChecks":9,"anchoringOn":0,"cvOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-fail/r1-head.json

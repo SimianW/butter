@@ -1,0 +1,2037 @@
+{
+ "run": "2026-11-23-stream-recheck",
+ "lab": 2,
+ "chromium": "157.0.8103.50 (snap)",
+ "lock": {
+  "owner": "stream-audit-1123",
+  "perf": true,
+  "takenUtc": "2026-11-24T04:19:43Z",
+  "releasedUtc": "2026-11-24T04:38:01Z"
+ },
+ "builds": {
+  "head": {
+   "version_name": "0.1.0-alpha.22+streamaudit.1",
+   "version": "0.1.0.22",
+   "commit": "b2df865",
+   "dir": "~/snap/chromium/common/stream-audit-1123/butter"
+  },
+  "native": "no extension"
+ },
+ "note": "One run per arm and fixture on a software-rendered lab (llvmpipe); perf lock held.",
+ "replays": {
+  "replay-native-ats12": {
+   "arm": "native",
+   "fixture": "ats12",
+   "build": "no extension",
+   "exit": 0,
+   "verdicts": {
+    "replay-hook": "PASS",
+    "replay-streams": "PASS",
+    "in-progress": "PASS",
+    "stream-no-jump": "PASS",
+    "wheel-no-jump": "PASS",
+    "no-escape": "PASS",
+    "server-unchanged": "PASS"
+   },
+   "samples": 378,
+   "inProgressSamples": 364,
+   "midStream": {
+    "blocks": 269,
+    "cvAuto": 0,
+    "seen": 0,
+    "unrendered": 0,
+    "turnCv": "visible",
+    "adaptive": 1
+   },
+   "maxDuringStream": {
+    "seen": 0,
+    "unrendered": 0
+   },
+   "afterCompletion": {
+    "blocks": 612,
+    "cvAuto": 0,
+    "seen": 0,
+    "unrendered": 0,
+    "scrollTop": 9590,
+    "scrollHeight": 46841,
+    "fromEnd": 36339,
+    "streamedTurnHeightPx": 36503
+   },
+   "opened": {
+    "scrollTop": 9414,
+    "scrollHeight": 10326,
+    "entries": 5,
+    "rail": null
+   },
+   "butterStats": null,
+   "answerDomUpdates": {
+    "n": 519,
+    "min": 29.7,
+    "p10": 61.3,
+    "median": 144.9,
+    "p90": 382,
+    "under240": 374
+   },
+   "harnessRafHook": {
+    "exactSmootherMatches": 635,
+    "outermost": true,
+    "publishLikeOther": [],
+    "nativeSmootherIntervalMedianMs": 119.85
+   },
+   "requestKeys": [
+    "turn_attribution",
+    "conversation_id",
+    "action",
+    "model",
+    "parent_message_id",
+    "timezone",
+    "timezone_offset_min",
+    "is_do_not_remember",
+    "client_contextual_info",
+    "conversation_mode",
+    "gizmo_id",
+    "local_function_names",
+    "messages",
+    "supported_encodings",
+    "genui_state_snapshots",
+    "client_prepare_state"
+   ],
+   "longAnimationFrames": {
+    "phaseMs": 107496.4,
+    "types": [
+     "long-animation-frame",
+     "longtask"
+    ],
+    "loaf": {
+     "count": 627,
+     "totalMs": 77609.5,
+     "blockingMs": 40865.4,
+     "maxMs": 783.2
+    },
+    "longtask": {
+     "count": 605,
+     "totalMs": 68319,
+     "blockingMs": 38069,
+     "maxMs": 633
+    }
+   },
+   "wheel": {
+    "upSteps": 55,
+    "downSteps": 55,
+    "wheelDrops": [],
+    "up": {
+     "block": {
+      "steps": 44,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 11,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    },
+    "down": {
+     "block": {
+      "steps": 48,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 6,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    }
+   },
+   "streamDrops": [],
+   "net": {
+    "escapes": 0,
+    "guardBlocked": 5,
+    "wsClosed": 65
+   },
+   "railAfter": null,
+   "summaryLine": "SUMMARY native-ats12: 0 FAILs",
+   "log": "replay-native-ats12.log"
+  },
+  "replay-native-math9": {
+   "arm": "native",
+   "fixture": "math9",
+   "build": "no extension",
+   "exit": 0,
+   "verdicts": {
+    "replay-hook": "PASS",
+    "replay-streams": "PASS",
+    "in-progress": "PASS",
+    "stream-no-jump": "PASS",
+    "wheel-no-jump": "PASS",
+    "no-escape": "PASS",
+    "server-unchanged": "PASS"
+   },
+   "samples": 321,
+   "inProgressSamples": 314,
+   "midStream": {
+    "blocks": 265,
+    "cvAuto": 0,
+    "seen": 0,
+    "unrendered": 0,
+    "turnCv": "visible",
+    "adaptive": 1
+   },
+   "maxDuringStream": {
+    "seen": 0,
+    "unrendered": 0
+   },
+   "afterCompletion": {
+    "blocks": 612,
+    "cvAuto": 0,
+    "seen": 0,
+    "unrendered": 0,
+    "scrollTop": 146471,
+    "scrollHeight": 183722,
+    "fromEnd": 36339,
+    "streamedTurnHeightPx": 36503
+   },
+   "opened": {
+    "scrollTop": 146295,
+    "scrollHeight": 147207,
+    "entries": 5,
+    "rail": null
+   },
+   "butterStats": null,
+   "answerDomUpdates": {
+    "n": 285,
+    "min": 98.8,
+    "p10": 184.7,
+    "median": 303.6,
+    "p90": 570.2,
+    "under240": 79
+   },
+   "harnessRafHook": {
+    "exactSmootherMatches": 346,
+    "outermost": true,
+    "publishLikeOther": [],
+    "nativeSmootherIntervalMedianMs": 267.6
+   },
+   "requestKeys": [
+    "turn_attribution",
+    "conversation_id",
+    "action",
+    "model",
+    "parent_message_id",
+    "timezone",
+    "timezone_offset_min",
+    "is_do_not_remember",
+    "client_contextual_info",
+    "conversation_mode",
+    "gizmo_id",
+    "local_function_names",
+    "messages",
+    "supported_encodings",
+    "genui_state_snapshots",
+    "client_prepare_state"
+   ],
+   "longAnimationFrames": {
+    "phaseMs": 107519.8,
+    "types": [
+     "long-animation-frame",
+     "longtask"
+    ],
+    "loaf": {
+     "count": 486,
+     "totalMs": 92634.6,
+     "blockingMs": 62304.3,
+     "maxMs": 1613.7
+    },
+    "longtask": {
+     "count": 490,
+     "totalMs": 86533,
+     "blockingMs": 62033,
+     "maxMs": 1522
+    }
+   },
+   "wheel": {
+    "upSteps": 55,
+    "downSteps": 55,
+    "wheelDrops": [],
+    "up": {
+     "block": {
+      "steps": 45,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 10,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    },
+    "down": {
+     "block": {
+      "steps": 47,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 7,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    }
+   },
+   "streamDrops": [],
+   "net": {
+    "escapes": 0,
+    "guardBlocked": 5,
+    "wsClosed": 57
+   },
+   "railAfter": null,
+   "summaryLine": "SUMMARY native-math9: 0 FAILs",
+   "log": "replay-native-math9.log"
+  },
+  "replay-head-ats12": {
+   "arm": "head",
+   "fixture": "ats12",
+   "build": "0.1.0-alpha.22+streamaudit.1",
+   "exit": 0,
+   "verdicts": {
+    "replay-hook": "PASS",
+    "replay-streams": "PASS",
+    "in-progress": "PASS",
+    "cv-blocks": "PASS",
+    "seen-marks": "PASS",
+    "throttle-matched": "PASS",
+    "stream-no-jump": "PASS",
+    "rail-new-tick": "PASS",
+    "rail-new-tick-lit": "PASS",
+    "wheel-no-jump": "PASS",
+    "no-escape": "PASS",
+    "server-unchanged": "PASS"
+   },
+   "samples": 449,
+   "inProgressSamples": 437,
+   "midStream": {
+    "blocks": 281,
+    "cvAuto": 281,
+    "seen": 23,
+    "unrendered": 244,
+    "turnCv": "auto",
+    "adaptive": 1
+   },
+   "maxDuringStream": {
+    "seen": 25,
+    "unrendered": 565
+   },
+   "afterCompletion": {
+    "blocks": 612,
+    "cvAuto": 592,
+    "seen": 27,
+    "unrendered": 565,
+    "scrollTop": 9622,
+    "scrollHeight": 94948,
+    "fromEnd": 84414,
+    "streamedTurnHeightPx": 81566
+   },
+   "opened": {
+    "scrollTop": 9446,
+    "scrollHeight": 10358,
+    "entries": 5,
+    "rail": {
+     "ticks": 5,
+     "lit": [
+      3,
+      4
+     ],
+     "dark": false
+    }
+   },
+   "butterStats": {
+    "smootherFrames": 349,
+    "published": 348
+   },
+   "answerDomUpdates": {
+    "n": 320,
+    "min": 153,
+    "p10": 255.1,
+    "median": 267.7,
+    "p90": 392.5,
+    "under240": 6
+   },
+   "harnessRafHook": {
+    "exactSmootherMatches": 0,
+    "outermost": false,
+    "publishLikeOther": [
+     [
+      "(t) => {\n      pending.delete(handle);\n      if (entry.cance...",
+      324
+     ]
+    ],
+    "nativeSmootherIntervalMedianMs": null
+   },
+   "requestKeys": [
+    "turn_attribution",
+    "conversation_id",
+    "action",
+    "model",
+    "parent_message_id",
+    "timezone",
+    "timezone_offset_min",
+    "is_do_not_remember",
+    "client_contextual_info",
+    "conversation_mode",
+    "gizmo_id",
+    "local_function_names",
+    "messages",
+    "supported_encodings",
+    "genui_state_snapshots",
+    "client_prepare_state"
+   ],
+   "longAnimationFrames": {
+    "phaseMs": 107790.6,
+    "types": [
+     "long-animation-frame",
+     "longtask"
+    ],
+    "loaf": {
+     "count": 377,
+     "totalMs": 34271.6,
+     "blockingMs": 11063.5,
+     "maxMs": 2101.4
+    },
+    "longtask": {
+     "count": 345,
+     "totalMs": 28305,
+     "blockingMs": 11055,
+     "maxMs": 1460
+    }
+   },
+   "wheel": {
+    "upSteps": 60,
+    "downSteps": 60,
+    "wheelDrops": [],
+    "up": {
+     "block": {
+      "steps": 48,
+      "visualOver4": 1,
+      "visualMax": 700,
+      "extraScrollOver4": 41,
+      "extraScrollMax": 1312,
+      "over4Sizes": [
+       -700
+      ]
+     },
+     "turn": {
+      "steps": 12,
+      "visualOver4": 9,
+      "visualMax": 1203,
+      "extraScrollOver4": 9,
+      "extraScrollMax": 1203,
+      "over4Sizes": [
+       842,
+       1106,
+       482,
+       882,
+       731,
+       978,
+       928,
+       950,
+       1203
+      ]
+     }
+    },
+    "down": {
+     "block": {
+      "steps": 47,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 11,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    }
+   },
+   "streamDrops": [],
+   "net": {
+    "escapes": 0,
+    "guardBlocked": 6,
+    "wsClosed": 60
+   },
+   "railAfter": "rail after completion: 6 ticks, lit [3,4,5]; during stream ticks 6",
+   "summaryLine": "SUMMARY head-ats12: 0 FAILs",
+   "log": "replay-head-ats12.log"
+  },
+  "replay-head-math9": {
+   "arm": "head",
+   "fixture": "math9",
+   "build": "0.1.0-alpha.22+streamaudit.1",
+   "exit": 0,
+   "verdicts": {
+    "replay-hook": "PASS",
+    "replay-streams": "PASS",
+    "in-progress": "PASS",
+    "cv-blocks": "PASS",
+    "seen-marks": "PASS",
+    "throttle-matched": "PASS",
+    "stream-no-jump": "PASS",
+    "rail-new-tick": "PASS",
+    "rail-new-tick-lit": "PASS",
+    "wheel-no-jump": "PASS",
+    "no-escape": "PASS",
+    "server-unchanged": "PASS"
+   },
+   "samples": 431,
+   "inProgressSamples": 420,
+   "midStream": {
+    "blocks": 284,
+    "cvAuto": 284,
+    "seen": 23,
+    "unrendered": 251,
+    "turnCv": "auto",
+    "adaptive": 1
+   },
+   "maxDuringStream": {
+    "seen": 25,
+    "unrendered": 565
+   },
+   "afterCompletion": {
+    "blocks": 612,
+    "cvAuto": 592,
+    "seen": 27,
+    "unrendered": 565,
+    "scrollTop": 142273,
+    "scrollHeight": 227599,
+    "fromEnd": 84414,
+    "streamedTurnHeightPx": 81566
+   },
+   "opened": {
+    "scrollTop": 142097,
+    "scrollHeight": 143009,
+    "entries": 5,
+    "rail": {
+     "ticks": 5,
+     "lit": [
+      4
+     ],
+     "dark": false
+    }
+   },
+   "butterStats": {
+    "smootherFrames": 349,
+    "published": 348
+   },
+   "answerDomUpdates": {
+    "n": 326,
+    "min": 148.1,
+    "p10": 255.5,
+    "median": 270.1,
+    "p90": 364.5,
+    "under240": 6
+   },
+   "harnessRafHook": {
+    "exactSmootherMatches": 0,
+    "outermost": false,
+    "publishLikeOther": [
+     [
+      "(t) => {\n      pending.delete(handle);\n      if (entry.cance...",
+      337
+     ]
+    ],
+    "nativeSmootherIntervalMedianMs": null
+   },
+   "requestKeys": [
+    "turn_attribution",
+    "conversation_id",
+    "action",
+    "model",
+    "parent_message_id",
+    "timezone",
+    "timezone_offset_min",
+    "is_do_not_remember",
+    "client_contextual_info",
+    "conversation_mode",
+    "gizmo_id",
+    "local_function_names",
+    "messages",
+    "supported_encodings",
+    "genui_state_snapshots",
+    "client_prepare_state"
+   ],
+   "longAnimationFrames": {
+    "phaseMs": 107752.5,
+    "types": [
+     "long-animation-frame",
+     "longtask"
+    ],
+    "loaf": {
+     "count": 544,
+     "totalMs": 45933.8,
+     "blockingMs": 13110,
+     "maxMs": 2061
+    },
+    "longtask": {
+     "count": 470,
+     "totalMs": 36952,
+     "blockingMs": 13452,
+     "maxMs": 1382
+    }
+   },
+   "wheel": {
+    "upSteps": 60,
+    "downSteps": 60,
+    "wheelDrops": [],
+    "up": {
+     "block": {
+      "steps": 49,
+      "visualOver4": 0,
+      "visualMax": 1.1,
+      "extraScrollOver4": 39,
+      "extraScrollMax": 1407,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 11,
+      "visualOver4": 9,
+      "visualMax": 1190,
+      "extraScrollOver4": 9,
+      "extraScrollMax": 1190,
+      "over4Sizes": [
+       842,
+       931,
+       578,
+       880,
+       731,
+       951,
+       928,
+       1020,
+       1190
+      ]
+     }
+    },
+    "down": {
+     "block": {
+      "steps": 47,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "turn": {
+      "steps": 11,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     },
+     "user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0,
+      "over4Sizes": []
+     }
+    }
+   },
+   "streamDrops": [],
+   "net": {
+    "escapes": 0,
+    "guardBlocked": 6,
+    "wsClosed": 69
+   },
+   "railAfter": "rail after completion: 6 ticks, lit [4,5]; during stream ticks 6",
+   "summaryLine": "SUMMARY head-math9: 0 FAILs",
+   "log": "replay-head-math9.log"
+  }
+ },
+ "surveys": {
+  "survey-native-ats12": {
+   "arm": "native",
+   "fixture": "ats12",
+   "exit": 0,
+   "log": "survey-native.log",
+   "positions": [
+    "opened",
+    "top",
+    "middle",
+    "end"
+   ],
+   "counts": {
+    "turn [data-turn-key]": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "markdown root (COLUMN)": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "Dil response root": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "Dil source wrapper [data-dil-source-message-id]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "cv blocks (COLUMN > :not(dil) KEEP)": [
+     122,
+     83,
+     123,
+     122
+    ],
+    "cv blocks (Dil > KEEP)": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-wide-block]": [
+     2,
+     1,
+     2,
+     2
+    ],
+    "[class*=TableFrame-]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-talvt-turn-state]": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "[data-talvt-turn-state=in_progress]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[class*=AdaptiveStreaming]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "inline-size container div.[container-type:inline-size].min-h-full": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "doc": {
+    "[data-turn-key][data-butter-seen]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-butter-seen]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-butter-unrendered]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "chatgpt-butter-nav[data-on]": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "scrollerOverflowAnchor": [
+    "none",
+    "none",
+    "none",
+    "none"
+   ],
+   "scrollerChildrenOverflowAnchor": [
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ]
+   ],
+   "scrollerContainerType": [
+    "normal",
+    "normal",
+    "normal",
+    "normal"
+   ],
+   "chainContainerType": [
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ]
+   ],
+   "sizeContainerAboveTurn": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "mountedTurns": [
+    3,
+    3,
+    1,
+    3
+   ],
+   "turnsCvAuto": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "turnContentVisibility": [
+    "visible",
+    "visible",
+    "visible",
+    "visible"
+   ],
+   "scrollHeight": [
+    10326,
+    40720,
+    40720,
+    40720
+   ]
+  },
+  "survey-native-math9": {
+   "arm": "native",
+   "fixture": "math9",
+   "exit": 0,
+   "log": "survey-native.log",
+   "positions": [
+    "opened",
+    "top",
+    "middle",
+    "end"
+   ],
+   "counts": {
+    "turn [data-turn-key]": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "markdown root (COLUMN)": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "Dil response root": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "Dil source wrapper [data-dil-source-message-id]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "cv blocks (COLUMN > :not(dil) KEEP)": [
+     2231,
+     541,
+     782,
+     782
+    ],
+    "cv blocks (Dil > KEEP)": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-wide-block]": [
+     10,
+     1,
+     6,
+     6
+    ],
+    "[class*=TableFrame-]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-talvt-turn-state]": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "[data-talvt-turn-state=in_progress]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[class*=AdaptiveStreaming]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "inline-size container div.[container-type:inline-size].min-h-full": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "doc": {
+    "[data-turn-key][data-butter-seen]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-butter-seen]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-butter-unrendered]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "chatgpt-butter-nav[data-on]": [
+     0,
+     0,
+     0,
+     0
+    ]
+   },
+   "scrollerOverflowAnchor": [
+    "none",
+    "none",
+    "none",
+    "none"
+   ],
+   "scrollerChildrenOverflowAnchor": [
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ],
+    [
+     "auto",
+     "auto"
+    ]
+   ],
+   "scrollerContainerType": [
+    "normal",
+    "normal",
+    "normal",
+    "normal"
+   ],
+   "chainContainerType": [
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "inline-size",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ]
+   ],
+   "sizeContainerAboveTurn": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "mountedTurns": [
+    3,
+    1,
+    1,
+    1
+   ],
+   "turnsCvAuto": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "turnContentVisibility": [
+    "visible",
+    "visible",
+    "visible",
+    "visible"
+   ],
+   "scrollHeight": [
+    147207,
+    298852,
+    298998,
+    298998
+   ]
+  },
+  "survey-head-ats12": {
+   "arm": "head",
+   "fixture": "ats12",
+   "exit": 0,
+   "log": "survey-head.log",
+   "positions": [
+    "opened",
+    "top",
+    "middle",
+    "end"
+   ],
+   "counts": {
+    "turn [data-turn-key]": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "markdown root (COLUMN)": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "Dil response root": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "Dil source wrapper [data-dil-source-message-id]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "cv blocks (COLUMN > :not(dil) KEEP)": [
+     122,
+     83,
+     123,
+     122
+    ],
+    "cv blocks (Dil > KEEP)": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-wide-block]": [
+     2,
+     1,
+     2,
+     2
+    ],
+    "[class*=TableFrame-]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-talvt-turn-state]": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "[data-talvt-turn-state=in_progress]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[class*=AdaptiveStreaming]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "inline-size container div.[container-type:inline-size].min-h-full": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "doc": {
+    "[data-turn-key][data-butter-seen]": [
+     3,
+     3,
+     1,
+     3
+    ],
+    "[data-butter-seen]": [
+     121,
+     84,
+     119,
+     121
+    ],
+    "[data-butter-unrendered]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "chatgpt-butter-nav[data-on]": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "scrollerOverflowAnchor": [
+    "none",
+    "none",
+    "none",
+    "none"
+   ],
+   "scrollerChildrenOverflowAnchor": [
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ]
+   ],
+   "scrollerContainerType": [
+    "normal",
+    "normal",
+    "normal",
+    "normal"
+   ],
+   "chainContainerType": [
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ]
+   ],
+   "sizeContainerAboveTurn": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "mountedTurns": [
+    3,
+    3,
+    1,
+    3
+   ],
+   "turnsCvAuto": [
+    3,
+    3,
+    1,
+    3
+   ],
+   "turnContentVisibility": [
+    "auto",
+    "auto",
+    "auto",
+    "auto"
+   ],
+   "scrollHeight": [
+    10326,
+    40720,
+    40720,
+    40720
+   ]
+  },
+  "survey-head-math9": {
+   "arm": "head",
+   "fixture": "math9",
+   "exit": 0,
+   "log": "survey-head.log",
+   "positions": [
+    "opened",
+    "top",
+    "middle",
+    "end"
+   ],
+   "counts": {
+    "turn [data-turn-key]": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "markdown root (COLUMN)": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "Dil response root": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "Dil source wrapper [data-dil-source-message-id]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "cv blocks (COLUMN > :not(dil) KEEP)": [
+     2231,
+     541,
+     644,
+     782
+    ],
+    "cv blocks (Dil > KEEP)": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-wide-block]": [
+     10,
+     1,
+     3,
+     6
+    ],
+    "[class*=TableFrame-]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[data-talvt-turn-state]": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "[data-talvt-turn-state=in_progress]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "[class*=AdaptiveStreaming]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "inline-size container div.[container-type:inline-size].min-h-full": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "doc": {
+    "[data-turn-key][data-butter-seen]": [
+     3,
+     1,
+     1,
+     1
+    ],
+    "[data-butter-seen]": [
+     1602,
+     521,
+     614,
+     742
+    ],
+    "[data-butter-unrendered]": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "chatgpt-butter-nav[data-on]": [
+     1,
+     1,
+     1,
+     1
+    ]
+   },
+   "scrollerOverflowAnchor": [
+    "none",
+    "none",
+    "none",
+    "none"
+   ],
+   "scrollerChildrenOverflowAnchor": [
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ],
+    [
+     "none",
+     "none"
+    ]
+   ],
+   "scrollerContainerType": [
+    "normal",
+    "normal",
+    "normal",
+    "normal"
+   ],
+   "chainContainerType": [
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ],
+    [
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal",
+     "normal"
+    ]
+   ],
+   "sizeContainerAboveTurn": [
+    false,
+    false,
+    false,
+    false
+   ],
+   "mountedTurns": [
+    3,
+    1,
+    1,
+    1
+   ],
+   "turnsCvAuto": [
+    3,
+    1,
+    1,
+    1
+   ],
+   "turnContentVisibility": [
+    "auto",
+    "auto",
+    "auto",
+    "auto"
+   ],
+   "scrollHeight": [
+    143009,
+    294689,
+    294689,
+    294689
+   ]
+  }
+ },
+ "baseline_2026_11_18": {
+  "source": "../2026-11-18-live-features/report.md sections 1.1-1.4 and view-shift-by-kind.json",
+  "builds": {
+   "fix": "0.1.0-alpha.21+fix.1 (25f80c2)",
+   "native": "no extension"
+  },
+  "chromium": "156.0.8078.47",
+  "perfLock": false,
+  "midStream": {
+   "fix-math9": {
+    "blocks": 282,
+    "cvAuto": 282,
+    "seen": 23,
+    "unrendered": 244
+   },
+   "fix-ats12": {
+    "blocks": 284,
+    "cvAuto": 284,
+    "seen": 23,
+    "unrendered": 249
+   },
+   "fix-ats12-probe": {
+    "blocks": 286,
+    "cvAuto": 286,
+    "seen": 23,
+    "unrendered": 251
+   },
+   "native": {
+    "blocksRange": [
+     269,
+     275
+    ],
+    "cvAuto": 0,
+    "seen": 0,
+    "unrendered": 0
+   }
+  },
+  "afterCompletion": {
+   "fix-math9": {
+    "blocks": 612,
+    "cvAuto": 592,
+    "seen": 26,
+    "unrendered": 566,
+    "scrollHeight": 229920
+   },
+   "fix-ats12": {
+    "blocks": 612,
+    "cvAuto": 592,
+    "seen": 27,
+    "unrendered": 565,
+    "scrollHeight": 94772
+   },
+   "native-math9": {
+    "blocks": 612,
+    "cvAuto": 0,
+    "scrollHeight": 181797
+   },
+   "native-ats12": {
+    "blocks": 612,
+    "cvAuto": 0,
+    "scrollHeight": 46698
+   },
+   "streamedAnswerHeightPx": {
+    "fix": "81.5-81.6k",
+    "native": "36.4k"
+   }
+  },
+  "butterStats": {
+   "smootherFramesRange": [
+    358,
+    361
+   ],
+   "publishedRange": [
+    357,
+    361
+   ]
+  },
+  "publishIntervals": {
+   "native-ats12": {
+    "n": [
+     671,
+     667
+    ],
+    "min": 17,
+    "p10": 50,
+    "median": 103,
+    "under240": [
+     552,
+     544
+    ]
+   },
+   "native-math9": {
+    "n": 312,
+    "min": 80,
+    "p10": 157,
+    "median": 283,
+    "under240": 112
+   },
+   "fix-ats12": {
+    "n": [
+     336,
+     334
+    ],
+    "min": 150,
+    "p10": 256,
+    "median": 267,
+    "under240": [
+     3,
+     3
+    ]
+   },
+   "fix-math9": {
+    "n": 329,
+    "min": 151,
+    "p10": 257,
+    "median": 268,
+    "under240": 5
+   }
+  },
+  "nativeSmootherCallback": {
+   "exactMatches-math9": 370,
+   "exactMatches-ats12": [
+    835,
+    849
+   ],
+   "intervalMedianMs-ats12": [
+    77,
+    80
+   ],
+   "intervalMedianMs-math9": 242,
+   "otherPublishFlushCallbacks": 0
+  },
+  "railLit": {
+   "math9": [
+    4,
+    5
+   ],
+   "ats12": [
+    3,
+    4,
+    5
+   ]
+  },
+  "requestKeys": "same 16 keys as 2026-11-23 (recording set minus thinking_effort)",
+  "longAnimationFrames": null,
+  "verdicts": "all PASS in 6 replays (3 per arm), exit 0",
+  "perReplay": {
+   "replay-fix-1": {
+    "fixture": "math9",
+    "build": "0.1.0-alpha.21+fix.1",
+    "shift": {
+     "up/block": {
+      "steps": 50,
+      "visualOver4": 0,
+      "visualMax": 1.2,
+      "extraScrollOver4": 38,
+      "extraScrollMax": 1213
+     },
+     "up/turn": {
+      "steps": 10,
+      "visualOver4": 8,
+      "visualMax": 1025,
+      "extraScrollOver4": 8,
+      "extraScrollMax": 1025
+     },
+     "down/block": {
+      "steps": 49,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 9,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 329,
+     "min": 151.3,
+     "p10": 257,
+     "median": 267.8,
+     "under240": 5
+    },
+    "afterCompletion": {
+     "scrollHeight": 229920,
+     "blocks": 612,
+     "cvAuto": 592,
+     "seen": 26,
+     "unrendered": 566,
+     "lastTurnBottomFromViewTop": 85168
+    },
+    "probeWrites": null
+   },
+   "replay-fix-ats12": {
+    "fixture": "ats12",
+    "build": "0.1.0-alpha.21+fix.1",
+    "shift": {
+     "up/block": {
+      "steps": 52,
+      "visualOver4": 0,
+      "visualMax": 1.1,
+      "extraScrollOver4": 41,
+      "extraScrollMax": 1313
+     },
+     "up/turn": {
+      "steps": 8,
+      "visualOver4": 6,
+      "visualMax": 1076,
+      "extraScrollOver4": 6,
+      "extraScrollMax": 1076
+     },
+     "down/block": {
+      "steps": 43,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 16,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 336,
+     "min": 151.9,
+     "p10": 256,
+     "median": 266.6,
+     "under240": 3
+    },
+    "afterCompletion": {
+     "scrollHeight": 94772,
+     "blocks": 612,
+     "cvAuto": 592,
+     "seen": 27,
+     "unrendered": 565,
+     "lastTurnBottomFromViewTop": 85022
+    },
+    "probeWrites": null
+   },
+   "replay-fix-ats12-probe": {
+    "fixture": "ats12",
+    "build": "0.1.0-alpha.21+fix.1",
+    "shift": {
+     "up/block": {
+      "steps": 52,
+      "visualOver4": 0,
+      "visualMax": 1.1,
+      "extraScrollOver4": 41,
+      "extraScrollMax": 1233
+     },
+     "up/turn": {
+      "steps": 8,
+      "visualOver4": 6,
+      "visualMax": 1084,
+      "extraScrollOver4": 6,
+      "extraScrollMax": 1084
+     },
+     "down/block": {
+      "steps": 43,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 16,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 334,
+     "min": 149.9,
+     "p10": 255.8,
+     "median": 266.9,
+     "under240": 3
+    },
+    "afterCompletion": {
+     "scrollHeight": 94934,
+     "blocks": 612,
+     "cvAuto": 592,
+     "seen": 25,
+     "unrendered": 567,
+     "lastTurnBottomFromViewTop": 85184
+    },
+    "probeWrites": 231
+   },
+   "replay-native-1": {
+    "fixture": "math9",
+    "build": "no extension",
+    "shift": {
+     "up/block": {
+      "steps": 42,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "up/turn": {
+      "steps": 13,
+      "visualOver4": 0,
+      "visualMax": 0.1,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/block": {
+      "steps": 47,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 7,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.1,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 312,
+     "min": 79.6,
+     "p10": 156.6,
+     "median": 282.6,
+     "under240": 112
+    },
+    "afterCompletion": {
+     "scrollHeight": 181797,
+     "blocks": 612,
+     "cvAuto": 0,
+     "seen": 0,
+     "unrendered": 0,
+     "lastTurnBottomFromViewTop": 37000
+    },
+    "probeWrites": null
+   },
+   "replay-native-ats12": {
+    "fixture": "ats12",
+    "build": "no extension",
+    "shift": {
+     "up/block": {
+      "steps": 48,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "up/turn": {
+      "steps": 7,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/block": {
+      "steps": 40,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 14,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 671,
+     "min": 17.4,
+     "p10": 50.3,
+     "median": 103.4,
+     "under240": 552
+    },
+    "afterCompletion": {
+     "scrollHeight": 46698,
+     "blocks": 612,
+     "cvAuto": 0,
+     "seen": 0,
+     "unrendered": 0,
+     "lastTurnBottomFromViewTop": 36948
+    },
+    "probeWrites": null
+   },
+   "replay-native-ats12-probe": {
+    "fixture": "ats12",
+    "build": "no extension",
+    "shift": {
+     "up/block": {
+      "steps": 48,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "up/turn": {
+      "steps": 7,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/block": {
+      "steps": 40,
+      "visualOver4": 0,
+      "visualMax": 0.4,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/turn": {
+      "steps": 14,
+      "visualOver4": 0,
+      "visualMax": 0,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     },
+     "down/user": {
+      "steps": 1,
+      "visualOver4": 0,
+      "visualMax": 0.2,
+      "extraScrollOver4": 0,
+      "extraScrollMax": 0
+     }
+    },
+    "answerDomUpdates": {
+     "n": 667,
+     "min": 18.1,
+     "p10": 50.2,
+     "median": 103,
+     "under240": 544
+    },
+    "afterCompletion": {
+     "scrollHeight": 46698,
+     "blocks": 612,
+     "cvAuto": 0,
+     "seen": 0,
+     "unrendered": 0,
+     "lastTurnBottomFromViewTop": 36948
+    },
+    "probeWrites": 8
+   }
+  }
+ }
+}

@@ -1,0 +1,170 @@
+// Node-side helpers of stream-replay-live.mjs (lab/harness/stream-*.mjs), with fake clocks, a fake
+// CDP session and a fake page: no browser.
+import assert from 'node:assert/strict';
+import { EventEmitter } from 'node:events';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import vm from 'node:vm';
+import { tailWindow } from '../lab/harness/stream-laf-report.mjs';
+import { traceWindow } from '../lab/harness/stream-run-opts.mjs';
+import { isStreamDrop } from '../lab/harness/stream-ux-probe.mjs';
+import { veilProbe } from '../lab/harness/stream-veil-probe.mjs';
+
+// A clock that only moves when the code under test pauses (and 5 ms per tick, as a page call would).
+function fakeClock() {
+  let t = 0;
+  const ticks = [];
+  const snaps = [];
+  return {
+    ticks,
+    snaps,
+    now: () => t,
+    pause: async (ms) => {
+      t += ms;
+    },
+    tick: async (el, since) => {
+      ticks.push([el, since]);
+      t += 5;
+    },
+    snap: async () => {
+      snaps.push(t);
+      return { at: t };
+    },
+  };
+}
+
+test('tailWindow: the after snapshot is taken once, 3 s past completion, while the tail keeps ticking to 5 s', async () => {
+  const c = fakeClock();
+  const after = await tailWindow(c.tick, c.snap, -1000, 5000, c);
+  assert.equal(c.snaps.length, 1);
+  assert.ok(c.snaps[0] >= 3000 && c.snaps[0] < 3200, `snap at ${c.snaps[0]}`);
+  assert.deepEqual(after, { at: c.snaps[0] });
+  const later = c.ticks.filter(([, since]) => since > c.snaps[0]);
+  assert.ok(later.length >= 5, `${later.length} ticks after the snapshot`);
+  assert.ok(c.ticks.at(-1)[1] < 5000 && c.ticks.at(-1)[1] >= 4600);
+  assert.equal(c.ticks[0][0] - c.ticks[0][1], 1000, 'el counts from t0');
+});
+
+test('tailWindow: after a 1 s tail the snapshot still waits for 3 s', async () => {
+  const c = fakeClock();
+  await tailWindow(c.tick, c.snap, 0, 1000, c);
+  assert.deepEqual(c.snaps, [3000]);
+  assert.ok(c.ticks.every(([, since]) => since < 1000));
+});
+
+test('isStreamDrop: a fall of more than a viewport counts until the UX probe writes scrollTop', () => {
+  const s = { y: 1000, vh: 800 };
+  assert.equal(isStreamDrop(9000, s), true);
+  assert.equal(isStreamDrop(9000, s, 0), true);
+  assert.equal(isStreamDrop(1500, s, 0), false);
+  assert.equal(isStreamDrop(null, s, 0), false);
+  assert.equal(isStreamDrop(9000, null, 0), false);
+  assert.equal(isStreamDrop(9000, s, 1), false);
+});
+
+test('traceWindow: the closing tick creates the trace file in a directory that does not exist yet', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-'));
+  const file = path.join(dir, 'new', 'run.trace.json');
+  const cdp = new EventEmitter();
+  cdp.send = async (method) => {
+    if (method === 'Tracing.start')
+      cdp.emit('Tracing.dataCollected', { value: [{ name: 'a' }, { name: 'b' }] });
+    if (method === 'Tracing.end') setImmediate(() => cdp.emit('Tracing.tracingComplete'));
+    if (method === 'Runtime.evaluate') return { result: { value: 123 } };
+    return {};
+  };
+  const tw = traceWindow(cdp, 10000, 10000, file);
+  await tw.tick(5000);
+  await tw.tick(15000);
+  assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), {
+    traceEvents: [{ name: 'a' }, { name: 'b' }],
+  });
+  assert.deepEqual(await tw.finish(), { started: true, events: 2, pageStart: 123, file });
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// A page whose evaluate runs the probe's in-page code in a vm context with a controlled
+// animation-frame queue. evaluate() runs frames until a returned promise settles (at most 1000).
+function fakePage({ column = true } = {}) {
+  let id = 0;
+  let queue = [];
+  const rect = { top: 0, bottom: 800, left: 0, right: 800, width: 800, height: 800 };
+  const turn = { getBoundingClientRect: () => ({ ...rect, top: -4000, height: 9000 }) };
+  const sc = {
+    clientHeight: 800,
+    scrollTop: 5000,
+    getBoundingClientRect: () => rect,
+    querySelectorAll: () => [turn],
+  };
+  const col = { getBoundingClientRect: () => rect };
+  const document = {
+    body: {},
+    querySelectorAll: (q) => (q === '.thread-scroll-container' ? [sc] : column ? [col] : []),
+    elementFromPoint: () => null,
+  };
+  const ctx = vm.createContext({
+    document,
+    performance: { now: () => 0 },
+    addEventListener: () => {},
+    getComputedStyle: () => ({ opacity: '1' }),
+    requestAnimationFrame: (cb) => {
+      queue.push([++id, cb]);
+      return id;
+    },
+    cancelAnimationFrame: (n) => {
+      queue = queue.filter(([k]) => k !== n);
+    },
+  });
+  ctx.window = ctx;
+  const page = {
+    frames: 0,
+    frame() {
+      const run = queue;
+      queue = [];
+      page.frames++;
+      for (const [, cb] of run) cb();
+    },
+    async evaluate(x) {
+      const r = vm.runInContext(typeof x === 'string' ? x : `(${x.toString()})()`, ctx);
+      if (!(r instanceof Promise) && !(r && typeof r.then === 'function')) return r;
+      let done = false;
+      let value;
+      r.then((v) => {
+        done = true;
+        value = v;
+      });
+      for (let n = 0; n < 1000 && !done; n++) {
+        await new Promise((res) => setImmediate(res));
+        if (!done) page.frame();
+      }
+      await new Promise((res) => setImmediate(res));
+      assert.ok(done, 'the page call did not settle within 1000 frames');
+      return value;
+    },
+  };
+  return page;
+}
+
+test('veil probe: after the wheel phase stops, the jump to the middle samples once per frame', async () => {
+  const page = fakePage();
+  const summary = {};
+  const vp = await veilProbe(page, { VEILPROBE: '1' }, summary);
+  for (let i = 0; i < 5; i++) page.frame();
+  page.frames = 0;
+  await vp.finish();
+  assert.equal(summary.veilProbe.wheel.n, 5);
+  assert.equal(summary.veilProbe.mid.n, 30);
+  assert.equal(page.frames, 30, `${page.frames} frames gave ${summary.veilProbe.mid.n} samples`);
+});
+
+test('veil probe: without an answer column the jump to the middle gives up after 300 frames', async () => {
+  const page = fakePage({ column: false });
+  const summary = {};
+  const vp = await veilProbe(page, { VEILPROBE: '1' }, summary);
+  page.frames = 0;
+  await vp.finish();
+  assert.equal(summary.veilProbe.mid.n, 0);
+  assert.equal(page.frames, 300);
+});

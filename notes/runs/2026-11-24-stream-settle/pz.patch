@@ -1,0 +1,73 @@
+diff -ruN a/extension/manifest.json b-pz/extension/manifest.json
+--- a/extension/manifest.json
++++ b-pz/extension/manifest.json
+@@ -55,6 +55,7 @@
+       "js": [
+         "shared/config-main.js",
+         "stream/throttle-main.js",
++        "stream/read-fast-main.js",
+         "history/conversation-main.js",
+         "page/reader-main.js",
+         "seek/core-main.js",
+diff -ruN a/extension/stream/read-fast-main.js b-pz/extension/stream/read-fast-main.js
+--- a/extension/stream/read-fast-main.js
++++ b-pz/extension/stream/read-fast-main.js
+@@ -0,0 +1,58 @@
++// Runs in the page's main world at document_start.
++// Read fast path (prototype Z, 2026-11-24). ChatGPT reads `scrollLeft` on elements inside a finished
++// answer, one read at a time; inside a block that content-visibility skips, each read makes the
++// browser update that block's style and layout on the spot. An element under a skipped ancestor
++// that has never been scrolled horizontally has scrollLeft 0, so the getter returns 0 for it without
++// asking the browser. Elements that scrolled (a scroll event, the setter, scrollTo/By/scroll) always
++// read natively, as does everything with Butter's `cv` switched off.
++(() => {
++  const MARK = Symbol.for('chatgpt-butter.read-fast');
++  if (window[MARK]) return;
++  const stats = (window[MARK] = { fast: 0, native: 0 });
++  const skipped = new WeakSet(),
++    scrolled = new WeakSet();
++  document.addEventListener(
++    'contentvisibilityautostatechange',
++    (e) => (e.skipped ? skipped.add(e.target) : skipped.delete(e.target)),
++    true,
++  );
++  document.addEventListener('scroll', (e) => e.target instanceof Element && scrolled.add(e.target), true);
++  const off = () =>
++    document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
++  const E = Element.prototype;
++  const d = Object.getOwnPropertyDescriptor(E, 'scrollLeft');
++  if (!d?.get || !d.set || !d.configurable) return;
++  const get = d.get,
++    set = d.set;
++  const underSkipped = (el) => {
++    for (let p = el.parentElement; p; p = p.parentElement) if (skipped.has(p)) return true;
++    return false;
++  };
++  Object.defineProperty(E, 'scrollLeft', {
++    ...d,
++    get: function () {
++      if (!scrolled.has(this) && !off() && underSkipped(this)) {
++        stats.fast++;
++        return 0;
++      }
++      stats.native++;
++      return get.call(this);
++    },
++    set: function (v) {
++      scrolled.add(this);
++      set.call(this, v);
++    },
++  });
++  for (const name of ['scrollTo', 'scrollBy', 'scroll']) {
++    const m = Object.getOwnPropertyDescriptor(E, name);
++    if (typeof m?.value !== 'function') continue;
++    const f = m.value;
++    const w = {
++      [name]() {
++        scrolled.add(this);
++        return f.apply(this, arguments);
++      },
++    }[name];
++    Object.defineProperty(E, name, { ...m, value: w });
++  }
++})();

@@ -1,0 +1,74 @@
+diff -ruN a/extension/stream/containment.css b-ps/extension/stream/containment.css
+--- a/extension/stream/containment.css
++++ b-ps/extension/stream/containment.css
+@@ -43,6 +43,15 @@
+   content-visibility: auto;
+ }
+ 
++/* Settle (prototype S): for SETTLE_MS after an answer completes, stream/offscreen.js sets
++   data-butter-settle on its turn and the answer's blocks render, so ChatGPT's reads into the
++   finished answer meet laid-out blocks. Same specificity as the rules above; later in the file,
++   so it wins over the seen, in_progress and unrendered rules. */
++html:not([data-butter-off~="cv"]) [data-butter-settle] [data-markdown-text-style="assistant-message"] > :not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-butter-settle] [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > :not([data-wide-block]):not([class*="TableFrame-"]) {
++  content-visibility: visible;
++}
++
+ /* With content-visibility skipping on, the browser's scroll anchoring is off on the chat's content.
+    Chromium's anchoring, adjusting for turns and blocks that skip or render, moved a long chat to
+    its start: while the user wheeled down, on load (it opened at its start instead of its end), and
+diff -ruN a/extension/stream/offscreen.js b-ps/extension/stream/offscreen.js
+--- a/extension/stream/offscreen.js
++++ b-ps/extension/stream/offscreen.js
+@@ -12,6 +12,11 @@
+ // The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+ // skipped in the same task that marks the answer complete, before any observer callback runs, so
+ // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
++// Settle (prototype S, 2026-11-24): when an answer completes, its turn gets data-butter-settle for
++// SETTLE_MS and its blocks render (containment.css), so ChatGPT's reads into the finished answer
++// meet laid-out blocks: one style and layout pass instead of one forced pass per read. Held blocks
++// count as rendered then: the ResizeObserver reports their real size and the flush marks them
++// seen, so once the attribute goes they are skipped again at that size.
+ (() => {
+   const off = () =>
+     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+@@ -86,9 +91,31 @@
+     // Text and KaTeX spans make up most insertions while streaming; only containers can hold targets.
+     if (root.firstElementChild) root.querySelectorAll(TARGETS).forEach(watch);
+   };
++  const SETTLE_MS = 2500;
++  const BUSY = '[data-talvt-turn-state="in_progress"]';
++  const settle = (t) => {
++    if (off() || t.hasAttribute('data-butter-settle')) return;
++    t.setAttribute('data-butter-settle', '');
++    for (const el of waiting)
++      if (t.contains(el)) {
++        skipped.delete(el);
++        waiting.delete(el);
++        shown.add(el);
++        ro.observe(el); // reports its rendered size; the flush marks it seen
++      }
++    setTimeout(
++      () => requestAnimationFrame(() => t.removeAttribute('data-butter-settle')),
++      SETTLE_MS,
++    );
++  };
+   new MutationObserver((records) => {
+     for (const r of records) {
+       for (const n of r.addedNodes) if (n.nodeType === 1) scan(n);
++      // The answer has just completed: let its blocks render for a while (settle).
++      if (r.type === 'attributes' && r.oldValue === 'in_progress') {
++        const t = r.target.closest?.('[data-turn-key]');
++        if (t && !t.matches(BUSY) && !t.querySelector(BUSY)) settle(t);
++      }
+       // An answer that completes is no longer under the streaming rule. Its held-back blocks stay
+       // skipped (data-butter-unrendered). Skipped blocks still queued for the flush got no
+       // attribute in time, so ChatGPT's completion layout has just rendered them: measure them.
+@@ -107,6 +134,7 @@
+     childList: true,
+     subtree: true,
+     attributes: true,
++    attributeOldValue: true,
+     attributeFilter: ['data-talvt-turn-state'],
+   });
+   document.addEventListener('butter-settings', () => {

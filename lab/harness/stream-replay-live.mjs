@@ -4,7 +4,10 @@
 //
 // LAB_ID=2 LAB_OWNER=<owner> EXT=<unpacked dir or empty> LABEL=<name> [FIXTURE=math9]
 //   [REC=~/Dev/butter/lab/harness/recordings/en-t09.json] [OUT=<json>] [NOSEND=1] [PROBE=1]
-//   node lab/harness/stream-replay-live.mjs
+//   [PHASES=stream] [OPTS=<settings json>] [TRACE_AT=<ms>] [APIPROBE=1] [TAIL_MS=5000] [VEILPROBE=1] node lab/harness/stream-replay-live.mjs
+// PHASES=stream skips the wheel phase; OPTS sets Butter's options, put back as found at the end; TRACE_AT
+// traces 10 s around it; APIPROBE=1 times layout-dependent DOM calls from 100 s on (stream-api-probe.mjs);
+// TAIL_MS (5000 or more) keeps observing after completion, VEILPROBE=1 hit-tests veiled blocks while wheeling (stream-veil-probe.mjs); UX=u1,u2,u3,u4 probes the view around completion (stream-ux-probe.mjs).
 //
 // Safety, in three layers: the lab's send guard (aborts every non-GET request to chatgpt.com) on
 // the connection, every WebSocket closed, the service worker bypassed; in the page, the hook answers
@@ -19,7 +22,8 @@
 // Checks (verdict lines): replay-hook, replay-streams, in-progress, cv-blocks (Butter),
 // seen-marks (Butter), throttle-matched (Butter), stream-no-jump, wheel-no-jump, rail-new-tick,
 // rail-new-tick-lit (Butter), no-escape, server-unchanged. REPORT lines: buttons, pre-jump
-// condition, publish intervals, smoother callback sources, view shifts, follow-the-end samples.
+// condition, publish intervals, smoother callback sources, view shifts, follow-the-end samples,
+// long animation frames to 5 s past stream complete, per frame (stream-laf-probe/-report.mjs).
 // No chat text leaves the page; button labels are ChatGPT's UI strings.
 // Exit 1: any FAIL. Exit 2: setup error.
 import fs from 'node:fs';
@@ -29,6 +33,11 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
 import { installScrollProbe } from './rail-jump-scroll-probe.mjs';
+import { startLaf, tailWindow, lafReport } from './stream-laf-report.mjs';
+import { prepareOpts, putBack } from './stream-run-opts.mjs';
+import { streamWindows } from './stream-api-probe.mjs';
+import { veilProbe } from './stream-veil-probe.mjs';
+import { uxProbe, isStreamDrop } from './stream-ux-probe.mjs';
 
 const env = process.env;
 const label = env.LABEL || 'replay';
@@ -88,7 +97,7 @@ function replayHook(R) {
         const t0 = performance.now();
         for (const [at, txt] of R.schedule) {
           const wait = at - (performance.now() - t0); if (wait > 0) await new Promise(r => setTimeout(r, wait));
-          c.enqueue(enc.encode(remap(txt))); st.chunksSent++;
+          c.enqueue(enc.encode(remap(txt))); st.chunksSent++; st.lastChunkAt = performance.now(); st.firstChunkAt ??= st.lastChunkAt;
         }
         c.close(); st.done = true; st.endedAt = performance.now();
       } });
@@ -253,7 +262,7 @@ const shiftStats = rows => {
 };
 const fmtShift = st => `${st.over4}/${st.tracked} over 4px${st.over4 ? ` (${st.over4Sizes.join(', ')} px)` : ''}, median ${st.median ?? '-'}, max ${st.max ?? '-'} (lost ${st.lost}, none ${st.none}, clamped ${st.clamped})`;
 
-let browser, context, page;
+let browser, context, page, optSaved = null, extId = null;
 let exit = 0;
 try {
   if (env.EXT !== undefined) {
@@ -278,7 +287,8 @@ try {
   for (const o of context.pages()) if (o !== page) await o.close();
   let build = 'no extension';
   if (extDir) {
-    const id = [...createHash('sha256').update(extDir).digest('hex').slice(0, 32)].map(h => String.fromCharCode(97 + parseInt(h, 16))).join('');
+    const id = extId = [...createHash('sha256').update(extDir).digest('hex').slice(0, 32)].map(h => String.fromCharCode(97 + parseInt(h, 16))).join('');
+    const po = await prepareOpts(context, id, env.OPTS, summary); optSaved = po.saved; report(po.line);
     const w = await context.newPage();
     await w.goto(`chrome-extension://${id}/popup/popup.html`);
     build = await w.evaluate(() => chrome.runtime.getManifest().version_name);
@@ -295,6 +305,7 @@ try {
   await cdp.send('Runtime.enable');
   if (env.PROBE === '1') await page.addInitScript(installScrollProbe, 'MAIN');
   await page.addInitScript(replayHook, REPLAY);
+  const tw = await streamWindows(page, cdp, env, out); // APIPROBE, TRACE_AT, hydration counts (stream-api-probe.mjs)
   await page.bringToFront();
 
   // ---- open ----
@@ -338,13 +349,16 @@ try {
     verdict(hookOk, 'replay-hook', `self-test POST answered ${JSON.stringify(self)}, not by the hook`);
     if (!hookOk) throw Object.assign(Error('replay hook not in the fetch chain; nothing pressed'), { setup: true });
     await page.evaluate(() => window.__rp.watch());
+    await startLaf(page);
+    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0]);
     await page.keyboard.press('Enter');
     const samples = []; let stopSeen = null, t0 = Date.now(), lastY = null, drops = [];
     const total = schedule.at(-1)[0];
     for (;;) {
-      const s = await page.evaluate(() => ({ s: window.__rp.stream(), r: window.__replay.started ? { c: window.__replay.chunksSent, d: window.__replay.done } : null, rail: window.__rp.rail() }));
+      await tw.tick(Date.now() - t0);
+      const s = await page.evaluate(() => ({ s: window.__rp.stream(), r: window.__replay.started ? { c: window.__replay.chunksSent, d: window.__replay.done } : null, rail: window.__rp.rail(), ux: window.__ux?.acts.length ?? 0 }));
       samples.push({ ...s.s, chunks: s.r?.c ?? 0, done: !!s.r?.d, rail: s.rail });
-      if (lastY != null && s.s && lastY - s.s.y > s.s.vh) drops.push([lastY, s.s.y]);
+      if (isStreamDrop(lastY, s.s, s.ux)) drops.push([lastY, s.s.y]);
       lastY = s.s?.y ?? lastY;
       if (!stopSeen && s.r && s.r.c > schedule.length / 3) stopSeen = await page.evaluate(() => window.__rp.buttons());
       const el = Date.now() - t0;
@@ -354,8 +368,8 @@ try {
       await pause(200);
     }
     const pubTimes = await page.evaluate(() => window.__rp.unwatch());
-    await pause(3000);
-    const after = await page.evaluate(() => ({ s: window.__rp.stream(), rail: window.__rp.rail(), state: window.__rp.state(), denied: window.__rp.denied(), raf: window.__rp.rafTimes() }));
+    const after = await tailWindow((a, b) => tw.tick(a, b), () => page.evaluate(() => ({ s: window.__rp.stream(), rail: window.__rp.rail(), state: window.__rp.state(), denied: window.__rp.denied(), raf: window.__rp.rafTimes() })), t0, Number(env.TAIL_MS || 5000), { pause }); // ticks for TAIL_MS, `after` at 3 s
+    for (const l of await lafReport(page, tw, ux, summary)) report(l);
     summary.stream = { samples, stopProbe: stopSeen, after, drops, pubIntervals: intervals(pubTimes) };
     const rs = after.state.replay;
     report(`replay: started ${!!rs.started}, chunks ${rs.chunksSent}/${schedule.length}, done ${rs.done}, local answers [${rs.local.join(', ')}], denied in page ${after.denied.length}: ${JSON.stringify([...new Set(after.denied.map(d => `${d.method} ${template(d.path)}`))])}, request keys ${JSON.stringify(rs.reqKeys ?? null)}`);
@@ -401,6 +415,8 @@ try {
     } else report(`native: no rail; entries ${fin.entries} (before ${entries0})`);
 
     // ---- wheel up through the streamed answer and back down, view shift per step ----
+    if (env.PHASES === 'stream') report('PHASES=stream: wheel phase skipped'); else {
+    const vp = await veilProbe(page, env, summary);
     for (let i = 0; i < 3; i++) { await page.evaluate(() => window.__rp.toEnd()); await pause(600); }
     await pause(1500);
     const g = await page.evaluate(() => window.__rp.geo());
@@ -447,11 +463,13 @@ try {
     await pause(1500);
     const gEnd = await page.evaluate(() => window.__rp.geo());
     summary.wheel = { upSteps, up, down, wheelDrops, end: gEnd };
+    if (vp) for (const l of await vp.finish()) report(l);
     const su = shiftStats(up), sd = shiftStats(down);
     const inLast = rows => shiftStats(rows.filter(r => r?.inLast));
     report(`view shift up (${up.length} steps): ${fmtShift(su)}; in the streamed answer: ${fmtShift(inLast(up))}`);
     report(`view shift down (${down.length} steps, ended fromEnd ${gEnd.fromEnd}): ${fmtShift(sd)}; in the streamed answer: ${fmtShift(inLast(down))}`);
     verdict(wheelDrops.length === 0, 'wheel-no-jump', `scrollTop fell by more than a viewport while wheeling down: ${wheelDrops.slice(0, 3).map(d => `${d[0]} → ${d[1]} at step ${d[2]}`).join(', ')}`);
+    }
     await ed.click().catch(() => {}); await page.keyboard.press('Control+A'); await page.keyboard.press('Backspace');
   }
 
@@ -474,6 +492,7 @@ try {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
 } finally {
+  if (optSaved) report(await putBack(context, extId, optSaved, summary));
   save();
   await browser?.close().catch(() => {});
 }

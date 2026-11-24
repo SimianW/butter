@@ -1,0 +1,173 @@
+diff -ruN a/extension/stream/containment.css b-p1s/extension/stream/containment.css
+--- a/extension/stream/containment.css
++++ b-p1s/extension/stream/containment.css
+@@ -42,6 +42,22 @@
+ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
+   content-visibility: auto;
+ }
++/* Idle hydration (prototype P1): a held block being measured renders, so the browser records its
++   real size (contain-intrinsic-size: auto); stream/offscreen.js marks it seen at the next flush and
++   removes the attribute. Same specificity as the rules above; later in the file, so it wins. */
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-measure]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-measure]:not([data-wide-block]):not([class*="TableFrame-"]) {
++  content-visibility: visible;
++}
++
++/* Settle (prototype S): for SETTLE_MS after an answer completes, stream/offscreen.js sets
++   data-butter-settle on its turn and the answer's blocks render, so ChatGPT's reads into the
++   finished answer meet laid-out blocks. Same specificity as the rules above; later in the file,
++   so it wins over the seen, in_progress and unrendered rules. */
++html:not([data-butter-off~="cv"]) [data-butter-settle] [data-markdown-text-style="assistant-message"] > :not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-butter-settle] [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > :not([data-wide-block]):not([class*="TableFrame-"]) {
++  content-visibility: visible;
++}
+ 
+ /* With content-visibility skipping on, the browser's scroll anchoring is off on the chat's content.
+    Chromium's anchoring, adjusting for turns and blocks that skip or render, moved a long chat to
+diff -ruN a/extension/stream/offscreen.js b-p1s/extension/stream/offscreen.js
+--- a/extension/stream/offscreen.js
++++ b-p1s/extension/stream/offscreen.js
+@@ -12,6 +12,15 @@
+ // The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+ // skipped in the same task that marks the answer complete, before any observer callback runs, so
+ // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
++// Settle (prototype S, 2026-11-24): when an answer completes, its turn gets data-butter-settle for
++// SETTLE_MS and its blocks render (containment.css), so ChatGPT's reads into the finished answer
++// meet laid-out blocks: one style and layout pass instead of one forced pass per read. Held blocks
++// count as rendered then: the ResizeObserver reports their real size and the flush marks them
++// seen, so once the attribute goes they are skipped again at that size.
++// Idle hydration (prototype P1, 2026-11-24): a held block is also queued (`pending`) and laid out
++// early, a few per idle callback while the answer streams: data-butter-measure makes it render
++// (containment.css) so the browser remembers its real size; the flush then marks it seen as usual.
++// The block the stream is still writing into (no next sibling) waits until the answer completes.
+ (() => {
+   const off = () =>
+     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+@@ -33,6 +42,52 @@
+     // placeholder for the seek recorder however often it was read.
+     shown = new WeakSet();
+   let scheduled = false;
++  // Idle hydration: at most BATCH blocks per idle callback, callbacks at least GAP_MS apart.
++  const BATCH = 3,
++    GAP_MS = 100,
++    IDLE_TIMEOUT = 1500;
++  const pending = new Set();
++  let idle = false,
++    hydrated = 0;
++  const BUSY = '[data-talvt-turn-state="in_progress"]';
++  const counters = () => {
++    const h = document.documentElement;
++    h?.setAttribute('data-butter-hydrated', String(hydrated));
++    h?.setAttribute('data-butter-hydrate-pending', String(pending.size));
++  };
++  const hydrate = () => {
++    if (off()) {
++      pending.clear();
++      idle = false;
++      return;
++    }
++    let n = 0;
++    for (const el of pending) {
++      if (n >= BATCH) break;
++      if (!el.isConnected || el.hasAttribute('data-butter-seen') || !waiting.has(el)) {
++        pending.delete(el);
++        continue;
++      }
++      // Finished once a later sibling exists, or once the answer is complete.
++      if (!el.nextElementSibling && el.closest(BUSY)) continue;
++      pending.delete(el);
++      el.setAttribute('data-butter-measure', '');
++      skipped.delete(el);
++      waiting.delete(el);
++      shown.add(el);
++      ro.observe(el); // reports its rendered size; the flush marks it seen
++      n++;
++    }
++    setTimeout(() => {
++      idle = false;
++      later();
++    }, GAP_MS);
++  };
++  const later = () => {
++    if (idle || !pending.size || off()) return;
++    idle = true;
++    requestIdleCallback(hydrate, { timeout: IDLE_TIMEOUT });
++  };
+   const flush = () => {
+     scheduled = false;
+     if (off()) {
+@@ -43,15 +98,23 @@
+       if (!el.isConnected) continue;
+       else if (skipped.has(el) && !shown.has(el)) hold(el);
+       else {
++        if (el.hasAttribute('data-butter-measure')) {
++          el.removeAttribute('data-butter-measure');
++          hydrated++;
++        }
+         el.setAttribute('data-butter-seen', '');
+         el.removeAttribute('data-butter-unrendered');
+       }
+     queue.clear();
++    counters();
+   };
+   // Only answer blocks take the attribute; containment.css has no rule for it on turns.
+   const hold = (el) => {
+     waiting.add(el);
+-    if (!el.hasAttribute('data-turn-key')) el.setAttribute('data-butter-unrendered', '');
++    if (el.hasAttribute('data-turn-key')) return;
++    el.setAttribute('data-butter-unrendered', '');
++    pending.add(el);
++    later();
+   };
+   const rendered = (el) => {
+     skipped.delete(el);
+@@ -86,9 +149,31 @@
+     // Text and KaTeX spans make up most insertions while streaming; only containers can hold targets.
+     if (root.firstElementChild) root.querySelectorAll(TARGETS).forEach(watch);
+   };
++  const SETTLE_MS = 2500;
++  const settle = (t) => {
++    if (off() || t.hasAttribute('data-butter-settle')) return;
++    t.setAttribute('data-butter-settle', '');
++    for (const el of waiting)
++      if (t.contains(el)) {
++        skipped.delete(el);
++        waiting.delete(el);
++        pending.delete(el);
++        shown.add(el);
++        ro.observe(el); // reports its rendered size; the flush marks it seen
++      }
++    setTimeout(
++      () => requestAnimationFrame(() => t.removeAttribute('data-butter-settle')),
++      SETTLE_MS,
++    );
++  };
+   new MutationObserver((records) => {
+     for (const r of records) {
+       for (const n of r.addedNodes) if (n.nodeType === 1) scan(n);
++      // The answer has just completed: let its blocks render for a while (settle).
++      if (r.type === 'attributes' && r.oldValue === 'in_progress') {
++        const t = r.target.closest?.('[data-turn-key]');
++        if (t && !t.matches(BUSY) && !t.querySelector(BUSY)) settle(t);
++      }
+       // An answer that completes is no longer under the streaming rule. Its held-back blocks stay
+       // skipped (data-butter-unrendered). Skipped blocks still queued for the flush got no
+       // attribute in time, so ChatGPT's completion layout has just rendered them: measure them.
+@@ -107,6 +192,7 @@
+     childList: true,
+     subtree: true,
+     attributes: true,
++    attributeOldValue: true,
+     attributeFilter: ['data-talvt-turn-state'],
+   });
+   document.addEventListener('butter-settings', () => {
+@@ -114,6 +200,9 @@
+       ro.disconnect();
+       queue.clear();
+       waiting.clear();
++      pending.clear();
++      for (const el of document.querySelectorAll('[data-butter-measure]'))
++        el.removeAttribute('data-butter-measure');
+     } else if (document.documentElement) scan(document.documentElement);
+   });
+   if (document.documentElement) scan(document.documentElement);

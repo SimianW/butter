@@ -1,0 +1,176 @@
+diff -ruN a/extension/stream/containment.css b-pvh/extension/stream/containment.css
+--- a/extension/stream/containment.css
++++ b-pvh/extension/stream/containment.css
+@@ -42,6 +42,24 @@
+ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
+   content-visibility: auto;
+ }
++/* Veil (prototype pv): a held block that has never rendered computes opacity 0, so ChatGPT's
++   paint-readiness walk stops at it (stream/offscreen.js). It is skipped, so nothing changes on
++   screen; the attribute goes when the block stops being skipped. Only where the rules above make
++   it content-visibility: auto (a streaming answer, or a held block): a block that leaves those
++   rules renders without a contentvisibilityautostatechange event, and must not stay at opacity 0. */
++html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] > [data-butter-veil]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-talvt-turn-state="in_progress"] [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-veil]:not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-veil][data-butter-unrendered]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-veil][data-butter-unrendered]:not([data-wide-block]):not([class*="TableFrame-"]) {
++  opacity: 0;
++}
++/* Late hydration (prototype pvh): a held block being measured renders, so the browser records its
++   real size (contain-intrinsic-size: auto); stream/offscreen.js marks it seen at the next flush and
++   removes the attribute. Same specificity as the rules above; later in the file, so it wins. */
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] > [data-butter-measure]:not([data-dil-source-message-id]):not([data-wide-block]):not([class*="TableFrame-"]),
++html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"] [class*="DilResponseRoot"] > [data-butter-measure]:not([data-wide-block]):not([class*="TableFrame-"]) {
++  content-visibility: visible;
++}
+ 
+ /* With content-visibility skipping on, the browser's scroll anchoring is off on the chat's content.
+    Chromium's anchoring, adjusting for turns and blocks that skip or render, moved a long chat to
+diff -ruN a/extension/stream/offscreen.js b-pvh/extension/stream/offscreen.js
+--- a/extension/stream/offscreen.js
++++ b-pvh/extension/stream/offscreen.js
+@@ -12,6 +12,16 @@
+ // The attribute must be in place before completion: ChatGPT lays out every block that is no longer
+ // skipped in the same task that marks the answer complete, before any observer callback runs, so
+ // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
++// Veil (prototype pv, 2026-11-24): an answer block that starts being skipped before it ever
++// rendered gets data-butter-veil, which makes it compute opacity 0 (containment.css). A skipped
++// block paints nothing either way, but ChatGPT's paint-readiness telemetry stops its walk at an
++// element whose computed opacity is "0", so it no longer forces style and layout inside held
++// blocks. The veil comes off first thing when the block stops being skipped (also when ChatGPT's
++// completion lets a queued block render), at the flush that marks it seen, and when cv goes off.
++// Late hydration (prototype pvh, 2026-11-24): once an answer has completed, its held blocks are
++// laid out a few per idle callback (data-butter-measure renders them, containment.css), so the
++// browser records their real size and the flush marks them seen. While the answer streams they
++// only wait in `pending`.
+ (() => {
+   const off = () =>
+     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
+@@ -33,6 +43,57 @@
+     // placeholder for the seek recorder however often it was read.
+     shown = new WeakSet();
+   let scheduled = false;
++  const VEIL = 'data-butter-veil';
++  // Late hydration: at most BATCH blocks per idle callback, callbacks at least GAP_MS apart.
++  const BATCH = 6,
++    GAP_MS = 100,
++    IDLE_TIMEOUT = 1500;
++  const pending = new Set();
++  let idle = false,
++    hydrated = 0;
++  const BUSY = '[data-talvt-turn-state="in_progress"]';
++  const counters = () => {
++    const h = document.documentElement;
++    h?.setAttribute('data-butter-hydrated', String(hydrated));
++    h?.setAttribute('data-butter-hydrate-pending', String(pending.size));
++  };
++  const hydrate = () => {
++    if (off()) {
++      pending.clear();
++      idle = false;
++      return;
++    }
++    let n = 0;
++    for (const el of pending) {
++      if (n >= BATCH) break;
++      if (!el.isConnected || el.hasAttribute('data-butter-seen') || !waiting.has(el)) {
++        pending.delete(el);
++        continue;
++      }
++      if (el.closest(BUSY)) continue; // its answer still streams: it waits for completion
++      pending.delete(el);
++      el.setAttribute('data-butter-measure', '');
++      el.removeAttribute(VEIL);
++      skipped.delete(el);
++      waiting.delete(el);
++      shown.add(el);
++      ro.observe(el); // reports its rendered size; the flush marks it seen
++      n++;
++    }
++    if (!n) {
++      idle = false; // only blocks of streaming answers left: their completion schedules again
++      return;
++    }
++    setTimeout(() => {
++      idle = false;
++      later();
++    }, GAP_MS);
++  };
++  const later = () => {
++    if (idle || !pending.size || off()) return;
++    idle = true;
++    requestIdleCallback(hydrate, { timeout: IDLE_TIMEOUT });
++  };
+   const flush = () => {
+     scheduled = false;
+     if (off()) {
+@@ -43,15 +104,24 @@
+       if (!el.isConnected) continue;
+       else if (skipped.has(el) && !shown.has(el)) hold(el);
+       else {
++        if (el.hasAttribute('data-butter-measure')) {
++          el.removeAttribute('data-butter-measure');
++          hydrated++;
++        }
+         el.setAttribute('data-butter-seen', '');
+         el.removeAttribute('data-butter-unrendered');
++        el.removeAttribute(VEIL);
+       }
+     queue.clear();
++    counters();
+   };
+   // Only answer blocks take the attribute; containment.css has no rule for it on turns.
+   const hold = (el) => {
+     waiting.add(el);
+-    if (!el.hasAttribute('data-turn-key')) el.setAttribute('data-butter-unrendered', '');
++    if (el.hasAttribute('data-turn-key')) return;
++    el.setAttribute('data-butter-unrendered', '');
++    pending.add(el);
++    if (!el.closest(BUSY)) later();
+   };
+   const rendered = (el) => {
+     skipped.delete(el);
+@@ -62,7 +132,18 @@
+   };
+   document.addEventListener(
+     'contentvisibilityautostatechange',
+-    (e) => (e.skipped ? skipped.add(e.target) : rendered(e.target)),
++    (e) => {
++      const el = e.target;
++      if (!e.skipped) {
++        el.removeAttribute(VEIL); // first: a block that renders must never paint veiled
++        rendered(el);
++        return;
++      }
++      skipped.add(el);
++      // A never-rendered answer block (turns have data-turn-key) is veiled while skipped.
++      if (!el.hasAttribute('data-turn-key') && !shown.has(el) && !el.hasAttribute('data-butter-seen'))
++        el.setAttribute(VEIL, '');
++    },
+     true,
+   );
+   const ro = new ResizeObserver((entries) => {
+@@ -98,8 +179,11 @@
+         if (t && !t.matches(busy) && !t.querySelector(busy)) {
+           for (const el of queue)
+             if (skipped.has(el) && t.contains(el))
+-              (queue.delete(el), waiting.add(el), rendered(el));
++              (queue.delete(el), waiting.add(el), el.removeAttribute(VEIL), rendered(el));
++          // Blocks that were never held (no data-butter-unrendered) render now: unveil them.
++          for (const el of t.querySelectorAll('[data-butter-veil]')) if (!waiting.has(el)) el.removeAttribute(VEIL);
+           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
++          later(); // the answer is complete: hydrate its held blocks in idle time
+         }
+       }
+     }
+@@ -114,6 +198,10 @@
+       ro.disconnect();
+       queue.clear();
+       waiting.clear();
++      for (const el of document.querySelectorAll('[data-butter-veil]')) el.removeAttribute(VEIL);
++      pending.clear();
++      for (const el of document.querySelectorAll('[data-butter-measure]'))
++        el.removeAttribute('data-butter-measure');
+     } else if (document.documentElement) scan(document.documentElement);
+   });
+   if (document.documentElement) scan(document.documentElement);

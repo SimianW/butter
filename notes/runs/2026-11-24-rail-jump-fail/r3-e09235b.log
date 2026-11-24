@@ -1,0 +1,11 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":348465,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+r3-e09235b math12 from=top to=0 phase=reload-setup class=failed positions=[[1165,347542],[1189,347478],[1216,347316],[1253,347261],[1269,347194],[1295,347172],[1303,347155],[1326,347141],[1352,347121],[1384,20],[2415,385],[3569,347553],[4916,20],[5091,385],[6371,347553],[7594,20],[7693,385],[8798,347553]] targetTop=null reversals=5
+r3-e09235b math12 from=top to=1 phase=settled class=failed positions=[[1192,347521],[1234,347398],[1269,347261],[1282,347222],[1311,347172],[1335,347155],[1367,347130],[1400,33010],[3975,32874],[4083,32126],[4229,32250],[5246,347677],[8226,31625],[8489,32126],[8616,32250],[9770,347677],[12672,31749],[12876,32126],[12991,32250],[14008,347677]] targetTop=null reversals=5
+r3-e09235b math12 from=top to=2 phase=settled class=failed positions=[[1069,347666],[1092,347602],[1116,347522],[1160,347385],[1185,347318],[1269,65013],[4108,347689],[6088,65959],[7305,347689],[9264,65959],[10501,347689],[12384,65959],[13667,347689]] targetTop=null reversals=7
+r3-e09235b math12 from=top to=3 phase=settled class=clean samples=195
+r3-e09235b math12 from=bottom to=0 phase=settled class=clean samples=178
+r3-e09235b math12 from=bottom to=1 phase=settled class=clean samples=177
+r3-e09235b math12 from=bottom to=2 phase=settled class=clean samples=180
+r3-e09235b math12 from=bottom to=3 phase=settled class=clean samples=174
+SUMMARY {"jumps":8,"failed":3,"visibleDetour":0,"native":0,"gated":3,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":8,"rawReversalCount":29,"unpinChecks":9,"anchoringOn":0,"cvOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-fail/r3-e09235b.json

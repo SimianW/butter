@@ -1,0 +1,6633 @@
+{
+ "question": "Are the 2026-11-24 rail-jump failures on math12 caused by Smoother streaming, another Butter change since 11-19, or neither?",
+ "lab": 2,
+ "fixture": "math12",
+ "runs": [
+  {
+   "run": "r1-head",
+   "build": "head-dev b2df865 (0.1.0-alpha.22+dev.1)",
+   "settings": "defaults",
+   "steps": "8 steps (ONLY)",
+   "utc": [
+    "21:52:41",
+    "21:55:16"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.22+dev.1",
+   "opts": null,
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "normal",
+     "turn": null,
+     "block": null,
+     "contentAnchor": "none"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348321,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 8,
+    "failed": 3,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 3,
+    "postCompletion": 1,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 8,
+    "rawReversalCount": 29,
+    "unpinChecks": 9,
+    "anchoringOn": 0,
+    "cvOff": 0
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2"
+   ],
+   "failedCount": 3,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 2,
+    "blockedMutations": 75
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347409,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 11,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 1045,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1311,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346970,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2284,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2287,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2377,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 3580,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4492,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4497,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 4620,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 5790,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6732,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6734,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 6852,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1087,
+       347398
+      ],
+      [
+       1112,
+       347377
+      ],
+      [
+       1119,
+       347334
+      ],
+      [
+       1135,
+       347254
+      ],
+      [
+       1170,
+       347172
+      ],
+      [
+       1184,
+       347078
+      ],
+      [
+       1206,
+       347050
+      ],
+      [
+       1251,
+       346997
+      ],
+      [
+       1273,
+       346986
+      ],
+      [
+       1297,
+       346970
+      ],
+      [
+       1320,
+       20
+      ],
+      [
+       2344,
+       385
+      ],
+      [
+       3316,
+       347409
+      ],
+      [
+       4492,
+       20
+      ],
+      [
+       4585,
+       385
+      ],
+      [
+       5530,
+       347409
+      ],
+      [
+       6732,
+       20
+      ],
+      [
+       6803,
+       385
+      ],
+      [
+       7723,
+       347409
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347521,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 90,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 997,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1258,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346986,
+       "to": 32995,
+       "toEnd": false
+      },
+      {
+       "t": 3516,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32995,
+       "to": 32859,
+       "toEnd": false
+      },
+      {
+       "t": 3786,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32859,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3790,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4259,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347397,
+       "toEnd": true
+      },
+      {
+       "t": 5623,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347397,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7967,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7969,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 8408,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 9607,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11916,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11920,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 12119,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 12337,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32250,
+       "to": 347521,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1074,
+       347398
+      ],
+      [
+       1097,
+       347334
+      ],
+      [
+       1121,
+       347254
+      ],
+      [
+       1156,
+       347117
+      ],
+      [
+       1170,
+       347078
+      ],
+      [
+       1196,
+       347028
+      ],
+      [
+       1224,
+       347011
+      ],
+      [
+       1249,
+       346986
+      ],
+      [
+       1280,
+       32995
+      ],
+      [
+       3785,
+       32859
+      ],
+      [
+       3897,
+       32126
+      ],
+      [
+       5372,
+       347397
+      ],
+      [
+       7966,
+       31761
+      ],
+      [
+       8157,
+       32126
+      ],
+      [
+       9357,
+       347409
+      ],
+      [
+       11916,
+       31761
+      ],
+      [
+       12113,
+       32126
+      ],
+      [
+       12211,
+       32250
+      ],
+      [
+       13307,
+       347521
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347533,
+     "final": 347545,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 4,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 84,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 977,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347533,
+       "to": 347077,
+       "toEnd": true
+      },
+      {
+       "t": 1237,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347110,
+       "to": 64997,
+       "toEnd": false
+      },
+      {
+       "t": 3048,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 64997,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 4420,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 6386,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 7885,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 9790,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 11231,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 65928,
+       "toEnd": false
+      },
+      {
+       "t": 13050,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65928,
+       "to": 347545,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1043,
+       347522
+      ],
+      [
+       1068,
+       347501
+      ],
+      [
+       1088,
+       347378
+      ],
+      [
+       1123,
+       347296
+      ],
+      [
+       1137,
+       347241
+      ],
+      [
+       1157,
+       347174
+      ],
+      [
+       1181,
+       347152
+      ],
+      [
+       1205,
+       347121
+      ],
+      [
+       1228,
+       347110
+      ],
+      [
+       1254,
+       64997
+      ],
+      [
+       3943,
+       347545
+      ],
+      [
+       5853,
+       65930
+      ],
+      [
+       7351,
+       347545
+      ],
+      [
+       9420,
+       65930
+      ],
+      [
+       10731,
+       347533
+      ],
+      [
+       12667,
+       65928
+      ],
+      [
+       14013,
+       347545
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 78852,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  },
+  {
+   "run": "r2-head-smoother-off",
+   "build": "head-dev b2df865 (0.1.0-alpha.22+dev.1)",
+   "settings": "SMOOTHER=off (container, cv, throttle false)",
+   "steps": "8 steps (ONLY)",
+   "utc": [
+    "21:55:19",
+    "21:58:04"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.22+dev.1",
+   "opts": {
+    "container": false,
+    "cv": false,
+    "throttle": false
+   },
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "inline-size",
+     "turn": null,
+     "block": null,
+     "contentAnchor": "auto"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "container cv throttle layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348321,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 8,
+    "failed": 3,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 3,
+    "postCompletion": 0,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 8,
+    "rawReversalCount": 27,
+    "unpinChecks": 9,
+    "anchoringOn": 0,
+    "cvOff": 9
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2"
+   ],
+   "failedCount": 3,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 2,
+    "blockedMutations": 79
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347409,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 41,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 1075,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1339,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346977,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2411,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2414,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2647,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 3876,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4923,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4925,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 5162,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 6379,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7515,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7517,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 7744,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1148,
+       347398
+      ],
+      [
+       1174,
+       347334
+      ],
+      [
+       1199,
+       347254
+      ],
+      [
+       1244,
+       347117
+      ],
+      [
+       1259,
+       347050
+      ],
+      [
+       1286,
+       347011
+      ],
+      [
+       1310,
+       346997
+      ],
+      [
+       1335,
+       346977
+      ],
+      [
+       1362,
+       20
+      ],
+      [
+       2527,
+       385
+      ],
+      [
+       3611,
+       347409
+      ],
+      [
+       4922,
+       20
+      ],
+      [
+       5042,
+       385
+      ],
+      [
+       6118,
+       347409
+      ],
+      [
+       7515,
+       20
+      ],
+      [
+       7625,
+       385
+      ],
+      [
+       8638,
+       347409
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347533,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 34,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 975,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1236,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346997,
+       "to": 32995,
+       "toEnd": false
+      },
+      {
+       "t": 3481,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32995,
+       "to": 32859,
+       "toEnd": false
+      },
+      {
+       "t": 3744,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32859,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3746,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4092,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 4329,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 4330,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 5513,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7725,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 7879,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7882,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 8193,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 8420,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 8420,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 9673,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 11901,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 12055,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 12057,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 12431,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 12685,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 12685,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1068,
+       347377
+      ],
+      [
+       1092,
+       347334
+      ],
+      [
+       1115,
+       347172
+      ],
+      [
+       1152,
+       347117
+      ],
+      [
+       1166,
+       347050
+      ],
+      [
+       1191,
+       347028
+      ],
+      [
+       1216,
+       346997
+      ],
+      [
+       1242,
+       32995
+      ],
+      [
+       3743,
+       32859
+      ],
+      [
+       3900,
+       32126
+      ],
+      [
+       4254,
+       32250
+      ],
+      [
+       5260,
+       347533
+      ],
+      [
+       7879,
+       31625
+      ],
+      [
+       8118,
+       32126
+      ],
+      [
+       8349,
+       32250
+      ],
+      [
+       9406,
+       347533
+      ],
+      [
+       12055,
+       31749
+      ],
+      [
+       12361,
+       32126
+      ],
+      [
+       12599,
+       32250
+      ],
+      [
+       13639,
+       347533
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347533,
+     "final": 347545,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 4,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 34,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 1014,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347533,
+       "to": 347077,
+       "toEnd": true
+      },
+      {
+       "t": 1277,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347110,
+       "to": 64997,
+       "toEnd": false
+      },
+      {
+       "t": 3196,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 64997,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 4572,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 6381,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 7725,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 9565,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 11047,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 12865,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1084,
+       347522
+      ],
+      [
+       1106,
+       347501
+      ],
+      [
+       1129,
+       347458
+      ],
+      [
+       1153,
+       347296
+      ],
+      [
+       1188,
+       347241
+      ],
+      [
+       1202,
+       347174
+      ],
+      [
+       1226,
+       347152
+      ],
+      [
+       1250,
+       347121
+      ],
+      [
+       1273,
+       347110
+      ],
+      [
+       1299,
+       64997
+      ],
+      [
+       4118,
+       347545
+      ],
+      [
+       6059,
+       65930
+      ],
+      [
+       7286,
+       347545
+      ],
+      [
+       9246,
+       65930
+      ],
+      [
+       10493,
+       347545
+      ],
+      [
+       12539,
+       65930
+      ],
+      [
+       13789,
+       347545
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 78852,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  },
+  {
+   "run": "r3-e09235b",
+   "build": "e09235b dev (0.1.0-alpha.21+dev.1)",
+   "settings": "defaults",
+   "steps": "8 steps (ONLY)",
+   "utc": [
+    "21:58:12",
+    "22:00:53"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.21+dev.1",
+   "opts": null,
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "normal",
+     "turn": null,
+     "block": null,
+     "contentAnchor": "none"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348465,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 8,
+    "failed": 3,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 3,
+    "postCompletion": 0,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 8,
+    "rawReversalCount": 29,
+    "unpinChecks": 9,
+    "anchoringOn": 0,
+    "cvOff": 0
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2"
+   ],
+   "failedCount": 3,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 2,
+    "blockedMutations": 78
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347553,
+     "final": 347553,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 87,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 1094,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347553,
+       "to": 347097,
+       "toEnd": true
+      },
+      {
+       "t": 1358,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347121,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2343,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2345,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2618,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 3850,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347553,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4917,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4921,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 5372,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 6636,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347553,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7595,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7596,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 7859,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1165,
+       347542
+      ],
+      [
+       1189,
+       347478
+      ],
+      [
+       1216,
+       347316
+      ],
+      [
+       1253,
+       347261
+      ],
+      [
+       1269,
+       347194
+      ],
+      [
+       1295,
+       347172
+      ],
+      [
+       1303,
+       347155
+      ],
+      [
+       1326,
+       347141
+      ],
+      [
+       1352,
+       347121
+      ],
+      [
+       1384,
+       20
+      ],
+      [
+       2415,
+       385
+      ],
+      [
+       3569,
+       347553
+      ],
+      [
+       4916,
+       20
+      ],
+      [
+       5091,
+       385
+      ],
+      [
+       6371,
+       347553
+      ],
+      [
+       7594,
+       20
+      ],
+      [
+       7693,
+       385
+      ],
+      [
+       8798,
+       347553
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347553,
+     "final": 347677,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 12,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 1131,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347553,
+       "to": 347097,
+       "toEnd": true
+      },
+      {
+       "t": 1392,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347130,
+       "to": 33010,
+       "toEnd": false
+      },
+      {
+       "t": 3688,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 33010,
+       "to": 32874,
+       "toEnd": false
+      },
+      {
+       "t": 3976,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32874,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3979,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4087,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 4233,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 4233,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347677,
+       "toEnd": true
+      },
+      {
+       "t": 5515,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347677,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7987,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 8226,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 8232,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 8496,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 8619,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 8619,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347677,
+       "toEnd": true
+      },
+      {
+       "t": 10031,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347677,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 12503,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 12673,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 12676,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 12882,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 12995,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 12996,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347677,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1192,
+       347521
+      ],
+      [
+       1234,
+       347398
+      ],
+      [
+       1269,
+       347261
+      ],
+      [
+       1282,
+       347222
+      ],
+      [
+       1311,
+       347172
+      ],
+      [
+       1335,
+       347155
+      ],
+      [
+       1367,
+       347130
+      ],
+      [
+       1400,
+       33010
+      ],
+      [
+       3975,
+       32874
+      ],
+      [
+       4083,
+       32126
+      ],
+      [
+       4229,
+       32250
+      ],
+      [
+       5246,
+       347677
+      ],
+      [
+       8226,
+       31625
+      ],
+      [
+       8489,
+       32126
+      ],
+      [
+       8616,
+       32250
+      ],
+      [
+       9770,
+       347677
+      ],
+      [
+       12672,
+       31749
+      ],
+      [
+       12876,
+       32126
+      ],
+      [
+       12991,
+       32250
+      ],
+      [
+       14008,
+       347677
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347677,
+     "final": 347689,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 4,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 83,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347677,
+       "toEnd": true
+      },
+      {
+       "t": 996,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347677,
+       "to": 347221,
+       "toEnd": true
+      },
+      {
+       "t": 1258,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347318,
+       "to": 65013,
+       "toEnd": false
+      },
+      {
+       "t": 3222,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65013,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 4590,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347689,
+       "to": 65959,
+       "toEnd": false
+      },
+      {
+       "t": 6362,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65959,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 7778,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347689,
+       "to": 65959,
+       "toEnd": false
+      },
+      {
+       "t": 9636,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65959,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 10960,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347689,
+       "to": 65959,
+       "toEnd": false
+      },
+      {
+       "t": 12700,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65959,
+       "to": 347689,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1069,
+       347666
+      ],
+      [
+       1092,
+       347602
+      ],
+      [
+       1116,
+       347522
+      ],
+      [
+       1160,
+       347385
+      ],
+      [
+       1185,
+       347318
+      ],
+      [
+       1269,
+       65013
+      ],
+      [
+       4108,
+       347689
+      ],
+      [
+       6088,
+       65959
+      ],
+      [
+       7305,
+       347689
+      ],
+      [
+       9264,
+       65959
+      ],
+      [
+       10501,
+       347689
+      ],
+      [
+       12384,
+       65959
+      ],
+      [
+       13667,
+       347689
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 78852,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  },
+  {
+   "run": "r4-head-seek-off",
+   "build": "head-dev b2df865 (0.1.0-alpha.22+dev.1)",
+   "settings": "OPTS={\"seek\":false}",
+   "steps": "8 steps (ONLY)",
+   "utc": [
+    "22:00:58",
+    "22:03:36"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.22+dev.1",
+   "opts": {
+    "seek": false
+   },
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "normal",
+     "turn": null,
+     "block": null,
+     "contentAnchor": "none"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "seek layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348445,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 8,
+    "failed": 3,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 3,
+    "postCompletion": 0,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 8,
+    "rawReversalCount": 29,
+    "unpinChecks": 9,
+    "anchoringOn": 0,
+    "cvOff": 0
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2"
+   ],
+   "failedCount": 3,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 2,
+    "blockedMutations": 75
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347533,
+     "final": 347533,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 19,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 1091,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347533,
+       "to": 347077,
+       "toEnd": true
+      },
+      {
+       "t": 1351,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347101,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2308,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2310,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2409,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 3594,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4523,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4525,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 4635,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 5770,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6723,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6726,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 6860,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347533,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1132,
+       347522
+      ],
+      [
+       1156,
+       347501
+      ],
+      [
+       1176,
+       347378
+      ],
+      [
+       1210,
+       347296
+      ],
+      [
+       1223,
+       347241
+      ],
+      [
+       1249,
+       347174
+      ],
+      [
+       1272,
+       347152
+      ],
+      [
+       1297,
+       347121
+      ],
+      [
+       1317,
+       347110
+      ],
+      [
+       1341,
+       347101
+      ],
+      [
+       1363,
+       20
+      ],
+      [
+       2364,
+       385
+      ],
+      [
+       3324,
+       347533
+      ],
+      [
+       4522,
+       20
+      ],
+      [
+       4603,
+       385
+      ],
+      [
+       5500,
+       347533
+      ],
+      [
+       6722,
+       20
+      ],
+      [
+       6822,
+       385
+      ],
+      [
+       7842,
+       347533
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347533,
+     "final": 347645,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 81,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 1000,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347533,
+       "to": 347077,
+       "toEnd": true
+      },
+      {
+       "t": 1266,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347110,
+       "to": 33008,
+       "toEnd": false
+      },
+      {
+       "t": 3410,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 33008,
+       "to": 32872,
+       "toEnd": false
+      },
+      {
+       "t": 3662,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32872,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3667,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4127,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347521,
+       "toEnd": true
+      },
+      {
+       "t": 5484,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347521,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7925,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7938,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 8408,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 9628,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11957,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11960,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 12147,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 12370,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32250,
+       "to": 347645,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1071,
+       347522
+      ],
+      [
+       1100,
+       347501
+      ],
+      [
+       1109,
+       347458
+      ],
+      [
+       1128,
+       347378
+      ],
+      [
+       1170,
+       347241
+      ],
+      [
+       1207,
+       347152
+      ],
+      [
+       1232,
+       347135
+      ],
+      [
+       1259,
+       347110
+      ],
+      [
+       1289,
+       33008
+      ],
+      [
+       3661,
+       32872
+      ],
+      [
+       3771,
+       32126
+      ],
+      [
+       5230,
+       347521
+      ],
+      [
+       7923,
+       31761
+      ],
+      [
+       8153,
+       32126
+      ],
+      [
+       9371,
+       347533
+      ],
+      [
+       11957,
+       31761
+      ],
+      [
+       12141,
+       32126
+      ],
+      [
+       12242,
+       32250
+      ],
+      [
+       13505,
+       347645
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347657,
+     "final": 347669,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 4,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 86,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347657,
+       "toEnd": true
+      },
+      {
+       "t": 977,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347657,
+       "to": 347201,
+       "toEnd": true
+      },
+      {
+       "t": 1237,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347234,
+       "to": 65011,
+       "toEnd": false
+      },
+      {
+       "t": 3046,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65011,
+       "to": 347669,
+       "toEnd": true
+      },
+      {
+       "t": 4370,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347669,
+       "to": 65955,
+       "toEnd": false
+      },
+      {
+       "t": 6093,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65955,
+       "to": 347669,
+       "toEnd": true
+      },
+      {
+       "t": 7469,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347669,
+       "to": 65955,
+       "toEnd": false
+      },
+      {
+       "t": 9195,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65955,
+       "to": 347669,
+       "toEnd": true
+      },
+      {
+       "t": 10546,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347669,
+       "to": 65955,
+       "toEnd": false
+      },
+      {
+       "t": 12429,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65955,
+       "to": 347669,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1044,
+       347646
+      ],
+      [
+       1066,
+       347625
+      ],
+      [
+       1088,
+       347582
+      ],
+      [
+       1110,
+       347420
+      ],
+      [
+       1145,
+       347365
+      ],
+      [
+       1157,
+       347326
+      ],
+      [
+       1164,
+       347298
+      ],
+      [
+       1182,
+       347276
+      ],
+      [
+       1203,
+       347259
+      ],
+      [
+       1225,
+       347234
+      ],
+      [
+       1252,
+       65011
+      ],
+      [
+       3921,
+       347669
+      ],
+      [
+       5812,
+       65955
+      ],
+      [
+       7027,
+       347669
+      ],
+      [
+       8927,
+       65955
+      ],
+      [
+       10101,
+       347669
+      ],
+      [
+       12173,
+       65955
+      ],
+      [
+       13295,
+       347669
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347669,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347669,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347669,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347669,
+     "final": 78852,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347669,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  },
+  {
+   "run": "r5-e09235b-full",
+   "build": "e09235b dev (0.1.0-alpha.21+dev.1)",
+   "settings": "defaults",
+   "steps": "full 30-jump sequence",
+   "utc": [
+    "22:03:45",
+    "22:09:22"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.21+dev.1",
+   "opts": null,
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "normal",
+     "turn": "auto",
+     "block": "auto",
+     "contentAnchor": "none"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348465,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 30,
+    "failed": 6,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 6,
+    "postCompletion": 0,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 23,
+    "rawReversalCount": 65,
+    "unpinChecks": 27,
+    "anchoringOn": 0,
+    "cvOff": 0
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2",
+    "bottom->0",
+    "bottom->1",
+    "bottom->2"
+   ],
+   "failedCount": 6,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 4,
+    "blockedMutations": 152
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 4,
+     "phase": "reload",
+     "class": "clean",
+     "failureReason": null,
+     "start": 151493,
+     "final": 134885,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 1,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "reload",
+     "class": "clean",
+     "failureReason": null,
+     "start": 152522,
+     "final": 34172,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347553,
+     "final": 347553,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 89,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 1011,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347553,
+       "to": 347097,
+       "toEnd": true
+      },
+      {
+       "t": 1275,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347121,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2223,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2225,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2472,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 3608,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347553,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4538,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4539,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 4835,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 6149,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347553,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7140,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 7143,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 7362,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347553,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1081,
+       347542
+      ],
+      [
+       1104,
+       347478
+      ],
+      [
+       1129,
+       347398
+      ],
+      [
+       1163,
+       347261
+      ],
+      [
+       1176,
+       347222
+      ],
+      [
+       1199,
+       347172
+      ],
+      [
+       1224,
+       347155
+      ],
+      [
+       1247,
+       347141
+      ],
+      [
+       1253,
+       347130
+      ],
+      [
+       1270,
+       347121
+      ],
+      [
+       1296,
+       20
+      ],
+      [
+       2277,
+       385
+      ],
+      [
+       3355,
+       347553
+      ],
+      [
+       4537,
+       20
+      ],
+      [
+       4639,
+       385
+      ],
+      [
+       5887,
+       347553
+      ],
+      [
+       7139,
+       20
+      ],
+      [
+       7238,
+       385
+      ],
+      [
+       8274,
+       347553
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347553,
+     "final": 347553,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 89,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347553,
+       "toEnd": true
+      },
+      {
+       "t": 1030,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347553,
+       "to": 347097,
+       "toEnd": true
+      },
+      {
+       "t": 1290,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347130,
+       "to": 33010,
+       "toEnd": false
+      },
+      {
+       "t": 3401,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 33010,
+       "to": 32874,
+       "toEnd": false
+      },
+      {
+       "t": 3663,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32874,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3666,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4129,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347541,
+       "toEnd": true
+      },
+      {
+       "t": 5304,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347541,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7538,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7541,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 7734,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 7948,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32250,
+       "to": 347665,
+       "toEnd": true
+      },
+      {
+       "t": 9104,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347665,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 11158,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11311,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31761,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11315,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 11754,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32126,
+       "to": 347553,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1104,
+       347542
+      ],
+      [
+       1128,
+       347478
+      ],
+      [
+       1152,
+       347398
+      ],
+      [
+       1189,
+       347261
+      ],
+      [
+       1203,
+       347222
+      ],
+      [
+       1228,
+       347172
+      ],
+      [
+       1252,
+       347155
+      ],
+      [
+       1275,
+       347130
+      ],
+      [
+       1303,
+       33010
+      ],
+      [
+       3663,
+       32874
+      ],
+      [
+       3770,
+       32126
+      ],
+      [
+       5035,
+       347541
+      ],
+      [
+       7538,
+       31761
+      ],
+      [
+       7728,
+       32126
+      ],
+      [
+       7820,
+       32250
+      ],
+      [
+       8840,
+       347665
+      ],
+      [
+       11311,
+       31761
+      ],
+      [
+       11509,
+       32126
+      ],
+      [
+       12747,
+       347553
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347689,
+     "final": 347689,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 88,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 1068,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347689,
+       "to": 347233,
+       "toEnd": true
+      },
+      {
+       "t": 1329,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347266,
+       "to": 64904,
+       "toEnd": false
+      },
+      {
+       "t": 3348,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 64904,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 6313,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347689,
+       "to": 65959,
+       "toEnd": false
+      },
+      {
+       "t": 8624,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65959,
+       "to": 347689,
+       "toEnd": true
+      },
+      {
+       "t": 10157,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347689,
+       "to": 65959,
+       "toEnd": false
+      },
+      {
+       "t": 11792,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65959,
+       "to": 347689,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1156,
+       347657
+      ],
+      [
+       1182,
+       347534
+      ],
+      [
+       1225,
+       347452
+      ],
+      [
+       1242,
+       347358
+      ],
+      [
+       1263,
+       347308
+      ],
+      [
+       1289,
+       347291
+      ],
+      [
+       1313,
+       347266
+      ],
+      [
+       1342,
+       64904
+      ],
+      [
+       4631,
+       347689
+      ],
+      [
+       8470,
+       65959
+      ],
+      [
+       9567,
+       347689
+      ],
+      [
+       11629,
+       65959
+      ],
+      [
+       12703,
+       347689
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347689,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "top",
+     "to": 4,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 130265,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 5,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 162148,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 6,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 196186,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 7,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 229888,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 8,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 278055,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 9,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 321115,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348838,
+     "final": 348838,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 26,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348838,
+       "to": 348382,
+       "toEnd": true
+      },
+      {
+       "t": 289,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348406,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 1229,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 1231,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 1318,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 2464,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 3386,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 3387,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 3500,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 4613,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 5502,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 5503,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 5631,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       80,
+       348827
+      ],
+      [
+       100,
+       348806
+      ],
+      [
+       120,
+       348763
+      ],
+      [
+       141,
+       348601
+      ],
+      [
+       173,
+       348546
+      ],
+      [
+       186,
+       348507
+      ],
+      [
+       207,
+       348457
+      ],
+      [
+       232,
+       348440
+      ],
+      [
+       253,
+       348426
+      ],
+      [
+       275,
+       348406
+      ],
+      [
+       302,
+       20
+      ],
+      [
+       1285,
+       385
+      ],
+      [
+       2198,
+       348838
+      ],
+      [
+       3385,
+       20
+      ],
+      [
+       3468,
+       385
+      ],
+      [
+       4363,
+       348838
+      ],
+      [
+       5502,
+       20
+      ],
+      [
+       5578,
+       385
+      ],
+      [
+       6565,
+       348838
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348838,
+     "final": 348826,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 28,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348838,
+       "to": 348382,
+       "toEnd": true
+      },
+      {
+       "t": 294,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348406,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 2401,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 2643,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 2647,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 2759,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 2849,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 2850,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348826,
+       "toEnd": true
+      },
+      {
+       "t": 3987,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348826,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 6143,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 6322,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 6325,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 6514,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 6609,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 6609,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348826,
+       "toEnd": true
+      },
+      {
+       "t": 7799,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348826,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 9960,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 10121,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 10124,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 10294,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 10389,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 10389,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348826,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       71,
+       348827
+      ],
+      [
+       99,
+       348806
+      ],
+      [
+       124,
+       348683
+      ],
+      [
+       165,
+       348601
+      ],
+      [
+       184,
+       348507
+      ],
+      [
+       202,
+       348479
+      ],
+      [
+       235,
+       348440
+      ],
+      [
+       259,
+       348415
+      ],
+      [
+       283,
+       348406
+      ],
+      [
+       308,
+       31885
+      ],
+      [
+       2642,
+       31749
+      ],
+      [
+       2755,
+       32126
+      ],
+      [
+       2845,
+       32250
+      ],
+      [
+       3734,
+       348826
+      ],
+      [
+       6321,
+       31625
+      ],
+      [
+       6507,
+       32126
+      ],
+      [
+       6605,
+       32250
+      ],
+      [
+       7540,
+       348826
+      ],
+      [
+       10120,
+       31749
+      ],
+      [
+       10287,
+       32126
+      ],
+      [
+       10385,
+       32250
+      ],
+      [
+       11310,
+       348826
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348826,
+     "final": 348838,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 29,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348826,
+       "to": 348370,
+       "toEnd": true
+      },
+      {
+       "t": 290,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348403,
+       "to": 78852,
+       "toEnd": false
+      },
+      {
+       "t": 2566,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78852,
+       "to": 78728,
+       "toEnd": false
+      },
+      {
+       "t": 2825,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78728,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 2827,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 2930,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 3001,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 3002,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 4212,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 6620,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78716,
+       "to": 78580,
+       "toEnd": false
+      },
+      {
+       "t": 6806,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78580,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 6808,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 6993,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 7081,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 7082,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 8227,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 78840,
+       "toEnd": false
+      },
+      {
+       "t": 10499,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78840,
+       "to": 78704,
+       "toEnd": false
+      },
+      {
+       "t": 10723,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78704,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 10725,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 10913,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 10980,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 10980,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       90,
+       348794
+      ],
+      [
+       112,
+       348751
+      ],
+      [
+       135,
+       348671
+      ],
+      [
+       168,
+       348534
+      ],
+      [
+       181,
+       348495
+      ],
+      [
+       208,
+       348445
+      ],
+      [
+       235,
+       348428
+      ],
+      [
+       242,
+       348414
+      ],
+      [
+       264,
+       348403
+      ],
+      [
+       312,
+       78852
+      ],
+      [
+       2825,
+       78728
+      ],
+      [
+       2926,
+       79081
+      ],
+      [
+       2998,
+       79205
+      ],
+      [
+       3953,
+       348838
+      ],
+      [
+       6805,
+       78580
+      ],
+      [
+       6990,
+       79081
+      ],
+      [
+       7078,
+       79205
+      ],
+      [
+       7975,
+       348838
+      ],
+      [
+       10723,
+       78704
+      ],
+      [
+       10910,
+       79081
+      ],
+      [
+       10977,
+       79205
+      ],
+      [
+       11981,
+       348838
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 4,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 130265,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 5,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 162148,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 6,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 196186,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 7,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 229888,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 8,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 278055,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 9,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 321115,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 20,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 31897,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  },
+  {
+   "run": "r6-head-smoother-off-full",
+   "build": "head-dev b2df865 (0.1.0-alpha.22+dev.1)",
+   "settings": "SMOOTHER=off (container, cv, throttle false)",
+   "steps": "full 30-jump sequence",
+   "utc": [
+    "22:09:27",
+    "22:15:02"
+   ],
+   "exit": 1,
+   "buildReported": "0.1.0-alpha.22+dev.1",
+   "opts": {
+    "container": false,
+    "cv": false,
+    "throttle": false
+   },
+   "chromium": "157.0.8103.50",
+   "fixture": {
+    "streamingStyles": {
+     "container": "inline-size",
+     "turn": null,
+     "block": null,
+     "contentAnchor": "auto"
+    },
+    "scrollerStyle": {
+     "overflowAnchor": "none",
+     "scrollSnapType": "none",
+     "scrollBehavior": "auto"
+    },
+    "off": "container cv throttle layout",
+    "probe": true,
+    "questions": 12,
+    "hasPrev": false,
+    "height": 348321,
+    "mathDisplay": 117,
+    "nativeShape": "entries-with-separate-row-virtualizer",
+    "nativeQuestions": 12,
+    "measuredRows": 0,
+    "trace": true
+   },
+   "summary": {
+    "jumps": 30,
+    "failed": 6,
+    "visibleDetour": 0,
+    "native": 0,
+    "gated": 6,
+    "postCompletion": 1,
+    "postCompletionEventMoves": 0,
+    "afterLanding": 0,
+    "rawReversal": 23,
+    "rawReversalCount": 66,
+    "unpinChecks": 27,
+    "anchoringOn": 0,
+    "cvOff": 27
+   },
+   "failed": [
+    "top->0",
+    "top->1",
+    "top->2",
+    "bottom->0",
+    "bottom->1",
+    "bottom->2"
+   ],
+   "failedCount": 6,
+   "guard": {
+    "enabled": true,
+    "sendAttempts": 4,
+    "blockedMutations": 149
+   },
+   "jumps": [
+    {
+     "from": "top",
+     "to": 4,
+     "phase": "reload",
+     "class": "clean",
+     "failureReason": null,
+     "start": 151493,
+     "final": 134885,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 1,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "reload",
+     "class": "clean",
+     "failureReason": null,
+     "start": 152522,
+     "final": 34172,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 0,
+     "phase": "reload-setup",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347409,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 34,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 970,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1235,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346977,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2208,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 2210,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 2423,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 3592,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4539,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 4541,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 4789,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 5942,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347409,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6899,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6901,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 7185,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 347409,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1042,
+       347398
+      ],
+      [
+       1065,
+       347334
+      ],
+      [
+       1088,
+       347254
+      ],
+      [
+       1123,
+       347117
+      ],
+      [
+       1137,
+       347078
+      ],
+      [
+       1160,
+       347028
+      ],
+      [
+       1183,
+       347011
+      ],
+      [
+       1205,
+       346997
+      ],
+      [
+       1211,
+       346986
+      ],
+      [
+       1230,
+       346977
+      ],
+      [
+       1255,
+       20
+      ],
+      [
+       2313,
+       385
+      ],
+      [
+       3340,
+       347409
+      ],
+      [
+       4539,
+       20
+      ],
+      [
+       4647,
+       385
+      ],
+      [
+       5682,
+       347409
+      ],
+      [
+       6899,
+       20
+      ],
+      [
+       7042,
+       385
+      ],
+      [
+       8076,
+       347409
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347409,
+     "final": 347533,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 35,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347409,
+       "toEnd": true
+      },
+      {
+       "t": 963,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347409,
+       "to": 346953,
+       "toEnd": true
+      },
+      {
+       "t": 1226,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 346977,
+       "to": 32995,
+       "toEnd": false
+      },
+      {
+       "t": 3513,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32995,
+       "to": 32859,
+       "toEnd": false
+      },
+      {
+       "t": 3773,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 32859,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 3777,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 4133,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 4391,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 4392,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 5555,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7812,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 7975,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 7978,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 8297,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 8541,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 8541,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 9743,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347533,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 11955,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 12116,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 12119,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 12424,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 12651,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 12652,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 347533,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1035,
+       347398
+      ],
+      [
+       1055,
+       347334
+      ],
+      [
+       1078,
+       347254
+      ],
+      [
+       1114,
+       347172
+      ],
+      [
+       1131,
+       347078
+      ],
+      [
+       1155,
+       347050
+      ],
+      [
+       1174,
+       347011
+      ],
+      [
+       1198,
+       346997
+      ],
+      [
+       1222,
+       346977
+      ],
+      [
+       1248,
+       32995
+      ],
+      [
+       3773,
+       32859
+      ],
+      [
+       3933,
+       32126
+      ],
+      [
+       4316,
+       32250
+      ],
+      [
+       5290,
+       347533
+      ],
+      [
+       7975,
+       31625
+      ],
+      [
+       8222,
+       32126
+      ],
+      [
+       8469,
+       32250
+      ],
+      [
+       9478,
+       347533
+      ],
+      [
+       12115,
+       31749
+      ],
+      [
+       12352,
+       32126
+      ],
+      [
+       12581,
+       32250
+      ],
+      [
+       13767,
+       347533
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 347533,
+     "final": 347545,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 4,
+     "pullToEndBeforeClickByChatGPT": true,
+     "writes": [
+      {
+       "t": 41,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 0,
+       "to": 347533,
+       "toEnd": true
+      },
+      {
+       "t": 1000,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 347533,
+       "to": 347077,
+       "toEnd": true
+      },
+      {
+       "t": 1261,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347110,
+       "to": 64997,
+       "toEnd": false
+      },
+      {
+       "t": 3372,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 64997,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 4915,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 6848,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 8251,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 10083,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      },
+      {
+       "t": 11514,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 347545,
+       "to": 65930,
+       "toEnd": false
+      },
+      {
+       "t": 13369,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 65930,
+       "to": 347545,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       1092,
+       347501
+      ],
+      [
+       1115,
+       347458
+      ],
+      [
+       1138,
+       347296
+      ],
+      [
+       1176,
+       347241
+      ],
+      [
+       1187,
+       347202
+      ],
+      [
+       1194,
+       347174
+      ],
+      [
+       1212,
+       347152
+      ],
+      [
+       1234,
+       347135
+      ],
+      [
+       1256,
+       347110
+      ],
+      [
+       1283,
+       64997
+      ],
+      [
+       4394,
+       347545
+      ],
+      [
+       6484,
+       65930
+      ],
+      [
+       7783,
+       347545
+      ],
+      [
+       9758,
+       65930
+      ],
+      [
+       11057,
+       347545
+      ],
+      [
+       13051,
+       65930
+      ],
+      [
+       14280,
+       347545
+      ]
+     ]
+    },
+    {
+     "from": "top",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 347545,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": true
+    },
+    {
+     "from": "top",
+     "to": 4,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 130265,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 5,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 162148,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 6,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 196186,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 7,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 229888,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 8,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 278055,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 9,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 321115,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "top",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 0,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 0,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348838,
+     "final": 348838,
+     "railEnd": [
+      "lost"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 44,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348838,
+       "to": 348382,
+       "toEnd": true
+      },
+      {
+       "t": 304,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348415,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 1266,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 1268,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 1475,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 2611,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 3538,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 3541,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 3876,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 5057,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6000,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 20,
+       "to": 20,
+       "toEnd": false
+      },
+      {
+       "t": 6002,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 20,
+       "to": 385,
+       "toEnd": false
+      },
+      {
+       "t": 6214,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 385,
+       "to": 348838,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       108,
+       348827
+      ],
+      [
+       131,
+       348806
+      ],
+      [
+       153,
+       348763
+      ],
+      [
+       176,
+       348601
+      ],
+      [
+       216,
+       348546
+      ],
+      [
+       232,
+       348479
+      ],
+      [
+       276,
+       348426
+      ],
+      [
+       298,
+       348415
+      ],
+      [
+       324,
+       20
+      ],
+      [
+       1370,
+       385
+      ],
+      [
+       2348,
+       348838
+      ],
+      [
+       3538,
+       20
+      ],
+      [
+       3650,
+       385
+      ],
+      [
+       4796,
+       348838
+      ],
+      [
+       6000,
+       20
+      ],
+      [
+       6105,
+       385
+      ],
+      [
+       7131,
+       348838
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 1,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348838,
+     "final": 348826,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 45,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348838,
+       "to": 348382,
+       "toEnd": true
+      },
+      {
+       "t": 305,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348415,
+       "to": 31885,
+       "toEnd": false
+      },
+      {
+       "t": 2528,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31885,
+       "to": 31749,
+       "toEnd": false
+      },
+      {
+       "t": 2785,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31749,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 2789,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 3127,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 3349,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 3349,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348826,
+       "toEnd": true
+      },
+      {
+       "t": 4544,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348826,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 6818,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 6980,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 6983,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 7419,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 7649,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 7650,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 8840,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11017,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 31761,
+       "to": 31625,
+       "toEnd": false
+      },
+      {
+       "t": 11180,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 31625,
+       "to": 31761,
+       "toEnd": false
+      },
+      {
+       "t": 11182,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 31761,
+       "to": 32126,
+       "toEnd": false
+      },
+      {
+       "t": 11464,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32126,
+       "to": 32250,
+       "toEnd": false
+      },
+      {
+       "t": 11683,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 32250,
+       "to": 32262,
+       "toEnd": false
+      },
+      {
+       "t": 11683,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 32262,
+       "to": 348826,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       113,
+       348827
+      ],
+      [
+       138,
+       348763
+      ],
+      [
+       163,
+       348683
+      ],
+      [
+       200,
+       348546
+      ],
+      [
+       214,
+       348507
+      ],
+      [
+       238,
+       348457
+      ],
+      [
+       262,
+       348440
+      ],
+      [
+       286,
+       348426
+      ],
+      [
+       293,
+       348415
+      ],
+      [
+       314,
+       31885
+      ],
+      [
+       2785,
+       31749
+      ],
+      [
+       2940,
+       32126
+      ],
+      [
+       3279,
+       32250
+      ],
+      [
+       4287,
+       348826
+      ],
+      [
+       6980,
+       31625
+      ],
+      [
+       7215,
+       32126
+      ],
+      [
+       7575,
+       32250
+      ],
+      [
+       8579,
+       348838
+      ],
+      [
+       11180,
+       31625
+      ],
+      [
+       11393,
+       32126
+      ],
+      [
+       11613,
+       32250
+      ],
+      [
+       12621,
+       348826
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 2,
+     "phase": "settled",
+     "class": "failed",
+     "failureReason": "target-unmounted",
+     "start": 348826,
+     "final": 348838,
+     "railEnd": [
+      "expired"
+     ],
+     "pullsToEndAfterClickByChatGPT": 3,
+     "pullToEndBeforeClickByChatGPT": false,
+     "writes": [
+      {
+       "t": 45,
+       "kind": "scrollTo:before",
+       "by": "butter:rail/trip.js",
+       "from": 348826,
+       "to": 348370,
+       "toEnd": true
+      },
+      {
+       "t": 306,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348394,
+       "to": 78852,
+       "toEnd": false
+      },
+      {
+       "t": 2800,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78852,
+       "to": 78728,
+       "toEnd": false
+      },
+      {
+       "t": 3143,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78728,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 3145,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 3471,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 3661,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 3661,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 4854,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 7150,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78716,
+       "to": 78580,
+       "toEnd": false
+      },
+      {
+       "t": 7312,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78580,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 7313,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 7630,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 7841,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 7842,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      },
+      {
+       "t": 9034,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 348838,
+       "to": 78840,
+       "toEnd": false
+      },
+      {
+       "t": 11334,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 78840,
+       "to": 78704,
+       "toEnd": false
+      },
+      {
+       "t": 11497,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/jump.js",
+       "from": 78704,
+       "to": 78716,
+       "toEnd": false
+      },
+      {
+       "t": 11498,
+       "kind": "scrollTop:before",
+       "by": "butter:rail/readiness.js",
+       "from": 78716,
+       "to": 79081,
+       "toEnd": false
+      },
+      {
+       "t": 11869,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79081,
+       "to": 79205,
+       "toEnd": false
+      },
+      {
+       "t": 12066,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:other",
+       "from": 79205,
+       "to": 79217,
+       "toEnd": false
+      },
+      {
+       "t": 12067,
+       "kind": "scrollTo:before",
+       "by": "chatgpt:ResizeObserver(76629 ah<callback<aj<callback)",
+       "from": 79217,
+       "to": 348838,
+       "toEnd": true
+      }
+     ],
+     "positions": [
+      [
+       112,
+       348815
+      ],
+      [
+       134,
+       348751
+      ],
+      [
+       157,
+       348671
+      ],
+      [
+       191,
+       348589
+      ],
+      [
+       209,
+       348495
+      ],
+      [
+       227,
+       348467
+      ],
+      [
+       252,
+       348428
+      ],
+      [
+       276,
+       348414
+      ],
+      [
+       300,
+       348394
+      ],
+      [
+       326,
+       78852
+      ],
+      [
+       3142,
+       78728
+      ],
+      [
+       3292,
+       79081
+      ],
+      [
+       3597,
+       79205
+      ],
+      [
+       4594,
+       348838
+      ],
+      [
+       7312,
+       78580
+      ],
+      [
+       7557,
+       79081
+      ],
+      [
+       7776,
+       79205
+      ],
+      [
+       8778,
+       348838
+      ],
+      [
+       11496,
+       78704
+      ],
+      [
+       11802,
+       79081
+      ],
+      [
+       12000,
+       79205
+      ],
+      [
+       13006,
+       348838
+      ]
+     ]
+    },
+    {
+     "from": "bottom",
+     "to": 3,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 103423,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 4,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 130265,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 5,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 162148,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 6,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 196186,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 7,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 229888,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 8,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 278055,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 9,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 321115,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "bottom",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 0,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 20,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 1,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 20,
+     "final": 31897,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 11,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 31897,
+     "final": 348838,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    },
+    {
+     "from": "previous",
+     "to": 10,
+     "phase": "settled",
+     "class": "clean",
+     "failureReason": null,
+     "start": 348838,
+     "final": 331201,
+     "railEnd": [
+      "landed"
+     ],
+     "pullsToEndAfterClickByChatGPT": 0,
+     "pullToEndBeforeClickByChatGPT": false
+    }
+   ]
+  }
+ ],
+ "reference_2026_11_19": {
+  "build": "0.1.0-alpha.21+dev.1",
+  "commit": "e09235b",
+  "fixtureLine": {
+   "streamingStyles": {
+    "container": "normal",
+    "turn": "auto",
+    "block": "auto",
+    "contentAnchor": "none"
+   },
+   "scrollerStyle": {
+    "overflowAnchor": "none",
+    "scrollSnapType": "none",
+    "scrollBehavior": "auto"
+   },
+   "off": "layout",
+   "probe": true,
+   "questions": 12,
+   "hasPrev": false,
+   "height": 345177,
+   "mathDisplay": 231,
+   "nativeShape": "entries-with-separate-row-virtualizer",
+   "nativeQuestions": 12,
+   "measuredRows": 0,
+   "trace": true
+  },
+  "summary": {
+   "jumps": 54,
+   "failed": 0,
+   "visibleDetour": 0,
+   "native": 0,
+   "gated": 0,
+   "postCompletion": 0,
+   "postCompletionEventMoves": 0,
+   "afterLanding": 0,
+   "rawReversal": 43,
+   "rawReversalCount": 91,
+   "unpinChecks": 48,
+   "anchoringOn": 0,
+   "cvOff": 0
+  },
+  "chatgptWritesToEndRegion": 0,
+  "chatgptBundle76629": "76629.15f5868e7b.js (today 76629.77a8c190f1.js)"
+ },
+ "optsCheck": [
+  "EXT ~/snap/chromium/common/stream-ux-loaded-1124/head-dev/butter OPTS null",
+  "EXT ~/snap/chromium/common/stream-ux-loaded-1124/head-dev/butter OPTS null"
+ ]
+}

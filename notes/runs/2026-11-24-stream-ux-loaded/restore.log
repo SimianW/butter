@@ -1,0 +1,11 @@
+# lab 1 (20:52)
+restore lab 1: restarting browser (now {"pid":364766,"extensions":["~/snap/chromium/common/stream-proto-1124/pvh/butter"],"flags":[]}, cdp up, want {"extensions":["~/snap/chromium/common/butter-blank-head"],"flags":[]})
+chromium: stopped
+chromium: started (pid 375561)
+restored {"lab":1,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":375561,"extensions":["~/snap/chromium/common/butter-blank-head"],"flags":[]},"at":"2026-11-24T20:52:50.615Z","ok":true}
+# lab 2 (21:15)
+restore lab 2: restarting browser (now {"pid":449086,"extensions":["~/snap/chromium/common/stream-proto-1124/pvh/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 450112)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":450112,"extensions":[],"flags":[]},"at":"2026-11-24T21:15:29.980Z","ok":true}
+restore exit=0

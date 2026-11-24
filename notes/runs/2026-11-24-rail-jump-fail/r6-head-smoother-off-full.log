@@ -1,0 +1,33 @@
+r6-head-smoother-off-full math12 from=top to=4 phase=reload class=clean samples=180
+r6-head-smoother-off-full math12 from=bottom to=0 phase=reload class=clean samples=205
+FIXTURE math12 {"streamingStyles":{"container":"inline-size","turn":null,"block":null,"contentAnchor":"auto"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"container cv throttle layout","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+r6-head-smoother-off-full math12 from=top to=0 phase=reload-setup class=failed positions=[[1042,347398],[1065,347334],[1088,347254],[1123,347117],[1137,347078],[1160,347028],[1183,347011],[1205,346997],[1211,346986],[1230,346977],[1255,20],[2313,385],[3340,347409],[4539,20],[4647,385],[5682,347409],[6899,20],[7042,385],[8076,347409]] targetTop=null reversals=5
+r6-head-smoother-off-full math12 from=top to=1 phase=settled class=failed positions=[[1035,347398],[1055,347334],[1078,347254],[1114,347172],[1131,347078],[1155,347050],[1174,347011],[1198,346997],[1222,346977],[1248,32995],[3773,32859],[3933,32126],[4316,32250],[5290,347533],[7975,31625],[8222,32126],[8469,32250],[9478,347533],[12115,31749],[12352,32126],[12581,32250],[13767,347533]] targetTop=null reversals=5
+r6-head-smoother-off-full math12 from=top to=2 phase=settled class=failed positions=[[1092,347501],[1115,347458],[1138,347296],[1176,347241],[1187,347202],[1194,347174],[1212,347152],[1234,347135],[1256,347110],[1283,64997],[4394,347545],[6484,65930],[7783,347545],[9758,65930],[11057,347545],[13051,65930],[14280,347545]] targetTop=null reversals=7
+r6-head-smoother-off-full math12 from=top to=3 phase=settled class=clean samples=208
+r6-head-smoother-off-full math12 from=top to=4 phase=settled class=clean samples=182
+r6-head-smoother-off-full math12 from=top to=5 phase=settled class=clean samples=180
+r6-head-smoother-off-full math12 from=top to=6 phase=settled class=clean samples=179
+r6-head-smoother-off-full math12 from=top to=7 phase=settled class=clean samples=181
+r6-head-smoother-off-full math12 from=top to=8 phase=settled class=clean samples=203
+r6-head-smoother-off-full math12 from=top to=9 phase=settled class=clean samples=210
+r6-head-smoother-off-full math12 from=top to=10 phase=settled class=clean samples=181
+r6-head-smoother-off-full math12 from=top to=11 phase=settled class=clean samples=204
+r6-head-smoother-off-full math12 from=bottom to=0 phase=settled class=failed positions=[[108,348827],[131,348806],[153,348763],[176,348601],[216,348546],[232,348479],[276,348426],[298,348415],[324,20],[1370,385],[2348,348838],[3538,20],[3650,385],[4796,348838],[6000,20],[6105,385],[7131,348838]] targetTop=null reversals=5
+r6-head-smoother-off-full math12 from=bottom to=1 phase=settled class=failed positions=[[113,348827],[138,348763],[163,348683],[200,348546],[214,348507],[238,348457],[262,348440],[286,348426],[293,348415],[314,31885],[2785,31749],[2940,32126],[3279,32250],[4287,348826],[6980,31625],[7215,32126],[7575,32250],[8579,348838],[11180,31625],[11393,32126],[11613,32250],[12621,348826]] targetTop=null reversals=5
+r6-head-smoother-off-full math12 from=bottom to=2 phase=settled class=failed positions=[[112,348815],[134,348751],[157,348671],[191,348589],[209,348495],[227,348467],[252,348428],[276,348414],[300,348394],[326,78852],[3142,78728],[3292,79081],[3597,79205],[4594,348838],[7312,78580],[7557,79081],[7776,79205],[8778,348838],[11496,78704],[11802,79081],[12000,79205],[13006,348838]] targetTop=null reversals=5
+r6-head-smoother-off-full math12 from=bottom to=3 phase=settled class=clean samples=183
+r6-head-smoother-off-full math12 from=bottom to=4 phase=settled class=clean samples=179
+r6-head-smoother-off-full math12 from=bottom to=5 phase=settled class=clean samples=177
+r6-head-smoother-off-full math12 from=bottom to=6 phase=settled class=clean samples=179
+r6-head-smoother-off-full math12 from=bottom to=7 phase=settled class=clean samples=180
+r6-head-smoother-off-full math12 from=bottom to=8 phase=settled class=clean samples=187
+r6-head-smoother-off-full math12 from=bottom to=9 phase=settled class=clean samples=179
+r6-head-smoother-off-full math12 from=bottom to=10 phase=settled class=clean samples=180
+r6-head-smoother-off-full math12 from=bottom to=11 phase=settled class=clean samples=143
+r6-head-smoother-off-full math12 from=previous to=0 phase=settled class=clean samples=178
+r6-head-smoother-off-full math12 from=previous to=1 phase=settled class=clean samples=178
+r6-head-smoother-off-full math12 from=previous to=11 phase=settled class=clean samples=168
+r6-head-smoother-off-full math12 from=previous to=10 phase=settled class=clean samples=181
+SUMMARY {"jumps":30,"failed":6,"visibleDetour":0,"native":0,"gated":6,"postCompletion":1,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":23,"rawReversalCount":66,"unpinChecks":27,"anchoringOn":0,"cvOff":27}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-fail/r6-head-smoother-off-full.json

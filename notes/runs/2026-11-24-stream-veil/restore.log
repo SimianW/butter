@@ -1,0 +1,5 @@
+restore lab 2: restarting browser (now {"pid":3512620,"extensions":["~/snap/chromium/common/stream-proto-1124/pv/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 3517716)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":3517716,"extensions":[],"flags":[]},"at":"2026-11-24T07:56:22.395Z","ok":true}
+restore exit=0
