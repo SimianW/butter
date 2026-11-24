@@ -7,8 +7,7 @@
 // Nothing here types into or sends in the original tab.
 (() => {
   const B = ButterBranch,
-    P = ButterBranchPage,
-    R = ButterPageReader;
+    P = ButterBranchPage;
   // Read before ChatGPT's router can touch the URL.
   const incoming = B.jobId(location.hash);
   let ui;
@@ -33,39 +32,6 @@
   let sel = null,
     boxOpen = false;
   const draftKey = (s) => `${s.identity}\n${s.quote}`;
-  const elementOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement);
-
-  const readSelection = () => {
-    const s = document.getSelection();
-    if (!s || s.rangeCount !== 1 || s.isCollapsed) return null;
-    const range = s.getRangeAt(0);
-    const start = R.replyOf(range.startContainer),
-      end = R.replyOf(range.endContainer);
-    // Formulas are fine (quoted as LaTeX), and so are citation tags (left out of the quote);
-    // editable controls, images and other non-text regions are not.
-    const selectable = (el) => !!el.closest(`${P.FORMULA}, ${P.CITATION}`);
-    const inside = (node, selector) => {
-      const el = elementOf(node)?.closest(selector);
-      return !!el && !selectable(el);
-    };
-    const touching = (selector) =>
-      !!start && [...start.querySelectorAll(selector)].some((el) => range.intersectsNode(el));
-    const excluded =
-      inside(range.startContainer, P.EXCLUDED) ||
-      inside(range.endContainer, P.EXCLUDED) ||
-      (!!start &&
-        [...start.querySelectorAll(P.NON_TEXT)].some(
-          (el) => !selectable(el) && range.intersectsNode(el),
-        ));
-    const identity = B.identity(location.href),
-      // Chrome's own text skips a citation tag's label but puts a line break in its place.
-      text =
-        touching(P.FORMULA) || touching(P.CITATION)
-          ? B.quoteOf(range, P.quoteDom) || ''
-          : s.toString();
-    if (!B.qualifies({ text, start, end, identity, excluded, page: P.facts() })) return null;
-    return { range: range.cloneRange(), quote: text.trim(), identity };
-  };
 
   // Ends the question box and forgets the selection; the pill goes back to the page selection.
   const hideSelectionUI = () => {
@@ -221,7 +187,7 @@
     feature: 'branch',
     icon: ButterBranchUI.ICON.branch,
     label: () => ButterBranchUI.strings().ask,
-    wants: () => !!(sel = readSelection()),
+    wants: () => !!(sel = P.selection()),
     activate: () => openBox(),
     reset() {
       if (!boxOpen) sel = null;

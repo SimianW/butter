@@ -153,7 +153,6 @@ export default [
     files: [
       'extension/bookmarks/content.js',
       'extension/branch/content.js',
-      'extension/branch/shortcut.js',
       'extension/commands/worker.js',
     ],
     languageOptions: { globals: { ButterCommandKeys: 'readonly' } },
