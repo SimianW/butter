@@ -8,6 +8,12 @@
 // the paragraph, a reload showing the dot again, the conversation's bookmarks read once and not
 // while scrolling, the home page and Back through history showing it again, and dark theme. The
 // store keeps hashed ids, the excerpt's first three rendered lines, `ask` and `line` (#55).
+// Evidence shot bookmark-label-1400-light.png: the Bookmark cell's label with its key hint (⌥⇧M),
+// cropped to the selection, the pill and the label.
+import { headed } from '../../runner/chromium.mjs';
+import { evidenceShot } from '../../runner/shot.mjs';
+import { xkeys } from '../driver.mjs';
+
 export default {
   name: 'save',
   description: 'Save a paragraph with the pill (#77): its look and label, the saved card, the dot (#71), jumps, reload, Back, dark theme',
@@ -40,8 +46,10 @@ export default {
       p1 && p1.cells.map((c) => c.id).join() === 'branch,bookmark' && p1.cells.every((c) => c.width === 32 && c.height === 30 && !c.text) &&
         p1.cells[1].divider === '1px' && p1.box.width === 64,
       { cells: p1?.cells });
-    check('the cells are named by their labels; the Bookmark cell carries its key in aria-keyshortcuts',
-      p1 && p1.cells[0].name === 'Ask in branch' && p1.cells[1].name === 'Bookmark selection' && p1.cells[1].keys === 'Alt+Shift+M' && !p1.cells[0].keys,
+    // Since #126 Ask in branch has a key too (Alt+Shift+Q).
+    check('the cells are named by their labels; each carries its key in aria-keyshortcuts',
+      p1 && p1.cells[0].name === 'Ask in branch' && p1.cells[1].name === 'Bookmark selection' && p1.cells[1].keys === 'Alt+Shift+M' &&
+        p1.cells[0].keys === 'Alt+Shift+Q',
       { cells: p1?.cells.map(({ name, keys }) => ({ name, keys })) });
     // The label: not at 100 ms, shown by 350 ms, 8 px below the pill, centred under its cell.
     const early = await hoverCell('bookmark', 100);
@@ -51,10 +59,25 @@ export default {
     // shows it as the mockup writes keys.
     const commands = await worker.evaluate(() => chrome.commands.getAll());
     check('the label waits 300 ms, then shows "Bookmark selection" and the key 8 px below the pill, under its cell',
-      !early?.tip && late?.tip?.text === 'Bookmark selection' && late.tip.kbd === 'Alt Shift M' && late.tip.kbdShown &&
+      !early?.tip && late?.tip?.text === 'Bookmark selection' && late.tip.kbd === '⌥⇧M' && late.tip.kbdShown &&
         Math.round(late.tip.top - late.box.bottom) === 8 && Math.abs(late.tip.left + late.tip.width / 2 - (cellBox.left + cellBox.width / 2)) <= 1 &&
         commands.find((c) => c.name === 'bookmark')?.shortcut === 'Alt+Shift+M',
       { early: early?.tip, tip: late?.tip, commands });
+    // Headed, a clipped screenshot replays the real X pointer's position into the page, which ends
+    // the label's hover: park the pointer on the tab strip first (a lone Shift there), then hover.
+    if (headed) xkeys('Shift');
+    const shown = await hoverCell('bookmark', 350);
+    const quote = await page.evaluate(() => getSelection().getRangeAt(0).getBoundingClientRect().toJSON());
+    const boxes = [quote, shown?.box, shown?.tip].filter(Boolean);
+    const left = Math.min(...boxes.map((b) => b.left)),
+      top = Math.min(...boxes.map((b) => b.top));
+    await evidenceShot(page, `${shots}/bookmark-label-1400-light.png`, {
+      target: { x: left, y: top, width: Math.max(...boxes.map((b) => b.right)) - left, height: Math.max(...boxes.map((b) => b.bottom)) - top },
+      margin: 24,
+      animations: 'disabled',
+    });
+    check('the label still shows "Bookmark selection" and ⌥⇧M after its evidence shot',
+      shown?.tip?.kbd === '⌥⇧M' && (await pill()).tip?.text === 'Bookmark selection', { tip: shown?.tip });
     const toBranch = await hoverCell('branch', 0);
     check('moving to the other cell switches the label at once', toBranch?.tip?.text === 'Ask in branch', { tip: toBranch?.tip });
     await page.mouse.move(10, 10);

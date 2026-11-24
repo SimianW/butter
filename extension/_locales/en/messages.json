@@ -10,5 +10,9 @@
   "bookmarkCommand": {
     "message": "Bookmark the selection, or the paragraph at the top of the chat",
     "description": "Name of the bookmark keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
+  },
+  "branchCommand": {
+    "message": "Ask in branch about the selection",
+    "description": "Name of the Ask in branch keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

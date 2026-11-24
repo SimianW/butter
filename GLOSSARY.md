@@ -365,6 +365,18 @@ _Where_: `selection/pill.js`
 One feature's button in the pill: Ask in branch or Bookmark.
 _Where_: `selection/pill.js`
 
+**Command**:
+One of Butter's keys as Chrome knows it (`bookmark`, Alt+Shift+M; `branch`, Alt+Shift+Q), rebindable
+or removable in Chrome's shortcut settings; the worker relays a press to the tab it was pressed in.
+_Avoid_: hotkey
+_Where_: `commands/keys.js`, `commands/worker.js`, `manifest.json`
+
+**Key hint**:
+A command's current key as a cell's label shows it, in grey after the name, in key symbols
+("⌥⇧Q", as Chrome shows keys on a Mac), or Chrome's own words when its modifier names (in the
+browser's language) can't be read without guessing; none when the command has no key.
+_Where_: `commands/keys.js`, `selection/pill.js`
+
 **Hold**:
 A feature keeping the selection while its own UI has focus (Ask in branch's question box), with the
 pill hidden.

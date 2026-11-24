@@ -270,7 +270,7 @@ export function driver({ page, worker, shots }) {
       await worker.evaluate(async () => {
         // Reading tab urls needs a permission Butter doesn't have: only the chat's tab listens.
         for (const tab of await chrome.tabs.query({ active: true }))
-          await chrome.tabs.sendMessage(tab.id, { version: 1, type: 'butter-bookmark-shortcut' }).catch(() => {});
+          await chrome.tabs.sendMessage(tab.id, { version: 1, type: 'butter-command', command: 'bookmark' }).catch(() => {});
       });
     await page.waitForTimeout(600);
   }

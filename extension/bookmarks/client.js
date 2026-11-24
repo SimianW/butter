@@ -2,11 +2,9 @@
 // version-1 runtime messages to bookmarks/worker.js (docs/runtime-api.md, "Bookmarks store API").
 // A storage failure (`bookmark-storage`) or a stopped worker closing the port is retried with the
 // same request, which wakes the worker again, up to three times in all. It also reports the
-// popup's Clear (its token in local storage) and reads the Bookmark command's key.
+// popup's Clear (its token in local storage). The Bookmark command's key: commands/keys.js.
 (() => {
   const TRIES = 3;
-  let key = null, // the key Chrome reports for the command; null until read
-    reading = false;
   globalThis.ButterBookmarkStore = {
     // Resolves to the worker's response, or `{ error: 'bookmark-storage' }` once every try failed.
     async send(type, fields) {
@@ -23,25 +21,6 @@
       chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'local' && changes.butterBookmarksCleared) fn();
       });
-    },
-    // The Bookmark command's key ('' for none). Content scripts can't read chrome.commands, so the
-    // worker answers. Read again on each `readKey`, since the reader may change it in Chrome's
-    // settings; `changed()` runs when it differs from the last read.
-    get key() {
-      return key;
-    },
-    async readKey(changed) {
-      if (reading) return;
-      reading = true;
-      let next = '';
-      try {
-        const r = await chrome.runtime.sendMessage({ version: 1, type: 'butter-bookmark-key' });
-        next = typeof r?.shortcut === 'string' ? r.shortcut : '';
-      } catch {}
-      reading = false;
-      if (next === key) return;
-      key = next;
-      changed();
     },
   };
 })();

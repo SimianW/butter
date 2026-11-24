@@ -1,7 +1,10 @@
 // The branch harness: one Chromium with Butter for the run, and for each scenario a fresh start from
 // what it declares. Every chatgpt.com request is answered with the fixture page (fixture.mjs); any
-// other request is aborted and reported as foreign, which fails the run. Headless always, at
-// 1280 x 800, with Chrome's pop-up blocker on, so the pop-up-blocked case is the real one.
+// other request is aborted and reported as foreign, which fails the run. Headless, at 1280 x 800,
+// with Chrome's pop-up blocker on, so the pop-up-blocked case is the real one. With `keys` (an X
+// display, and a run of scenarios that press the `branch` command's key; branch-qa.mjs decides) it runs
+// headed instead, so that xtest-keys.py presses the key as real input: chrome.commands ignores
+// DevTools key events. Without it, `shortcut` asks the worker to relay the command, as Chrome would.
 //
 // A scenario declares its start (both optional):
 // - `scene`: fixture parameters (a query string, such as 'stream=3000') served to every page the
@@ -13,23 +16,26 @@
 // and the status failures) cleared, and a storage patch a scenario left in the worker undone. It
 // hands the scenario `t`: context, worker, `check`, `pass(name)` (a passing check: the scenario
 // asserts as it goes, and a failed assert throws), `log` (verbose only), `open`, `ask`, `askCard`,
-// `capture`, `settings`, `failures`, the fixture's ids and text, and the Ask in branch driver
-// (driver.mjs).
+// `capture` (a screenshot, or with `{ target, margin }` an evidence shot), `settings`, `failures`,
+// `shortcut(page)` (press the `branch` command's key in that page), `commandKey()` and
+// `setCommandKey(key)` (the key Chrome reports for it, and setting it through the shortcuts page's
+// own API, '' to remove it), the fixture's ids and text, and the Ask in branch driver (driver.mjs).
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { freshPage, launchButter } from '../runner/chromium.mjs';
-import { inShadow, chipOf, select, settle } from './driver.mjs';
+import { evidenceShot } from '../runner/shot.mjs';
+import { inShadow, chipOf, select, settle, xkeys } from './driver.mjs';
 import { fixtureHtml, ORIGINAL, BRANCH, QUOTE, LATEST, MATH } from './fixture.mjs';
 
 // `launch` is the Chromium launcher (launchButter); a test may pass a fake one.
-export async function launchBranch({ shots, defer, verbose = !!process.env.VERBOSE, launch = launchButter }) {
+export async function launchBranch({ shots, defer, keys = false, verbose = !!process.env.VERBOSE, launch = launchButter }) {
   await fs.mkdir(shots, { recursive: true });
   const { context, worker, errors } = await launch({
     defer,
     name: 'butter-branch-qa',
     viewport: { width: 1280, height: 800 },
-    // Headless even under an X display, as before; keep Chrome's pop-up blocker on.
-    options: { headless: true, ignoreDefaultArgs: ['--disable-popup-blocking'] },
+    // Headless even under an X display, unless real keys are pressed; keep Chrome's pop-up blocker on.
+    options: { headless: !keys, ignoreDefaultArgs: ['--disable-popup-blocking'] },
   });
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'https://chatgpt.com' });
   const foreign = [];
@@ -59,6 +65,33 @@ export async function launchBranch({ shots, defer, verbose = !!process.env.VERBO
   const failures = async () =>
     (await worker.evaluate(() => chrome.storage.session.get('butterFailures'))).butterFailures || {};
   const files = [];
+  // The `branch` command (#126): its key as Chrome reports it, and setting it as the shortcuts
+  // page does (chrome://extensions/shortcuts; '' removes it). Each scenario that changes it sets it
+  // back before it ends.
+  const commandKey = () =>
+    worker.evaluate(() => chrome.commands.getAll()).then((cs) => cs.find((c) => c.name === 'branch')?.shortcut ?? '');
+  const setCommandKey = async (keybinding) => {
+    const shortcuts = await context.newPage();
+    await shortcuts.goto('chrome://extensions/shortcuts');
+    await shortcuts.evaluate(
+      ([extensionId, keybinding]) => chrome.developerPrivate.updateExtensionCommand({ extensionId, commandName: 'branch', keybinding }),
+      [new URL(worker.url()).host, keybinding],
+    );
+    await shortcuts.close();
+  };
+  // Press the `branch` command's key in `page`: real X input when headed, else the worker relays
+  // the command to the active tab as Chrome does on a press.
+  const shortcut = async (page) => {
+    await page.bringToFront();
+    if (keys) xkeys('Alt+Shift+Q');
+    else
+      await worker.evaluate(async () => {
+        // Reading tab urls needs a permission Butter doesn't have: only the chat's tab listens.
+        for (const tab of await chrome.tabs.query({ active: true }))
+          await chrome.tabs.sendMessage(tab.id, { version: 1, type: 'butter-command', command: 'branch' }).catch(() => {});
+      });
+    await page.waitForTimeout(400);
+  };
 
   async function start(scenario, check) {
     // A blank page, kept open through the scenario as the launch page was before, and every other
@@ -103,9 +136,12 @@ export async function launchBranch({ shots, defer, verbose = !!process.env.VERBO
       await inShadow(dest, '.card').waitFor();
       return dest;
     };
-    const capture = async (page, state, width, theme) => {
+    // A full-viewport screenshot; with `evidence` ({ target, margin }, as evidenceShot takes them),
+    // an evidence shot cropped to that region, with its `.json` sidecar (lab/README.md).
+    const capture = async (page, state, width, theme, evidence) => {
       const file = `${state}-${width}-${theme}.png`;
-      await page.screenshot({ path: path.join(shots, file), animations: 'disabled' });
+      if (evidence) await evidenceShot(page, path.join(shots, file), { ...evidence, animations: 'disabled' });
+      else await page.screenshot({ path: path.join(shots, file), animations: 'disabled' });
       files.push(file);
     };
     return {
@@ -126,6 +162,10 @@ export async function launchBranch({ shots, defer, verbose = !!process.env.VERBO
       capture,
       settings,
       failures,
+      keys,
+      shortcut,
+      commandKey,
+      setCommandKey,
     };
   }
   return { start, report: () => ({ errors, foreign, screenshots: files.length }) };

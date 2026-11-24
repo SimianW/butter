@@ -8,7 +8,7 @@
 (() => {
   const B = ButterBranch,
     P = ButterBranchPage,
-    R = ButterPageReader;
+    K = ButterCommandKeys; // the `branch` command's key and its relay: commands/keys.js
   // Read before ChatGPT's router can touch the URL.
   const incoming = B.jobId(location.hash);
   let ui;
@@ -31,46 +31,15 @@
   // ---------------------------------------------------------------- original tab
   const drafts = new Map(); // per tab, per conversation and quote: unsent questions
   let sel = null,
-    boxOpen = false;
+    boxOpen = false,
+    boxInput = null; // the open box's input, as the box handed it over
   const draftKey = (s) => `${s.identity}\n${s.quote}`;
-  const elementOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement);
-
-  const readSelection = () => {
-    const s = document.getSelection();
-    if (!s || s.rangeCount !== 1 || s.isCollapsed) return null;
-    const range = s.getRangeAt(0);
-    const start = R.replyOf(range.startContainer),
-      end = R.replyOf(range.endContainer);
-    // Formulas are fine (quoted as LaTeX), and so are citation tags (left out of the quote);
-    // editable controls, images and other non-text regions are not.
-    const selectable = (el) => !!el.closest(`${P.FORMULA}, ${P.CITATION}`);
-    const inside = (node, selector) => {
-      const el = elementOf(node)?.closest(selector);
-      return !!el && !selectable(el);
-    };
-    const touching = (selector) =>
-      !!start && [...start.querySelectorAll(selector)].some((el) => range.intersectsNode(el));
-    const excluded =
-      inside(range.startContainer, P.EXCLUDED) ||
-      inside(range.endContainer, P.EXCLUDED) ||
-      (!!start &&
-        [...start.querySelectorAll(P.NON_TEXT)].some(
-          (el) => !selectable(el) && range.intersectsNode(el),
-        ));
-    const identity = B.identity(location.href),
-      // Chrome's own text skips a citation tag's label but puts a line break in its place.
-      text =
-        touching(P.FORMULA) || touching(P.CITATION)
-          ? B.quoteOf(range, P.quoteDom) || ''
-          : s.toString();
-    if (!B.qualifies({ text, start, end, identity, excluded, page: P.facts() })) return null;
-    return { range: range.cloneRange(), quote: text.trim(), identity };
-  };
 
   // Ends the question box and forgets the selection; the pill goes back to the page selection.
   const hideSelectionUI = () => {
     sel = null;
     boxOpen = false;
+    boxInput = null;
     highlight(null);
     ui?.question.close();
     ButterPill.release();
@@ -117,6 +86,7 @@
   const closeBox = (restore = false) => {
     if (!boxOpen) return;
     boxOpen = false;
+    boxInput = null;
     ui.question.close();
     highlight(null);
     if (restore && sel?.range.startContainer.isConnected) {
@@ -130,13 +100,13 @@
     if (!sel || boxOpen) return;
     boxOpen = true;
     const current = sel;
-    const { input } = getUI().question.open({
+    const input = (boxInput = getUI().question.open({
       quote: current.quote,
       draft: drafts.get(draftKey(current)),
       onInput: (value) => drafts.set(draftKey(current), value),
       onSubmit: (question) => submit(current, question),
       onClose: () => closeBox(true),
-    });
+    }).input);
     highlight(current.range);
     ButterPill.hold(current.range, {
       place: (anchor, area) => placeHeld(current, anchor, area),
@@ -214,18 +184,43 @@
       .catch(() => handoffFailed(id));
   };
 
-  // The pill's Ask in branch cell: the branch icon, its label on hover. It opens the question box
-  // on a primary pointerdown or a keyboard click.
+  // The pill's Ask in branch cell: the branch icon, its label on hover with the key Chrome reports
+  // for the `branch` command. It opens the question box on a primary pointerdown or a keyboard
+  // click.
   ButterPill.register({
     id: 'branch',
     feature: 'branch',
     icon: ButterBranchUI.ICON.branch,
     label: () => ButterBranchUI.strings().ask,
-    wants: () => !!(sel = readSelection()),
+    keys: () => K.keyHint(K.key('branch')),
+    shortcut: () => K.ariaKeys(K.key('branch')),
+    wants() {
+      if (!(sel = P.selection())) return false;
+      K.read('branch', () => ButterPill.update()); // read each time the cell shows
+      return true;
+    },
     activate: () => openBox(),
     reset() {
       if (!boxOpen) sel = null;
     },
+  });
+  // The shortcut (#126): the cell's activate by key, with the selection read at the press by the
+  // cell's own rule, so it works before the pill shows and with no pill at all (the box then opens
+  // under the quote). With the box open it puts focus back in the box's input. A press that does
+  // nothing is silent and leaves the page selection as it is.
+  K.on('branch', () => {
+    const next = P.selection();
+    const action = B.shortcutAction({
+      off: off(),
+      overlay: !!ui?.overlay.shown,
+      boxOpen,
+      qualifies: !!next,
+    });
+    if (action === 'focus') boxInput?.focus({ preventScroll: true });
+    else if (action === 'open') {
+      sel = next;
+      openBox();
+    }
   });
   document.addEventListener('butter-settings', () => {
     if (!off()) return;
