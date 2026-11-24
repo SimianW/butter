@@ -92,6 +92,9 @@
   // test/fixtures/page/live-snapshot.html), and a "+N" count when it cites more than one source.
   // It is not the reply's text: the quote leaves it out, and its images don't exclude a selection.
   const CITATION = '[data-testid="chatgpt-citation"]';
+  // A selection may not start or end in these, nor touch NON_TEXT, outside a formula or citation.
+  const EXCLUDED = 'textarea, input, [contenteditable="true"], math, img, svg',
+    NON_TEXT = 'math, img, video, canvas, iframe';
   const quoteDom = {
     formula(el) {
       const display = el.matches('.katex-display');
@@ -155,6 +158,40 @@
       }),
       branchAction,
     };
+  };
+
+  // The Ask in branch cell's rule, read at the moment it is asked (the cell's wants(), or the
+  // shortcut's press): the page selection as `{ range, quote, identity }` when it lies in one reply
+  // and is quotable on a page where ChatGPT can branch (ButterBranch.qualifies), else null.
+  const elementOf = (node) => (node?.nodeType === 1 ? node : node?.parentElement);
+  const selection = () => {
+    const s = document.getSelection();
+    if (!s || s.rangeCount !== 1 || s.isCollapsed) return null;
+    const range = s.getRangeAt(0);
+    const start = R.replyOf(range.startContainer),
+      end = R.replyOf(range.endContainer);
+    // Formulas are fine (quoted as LaTeX), and so are citation tags (left out of the quote);
+    // editable controls, images and other non-text regions are not.
+    const selectable = (el) => !!el.closest(`${FORMULA}, ${CITATION}`);
+    const inside = (node, selector) => {
+      const el = elementOf(node)?.closest(selector);
+      return !!el && !selectable(el);
+    };
+    const touching = (selector) =>
+      !!start && [...start.querySelectorAll(selector)].some((el) => range.intersectsNode(el));
+    const excluded =
+      inside(range.startContainer, EXCLUDED) ||
+      inside(range.endContainer, EXCLUDED) ||
+      (!!start &&
+        [...start.querySelectorAll(NON_TEXT)].some(
+          (el) => !selectable(el) && range.intersectsNode(el),
+        ));
+    const identity = B.identity(location.href),
+      // Chrome's own text skips a citation tag's label but puts a line break in its place.
+      text =
+        touching(FORMULA) || touching(CITATION) ? B.quoteOf(range, quoteDom) || '' : s.toString();
+    if (!B.qualifies({ text, start, end, identity, excluded, page: facts() })) return null;
+    return { range: range.cloneRange(), quote: text.trim(), identity };
   };
 
   // The page adapter for run.js. One per run.
@@ -252,8 +289,8 @@
     quoteDom,
     FORMULA,
     CITATION,
-    // A selection may not start or end in these, nor touch NON_TEXT, outside a formula or citation.
-    EXCLUDED: 'textarea, input, [contenteditable="true"], math, img, svg',
-    NON_TEXT: 'math, img, video, canvas, iframe',
+    EXCLUDED,
+    NON_TEXT,
+    selection,
   };
 })();

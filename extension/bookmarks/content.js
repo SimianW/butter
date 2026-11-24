@@ -8,7 +8,8 @@
   const B = ButterBookmarks,
     // Answer roots, message ids, turns and an answer's paragraphs (its top-level blocks, each item
     // of a top-level list on its own, #51): page/reader.js.
-    R = ButterPageReader;
+    R = ButterPageReader,
+    K = ButterCommandKeys; // the Bookmark command's key and its relay: commands/keys.js
   const MEASURE = 1000; // UTF-16 units measured for line ends; the excerpt keeps at most 240 characters
   const HEADER = 52; // ChatGPT's fixed header overlaps the top of the chat's scroller (rail/model.js)
   const strings = (zh) => (zh ? { sel: '为选中内容加书签' } : { sel: 'Bookmark selection' });
@@ -297,11 +298,11 @@
     feature: ['rail', 'bookmark'],
     icon: ICON,
     label: () => TXT.sel,
-    keys: () => B.keyHint(ButterBookmarkStore.key ?? ''),
-    shortcut: () => B.ariaKeys(ButterBookmarkStore.key ?? ''),
+    keys: () => K.keyHint(K.key('bookmark')),
+    shortcut: () => K.ariaKeys(K.key('bookmark')),
     wants() {
       if (!session.signedIn || session.seeking || !convOfPath() || !selection(false)) return false;
-      ButterBookmarkStore.readKey(pill); // read each time the cell shows
+      K.read('bookmark', pill); // read each time the cell shows
       return true;
     },
     activate() {
@@ -534,11 +535,9 @@
     return true;
   }
 
-  // ---- The bookmark shortcut (a Chrome command; bookmarks/worker.js relays it to this tab). It
-  // bookmarks the selection inside one answer, or with nothing selected the paragraph at the top.
-  // A selection outside the answers creates nothing.
-  chrome.runtime.onMessage.addListener((m) => {
-    if (m?.type !== 'butter-bookmark-shortcut' || m.version !== 1) return;
+  // ---- The bookmark shortcut (the `bookmark` command, relayed by commands/worker.js): the selection
+  // inside one answer, or with nothing selected the paragraph at the top; elsewhere, nothing.
+  K.on('bookmark', () => {
     if (bookmarksOff() || !session.signedIn || session.seeking || !convOfPath()) return;
     const s = getSelection();
     if (s && !s.isCollapsed) {

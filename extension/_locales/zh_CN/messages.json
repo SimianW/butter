@@ -10,5 +10,9 @@
   "bookmarkCommand": {
     "message": "为选中内容加书签，没有选中时为对话顶部的段落加书签",
     "description": "Name of the bookmark keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
+  },
+  "branchCommand": {
+    "message": "就选中内容在分支中问",
+    "description": "Name of the Ask in branch keyboard shortcut in Chrome's extension shortcut settings (chrome://extensions/shortcuts)."
   }
 }

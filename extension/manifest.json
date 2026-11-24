@@ -38,6 +38,7 @@
         "rail/card.js",
         "rail/rail.js",
         "page/reader.js",
+        "commands/keys.js",
         "selection/pill.js",
         "bookmarks/content.js",
         "bookmarks/notice.js",
@@ -78,6 +79,10 @@
     "bookmark": {
       "suggested_key": { "default": "Alt+Shift+M", "mac": "Alt+Shift+M" },
       "description": "__MSG_bookmarkCommand__"
+    },
+    "branch": {
+      "suggested_key": { "default": "Alt+Shift+Q", "mac": "Alt+Shift+Q" },
+      "description": "__MSG_branchCommand__"
     }
   },
   "action": {

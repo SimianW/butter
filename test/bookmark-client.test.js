@@ -75,17 +75,3 @@ test('the popup’s Clear token in local storage reaches the cleared listener, n
   c.change('session', { butterBookmarksCleared: { newValue: 'token' } });
   assert.equal(calls, 1);
 });
-
-test('the Bookmark key is read from the worker, and a change is reported once', async () => {
-  const c = client([{ shortcut: 'Alt+Shift+M' }, { shortcut: 'Alt+Shift+M' }, new Error('x')]);
-  let changed = 0;
-  assert.equal(c.store.key, null, 'not read yet');
-  await c.store.readKey(() => changed++);
-  assert.equal(c.store.key, 'Alt+Shift+M');
-  await c.store.readKey(() => changed++);
-  assert.equal(changed, 1, 'the same key again changes nothing');
-  await c.store.readKey(() => changed++);
-  assert.equal(c.store.key, '', 'no answer reads as no key');
-  assert.equal(changed, 2);
-  assert.deepEqual(plain(c.sent[0]), { version: 1, type: 'butter-bookmark-key' });
-});

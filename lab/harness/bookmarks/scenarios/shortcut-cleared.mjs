@@ -10,8 +10,12 @@ export default {
     // (f) Clear the command's key in Chrome's shortcut settings: the tooltip shows no hint.
     const settingsPage = await context.newPage();
     await settingsPage.goto('chrome://extensions/shortcuts');
-    // The action's input has no key (its Clear is disabled); the bookmark command's is the other one.
-    await settingsPage.locator('cr-shortcut-input #clear:not([disabled])').click();
+    // Through the page's own API, as its Clear does: since #126 the `branch` command has a key too,
+    // so the bookmark command's input is no longer the only one with a Clear to click.
+    await settingsPage.evaluate(
+      (extensionId) => chrome.developerPrivate.updateExtensionCommand({ extensionId, commandName: 'bookmark', keybinding: '' }),
+      new URL(worker.url()).host,
+    );
     await settingsPage.waitForTimeout(300);
     await settingsPage.close();
     const cleared = await worker.evaluate(() => chrome.commands.getAll());

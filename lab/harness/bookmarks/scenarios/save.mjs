@@ -40,8 +40,10 @@ export default {
       p1 && p1.cells.map((c) => c.id).join() === 'branch,bookmark' && p1.cells.every((c) => c.width === 32 && c.height === 30 && !c.text) &&
         p1.cells[1].divider === '1px' && p1.box.width === 64,
       { cells: p1?.cells });
-    check('the cells are named by their labels; the Bookmark cell carries its key in aria-keyshortcuts',
-      p1 && p1.cells[0].name === 'Ask in branch' && p1.cells[1].name === 'Bookmark selection' && p1.cells[1].keys === 'Alt+Shift+M' && !p1.cells[0].keys,
+    // Since #126 Ask in branch has a key too (Alt+Shift+Q).
+    check('the cells are named by their labels; each carries its key in aria-keyshortcuts',
+      p1 && p1.cells[0].name === 'Ask in branch' && p1.cells[1].name === 'Bookmark selection' && p1.cells[1].keys === 'Alt+Shift+M' &&
+        p1.cells[0].keys === 'Alt+Shift+Q',
       { cells: p1?.cells.map(({ name, keys }) => ({ name, keys })) });
     // The label: not at 100 ms, shown by 350 ms, 8 px below the pill, centred under its cell.
     const early = await hoverCell('bookmark', 100);
