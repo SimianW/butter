@@ -29,7 +29,67 @@ export const experimentalPanels = {
   'after-main-dark': '28-en-main-on-dark',
   'after-exp-dark': '26-en-exp-fresh-dark',
   'after-exp-needs-rail': '29-en-exp-needs-rail-light',
+  // Round 2: the same popup at its fixed height, the footer at the bottom.
+  'fixed-main': '25-en-main-fresh-light',
+  'fixed-exp-fresh': '26-en-exp-fresh-light',
+  'fixed-exp-on': '27-en-exp-on-light',
+  'fixed-main-dark': '28-en-main-on-dark',
 };
+
+// The popup's one height (#158), popup.css's --popup-height: every state is exactly this tall and
+// nothing in it overflows, so the footer never moves.
+export const POPUP_HEIGHT = 456;
+// Asserts the shown state's height and that its content fits; returns the height.
+export async function checkFixedHeight(page, state) {
+  const m = await page.evaluate(() => ({
+    height: document.getElementById('popup').offsetHeight,
+    footer: document.querySelector('.ft').getBoundingClientRect().bottom,
+    // The body's scrollable overflow: the viewport is taller than the popup, so the root's
+    // scrollHeight would read the viewport.
+    scroll: document.body.scrollHeight,
+  }));
+  assert.equal(m.height, POPUP_HEIGHT, `${state} is ${m.height}px, not the fixed ${POPUP_HEIGHT}px`);
+  assert.ok(m.footer <= POPUP_HEIGHT && m.scroll <= POPUP_HEIGHT, `${state} overflows ${POPUP_HEIGHT}px: footer bottom ${m.footer}, scrollHeight ${m.scroll}`);
+  return m.height;
+}
+
+// The footer stays put: its top is at the same y on the main page, mid-swap each way, on the
+// Experimental page with the privacy note, and after the layouts switch hides the note. Leaves the
+// popup on the main page with layouts on. Returns the footer's top.
+export async function checkFooterStill(page) {
+  const top = () => page.evaluate(() => document.querySelector('.ft').getBoundingClientRect().top);
+  const settle = () => page.evaluate(() => document.getAnimations().forEach((a) => a.finish()));
+  // Half-way through the swap the incoming page is moving and half faded; the footer is not.
+  const midSwap = async (target) => {
+    await page.locator(target).click();
+    const mid = await page.evaluate(() => {
+      const p = document.querySelector('.page'), [a] = p.getAnimations();
+      a?.pause(); if (a) a.currentTime = 80;
+      return { playing: !!a, transform: getComputedStyle(p).transform, opacity: Number(getComputedStyle(p).opacity), top: document.querySelector('.ft').getBoundingClientRect().top };
+    });
+    assert.ok(mid.playing && mid.transform !== 'none' && mid.opacity > 0 && mid.opacity < 1, `the swap is not mid-way: ${JSON.stringify(mid)}`);
+    await settle();
+    return mid.top;
+  };
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.evaluate(async () => {
+    await chrome.storage.local.set({ butter: ButterStatus.normalize({ layoutConsent: 'pending', lang: 'en', opts: { rail: true, bookmark: true, layout: false } }) });
+    go('main');
+  });
+  await page.waitForFunction(() => prefs.layoutConsent === 'pending');
+  await settle();
+  const main = await top();
+  const entering = await midSwap('.exp-row');
+  assert.equal(await page.locator('.note').count(), 1, 'the privacy note shows');
+  const withNote = await top();
+  await page.locator('[data-switch="layout"]').click();
+  await page.waitForFunction(() => !document.querySelector('.note'));
+  const withoutNote = await top();
+  const leaving = await midSwap('.back');
+  const tops = { main, entering, withNote, withoutNote, leaving, back: await top() };
+  assert.equal(new Set(Object.values(tops)).size, 1, `the footer moved: ${JSON.stringify(tops)}`);
+  return main;
+}
 
 // Synthetic store contents (test data, never a real record): `bookmarks` bookmarks over two fixture
 // accounts, and 14 saved layouts (valid geometry rows) sized so the popup reads "about 3.4 MB", as

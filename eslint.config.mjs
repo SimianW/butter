@@ -13,7 +13,7 @@ export const maxLinesCaps = {
   'extension/seek/layout-cache-main.js': 799,
   'extension/seek/preview-main.js': 1143,
   'lab/harness/dev-capture-qa.mjs': 799,
-  'lab/harness/popup-qa.mjs': 515,
+  'lab/harness/popup-qa.mjs': 510,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,
   'test/height-cache-dom.test.js': 1461,

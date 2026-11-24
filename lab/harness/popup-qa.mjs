@@ -11,7 +11,7 @@ import os from 'node:os';
 import { repo } from './runner/chromium.mjs';
 import { evidenceShot } from './runner/shot.mjs';
 import { liveRegions, mockupComparer } from './popup/mockup.mjs';
-import { checkFreshInstall, checkPages, experimentalCases, experimentalPanels, seedStores } from './popup/experimental.mjs';
+import { POPUP_HEIGHT, checkFixedHeight, checkFooterStill, checkFreshInstall, checkPages, experimentalCases, experimentalPanels, seedStores } from './popup/experimental.mjs';
 const shots = process.env.BUTTER_SHOTS || '/tmp/butter-popup-build';
 await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-qa-'));
@@ -75,7 +75,7 @@ try {
     // English states for the #35 redesign panels.
     ['19-en-rail-fault', { lang: 'en', broken: true, page: 'experimental' }], ['20-en-layouts-pending', { lang: 'en', consent: 'pending', page: 'experimental' }],
     ['21-en-clear-confirm', { lang: 'en', clear: 'confirm', page: 'experimental' }],
-    // The consent note in Chinese, for the 600 px cap (05 covers the Chinese clear confirmation).
+    // The consent note in Chinese, for the fixed height (05 covers the Chinese clear confirmation).
     ['22-zh-layouts-pending', { lang: 'zh', consent: 'pending', page: 'experimental' }],
     // The main page's worst case: every group on it that can fail has failed (the rail's fault
     // shows on the Experimental page; its worst cases are 31, 32, 51 and 52).
@@ -154,11 +154,9 @@ try {
     const builtMetrics = await page.evaluate(metrics);
     const file = `${shots}/${name}-${color}.png`;
     await evidenceShot(page, file, { target: page.locator('#popup') }); files.push(file);
-    const height = await page.locator('#popup').evaluate(e => e.offsetHeight);
-    heights[`${name}-${color}`] = height;
+    // Every state, faults included, is the fixed height with nothing overflowing it.
+    heights[`${name}-${color}`] = await checkFixedHeight(page, `${name}-${color}`);
     liveRects[`${name}-${color}`] = await page.evaluate(liveRegions);
-    // Chromium caps popups at 600px; every state, faults included, must fit under it.
-    assert.ok(height <= 600, `${name}-${color} is ${height}px, over the 600px popup cap`);
     if (config.animation) {
       await page.locator('[data-switch="master"]').click();
       const frame = await page.evaluate(async () => {
@@ -280,6 +278,7 @@ try {
   // The Experimental page: swap, focus, motion, and its survival across polling and language.
   await page.evaluate(() => document.activeElement?.blur());
   await checkPages(page);
+  const footerTop = await checkFooterStill(page);
   await page.locator('.exp-row').click();
   // Clear and Cancel work from the Experimental page, with focus moving as on the main page.
   await page.locator('[data-store="layouts"][data-clear="ask"]').click();
@@ -300,7 +299,7 @@ try {
   // Fail only after every panel has been compared and reported; #35's and #32's are report-only.
   const experimentalMismatched = experimentalRefs.filter(r => r.ok !== true);
   assert.equal(experimentalMismatched.length, 0, `${experimentalMismatched.length} of ${experimentalRefs.length} panels differ from the Experimental page mockup: ${experimentalMismatched.map(r => r.skipped ? `${r.panel} (skipped: ${r.skipped})` : `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), all under the 600px cap, melt frames, branch switch, pause without layout shift, in-row faults, a fresh install with the rail and Bookmarks off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${experimentalMockup ? experimentalRefs.length : Object.keys(experimentalPanels).length} Experimental page mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.length} redesign-mockup panels compared (historical, report-only)${dev ? `, ${dev.refs.length} dev-mockup panels compared (historical, report-only), dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), every one ${POPUP_HEIGHT} px with nothing overflowing, the footer at y ${footerTop} on both pages, mid-swap and with the privacy note gone, melt frames, branch switch, pause without layout shift, in-row faults, a fresh install with the rail and Bookmarks off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${experimentalMockup ? experimentalRefs.length : Object.keys(experimentalPanels).length} Experimental page mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.length} redesign-mockup panels compared (historical, report-only)${dev ? `, ${dev.refs.length} dev-mockup panels compared (historical, report-only), dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
   for (const dir of cleanup) await fs.rm(dir, { recursive: true, force: true });
@@ -425,16 +424,12 @@ async function devPopup() {
       assert.equal(row.text.replace(/^Saved\s*/, config.saved ? 'Saved ' : ''), expected, state);
       const file = `${shots}/${state}.png`;
       await evidenceShot(page, file, { target: page.locator('#popup') }); files.push(file);
-      heights[state] = await page.locator('#popup').evaluate(e => e.offsetHeight);
+      heights[state] = await checkFixedHeight(page, state);
       liveRects[state] = await page.evaluate(liveRegions);
-      assert.ok(heights[state] <= 600, `${state} is ${heights[state]}px, over the 600px popup cap`);
       if (panel) panels.push([panel, state]);
     }
-    // The store popup's main page plus the dev card's 46. Since #158 moved three rows to the
-    // Experimental page, every dev state fits under the 600 px cap again (#108 had let the two
-    // tallest, 569 and 640 px, scroll).
-    assert.equal(heights['d1-en-recording-light'], 456);
-    assert.equal(heights['d4-en-tallest-light'], 456);
+    // The store popup's main page plus the dev card's 46 px fill the fixed height exactly in the
+    // tallest dev state (checkFixedHeight above).
     console.log('Dev states:');
     for (const [name, , color] of devCases) console.log(`  ${`${name}-${color}`.padEnd(24)} ${heights[`${name}-${color}`]} px  row "${rows[`${name}-${color}`].text}"`);
     const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels (historical, report-only)') : [];
