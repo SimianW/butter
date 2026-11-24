@@ -1,5 +1,4 @@
-// Isolated world, document_start. Before storage loads, normalize()'s defaults apply: every switch
-// on except the experimental rail and Bookmarks.
+// Isolated world, document_start. Before storage loads, normalize()'s defaults apply.
 (() => {
   const { keys, normalize, classify } = ButterStatus;
   let settings = normalize(),
