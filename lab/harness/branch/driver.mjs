@@ -4,9 +4,16 @@
 // new one. The selection pill and text selection come from the shared driver (../driver/butter.mjs),
 // bound to the fixture's "Ask ChatGPT" box.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 import { butterDriver } from '../driver/butter.mjs';
+import { repo } from '../runner/chromium.mjs';
 
 export const HOST = 'chatgpt-butter-branch';
+// Presses `chord` as real X input (xtest-keys.py), as bookmarks/driver.mjs does. The X pointer
+// stays on the tab strip (screen y 20, above the page): without a window manager, keys go where the
+// pointer is, and over the page it would hover what a scenario reads.
+export const xkeys = (chord) => execFileSync('python3', [path.join(repo, 'lab/harness/xtest-keys.py'), chord, '700', '20']);
 // The fixture's "Ask ChatGPT" box while it shows.
 const NATIVE = '.native:not([hidden]) > div';
 // extension/branch/run.js TIMING: one menu step, and the verification window.
