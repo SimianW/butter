@@ -161,34 +161,6 @@ test('bookmarks survive a worker restart', async () => {
   assert.deepEqual(await excerpts(f), [mark().excerpt]);
 });
 
-test('the bookmark command asks the tab it was pressed in to bookmark; other commands do not', async () => {
-  const f = workerFixture();
-  f.command('bookmark', { id: 7, url: 'https://chatgpt.com/c/x' });
-  f.command('save-bug', { id: 7 });
-  f.command('bookmark', undefined); // no tab (a browser page): nothing to ask
-  await new Promise(setImmediate);
-  assert.deepEqual(JSON.parse(JSON.stringify(f.tabMessages)), [
-    { tabId: 7, message: { version: 1, type: 'butter-bookmark-shortcut' } },
-  ]);
-});
-
-test('the page reads the key Chrome reports for the command, and none once it is cleared', async () => {
-  const f = workerFixture();
-  assert.deepEqual(await send(f, { type: 'butter-bookmark-key' }), { shortcut: 'Alt+Shift+M' });
-  f.setShortcut('');
-  assert.deepEqual(await send(f, { type: 'butter-bookmark-key' }), { shortcut: '' });
-  // Another extension cannot ask.
-  assert.equal(await send(f, { type: 'butter-bookmark-key' }, { id: 'other' }), undefined);
-});
-
-test('a key request in another protocol version is refused, as the store requests are', async () => {
-  const f = workerFixture();
-  for (const version of [2, 0, undefined])
-    assert.deepEqual(await send(f, { type: 'butter-bookmark-key', version }), {
-      error: 'bookmark-protocol',
-    });
-});
-
 // The popup's bookmark usage and Clear: whole-store requests from an extension page (no tab).
 const usage = (f, sender) => send(f, { type: 'butter-bookmark-usage' }, sender);
 const clearAll = (f, requestId = crypto.randomUUID(), sender) =>

@@ -1,0 +1,44 @@
+{
+  "png": "shortcut-label-1280-dark.png",
+  "takenAt": "2026-11-24T21:52:27.425Z",
+  "url": "https://chatgpt.com/c/6ae40607-3240-83ea-8f5b-c8c6b15f1e78?theme=dark",
+  "browser": "158.0.8127.18",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "cssViewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "devicePixelRatio": 1,
+  "deviceScaleFactor": 1,
+  "browserZoom": 1,
+  "browserZoomFrom": "Page.getLayoutMetrics",
+  "pinchZoom": 1,
+  "target": "rect",
+  "rect": {
+    "x": 399.25,
+    "y": 215.171875,
+    "width": 528.09375,
+    "height": 122.828125
+  },
+  "margin": 24,
+  "clip": {
+    "x": 375,
+    "y": 191,
+    "width": 577,
+    "height": 171
+  },
+  "viewportClip": {
+    "x": 375,
+    "y": 191,
+    "width": 577,
+    "height": 171
+  },
+  "clamped": false,
+  "device": {
+    "width": 577,
+    "height": 171
+  }
+}

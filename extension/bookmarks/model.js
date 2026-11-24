@@ -186,28 +186,6 @@
   // `line` (the bottom of ChatGPT's fixed header). `tops` are the paragraphs' tops in document
   // order; returns its index, or -1 when none is.
   const topParagraph = (tops, line) => tops.findIndex((top) => top >= line);
-  // The tooltip's key hint from chrome.commands' `shortcut`: "Alt+Shift+M" reads "Alt Shift M", as
-  // the mockup writes keys; a command without a key shows no hint.
-  const keyHint = (shortcut) => (typeof shortcut === 'string' ? shortcut.split('+').join(' ') : '');
-  // The same key for the Bookmark cell's aria-keyshortcuts (#77), in ARIA's key names: macOS's
-  // symbols and Chrome's modifier and key names spelled out.
-  const ARIA = {
-    '⌥': 'Alt',
-    '⇧': 'Shift',
-    '⌃': 'Control',
-    '⌘': 'Meta',
-    Ctrl: 'Control',
-    MacCtrl: 'Control',
-    Command: 'Meta',
-    Comma: ',',
-    Period: '.',
-  };
-  const ariaKeys = (shortcut) =>
-    typeof shortcut === 'string' && shortcut
-      ? (shortcut.includes('+') ? shortcut.split('+') : shortcut.match(/[⌥⇧⌃⌘]|[^⌥⇧⌃⌘]+/g))
-          .map((k) => ARIA[k] ?? k)
-          .join('+')
-      : '';
   // The rail's bookmark dot (#71), one beside each tick whose question holds bookmarks. Its
   // diameter: 4 px while ticks are 6 px apart or more, else the pitch minus 2 px, never under 2,
   // so dots on neighbouring rows don't touch.
@@ -334,8 +312,6 @@
     pale,
     anchor,
     topParagraph,
-    keyHint,
-    ariaKeys,
     dotSize,
     dotBeside,
     dotRight,

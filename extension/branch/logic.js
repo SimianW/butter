@@ -108,6 +108,16 @@
     !!page &&
     hiddenReason({ ...page, identity: id }) === null;
 
+  // What a press of the `branch` command does (#126), from four facts about this tab: off (Ask in
+  // branch switched off or Butter paused), overlay (the new tab's overlay is up), boxOpen (the
+  // question box is open) and qualifies (the selection passes the cell's rule, read at the press).
+  // 'open' the question box, 'focus' its input, or 'nothing', which is silent.
+  const shortcutAction = ({ off, overlay, boxOpen, qualifies: ok } = {}) => {
+    if (off || overlay) return 'nothing';
+    if (boxOpen) return 'focus';
+    return ok ? 'open' : 'nothing';
+  };
+
   // The quote for a selection that touches formulas: the selected text, with every formula it
   // touches, even partly, written whole as its LaTeX source: `$…$` inline, `$$…$$` on its own line
   // for display math. Paragraphs are separated by a blank line, other blocks by a line break.
@@ -306,6 +316,7 @@
     validJob,
     qualifies,
     hiddenReason,
+    shortcutAction,
     temporaryUrl,
     isWorkMode,
     labels,

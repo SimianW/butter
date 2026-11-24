@@ -61,7 +61,6 @@ stored ones also carry their `key`.
 | `butter-bookmark-list` | `account`, `conv` | `{ bookmarks }` for that conversation |
 | `butter-bookmark-create` | `bookmark` | `{ bookmark, created }`; the same paragraph and range returns the existing one with `created: false` |
 | `butter-bookmark-delete` | `account`, `conv`, `key` | `{ deleted }` |
-| `butter-bookmark-key` | None (version 1 like the others) | `{ shortcut }`: the key Chrome reports for the `bookmark` command, `''` when it has none |
 | `butter-bookmark-usage` | None | `{ count, bytes }` over the whole store (every account and conversation); `bytes` sums each stored row's UTF-8 JSON length |
 | `butter-bookmark-clear` | `requestId`: random UUID, reused on retry | `{ count: 0, bytes: 0 }`; a retried id clears nothing again and returns the current usage |
 
@@ -83,14 +82,13 @@ republishes, and the popup reads usage again. Bookmarks show on the page only wh
 and keeps the store.
 
 The `bookmark` command (manifest `commands`, suggested key Alt+Shift+M, Option+Shift+M on a Mac,
-rebindable in `chrome://extensions/shortcuts`) makes the worker send `{ version: 1, type:
-'butter-bookmark-shortcut' }` to the tab it was pressed in. The content script bookmarks the selection
+rebindable in `chrome://extensions/shortcuts`) reaches the tab it was pressed in through the
+command keys module ([Command keys](#command-keys)). The content script bookmarks the selection
 inside one answer (anchored to its first paragraph), or with nothing selected the first answer
 paragraph whose top is at or below ChatGPT's 52 px header; a selection outside the answers creates
 nothing. Alt+Shift+M is in neither Chrome's accelerator table (Windows, Linux; on a Mac Chrome binds
 no Option+Shift letter) nor ChatGPT's documented shortcuts, and is not the dev build's Alt+Shift+B,
-which Chrome reserves on Windows and Linux for its bookmarks bar. `--dev` zips keep the `bookmark`
-command beside `save-bug`.
+which Chrome reserves on Windows and Linux for its bookmarks bar.
 
 On the page, the bookmark session (`bookmarks/session.js`) reads a conversation's bookmarks once
 when the rail first shows it, and the rail calls `ButterBookmarkPage.sync(conv, items, complete,
@@ -182,6 +180,48 @@ isn't `'acknowledged'` a save shows the expanded card with the privacy text and 
 writes `bookmarkNotice: 'acknowledged'` into the `butter` settings, once per browser profile; Undo
 or a remove replacing it leaves it unacknowledged. The card shows only in the tab that acted, and
 Butter paused or the rail off puts it away.
+
+## Command keys
+
+Butter's Chrome commands (manifest `commands`) are a closed list, `ButterCommandKeys.COMMANDS` in
+`commands/keys.js`: `bookmark` (Alt+Shift+M, above) and `branch` (Alt+Shift+Q, Option+Shift+Q on
+a Mac: Ask in branch's question box for the selection, see
+[How it works](how-it-works.md#ask-in-branch)). Each is rebindable or removable in
+`chrome://extensions/shortcuts`; neither is global, and neither needs a permission. The worker side,
+`commands/worker.js`, and the page side, `commands/keys.js`, speak two version-1 messages:
+
+| Message `type` | Direction and fields | Response |
+|---|---|---|
+| `butter-command` | Worker → the tab the key was pressed in: `command` (a listed name) | None; a tab with no content script (not ChatGPT) rejects it, which the worker ignores |
+| `butter-command-key` | Page → worker: `command` | `{ shortcut }`: the key Chrome reports for that command, `''` when it has none or is not listed; another protocol version gets `{ error: 'command-protocol' }`, another extension no answer |
+
+Content scripts can't read `chrome.commands`, so a cell asks for its key each time it shows
+(`ButterCommandKeys.read`, one read at a time per command, calling back only when the key changed)
+and shows it with `keyHint` (its label, in key symbols: `Alt+Shift+Q` reads `⌥⇧Q`, `Alt+Shift+Up Arrow`
+`⌥⇧↑`; macOS's symbols as given) and `ariaKeys` (`aria-keyshortcuts` in UI Events key names,
+`Alt+Shift+Q`, `Alt+Shift+ArrowUp`). Both read Chrome's text, whose modifier names are in the
+browser's language on Windows, Linux and ChromeOS: a name that is not English is read only when
+Chromium's fixed order and an extension key's rules (Ctrl, Alt or Search; never Alt with Ctrl or
+Search; Shift only beside one) leave one modifier, so German `Alt+Umschalttaste+Q` reads `⌥⇧Q`;
+otherwise the label shows Chrome's words (`Strg Umschalttaste Q`) and the cell has no
+`aria-keyshortcuts`. `ButterCommandKeys.on(command, fn)` runs a
+feature's handler for a relayed command. A new command is one list entry, its manifest entry, its
+locale message and its handler. The dev build's `save-bug` is not in the list: `dev/worker.js` has
+its own listener, and `--dev` zips keep `bookmark` and `branch` beside it. Chrome suggests keys for
+at most four commands per extension; the dev build has three.
+
+Alt+Shift+Q, checked 2026-11-16: Chromium's accelerator table binds Alt+Shift with A, B, C, D, I, N,
+P, R, T, W, X and Z on Windows and Linux and with no letter on a Mac, so Q is free. No ChatGPT web
+shortcut found uses Alt+Shift (third-party lists only: OpenAI's help page could not be fetched, so
+the live lab run checked). It is neither the Bookmark key
+(Alt+Shift+M) nor the dev build's Alt+Shift+B. The live run of 2026-11-23
+(`notes/runs/2026-11-23-branch-shortcut/`) saw two things: with Butter's command assigned, Chrome
+takes the chord before ChatGPT's page sees the Q; with no extension loaded, ChatGPT's page received
+the Alt+Shift+Q keydown, prevented its default, and the selection was gone about 800 ms later. So
+ChatGPT, or something on its page, does handle the chord; a reader who removes Butter's key gets
+that behaviour, as before this command. An update assigns a new command's suggested key as
+an install does, unless the reader changed it or another extension holds the key; then the command
+has no key and the cell's label shows none.
 
 ## Ask in branch handoff API
 

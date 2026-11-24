@@ -6,6 +6,8 @@ importScripts(
   '../branch/worker.js',
   '../bookmarks/model.js',
   '../bookmarks/worker.js',
+  '../commands/keys.js',
+  '../commands/worker.js',
 );
 // Install and update (#158): a new install keeps the experimental defaults (the rail and Bookmarks
 // off); the first update to this version keeps an existing user's rail and Bookmarks as they were.

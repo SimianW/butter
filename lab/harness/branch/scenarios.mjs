@@ -22,6 +22,7 @@ import popupBlocked from './scenarios/popup-blocked.mjs';
 import questionBox from './scenarios/question-box.mjs';
 import reply from './scenarios/reply.mjs';
 import shots from './scenarios/shots.mjs';
+import shortcut from './scenarios/shortcut.mjs';
 import streamingCancel from './scenarios/streaming-cancel.mjs';
 import streamingOff from './scenarios/streaming-off.mjs';
 import streaming from './scenarios/streaming.mjs';
@@ -49,4 +50,5 @@ export const scenarios = [
   shots,
   failureShots,
   zh,
+  shortcut,
 ];

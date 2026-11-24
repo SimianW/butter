@@ -81,17 +81,6 @@
       return { deleted: true };
     });
   }
-  // The bookmark shortcut is the `bookmark` command (manifest.json): its key, rebindable in Chrome's
-  // shortcut settings, asks the tab it was pressed in to bookmark the selection or the top paragraph.
-  chrome.commands.onCommand.addListener((command, tab) => {
-    if (command !== 'bookmark' || tab?.id == null) return;
-    chrome.tabs
-      .sendMessage(tab.id, { version: 1, type: 'butter-bookmark-shortcut' })
-      .catch(() => {}); // not a ChatGPT tab: no content script answers
-  });
-  // Content scripts can't read chrome.commands: the tooltip asks here for the key Chrome reports.
-  const shortcut = async () =>
-    (await chrome.commands.getAll()).find((c) => c.name === 'bookmark')?.shortcut ?? '';
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (sender.id !== chrome.runtime.id) return;
     if (POPUP.includes(message?.type)) {
@@ -112,17 +101,10 @@
       }
       return;
     }
-    if (!TYPES.includes(message?.type) && message?.type !== 'butter-bookmark-key') return;
+    if (!TYPES.includes(message?.type)) return;
     if (message.version !== 1) {
       respond({ error: 'bookmark-protocol' });
       return;
-    }
-    if (message.type === 'butter-bookmark-key') {
-      shortcut().then(
-        (key) => respond({ shortcut: key }),
-        () => respond({ shortcut: '' }),
-      );
-      return true;
     }
     serial(() => handle(message)).then(respond, () => respond({ error: 'bookmark-storage' }));
     return true;
