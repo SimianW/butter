@@ -101,22 +101,3 @@ test('with nothing selected: the first answer paragraph whose top is at or below
   assert.equal(B.topParagraph([-900, -10], 52), -1);
   assert.equal(B.topParagraph([], 52), -1);
 });
-
-test('the tooltip shows the key Chrome reports for the command, and nothing when it has none', () => {
-  assert.equal(B.keyHint('Alt+Shift+M'), 'Alt Shift M'); // Windows and Linux, as the mockup writes keys
-  assert.equal(B.keyHint('⌥⇧M'), '⌥⇧M'); // macOS reports symbols
-  assert.equal(B.keyHint('Ctrl+Shift+Comma'), 'Ctrl Shift Comma');
-  assert.equal(B.keyHint(''), '');
-  assert.equal(B.keyHint(undefined), '');
-});
-
-// The Bookmark cell's aria-keyshortcuts (#77): the same key in ARIA's names.
-test('the Bookmark cell exposes the key as aria-keyshortcuts, and nothing when it has none', () => {
-  assert.equal(B.ariaKeys('Alt+Shift+M'), 'Alt+Shift+M');
-  assert.equal(B.ariaKeys('⌥⇧M'), 'Alt+Shift+M'); // macOS symbols
-  assert.equal(B.ariaKeys('⌃⌘K'), 'Control+Meta+K');
-  assert.equal(B.ariaKeys('Ctrl+Shift+Comma'), 'Control+Shift+,');
-  assert.equal(B.ariaKeys('Command+Period'), 'Meta+.');
-  assert.equal(B.ariaKeys(''), '');
-  assert.equal(B.ariaKeys(undefined), '');
-});

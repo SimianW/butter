@@ -8,7 +8,6 @@ function workerFixture({
   now = Date.now(),
   initialLayout = true,
   initialSettings = { layoutConsent: 'granted', opts: { layout: initialLayout } },
-  shortcut = 'Alt+Shift+M', // the key Chrome reports for the bookmark command
 } = {}) {
   const disk = new Map(),
     state = new Map(),
@@ -17,9 +16,7 @@ function workerFixture({
     events = [],
     settings = { butter: initialSettings };
   let changed;
-  const listeners = [],
-    commandListeners = [],
-    tabMessages = [];
+  const listeners = [];
   const counters = { opens: 0, reads: 0, writes: 0 };
   let storageFailures = 0; // chrome.storage.local.set calls still to fail
   const database = {
@@ -80,14 +77,6 @@ function workerFixture({
       getURL: (file = '') => `chrome-extension://butter-test/${file}`,
       onMessage: { addListener: (fn) => listeners.push(fn) },
     },
-    commands: {
-      getAll: async () => [
-        { name: '_execute_action', shortcut: '' },
-        { name: 'bookmark', shortcut },
-      ],
-      onCommand: { addListener: (fn) => commandListeners.push(fn) },
-    },
-    tabs: { sendMessage: async (tabId, message) => void tabMessages.push({ tabId, message }) },
     storage: {
       local: {
         get: async () => structuredClone(settings),
@@ -150,7 +139,6 @@ function workerFixture({
     marks,
     restart: () => {
       listeners.length = 0; // the old worker is gone
-      commandListeners.length = 0;
       boot({ ...ctx });
     },
     counters,
@@ -179,9 +167,6 @@ function workerFixture({
     },
     advance: (ms) => (now += ms),
     // Chrome runs an extension command (its key was pressed) in this tab.
-    command: (name, tab) => commandListeners.forEach((fn) => fn(name, tab)),
-    tabMessages,
-    setShortcut: (key) => (shortcut = key),
     // The next `n` chrome.storage.local writes fail, as when the worker stops mid-request.
     failStorageWrites: (n = 1) => (storageFailures = n),
   };

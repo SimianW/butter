@@ -8,7 +8,7 @@ export const maxLines = 500;
 // `- **Cap raised:** `<path>` <old or new> → <cap>: <reason>` item in its body, which
 // scripts/check-pr-body.py reads; keep this literal to `'path': N,` lines so that script can.
 export const maxLinesCaps = {
-  'extension/bookmarks/content.js': 552,
+  'extension/bookmarks/content.js': 551,
   'extension/seek/core-main.js': 570,
   'extension/seek/layout-cache-main.js': 799,
   'extension/seek/preview-main.js': 1143,
@@ -146,6 +146,17 @@ export default [
   {
     files: ['extension/bookmarks/content.js', 'extension/branch/*.js'],
     languageOptions: { globals: { ButterPageReader: 'readonly' } }, // defined in page/reader.js
+  },
+  {
+    // Command keys (commands/keys.js): content scripts after it in manifest order, and the worker
+    // side, which storage/layout-worker.js loads after it.
+    files: [
+      'extension/bookmarks/content.js',
+      'extension/branch/content.js',
+      'extension/branch/shortcut.js',
+      'extension/commands/worker.js',
+    ],
+    languageOptions: { globals: { ButterCommandKeys: 'readonly' } },
   },
   {
     // Loaded by storage/layout-worker.js, which defines the database, its requests and the queue.
