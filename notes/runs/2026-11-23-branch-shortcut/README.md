@@ -178,6 +178,10 @@ quote; label "Ask in branch  Alt Shift Q". 800 × 500, 12 fps, 5.7 s / 6.3 s, 11
 
 From run 1 (`SHOTS=/tmp/b126/run1`).
 
+After review (round 0), the three label shots were re-taken with `evidenceShot` (cropped to the
+selection, the pill and the label, 24 px margin, each with its `.json` sidecar) in a headed
+`ONLY=shortcut` run at 8/8.
+
 Privacy: every image is the synthetic fixture page; no account, chat title, URL or real chat text.
 The live run saved no images and printed lengths and counts only.
 
