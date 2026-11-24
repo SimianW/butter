@@ -123,7 +123,7 @@ function snapshot() {
     butterAttrs: [...html.attributes].filter(a => a.name.startsWith('data-butter')).map(a => a.name),
     turns: turns.length,
     turnsCvAuto: [...turns].filter(t => getComputedStyle(t).contentVisibility === 'auto').length,
-    butterHosts: [...document.querySelectorAll('chatgpt-butter-nav, chatgpt-butter-consent')].map(e => e.tagName.toLowerCase()),
+    butterHosts: [...document.querySelectorAll('chatgpt-butter-nav')].map(e => e.tagName.toLowerCase()),
     theme: html.classList.contains('dark') ? 'dark' : html.classList.contains('light') ? 'light' : html.dataset.theme || null,
     inner: [innerWidth, innerHeight], visibility: document.visibilityState,
     shift: measureShift(),

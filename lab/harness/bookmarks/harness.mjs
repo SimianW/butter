@@ -73,6 +73,9 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       layoutConsent: 'declined',
       bookmarkNotice: 'acknowledged',
       ...butter,
+      // The rail and Bookmarks start off on a new install (#158); these scenarios need both on
+      // unless they say otherwise.
+      opts: { rail: true, bookmark: true, ...butter?.opts },
     });
   // Count the store's requests by type, in the worker.
   await worker.evaluate(() => {

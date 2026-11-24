@@ -13,6 +13,8 @@
 // card, card, rows, second lines, Clear, pills, note, footer; relative to the popup) with the
 // mockup's at zoom 1, and fails on a difference over 1 px.
 // Fails when a state is over 600 px or a row's text overflows it.
+// Since #158 both rows are on the popup's Experimental page, which this opens first; the #108
+// mockup draws them on the main page, so its box comparison no longer matches.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { launchButter, repo } from './runner/chromium.mjs';
@@ -61,6 +63,7 @@ try {
   const { context, worker, errors } = await launchButter({ defer, name: 'butter-popup-shots', viewport: { width: 360, height: 900 } });
   const page = await context.newPage();
   await page.goto(worker.url().replace('/storage/layout-worker.js', '/popup/popup.html'));
+  await page.locator('.more').click();
   await page.waitForSelector('#sw-bookmarks');
   await page.evaluate(() => document.fonts.ready);
   if (process.env.MOCKUP) {
@@ -145,7 +148,7 @@ try {
     for (const lang of ['en', 'zh']) {
       await page.emulateMedia({ colorScheme: panel.dark ? 'dark' : 'light', reducedMotion: 'reduce' });
       await seed(panel.bookmarks ?? 12, panel.layouts ?? 14);
-      const butter = { enabled: true, lang, layoutConsent: 'granted', ...panel.butter, opts: { layout: true, ...panel.butter?.opts } };
+      const butter = { enabled: true, lang, layoutConsent: 'granted', ...panel.butter, opts: { layout: true, rail: true, bookmark: true, ...panel.butter?.opts } };
       await page.evaluate(async (butter) => {
         for (const st of Object.values(stores)) {
           clearTimeout(st.timer);

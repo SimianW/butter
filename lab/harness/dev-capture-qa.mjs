@@ -90,7 +90,7 @@ const context = await chromium.launchPersistentContext(profile, {
     `--load-extension=${extension}`,
     '--window-position=0,0',
     // The fixed toast draws grayscale text on its own layer; without this the mockup panel would
-    // get LCD text, and every glyph edge would count as a difference (as in consent-qa.mjs).
+    // get LCD text, and every glyph edge would count as a difference.
     '--disable-lcd-text',
   ],
   // Real scrollbars: the drag presses the native thumb.
@@ -145,7 +145,7 @@ const worker =
 assert.equal(new URL(worker.url()).pathname, '/dev/worker.js');
 await worker.evaluate(
   (butter) => chrome.storage.local.set({ butter }),
-  { enabled: true, lang: 'en', layoutConsent: 'declined' },
+  { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
 );
 const commands = await worker.evaluate(() => chrome.commands.getAll());
 assert.equal(commands.find((c) => c.name === 'save-bug')?.shortcut, 'Alt+Shift+B');
@@ -670,7 +670,7 @@ pass(`toast hosts on the chat for 4 saves: ${shown.length}, showing ${shown.map(
 const shots = path.join(out, 'screenshots');
 await fs.mkdir(shots, { recursive: true });
 const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
-// Share of pixels that differ by more than 24 in any channel (as in consent-qa.mjs).
+// Share of pixels that differ by more than 24 in any channel.
 const compare = async (p, a, b) =>
   p.evaluate(
     async ([a, b]) => {
