@@ -31,13 +31,15 @@
   // ---------------------------------------------------------------- original tab
   const drafts = new Map(); // per tab, per conversation and quote: unsent questions
   let sel = null,
-    boxOpen = false;
+    boxOpen = false,
+    boxInput = null; // the open box's input, as the box handed it over
   const draftKey = (s) => `${s.identity}\n${s.quote}`;
 
   // Ends the question box and forgets the selection; the pill goes back to the page selection.
   const hideSelectionUI = () => {
     sel = null;
     boxOpen = false;
+    boxInput = null;
     highlight(null);
     ui?.question.close();
     ButterPill.release();
@@ -84,6 +86,7 @@
   const closeBox = (restore = false) => {
     if (!boxOpen) return;
     boxOpen = false;
+    boxInput = null;
     ui.question.close();
     highlight(null);
     if (restore && sel?.range.startContainer.isConnected) {
@@ -97,13 +100,13 @@
     if (!sel || boxOpen) return;
     boxOpen = true;
     const current = sel;
-    const { input } = getUI().question.open({
+    const input = (boxInput = getUI().question.open({
       quote: current.quote,
       draft: drafts.get(draftKey(current)),
       onInput: (value) => drafts.set(draftKey(current), value),
       onSubmit: (question) => submit(current, question),
       onClose: () => closeBox(true),
-    });
+    }).input);
     highlight(current.range);
     ButterPill.hold(current.range, {
       place: (anchor, area) => placeHeld(current, anchor, area),
@@ -213,8 +216,7 @@
       boxOpen,
       qualifies: !!next,
     });
-    if (action === 'focus')
-      ui.question.el?.querySelector('textarea')?.focus({ preventScroll: true });
+    if (action === 'focus') boxInput?.focus({ preventScroll: true });
     else if (action === 'open') {
       sel = next;
       openBox();
