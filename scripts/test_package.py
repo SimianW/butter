@@ -143,8 +143,10 @@ class PackageTests(unittest.TestCase):
             command = manifest["commands"]["save-bug"]
             self.assertEqual(command["suggested_key"]["default"], "Alt+Shift+B")
             self.assertEqual(command["suggested_key"]["mac"], "Alt+Shift+B")
-            # The dev build keeps the store's bookmark shortcut beside its own.
-            self.assertEqual(manifest["commands"]["bookmark"], self.source_commands()["bookmark"])
+            # The dev build keeps the store's two reader shortcuts beside its own.
+            self.assertEqual(list(manifest["commands"]), ["bookmark", "branch", "save-bug"])
+            for name in ("bookmark", "branch"):
+                self.assertEqual(manifest["commands"][name], self.source_commands()[name])
             # Every script the dev manifest names is in the zip, after the store scripts it hooks.
             isolated, main = manifest["content_scripts"]
             self.assertEqual(isolated["js"][-2:], ["dev/content.js", "dev/toast.js"])
@@ -199,8 +201,15 @@ class PackageTests(unittest.TestCase):
     def test_store_and_test_packages_leave_dev_build_out(self):
         self.use_real_extension()
         source = json.loads((self.extension / "manifest.json").read_text(encoding="utf-8"))
-        # The store manifest's only command is the bookmark shortcut; save-bug is dev-only.
-        self.assertEqual(list(source["commands"]), ["bookmark"])
+        # The store manifest's commands are the two reader shortcuts; save-bug is dev-only.
+        self.assertEqual(list(source["commands"]), ["bookmark", "branch"])
+        self.assertEqual(
+            source["commands"]["branch"],
+            {
+                "suggested_key": {"default": "Alt+Shift+Q", "mac": "Alt+Shift+Q"},
+                "description": "__MSG_branchCommand__",
+            },
+        )
         self.assertNotIn("downloads", source["permissions"])
         self.package("--dev")
         for args in ((), ("--test", "demo")):
