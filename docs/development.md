@@ -105,7 +105,8 @@ right before `seek/preview-main.js`, which calls their factories.
     `/tmp/butter-branch-qa/`. Set `SHOTS=notes/runs/2026-11-07-ask-in-branch-29/screenshots` to
     refresh that run's committed screenshots.
   - The `shortcut` scenario presses the `branch` command's key, which must be real input: run
-    `ONLY=shortcut xvfb-run -a -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs`, and
+    `ONLY=shortcut xvfb-run -n 201 -s '-screen 0 1600x1000x24' node lab/harness/branch-qa.mjs` (a
+    fixed display: `-a` can take a stopped lab's `:98` or `:99`), and
     the browser runs headed while XTest (`xtest-keys.py`) presses Alt+Shift+Q. A run that selects
     other scenarios too, or has no display, stays headless and asks the worker to relay the command.
 
