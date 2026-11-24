@@ -143,8 +143,8 @@ const worker =
   context.serviceWorkers().find((w) => w.url().includes(extensionId)) ||
   (await context.waitForEvent('serviceworker'));
 assert.equal(new URL(worker.url()).pathname, '/dev/worker.js');
-await worker.evaluate(
-  (butter) => chrome.storage.local.set({ butter }),
+// After the install event's own settings write (its marker, #158), so it cannot land over ours.
+await worker.evaluate(async (butter) => { while (!(await chrome.storage.local.get('butter')).butter?.defaultsVersion) await new Promise((r) => setTimeout(r, 50)); await chrome.storage.local.set({ butter: { ...butter, defaultsVersion: 1 } }); },
   { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
 );
 const commands = await worker.evaluate(() => chrome.commands.getAll());

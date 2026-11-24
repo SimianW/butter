@@ -161,11 +161,13 @@ export async function launchBookmarks({ markup, shots, defer, verbose = !!proces
       );
       await current.waitForTimeout(400);
     }
-    // The real popup page (popup/popup.html) in a tab of its own, as the toolbar button opens it.
+    // The real popup page (popup/popup.html) in a tab of its own, as the toolbar button opens it,
+    // on its Experimental page, where the Bookmarks row is (#158).
     async function popup() {
       const p = await context.newPage();
       await p.setViewportSize({ width: 360, height: 600 });
       await p.goto(`chrome-extension://${new URL(worker.url()).host}/popup/popup.html`);
+      await p.locator('.more').click();
       await p.waitForSelector('#sw-bookmarks');
       return p;
     }
