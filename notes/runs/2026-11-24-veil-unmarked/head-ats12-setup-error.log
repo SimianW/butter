@@ -1,0 +1,7 @@
+REPORT storage before the run: sha256 84a0d72f3a5c137e, local keys [butter], sync keys [], opts null; OPTS none
+REPORT build 0.1.0-alpha.22 (head), fixture ats12, 357 chunks over 107 s
+HARNESS ERROR: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('chatgpt-butter-nav[data-on]')
+
+SUMMARY head-ats12: 0 FAILs
