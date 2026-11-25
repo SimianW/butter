@@ -8,7 +8,7 @@ import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import { tailWindow } from '../lab/harness/stream-laf-report.mjs';
-import { traceWindow } from '../lab/harness/stream-run-opts.mjs';
+import { traceWindow, TRACE_CATS } from '../lab/harness/stream-run-opts.mjs';
 import { isStreamDrop } from '../lab/harness/stream-ux-probe.mjs';
 import { veilProbe } from '../lab/harness/stream-veil-probe.mjs';
 
@@ -82,6 +82,25 @@ test('traceWindow: the closing tick creates the trace file in a directory that d
     traceEvents: [{ name: 'a' }, { name: 'b' }],
   });
   assert.deepEqual(await tw.finish(), { started: true, events: 2, pageStart: 123, file });
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('traceWindow: extra categories are traced on top of the default ones', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'trace-'));
+  const cdp = new EventEmitter();
+  let cats = null;
+  cdp.send = async (method, params) => {
+    if (method === 'Tracing.start') cats = params.traceConfig.includedCategories;
+    if (method === 'Tracing.end') setImmediate(() => cdp.emit('Tracing.tracingComplete'));
+    if (method === 'Runtime.evaluate') return { result: { value: 1 } };
+    return {};
+  };
+  const tw = traceWindow(cdp, 10000, 2000, path.join(dir, 'run.trace.json'), ['x.extra']);
+  await tw.tick(8999);
+  assert.equal(cats, null);
+  await tw.tick(9000);
+  assert.deepEqual(cats, [...TRACE_CATS, 'x.extra']);
+  await tw.finish();
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

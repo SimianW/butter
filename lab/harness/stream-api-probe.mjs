@@ -157,7 +157,9 @@ export async function streamWindows(page, cdp, env, out) {
   await page.addInitScript(veilCheckScript());
   const unm = env.UNMARKED === '1'; // #172: blocks never marked (stream-unmarked-probe.mjs)
   if (unm) await page.addInitScript(installUnmarkedProbe);
-  const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, 10000, out.replace(/\.json$/, '') + '.trace.json');
+  // TRACE_SPAN: the window's length in ms (10000); TRACE_CATS: extra trace categories, comma-separated.
+  const traceCats = (env.TRACE_CATS || '').split(',').filter(Boolean);
+  const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, Number(env.TRACE_SPAN || 10000), out.replace(/\.json$/, '') + '.trace.json', traceCats);
   const hyd = [];
   let unmArmed = false, lastHyd = -Infinity, armed = false, goneAt = null, seenIp = false, stdMarked = false, tail = null;
   return {
