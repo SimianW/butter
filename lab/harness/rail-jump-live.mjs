@@ -26,7 +26,7 @@ import { spawn, execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
 import { installScrollProbe } from './rail-jump-scroll-probe.mjs';
 import { installProbe, classify } from './rail-jump-live-page.mjs';
-import { STATES, startName, setStart, control, endWriters } from './rail-jump-start.mjs';
+import { STATES, startName, sameStart, setStart, control, endWriters } from './rail-jump-start.mjs';
 
 const fixtures = (process.env.FIXTURES || 'math9,math12').split(',');
 const label = process.env.LABEL || 'loaded';
@@ -202,7 +202,7 @@ async function jump(name, from, to, phase) {
   await recordStop(file, result);
   if (nativeEvidence && fs.existsSync(nativeEvidence) && worker) {
     const native = JSON.parse(fs.readFileSync(nativeEvidence));
-    const proof = native.jumps.find(j => j.case === name && j.frames.at(-1).targetIndex === result.frames.at(-1).targetIndex && startName(j.from) === from && j.to === to && j.phase === phase && Math.abs(j.start - result.start) <= 32 && ((!result.failed || (j.failed && j.failureReason === result.failureReason)) && (!result.detour || (j.detour && (!result.losses.length || j.losses.length) && (!result.excursions.length || j.excursions.length)))) && (j.failed || j.detour));
+    const proof = native.jumps.find(j => j.case === name && j.frames.at(-1).targetIndex === result.frames.at(-1).targetIndex && sameStart(j, from, start) && j.to === to && j.phase === phase && Math.abs(j.start - result.start) <= 32 && ((!result.failed || (j.failed && j.failureReason === result.failureReason)) && (!result.detour || (j.detour && (!result.losses.length || j.losses.length) && (!result.excursions.length || j.excursions.length)))) && (j.failed || j.detour));
     if (proof && result.class !== 'clean') { result.nativeAssertion = result.class; result.class = 'native'; result.nativeEvidence = nativeEvidence; }
   }
   summary.jumps.push(result);

@@ -12,12 +12,17 @@
 //                 a viewport away from it for 1 s.
 // A start that does not hold after TRIES attempts (3) is a setup error for that jump. The pin is read
 // through React's fiber hooks (`__railJumpLive.pin()`); null when unreadable, which never fails a
-// start (the caller reports it). Pure parts (`startName`, `pulledAt`, `endWriters`) are checked by
+// start (the caller reports it). Pure parts (`startName`, `sameStart`, `pulledAt`, `endWriters`) are checked by
 // rail-jump-verdict-check.mjs.
 export const STATES = ['top-unpinned', 'end-pinned'];
 // The labels before #171; `bottom` was the end with the pin as the setup left it.
 export const ALIASES = { top: 'top-unpinned', bottom: 'end-pinned' };
 export const startName = from => ALIASES[from] ?? from;
+// Whether an archived no-extension jump `j` started as this run's jump did (`from`, its start state
+// `start`). A named start also needs the same end pin, read in both: a capture from before #171
+// recorded none, so it never stands for a named start.
+export const sameStart = (j, from, start) => startName(j.from) === from
+  && (!STATES.includes(from) || (j.startState?.pin != null && j.startState.pin === start?.pin));
 // ChatGPT's own "at the end" distance (extension/shared/leave-gesture.js).
 const AT_END = 24;
 // "Stayed at the top": a pull or ChatGPT's bottom-distance compensation moves the chat far beyond
