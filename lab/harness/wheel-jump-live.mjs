@@ -86,12 +86,12 @@ async function connectBrowser() {
     worker = await context.newPage();
     await worker.goto(`chrome-extension://${extId}/popup/popup.html`);
     summary.build = await worker.evaluate(() => chrome.runtime.getManifest().version_name);
-    if (env.OPTS) {
-      const stored = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter ?? null);
-      if (previousSettings === undefined) previousSettings = stored;
-      summary.opts = JSON.parse(env.OPTS);
-      await worker.evaluate(async opts => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, ...opts } } }); }, summary.opts);
-    }
+    // The run loads earlier pages: Smoother scrolling (off on a new install and after the update to
+    // defaults version 2) is on for it unless OPTS says otherwise; the stored settings go back after.
+    const stored = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter ?? null);
+    if (previousSettings === undefined) previousSettings = stored;
+    summary.opts = { older: true, seek: true, ...(env.OPTS ? JSON.parse(env.OPTS) : {}) };
+    await worker.evaluate(async opts => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, ...opts } } }); }, summary.opts);
     summary.settings = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter?.opts ?? null);
   } else summary.build = 'no extension';
   summary.chromium = browser.version();

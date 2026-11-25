@@ -24,9 +24,9 @@
   };
   // What a storage row shows, in priority order: the question while it asks; "Cleared" for 2 s
   // after a clear; "Unavailable" when usage can't be read or the clear failed; the saved line
-  // and Clear; "Needs the question rail" (`needsRail`: Bookmarks on, the rail off); else the
-  // description.
-  const storageLine = ({ clear = 'idle', available = true, count = 0, needsRail = false }) =>
+  // and Clear; what it needs (`needs` names the switch this row's feature needs while that switch
+  // is off: "Needs the question rail"); else the description.
+  const storageLine = ({ clear = 'idle', available = true, count = 0, needs = '' }) =>
     clear === 'confirm' || clear === 'clearing'
       ? 'confirm'
       : clear === 'done'
@@ -35,8 +35,8 @@
           ? 'unavailable'
           : count > 0
             ? 'saved'
-            : needsRail
-              ? 'rail'
+            : needs
+              ? 'needs'
               : 'description';
   // The manifest's version_name as written, for example 0.1.0-alpha.15.
   const versionLabel = (version) => version;

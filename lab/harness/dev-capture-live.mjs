@@ -93,7 +93,8 @@ try {
   assert.equal(commands.find((c) => c.name === 'save-bug')?.shortcut, 'Alt+Shift+B');
   // This is this task's new unpacked dev install; do not change the normal lab install.
   await worker.evaluate(() => chrome.storage.local.set({
-    butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
+    // The held-thumb capture needs Smoother scrolling's preview, off on a new install.
+    butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true, older: true, seek: true } },
     butterDev: { round: 1, bugs: 0 },
   }));
   await worker.evaluate(() => chrome.commands.onCommand.addListener((command) => {

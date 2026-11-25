@@ -22,8 +22,7 @@ load; placeholders keep moving and the clicked tick pulses meanwhile.
 [Benchmark method and ranges →](benchmarks.md)
 
 During a scrollbar preview, the rail follows the previewed questions and its card shows loading
-progress after release. The rail is experimental: it is off on a new install until you switch
-**Question rail** on in the popup's Experimental page, and switching it off there hides it;
-scrollbar preview and the send shortcut continue independently.
+progress after release. Switching **Question rail** off in the popup hides it; scrollbar preview
+and the send shortcut continue independently.
 
 The questions come from the conversation data ChatGPT downloads anyway; the rail sends no requests.

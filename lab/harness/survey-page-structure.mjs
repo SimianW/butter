@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
+import { switchOn } from './runner/options.mjs';
 
 const env = process.env;
 const fixtures = (env.FIXTURES || 'ats12').split(',');
@@ -179,7 +180,7 @@ function ensureBrowser() {
   execFileSync(path.join(L.root(), 'bin/lab'), ['restart-browser'], { env: { ...env, LAB_ID: String(lab.id), LAB_EXTENSIONS: env.EXT, LAB_FLAGS: '' }, stdio: 'pipe' });
 }
 
-let browser;
+let browser, restoreOptions;
 try {
   ensureBrowser();
   for (let n = 0; n < 60 && !(await L.cdpVersion(lab)); n++) await pause(500);
@@ -189,6 +190,8 @@ try {
   await L.sendGuard(context, lab);
   const page = context.pages()[0] || await context.newPage();
   for (const other of context.pages()) if (other !== page) await other.close();
+  // The survey loads all earlier history: Smoother scrolling is on for the run (it starts off).
+  restoreOptions = await switchOn(L, lab, context);
   const api = [];
   page.on('response', async r => {
     const u = r.url();
@@ -256,9 +259,11 @@ try {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(result, null, 1));
   console.log(`REPORT wrote ${out.replace(process.env.HOME, '~')}`);
+  await restoreOptions?.();
   await browser.close();
 } catch (e) {
   console.error('HARNESS ERROR', e.message);
+  try { await restoreOptions?.(); } catch {}
   try { await browser?.close(); } catch {}
   process.exit(2);
 }

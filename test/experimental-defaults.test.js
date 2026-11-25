@@ -1,5 +1,6 @@
-// The service worker applies the experimental defaults once per install (#158): a new install keeps
-// the rail and Bookmarks off; the first update keeps them as the old rule read them.
+// The service worker applies the defaults once per install: a new install starts with Smoother
+// scrolling and layouts off and the rail and Bookmarks on; the first update to defaults version 2
+// switches Smoother scrolling off once and keeps everything else as stored.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const status = require('../extension/shared/status.js');
@@ -19,13 +20,16 @@ test('the worker listens for the install event at its top level, once', () => {
   assert.equal(w.installListeners.length, 1, 'a restarted worker registers it again, at start');
 });
 
-test('a new install writes the marker; the rail, Bookmarks and layouts read off', async () => {
+test('a new install writes the marker; scrolling and layouts read off, the rail and Bookmarks on', async () => {
   const w = workerFixture({ initialSettings: null });
   w.installed('install');
   await settled();
   assert.deepEqual(writes(w), [{ butter: status.migrate(undefined, 'install') }]);
   const s = status.normalize(w.settings.butter);
-  assert.deepEqual([s.opts.rail, s.opts.bookmark, s.opts.layout], [false, false, false]);
+  assert.deepEqual(
+    [s.opts.older, s.opts.seek, s.opts.layout, s.opts.rail, s.opts.bookmark],
+    [false, false, false, true, true],
+  );
   // A later update keeps the new defaults.
   w.installed('update', '0.1.0.23');
   await settled();
@@ -36,8 +40,9 @@ test('the first update writes what the migration returns, keeping every other fi
   for (const butter of [
     null,
     { lang: 'zh', enabled: false, opts: { rail: false, branch: false } },
-    { layoutConsent: 'granted', opts: { layout: true, bookmark: false } },
+    { layoutConsent: 'granted', opts: { layout: true, bookmark: false, older: true, seek: true } },
     { layoutConsent: 'declined', bookmarkNotice: 'acknowledged' },
+    { defaultsVersion: 1, opts: { rail: true, bookmark: true, seek: true } },
   ]) {
     const w = workerFixture({ initialSettings: butter });
     w.installed('update', '0.1.0.22');
@@ -47,6 +52,7 @@ test('the first update writes what the migration returns, keeping every other fi
     const s = status.normalize(w.settings.butter);
     assert.equal(s.opts.rail, butter?.opts?.rail !== false);
     assert.equal(s.opts.bookmark, butter?.opts?.bookmark !== false);
+    assert.deepEqual([s.opts.older, s.opts.seek], [false, false], 'Smoother scrolling is off');
     w.installed('update', '0.1.0.23');
     await settled();
     assert.equal(writes(w).length, 1, 'once only');

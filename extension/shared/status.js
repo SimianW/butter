@@ -11,9 +11,9 @@
     'branch',
     'bookmark',
   ];
-  // The experimental switches (the rail and Bookmarks) are on only when stored as true; layouts
-  // also need consent. Every other switch is on unless stored false.
-  const optIn = ['rail', 'bookmark'];
+  // The experimental switch Smoother scrolling (older and seek) is on only when stored as true;
+  // layouts also need consent. Every other switch is on unless stored false.
+  const optIn = ['older', 'seek'];
   const normalize = (value) => ({
     ...value,
     enabled: value?.enabled !== false,
@@ -59,7 +59,7 @@
     layout: ['layout'],
   };
   // The groups on the popup's Experimental page, in display order.
-  const experimental = ['rail', 'bookmarks', 'layout'];
+  const experimental = ['scrolling', 'layout'];
   const groupOn = (value, group) => groups[group].every((k) => normalize(value).opts[k]);
   // Bookmarks show on the page only while Butter, the question rail and Bookmarks are all on.
   // Off hides them; the saved ones are kept.
@@ -76,15 +76,18 @@
   };
   // Once per install, from the service worker's install event: `value` is the stored settings,
   // `reason` the event's. Returns the settings to write, or undefined to write nothing.
-  // A new install keeps the new defaults (the rail and Bookmarks off). The first update to this
-  // version stores the rail and Bookmarks as the old rule read them (on unless stored false), so
-  // an existing user's features stay as they were. The marker makes it run once.
-  const DEFAULTS_VERSION = 1;
+  // A new install keeps the defaults above. The first update to defaults version 2 switches
+  // Smoother scrolling off once, whatever was stored; the marker makes it run once, so a user who
+  // switches it on again keeps it. The rail and Bookmarks are not touched: v0.1.0-alpha.22 and
+  // earlier (no marker) read them on unless stored false, as now; builds of main stamped 1 (#164)
+  // read them on only when stored true, so one with nothing stored now reads them on (test builds
+  // only, accepted).
+  const DEFAULTS_VERSION = 2;
   const migrate = (value, reason) => {
     if (reason === 'install') return { ...value, defaultsVersion: DEFAULTS_VERSION };
     if (reason !== 'update' || value?.defaultsVersion >= DEFAULTS_VERSION) return undefined;
     const opts = { ...value?.opts };
-    for (const key of optIn) opts[key] = value?.opts?.[key] !== false;
+    for (const key of optIn) opts[key] = false;
     return { ...value, opts, defaultsVersion: DEFAULTS_VERSION };
   };
   // Keep evidence per failed feature inside each group. An unrelated success cannot erase it.

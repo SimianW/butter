@@ -70,9 +70,9 @@ _Avoid_: disabled
 _Where_: `popup/popup.js`
 
 **Experimental page**:
-The popup's second page, with the unfinished features: the question rail, Bookmarks and Remember
-long-chat layouts (`ButterStatus.experimental`), each off until the user switches it on. Its title is
-the back button. Held in memory only; the popup always opens on the main page.
+The popup's second page, with the unfinished features: Smoother scrolling and Remember long-chat
+layouts (`ButterStatus.experimental`), each off until the user switches it on. Its title is the back
+button. Held in memory only; the popup always opens on the main page.
 _Avoid_: settings page, advanced page
 _Where_: `shared/status.js` (`experimental`, `migrate`), `popup/popup.js`
 
@@ -84,7 +84,9 @@ _Where_: `popup/popup.js`
 
 **Storage row**:
 A popup row whose second line says what a store holds, then its Clear: Bookmarks ("12 saved, about
-7 KB") and Remember long-chat layouts ("14 chats, about 3.4 MB"). Both are on the Experimental page.
+7 KB"), on the main page, and Remember long-chat layouts ("14 chats, about 3.4 MB"), on the
+Experimental page. In place of that line a row says what it needs while that switch is off: "Needs
+the question rail" (Bookmarks with nothing saved), "Needs Smoother scrolling" (layouts).
 _Avoid_: storage line, usage bar (the separate line and bar it replaced)
 _Where_: `popup/popup.js`, `popup/model.js`
 
@@ -281,8 +283,8 @@ _Avoid_: badge, indicator
 _Where_: `rail/model.js`, `rail/rail.js`
 
 **Bookmarks switch**:
-The Bookmarks row on the popup's Experimental page (the `bookmark` key, group `bookmarks`), off until
-switched on. Bookmarks show only while Butter, the rail and this switch are on; off hides them and
+The Bookmarks row on the popup's main page (the `bookmark` key, group `bookmarks`), on unless
+switched off. Bookmarks show only while Butter, the rail and this switch are on; off hides them and
 keeps the saved ones.
 _Avoid_: bookmark toggle
 _Where_: `shared/status.js` (`bookmarksOn`), `popup/popup.js`

@@ -16,8 +16,8 @@ export const maxLinesCaps = {
   'lab/harness/popup-qa.mjs': 510,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,
-  'test/height-cache-dom.test.js': 1461,
-  'test/layout-storage.test.js': 565,
+  'test/height-cache-dom.test.js': 1335,
+  'test/layout-storage.test.js': 530,
   'test/seek-landing.test.js': 917,
 };
 

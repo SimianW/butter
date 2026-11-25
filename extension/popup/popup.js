@@ -35,7 +35,8 @@ const T = {
     note: '打开前不会保存。Butter 只保存布局数字，不保存聊天内容，30 天后自动删除。',
     clear: '清除',
     undone: '无法撤销。',
-    rail: '需要先打开问题导航条',
+    // A storage row whose feature needs another switch that is off: ButterPopup.storageLine's `needs`.
+    needs: { rail: '需要先打开问题导航条', scrolling: '需要先打开长对话滚动更顺' },
     cancel: '取消',
     cleared: '已清除',
     bad: '暂不可用',
@@ -67,7 +68,7 @@ const T = {
     note: 'Off until you turn it on. Butter saves layout numbers only, never chat text, and deletes them after 30 days. ',
     clear: 'Clear',
     undone: "This can't be undone.",
-    rail: 'Needs the question rail',
+    needs: { rail: 'Needs the question rail', scrolling: 'Needs Smoother scrolling' },
     cancel: 'Cancel',
     cleared: 'Cleared',
     bad: 'Unavailable',
@@ -114,6 +115,8 @@ const stores = {
     saved: (u, lang) => ButterPopup.formatBookmarks(u, lang),
     // Bookmarks are kept while off, so their usage shows whatever the switches say.
     shown: () => true,
+    // Bookmarks show on the page only with the question rail.
+    needs: () => (prefs.opts.bookmark && !prefs.opts.rail ? 'rail' : ''),
     usageType: 'butter-bookmark-usage',
     clearType: 'butter-bookmark-clear',
   },
@@ -125,8 +128,11 @@ const stores = {
     timer: 0,
     count: (u) => u.conversations || 0,
     saved: (u, lang) => ButterPopup.formatUsage(u, lang),
-    // Switching layouts off deletes them: usage only while the switch is on.
-    shown: () => prefs.opts.layout,
+    // Switching layouts off deletes them: usage only while the switch is on. Only the scrollbar
+    // preview reads them, so without Smoother scrolling they are kept but unused, and the row says
+    // what it needs in place of what it holds.
+    shown: () => prefs.opts.layout && prefs.opts.seek,
+    needs: () => (prefs.opts.layout && !prefs.opts.seek ? 'scrolling' : ''),
     usageType: 'butter-layout-usage',
     clearType: 'butter-layout-clear',
   },
@@ -162,14 +168,14 @@ function storageLine(t, name, description) {
       clear: st.clear,
       available: !shown || st.available,
       count,
-      needsRail: name === 'bookmarks' && !prefs.opts.rail && prefs.opts.bookmark,
+      needs: st.needs(),
     });
   const clear = `<button type="button" class="lk" data-clear="ask" data-store="${name}">${t.clear}</button>`;
   const text = {
     cleared: t.cleared,
     unavailable: t.bad,
     saved: st.saved(st.usage, prefs.lang),
-    rail: t.rail,
+    needs: t.needs[st.needs()],
     description,
   }[kind];
   // A failed clear offers Clear again while there is a count to name.

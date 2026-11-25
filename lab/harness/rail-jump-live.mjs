@@ -253,12 +253,13 @@ try {
   const custom = process.env.SMOOTHER === 'off' || process.env.OPTS;
   if (custom && !worker) throw Error('SMOOTHER and OPTS need the extension');
   if (worker) {
-    // The rail is off on a new install (Experimental): turn it on; OPTS or SMOOTHER set the rest.
+    // The fixtures load earlier history: Smoother scrolling (off on a new install and after the
+    // update to defaults version 2) is switched on with the rail; OPTS or SMOOTHER set the rest.
     previousSettings = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter ?? null);
     const opts = process.env.OPTS ? JSON.parse(process.env.OPTS) : custom ? { container: false, cv: false, throttle: false } : {};
     const base = custom ? { container: true, cv: true, throttle: true } : {};
     summary.opts = opts;
-    await worker.evaluate(async ({ opts, base }) => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, ...base, rail: true, ...opts } } }); }, { opts, base });
+    await worker.evaluate(async ({ opts, base }) => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, ...base, rail: true, older: true, seek: true, ...opts } } }); }, { opts, base });
   }
   page = context.pages().find(p => p !== worker) || await context.newPage();
   for (const other of context.pages()) if (other !== page && other !== worker) await other.close();

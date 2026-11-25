@@ -91,10 +91,10 @@
     (document.documentElement?.getAttribute?.('data-butter-off') || '').split(/\s+/);
   const disabled = () => !!document.documentElement?.hasAttribute?.('data-butter-disabled');
   const cvOff = () => disabled() || offList().includes('cv');
-  // Records serve the seek preview, the layout store and remount restore (a cv feature).
+  // Records serve the seek preview and remount restore (cv); stored layouts serve only seek.
   const needed = () => {
     const off = offList();
-    return !disabled() && !(off.includes('seek') && off.includes('cv') && off.includes('layout'));
+    return !disabled() && !(off.includes('seek') && off.includes('cv'));
   };
   // Fast wheel scrolling crosses the content-visibility boundary constantly. A block coming back
   // into view re-queues its turn only when this element's last record is gone or replaced, or the
@@ -340,7 +340,7 @@
   function step(j, left) {
     const { t, sc } = j;
     if (changes.get(t) !== j.changes || !t.isConnected || skipped.has(t)) return true; // re-queued, gone or skipped (stale: queued again on reveal)
-    if (!needed()) return true; // seek, cv and layout turned off since begin()
+    if (!needed()) return true; // seek and cv turned off since begin()
     return timed(() => {
       const rr = t.parentElement.getBoundingClientRect(),
         sr = sc.getBoundingClientRect(),

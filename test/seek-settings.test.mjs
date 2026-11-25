@@ -47,7 +47,9 @@ test('seek follows the master and seek switches independently of the rail and ot
     CustomEvent: class {},
     chrome: {
       storage: {
-        local: { get: async () => ({ butter: { opts: { rail: false, bookmark: true } } }) },
+        local: {
+          get: async () => ({ butter: { opts: { rail: false, older: true, seek: true } } }),
+        },
         onChanged: {
           addListener: (fn) => {
             changed = fn;
@@ -207,7 +209,8 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
     (events[name] || []).forEach((fn) => fn({ type: name, timeStamp: 100, target: sc, ...extra }));
   const probe = () => {
     fire('butter-status-request');
-    return status.classify(JSON.parse(emitted.at(-1)?.detail || '{}')).seek;
+    return status.classify(JSON.parse(emitted.at(-1)?.detail || '{}'), { opts: { seek: true } })
+      .seek;
   };
   const press = () =>
     fire('pointerdown', {

@@ -276,6 +276,27 @@ test('layout-off retires disk-backed entries but preserves the in-session warm c
   assert.deepEqual(f.storage.worker.counters, counts);
 });
 
+// The bridge closes saved layouts while Smoother scrolling is off (layout-consent.test.js) and
+// reopens them when it is switched on: the page loads and writes again, with what was saved.
+test('closed then reopened, the page loads saved layouts and writes new ones again', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(f.disk.size, 1);
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  const counts = { ...f.storage.worker.counters };
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0, 'closed: none used');
+  assert.deepEqual(f.storage.worker.counters, counts, 'closed: no reads or writes');
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
+  await f.api.setTexts(conv, texts);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1, 'reopened: the saved one is used');
+  assert.ok(f.storage.worker.counters.reads > counts.reads, 'reopened: loaded');
+});
+
 test('merged prepare synchronously uses prefetched memory with no disk reads at drag time', async () => {
   const f = fixture();
   await f.api.setTexts(conv, texts);

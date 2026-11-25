@@ -147,15 +147,138 @@ test('pending ISOLATED bridge blocks page load/put requests and announces grant 
   assert.equal(requests.length, 0);
   assert.equal(responses[0].enabled, false);
   assert.equal(migrations.length, 0);
-  changed({ butter: { newValue: choose({}, true) } }, 'local');
+  // Granted with Smoother scrolling on, which the layouts need.
+  changed({ butter: { newValue: choose({ opts: { seek: true } }, true) } }, 'local');
   assert.equal(responses.at(-1).enabled, true);
   assert.deepEqual(migrations, ['butter-seek-cold-geometry-v1']);
   await send('load');
   assert.equal(requests.length, 1);
-  changed({ butter: { newValue: choose({}, false) } }, 'local');
+  changed({ butter: { newValue: choose({ opts: { seek: true } }, false) } }, 'local');
   assert.equal(responses.at(-1).enabled, false);
   await send('put');
   assert.equal(requests.length, 1);
+});
+
+// Saved layouts serve only the scrollbar preview (Smoother scrolling). While it is off the bridge
+// keeps them closed to the page, as with layouts off, but the worker keeps them on disk.
+test('while Smoother scrolling is off the bridge loads and writes no layouts, keeps them, and opens them live', async () => {
+  const granted = (seek) => ({
+    layoutConsent: 'granted',
+    opts: { layout: true, older: seek, seek },
+  });
+  const w = workerFixture({ initialSettings: granted(true) });
+  const identity = { account: 'a'.repeat(64), conv: 'b'.repeat(64) };
+  const row = codec.pack({
+    ...identity,
+    turn: 'c'.repeat(64),
+    msg: 'd'.repeat(64),
+    digest: 'e'.repeat(64),
+    layout: 'f'.repeat(64),
+    time: Date.now(),
+    h: 100,
+    rowH: 100,
+    turnOffset: 0,
+    turnH: 100,
+    w: 100,
+    vw: 100,
+    sw: 100,
+    blocks: [20],
+    items: [],
+  });
+  const { generation } = await w.message({ type: 'butter-layout-load', ...identity });
+  await w.message({ type: 'butter-layout-put', ...identity, generation, records: [row] });
+  assert.equal(w.disk.size, 1);
+  // The update switches Smoother scrolling off: the worker keeps what is saved.
+  w.changeSettings(granted(false));
+  await w.message({ type: 'butter-layout-usage' });
+  assert.equal(w.disk.size, 1, 'saved layouts are kept');
+  let changed;
+  const requests = [],
+    responses = [],
+    events = {};
+  vm.runInNewContext(read('storage/layout-bridge.js'), {
+    ButterStatus: status,
+    indexedDB: { deleteDatabase: () => ({}) },
+    CustomEvent: class {
+      constructor(type, options) {
+        this.type = type;
+        this.detail = options.detail;
+      }
+    },
+    document: {
+      addEventListener: (type, fn) => (events[type] = fn),
+      dispatchEvent: (e) => responses.push(JSON.parse(e.detail)),
+    },
+    chrome: {
+      storage: {
+        local: { get: async () => ({ butter: granted(false) }) },
+        onChanged: { addListener: (fn) => (changed = fn) },
+      },
+      runtime: {
+        sendMessage: (m) => {
+          requests.push(m.type);
+          return w.message(m);
+        },
+      },
+    },
+  });
+  await tick();
+  const send = async (op) => {
+    await events['butter-layout-request']({ detail: JSON.stringify({ id: 1, op, ...identity }) });
+    return responses.at(-1);
+  };
+  assert.equal(responses[0].enabled, false, 'layouts on, Smoother scrolling off: closed');
+  assert.deepEqual((await send('load')).records, []);
+  await send('put');
+  assert.deepEqual(requests, [], 'nothing reaches the worker');
+  // Switching Smoother scrolling on opens them live, with what was saved.
+  w.changeSettings(granted(true));
+  changed({ butter: { newValue: granted(true) } }, 'local');
+  assert.equal(responses.at(-1).enabled, true);
+  assert.equal((await send('load')).records.length, 1);
+  // And off again closes them, live.
+  changed({ butter: { newValue: granted(false) } }, 'local');
+  assert.equal(responses.at(-1).enabled, false);
+});
+
+test('trial site database is deleted once without reading it, and a blocked delete is retried', async () => {
+  const saved = { butter: { layoutConsent: 'granted' } },
+    events = {},
+    deletes = [];
+  const chrome = {
+    storage: {
+      local: { get: async () => saved, set: async (x) => Object.assign(saved, x) },
+      onChanged: { addListener() {} },
+    },
+    runtime: { sendMessage: async () => ({}) },
+  };
+  const source = fs.readFileSync(require.resolve('../extension/storage/layout-bridge.js'), 'utf8');
+  const run = () =>
+    vm.runInNewContext(source, {
+      chrome,
+      ButterStatus: require('../extension/shared/status.js'),
+      CustomEvent: class {},
+      document: { addEventListener: (n, fn) => (events[n] = fn), dispatchEvent() {} },
+      indexedDB: {
+        deleteDatabase(name) {
+          const r = {};
+          deletes.push({ name, r });
+          return r;
+        },
+      },
+    });
+  run();
+  await new Promise(setImmediate);
+  assert.equal(deletes.length, 1);
+  assert.equal(saved.butterLayoutMigrated, undefined);
+  run();
+  await new Promise(setImmediate);
+  assert.equal(deletes.length, 2);
+  deletes[1].r.onsuccess();
+  run();
+  await new Promise(setImmediate);
+  assert.equal(deletes.length, 2);
+  assert.equal(deletes[0].name, 'butter-seek-cold-geometry-v1');
 });
 
 function sharedStorage(initial) {

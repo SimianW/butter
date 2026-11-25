@@ -17,8 +17,8 @@ const id = await popup.evaluate(() => new Promise(r => chrome.developerPrivate.g
 await popup.goto(`chrome-extension://${id}/popup/popup.html`); await fixture.bringToFront();
 const tabId = await popup.evaluate(async () => (await chrome.tabs.query({ active: true, currentWindow: true }))[0].id);
 const status = () => popup.evaluate(id => chrome.tabs.sendMessage(id, { type: 'butter-status' }).then(x => x.states), tabId);
-// The rail starts off on a new install (#158): switch it on for its probe.
-await popup.evaluate(async () => { await chrome.storage.local.set({ butter: { opts: { rail: true } } }); await chrome.storage.session.remove('butterFailures'); });
+// Smoother scrolling (older) starts off on a new install: switch it on for its probe.
+await popup.evaluate(async () => { await chrome.storage.local.set({ butter: { opts: { older: true, seek: true } } }); await chrome.storage.session.remove('butterFailures'); });
 const initial = await status(); assert.equal(initial.container, 'ok'); assert.equal(initial.throttle, 'idle'); assert.equal(initial.older, 'idle');
 console.log('PASS: real content script reports unexercised throttle/older as neutral.');
 await fixture.evaluate(() => document.querySelector('.min-h-full').className = 'changed-selector');

@@ -7,14 +7,17 @@ const railOn = { opts: { rail: true } };
 test('missing selector after observing turns fails; unexercised hooks stay neutral', () => {
   const states = status.classify(
     { container: { exercised: true, failed: true } },
-    { opts: { rail: true } },
+    { opts: { older: true } },
   );
   assert.equal(states.container, 'fail');
   for (const key of ['cv', 'throttle', 'older', 'rail']) assert.equal(states[key], 'idle');
 });
 test('confirmed engagement works; ambiguous exercise stays neutral', () => {
   assert.equal(status.classify({ cv: { engaged: true } }).cv, 'ok');
-  assert.equal(status.classify({ older: { exercised: true } }).older, 'idle');
+  assert.equal(
+    status.classify({ older: { exercised: true } }, { opts: { older: true } }).older,
+    'idle',
+  );
 });
 test('individual and master switches override engagement and failure', () => {
   const facts = Object.fromEntries(
@@ -30,9 +33,7 @@ test('individual and master switches override engagement and failure', () => {
 test('partial and missing storage values keep all defaults; English is default', () => {
   assert.deepEqual(status.normalize(), {
     enabled: true,
-    opts: Object.fromEntries(
-      status.keys.map((k) => [k, !['rail', 'bookmark', 'layout'].includes(k)]),
-    ),
+    opts: Object.fromEntries(status.keys.map((k) => [k, !['older', 'seek', 'layout'].includes(k)])),
     layoutConsent: 'pending',
     lang: 'en',
   });
@@ -41,7 +42,7 @@ test('partial and missing storage values keep all defaults; English is default',
   assert.equal(status.normalize({ opts: { rail: false } }).opts.container, true);
 });
 
-test('groups preserve old option values, default seek on, and toggle all keys together', () => {
+test('groups preserve old option values, default seek off, and toggle all keys together', () => {
   const old = {
     enabled: false,
     lang: 'zh',
@@ -58,7 +59,7 @@ test('groups preserve old option values, default seek on, and toggle all keys to
     },
   };
   const migrated = status.normalize(old);
-  assert.equal(migrated.opts.seek, true);
+  assert.equal(migrated.opts.seek, false);
   assert.equal(migrated.custom, 42);
   assert.equal(migrated.opts.future, false);
   assert.equal(status.groupOn(migrated, 'streaming'), false);
@@ -144,30 +145,24 @@ test('a branch failure is kept as its own group and cleared only by a branch suc
   assert.deepEqual(status.updateFailures(failed, { branch: 'off' }), failed);
   assert.deepEqual(status.updateFailures(failed, { branch: 'ok' }), {});
 });
-test('Bookmarks start off, are on only when stored true, and toggle as their own group', () => {
-  assert.equal(status.normalize().opts.bookmark, false);
-  assert.equal(status.normalize({ opts: { rail: true } }).opts.bookmark, false);
-  assert.equal(status.normalize({ opts: { bookmark: 'no' } }).opts.bookmark, false);
+test('Bookmarks default on, keep an explicit off, survive unknown values, and toggle as their own group', () => {
+  assert.equal(status.normalize().opts.bookmark, true);
+  assert.equal(status.normalize({ opts: { rail: false } }).opts.bookmark, true);
+  assert.equal(status.normalize({ opts: { bookmark: 'no' } }).opts.bookmark, true);
   assert.equal(status.normalize({ opts: { bookmark: false } }).opts.bookmark, false);
-  assert.equal(status.normalize({ opts: { bookmark: true } }).opts.bookmark, true);
-  assert.equal(status.groupOn({}, 'bookmarks'), false);
-  const on = status.toggleGroup({ lang: 'zh', layoutConsent: 'pending' }, 'bookmarks');
-  assert.equal(on.opts.bookmark, true);
-  assert.equal(on.opts.rail, false);
-  assert.equal(on.layoutConsent, 'pending', 'no consent of their own');
-  assert.equal(status.classify({}, on).bookmark, 'idle');
-  const off = status.toggleGroup(on, 'bookmarks');
+  assert.equal(status.groupOn({}, 'bookmarks'), true);
+  const off = status.toggleGroup({ lang: 'zh', layoutConsent: 'pending' }, 'bookmarks');
   assert.equal(off.opts.bookmark, false);
+  assert.equal(off.opts.rail, true);
+  assert.equal(off.layoutConsent, 'pending', 'no consent of their own');
   assert.equal(status.classify({}, off).bookmark, 'off');
+  assert.equal(status.toggleGroup(off, 'bookmarks').opts.bookmark, true);
 });
 test('bookmarks are active only while Butter, the rail and Bookmarks are all on', () => {
-  const on = { opts: { rail: true, bookmark: true } };
-  assert.equal(status.bookmarksOn(), false, 'both start off');
-  assert.equal(status.bookmarksOn(on), true);
-  assert.equal(status.bookmarksOn({ ...on, enabled: false }), false);
-  assert.equal(status.bookmarksOn({ opts: { bookmark: true } }), false, 'the rail is off');
-  assert.equal(status.bookmarksOn({ opts: { rail: true } }), false, 'Bookmarks are off');
-  assert.equal(status.bookmarksOn({ opts: { rail: true, bookmark: false } }), false);
+  assert.equal(status.bookmarksOn(), true, 'both start on');
+  assert.equal(status.bookmarksOn({ enabled: false }), false);
+  assert.equal(status.bookmarksOn({ opts: { rail: false } }), false, 'the rail is off');
+  assert.equal(status.bookmarksOn({ opts: { bookmark: false } }), false, 'Bookmarks are off');
   assert.equal(status.classify({}, { enabled: false }).bookmark, 'off');
 });
 test('with no health facts reported, the bookmark key is never recorded as a failure', () => {
@@ -179,24 +174,24 @@ test('with no health facts reported, the bookmark key is never recorded as a fai
   assert.deepEqual(status.updateFailures({}, states), { rail: { rail: true } });
 });
 
-test('the rail, Bookmarks and layouts read off unless switched on; the other features keep on', () => {
+test('Smoother scrolling and layouts read off unless switched on; every other feature reads on', () => {
   for (const value of [
     undefined,
     {},
     { opts: {} },
-    { opts: { rail: 'yes', bookmark: 1 } },
-    { opts: { rail: null, bookmark: undefined } },
+    { opts: { older: 'yes', seek: 1 } },
+    { opts: { older: null, seek: undefined } },
     { layoutConsent: 'pending', opts: { layout: true } },
   ]) {
     const s = status.normalize(value);
-    assert.equal(s.opts.rail, false, JSON.stringify(value));
-    assert.equal(s.opts.bookmark, false, JSON.stringify(value));
+    assert.equal(s.opts.older, false, JSON.stringify(value));
+    assert.equal(s.opts.seek, false, JSON.stringify(value));
     assert.equal(s.opts.layout, false, JSON.stringify(value));
-    for (const key of ['container', 'cv', 'throttle', 'older', 'seek', 'branch'])
+    for (const key of ['container', 'cv', 'throttle', 'rail', 'branch', 'bookmark'])
       assert.equal(s.opts[key], true, `${key} in ${JSON.stringify(value)}`);
   }
-  const on = status.normalize({ layoutConsent: 'granted', opts: { rail: true, bookmark: true } });
-  assert.deepEqual([on.opts.rail, on.opts.bookmark, on.opts.layout], [true, true, true]);
+  const on = status.normalize({ layoutConsent: 'granted', opts: { older: true, seek: true } });
+  assert.deepEqual([on.opts.older, on.opts.seek, on.opts.layout], [true, true, true]);
   const off = status.normalize({
     layoutConsent: 'granted',
     opts: { rail: false, bookmark: false, layout: false },
@@ -204,8 +199,8 @@ test('the rail, Bookmarks and layouts read off unless switched on; the other fea
   assert.deepEqual([off.opts.rail, off.opts.bookmark, off.opts.layout], [false, false, false]);
 });
 
-test('the experimental groups are the rail, Bookmarks and layouts, and each is a group', () => {
-  assert.deepEqual(status.experimental, ['rail', 'bookmarks', 'layout']);
+test('the experimental groups are Smoother scrolling and layouts, in that order, and each is a group', () => {
+  assert.deepEqual(status.experimental, ['scrolling', 'layout']);
   for (const group of status.experimental) assert.ok(status.groups[group], group);
 });
 
@@ -215,67 +210,93 @@ test('the settings marker survives normalizing', () => {
   assert.ok(marked.defaultsVersion >= 1);
 });
 
-test('install marks the settings, and the three experimental features read off', () => {
+test('install stamps defaults version 2: the rail and Bookmarks read on, scrolling and layouts off', () => {
   for (const value of [undefined, {}, { lang: 'zh', bookmarkNotice: 'acknowledged' }]) {
     const next = status.migrate(value, 'install');
-    assert.deepEqual(next, { ...value, defaultsVersion: next.defaultsVersion });
+    assert.deepEqual(next, { ...value, defaultsVersion: 2 });
     const s = status.normalize(next);
-    assert.deepEqual([s.opts.rail, s.opts.bookmark, s.opts.layout], [false, false, false]);
+    assert.deepEqual(
+      [s.opts.rail, s.opts.bookmark, s.opts.older, s.opts.seek, s.opts.layout],
+      [true, true, false, false, false],
+    );
     assert.equal(status.migrate(next, 'update'), undefined, 'a later update changes nothing');
   }
 });
 
-test('the first update keeps on what the old rule read as on, and every other field', () => {
-  const oldRule = (value, key) => value?.opts?.[key] !== false;
+// What the update to defaults version 2 must keep: every field but older, seek and the marker.
+const without = (v) => {
+  const copy = structuredClone(v || {});
+  delete copy.defaultsVersion;
+  delete copy.opts?.older;
+  delete copy.opts?.seek;
+  if (copy.opts && !Object.keys(copy.opts).length) delete copy.opts;
+  return copy;
+};
+
+test('the update switches Smoother scrolling off once, from alpha.22 storage, keeping everything else', () => {
+  // v0.1.0-alpha.22 and earlier store no defaultsVersion; their rail and Bookmarks were on unless
+  // stored false, as they read now.
   for (const value of [
     undefined,
     {},
+    { opts: { older: true, seek: true } },
+    { opts: { seek: false } },
     { opts: { rail: false } },
     { opts: { bookmark: false } },
-    { opts: { rail: false, bookmark: false } },
-    { enabled: false },
-    { lang: 'zh' },
+    { opts: { rail: false, bookmark: false, older: true } },
+    { enabled: false, lang: 'zh' },
     { layoutConsent: 'granted', opts: { layout: true } },
-    { layoutConsent: 'granted', opts: { layout: false } },
     { layoutConsent: 'declined', opts: { layout: false } },
-    { layoutConsent: 'pending' },
-    {
-      enabled: false,
-      lang: 'zh',
-      bookmarkNotice: 'acknowledged',
-      opts: { branch: false, cv: false },
-    },
+    { bookmarkNotice: 'acknowledged', opts: { branch: false, cv: false } },
   ]) {
     const before = structuredClone(value);
     const next = status.migrate(value, 'update');
     assert.deepEqual(value, before, 'the old value is not changed in place');
-    assert.ok(next.defaultsVersion >= 1);
-    const s = status.normalize(next);
-    const was = status.normalize(value);
-    for (const key of ['rail', 'bookmark'])
-      assert.equal(s.opts[key], oldRule(value, key), `${key} in ${JSON.stringify(value)}`);
-    assert.equal(s.opts.layout, was.opts.layout);
+    assert.equal(next.defaultsVersion, 2);
+    assert.equal(next.opts.older, false, JSON.stringify(value));
+    assert.equal(next.opts.seek, false, JSON.stringify(value));
+    const s = status.normalize(next),
+      was = status.normalize(value);
+    for (const key of ['rail', 'bookmark', 'layout', 'container', 'cv', 'throttle', 'branch'])
+      assert.equal(s.opts[key], was.opts[key], `${key} in ${JSON.stringify(value)}`);
+    assert.equal(s.opts.rail, value?.opts?.rail !== false, 'the rail as alpha.22 read it');
+    assert.equal(s.opts.bookmark, value?.opts?.bookmark !== false, 'Bookmarks as alpha.22 read it');
     assert.equal(s.layoutConsent, was.layoutConsent);
-    assert.equal(next.layoutConsent, value?.layoutConsent);
-    assert.equal(next.opts.layout, value?.opts?.layout);
-    // Everything but the rail, Bookmarks and the marker is stored exactly as it was.
-    const without = (v) => {
-      const copy = structuredClone(v || {});
-      delete copy.defaultsVersion;
-      delete copy.opts?.rail;
-      delete copy.opts?.bookmark;
-      if (copy.opts && !Object.keys(copy.opts).length) delete copy.opts;
-      return copy;
-    };
     assert.deepEqual(without(next), without(value));
     assert.equal(status.migrate(next, 'update'), undefined, 'it runs once');
   }
+});
+
+test('the update switches Smoother scrolling off from defaults version 1 storage too', () => {
+  // Builds of main since #164 stamped 1 and stored the rail and Bookmarks explicitly.
+  for (const value of [
+    { defaultsVersion: 1 },
+    { defaultsVersion: 1, opts: { rail: true, bookmark: true, older: true, seek: true } },
+    { defaultsVersion: 1, opts: { rail: false, bookmark: false } },
+    { defaultsVersion: 1, layoutConsent: 'granted', opts: { layout: true, seek: true } },
+  ]) {
+    const next = status.migrate(value, 'update');
+    assert.equal(next.defaultsVersion, 2);
+    assert.deepEqual([next.opts.older, next.opts.seek], [false, false]);
+    assert.deepEqual(without(next), without(value));
+    const s = status.normalize(next);
+    assert.equal(s.opts.rail, value.opts?.rail !== false);
+    assert.equal(s.opts.bookmark, value.opts?.bookmark !== false);
+  }
+});
+
+test('Smoother scrolling switched back on after the update stays on through later updates', () => {
+  const updated = status.migrate({ opts: { older: true, seek: true } }, 'update');
+  const switched = status.toggleGroup(updated, 'scrolling');
+  assert.equal(status.groupOn(switched, 'scrolling'), true);
+  assert.equal(status.migrate(switched, 'update'), undefined);
+  assert.equal(status.migrate({ ...switched, defaultsVersion: 3 }, 'update'), undefined);
 });
 
 test('an update after the marker, and any other reason, changes nothing', () => {
   const marked = status.migrate({ opts: { rail: false } }, 'install');
   assert.equal(status.migrate(marked, 'update'), undefined);
   for (const reason of ['chrome_update', 'shared_module_update', undefined])
-    for (const value of [undefined, {}, { opts: { rail: false } }, marked])
+    for (const value of [undefined, {}, { opts: { seek: true } }, { defaultsVersion: 1 }, marked])
       assert.equal(status.migrate(value, reason), undefined, `${reason}`);
 });

@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { switchOn } from './runner/options.mjs';
 
 const pause = ms => new Promise(r => setTimeout(r, ms));
 
@@ -17,7 +18,8 @@ export function heldLab(L, env) {
 }
 
 // Restarts the lab browser with exactly `ext` (empty: none), connects with the send guard on and
-// keeps one ChatGPT tab.
+// keeps one ChatGPT tab. With Butter it switches Smoother scrolling on for the run (it starts off):
+// call the returned `restoreOptions()` before closing the browser to put the stored settings back.
 export async function startLab(L, lab, env, ext) {
   execFileSync(path.join(L.root(), 'bin/lab'), ['restart-browser'], { env: { ...env, LAB_ID: String(lab.id), LAB_EXTENSIONS: ext, LAB_FLAGS: '' }, stdio: 'pipe' });
   for (let n = 0; n < 60 && !(await L.cdpVersion(lab)); n++) await pause(500);
@@ -26,7 +28,8 @@ export async function startLab(L, lab, env, ext) {
   if (typeof (await L.sendGuard(context, lab)) !== 'function') { await browser.close().catch(() => {}); throw Error('send guard not installed'); }
   const page = context.pages().find(p => p.url().startsWith('https://chatgpt.com')) || context.pages()[0];
   for (const o of context.pages()) if (o !== page) await o.close();
-  return { browser, context, page };
+  const restoreOptions = ext ? await switchOn(L, lab, context) : null;
+  return { browser, context, page, restoreOptions };
 }
 
 // Opens the fixture, installs the probe and loads all earlier history; returns the entry count.
