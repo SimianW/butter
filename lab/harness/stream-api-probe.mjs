@@ -18,6 +18,7 @@
 // window (TAIL_MS) and its hydration (stream-veil-probe.mjs).
 import { traceWindow } from './stream-run-opts.mjs';
 import { splitTail, tailReport, veilReport } from './stream-veil-probe.mjs';
+import { installUnmarkedProbe, unmarkedFinish } from './stream-unmarked-probe.mjs';
 
 // In the page (MAIN world, init script). Self-contained.
 export function installApiProbe() {
@@ -149,13 +150,16 @@ const HARNESS = /eval at evaluate|UtilityScript\.evaluate/;
 export async function streamWindows(page, cdp, env, out) {
   const api = env.APIPROBE === '1', armAt = Number(env.APIPROBE_AT || 100000);
   if (api) await page.addInitScript(installApiProbe);
+  const unm = env.UNMARKED === '1'; // #172: blocks never marked (stream-unmarked-probe.mjs)
+  if (unm) await page.addInitScript(installUnmarkedProbe);
   const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, 10000, out.replace(/\.json$/, '') + '.trace.json');
   const hyd = [];
-  let lastHyd = -Infinity, armed = false, goneAt = null, seenIp = false, stdMarked = false, tail = null;
+  let unmArmed = false, lastHyd = -Infinity, armed = false, goneAt = null, seenIp = false, stdMarked = false, tail = null;
   return {
     // sinceDone: ms since the harness saw the stream complete; at 5 s the standard window ends.
     async tick(el, sinceDone = null) {
       await tw.tick(el);
+      if (unm && !unmArmed) { unmArmed = true; await page.evaluate(() => window.__unm?.arm()); }
       if (sinceDone != null && sinceDone >= 5000 && !stdMarked) { stdMarked = true; await page.evaluate(() => { if (window.__lafProbe) window.__lafProbe.stdEnd = performance.now(); }); }
       if (api && !armed && el >= armAt) { armed = true; await page.evaluate(() => window.__apiProbe?.arm() ?? null); }
       // Once a second; every tick (about 250 ms) for 6 s after in_progress goes.
@@ -163,6 +167,7 @@ export async function streamWindows(page, cdp, env, out) {
         lastHyd = el;
         const s = await page.evaluate(hydrationSample).catch(() => null);
         hyd.push(s);
+        if (unm) await page.evaluate(() => window.__unm?.sample()).catch(() => null);
         if (s?.inProgress) seenIp = true; else if (s && seenIp && goneAt == null) goneAt = el;
       }
     },
@@ -186,6 +191,7 @@ export async function streamWindows(page, cdp, env, out) {
       summary.veil = veilReport(rows, summary.lafDetail, summary.completion, g, lines);
       summary.tail = tailReport(tail, rows, g, lines, summary.lafDetail);
       if (api) summary.api = apiReport(apiRaw, z, lines, summary.completion);
+      if (unm) { const u = unmarkedFinish(await page.evaluate(() => window.__unm?.finish() ?? null).catch(() => null), z, summary.lafDetail?.marks?.inProgressGone); summary.unmarked = u.data; lines.push(...u.lines); }
       return lines;
     },
   };

@@ -1,0 +1,11 @@
+REPORT extension: streaming, after the flush: tw <hr> seen false, unrendered false, veil false, content-visibility auto, opacity 1, height 1px, border-top 1px, ResizeObserver heights [0]; ua <hr> seen false, unrendered true, veil false, content-visibility auto, opacity 1, height 120px, border-top 0px, ResizeObserver heights [120]
+REPORT extension: after completion: tw <hr> seen false, unrendered false, veil false, content-visibility visible, opacity 1, height 1px, border-top 1px, ResizeObserver heights [0]; ua <hr> seen false, unrendered true, veil false, content-visibility auto, opacity 1, height 120px, border-top 0px, ResizeObserver heights [120]
+REPORT extension: skipped events [class, skipped, ms]: [["tw",true,1027],["ua",true,1127]]; after completion 0
+PASS tw-hr-unmarked (extension)
+PASS ua-hr-held (extension)
+REPORT pv0 (extension/ + pv0.patch): streaming, after the flush: tw <hr> seen false, unrendered false, veil true, content-visibility auto, opacity 0, height 1px, border-top 1px, ResizeObserver heights [0]; ua <hr> seen false, unrendered true, veil true, content-visibility auto, opacity 0, height 120px, border-top 0px, ResizeObserver heights [120]
+REPORT pv0 (extension/ + pv0.patch): after completion: tw <hr> seen false, unrendered false, veil true, content-visibility visible, opacity 0, height 1px, border-top 1px, ResizeObserver heights [0]; ua <hr> seen false, unrendered true, veil true, content-visibility auto, opacity 0, height 120px, border-top 0px, ResizeObserver heights [120]
+REPORT pv0 (extension/ + pv0.patch): skipped events [class, skipped, ms]: [["tw",true,1028],["ua",true,1128]]; after completion 0
+PASS tw-hr-unmarked (pv0 (extension/ + pv0.patch))
+PASS ua-hr-held (pv0 (extension/ + pv0.patch))
+REPORT pv0 (extension/ + pv0.patch): the Tailwind <hr> is still veiled after completion, opacity 0
