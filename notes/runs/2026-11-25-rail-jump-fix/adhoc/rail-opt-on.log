@@ -1,0 +1,3 @@
+REPORT before: sha256 84a0d72f3a5c137e, opts null; now opts {"rail":true}
+EXIT 0
+EXIT 0 (started 03:12:56 UTC, ended 03:12:56 UTC)
