@@ -204,6 +204,7 @@
     'path',
     'earlier',
     'direction',
+    'leave', // whether the jump showed ChatGPT the leave gesture
     'try',
     'estimate',
     'written',

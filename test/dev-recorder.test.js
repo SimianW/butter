@@ -362,7 +362,10 @@ test('serialized turns put each readiness row and structure node on its own line
 test('the rail trace events are kept, and a key or string off the allowlist is dropped', () => {
   const rec = createRecorder();
   const events = [
-    ['rail-jump', { jump: 3, target: 7, activeBefore: 2, path: 'takeover', direction: 'up' }],
+    [
+      'rail-jump',
+      { jump: 3, target: 7, activeBefore: 2, path: 'takeover', direction: 'up', leave: true },
+    ],
     ['rail-try', { jump: 3, try: 1, estimate: 900, written: 836, scrollTopRead: 836 }],
     ['rail-wait', { jump: 3, wait: 'math', durationMs: 40, live: true, pending: false }],
     ['rail-cancel', { jump: 3, cause: 'scrollbar' }],

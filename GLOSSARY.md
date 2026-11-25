@@ -223,6 +223,27 @@ turns in between. It belongs to the smoother scrolling switch, not the rail's.
 _Avoid_: pre-send scroll, send jump
 _Where_: `rail/pre-jump.js`
 
+**End pin**:
+ChatGPT's own state in which it keeps the chat at its end as the transcript grows. It is
+ChatGPT's, and Butter cannot read it; it is not the rail's **pinned**. A script's scrollTop write
+never changes it; the reader's own scroll away from the end clears it, and a scroll back to the end
+sets it again.
+_Avoid_: pinned (that is the rail's), follow mode
+_Where_: `shared/leave-gesture.js`, `test/helpers/chatgpt-end-pin.mjs`
+
+**End pull**:
+ChatGPT's scroll back to the chat's end while the end pin is set and the transcript grows (an
+answer streams, or a turn that mounted replaces its estimated height).
+_Avoid_: snap back, reset
+_Where_: `test/helpers/chatgpt-end-pin.mjs`
+
+**Leave gesture**:
+What Butter shows ChatGPT so that ChatGPT clears its end pin: the scrollbar gesture ChatGPT's own
+scroll code takes for the reader scrolling away from the end. A jump shows it with its first move
+when it moves the chat away from the end; the seek preview's release supplies its scroll event.
+_Where_: `shared/leave-gesture.js` (isolated world), `shared/leave-gesture-main.js` (MAIN world),
+`rail/jump.js`, `seek/preview-main.js`
+
 ## Bookmarks
 
 **Bookmark**:

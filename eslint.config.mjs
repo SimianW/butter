@@ -144,6 +144,10 @@ export default [
     languageOptions: { globals: { ButterPill: 'readonly' } }, // defined in selection/pill.js
   },
   {
+    files: ['extension/branch/content.js'],
+    languageOptions: { globals: { ButterLeaveGesture: 'readonly' } }, // shared/leave-gesture.js
+  },
+  {
     files: ['extension/bookmarks/content.js', 'extension/branch/*.js'],
     languageOptions: { globals: { ButterPageReader: 'readonly' } }, // defined in page/reader.js
   },
@@ -229,6 +233,8 @@ export default [
     files: [
       'extension/popup/model.js',
       'extension/shared/status.js',
+      'extension/shared/leave-gesture.js',
+      'extension/shared/leave-gesture-main.js',
       'extension/seek/seek-meta.js',
       'extension/seek/layout-codec.js',
       'extension/seek/layout-check-main.js',

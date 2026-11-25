@@ -21,6 +21,7 @@
   // journey status, and gives it the scroller's box and the mounted turns to reconcile.
   function ButterRailTurns(model, { changed, kick, sync, scrolled, mounted: onMount, ignore }) {
     const { HEADER, COMPOSER } = globalThis.ButterRailModel || require('./model.js');
+    const { readers } = globalThis.ButterLeaveGesture || require('../shared/leave-gesture.js');
     let sc = null,
       ioPos = null,
       ioBand = null;
@@ -115,7 +116,7 @@
         s.addEventListener(
           'pointerdown',
           (e) => {
-            if (s !== sc) return;
+            if (s !== sc || !readers(e)) return; // a jump's own leave gesture goes on
             const box = model.box;
             // The scrollbar, or a middle press anywhere in the chat: Chrome's autoscroll.
             if (e.button === 1) scrolled('middle');

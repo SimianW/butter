@@ -28,6 +28,7 @@
         "rail/wave.js",
         "rail/grid.js",
         "rail/model.js",
+        "shared/leave-gesture.js",
         "rail/turns.js",
         "rail/trip.js",
         "rail/readiness.js",
@@ -54,6 +55,7 @@
       "matches": ["https://chatgpt.com/*"],
       "js": [
         "shared/config-main.js",
+        "shared/leave-gesture-main.js",
         "stream/throttle-main.js",
         "history/conversation-main.js",
         "page/reader-main.js",

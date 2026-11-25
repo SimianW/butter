@@ -101,9 +101,9 @@ function fixture() {
     getComputedStyle: () => ({ font: '16px system-ui' }),
   };
   const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
-  ctx.window = ctx;
-  vm.createContext(ctx);
   const own = require('node:path').join(__dirname, '../extension');
+  ctx.ButterLeaveGesture = require(`${own}/shared/leave-gesture-main.js`); // preview-main needs it
+  vm.createContext(Object.assign(ctx, { window: ctx }));
   // REVIEW_SOURCE may point at an older tree; load the scripts it lacks from this repo's extension/.
   const sourceOf = (name) => {
     const file = `${process.env.REVIEW_SOURCE || own}/${name}.js`;

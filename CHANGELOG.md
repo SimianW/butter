@@ -21,6 +21,8 @@
 
 - Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on
   the question the preview showed.
+- Fixed a jump from the question rail to one of the first questions of a very long chat reaching
+  the question and then showing the chat's end.
 
 ### Removed
 

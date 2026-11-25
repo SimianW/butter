@@ -6,7 +6,7 @@ import status from '../extension/shared/status.js';
 import pageReader from '../extension/page/reader-main.js';
 import statusCore from '../extension/seek/core-main.js';
 
-// preview-main.js and the factories it calls, in manifest order.
+// preview-main.js and the factories it calls, in manifest order, after the leave gesture.
 const previewScripts = [
   'preview-texts-main',
   'landing-main',
@@ -14,6 +14,10 @@ const previewScripts = [
   'preview-main',
 ];
 const loadPreview = (ctx) => {
+  vm.runInContext(
+    fs.readFileSync(new URL('../extension/shared/leave-gesture-main.js', import.meta.url), 'utf8'),
+    ctx,
+  );
   for (const name of previewScripts)
     vm.runInContext(
       fs.readFileSync(new URL(`../extension/seek/${name}.js`, import.meta.url), 'utf8'),

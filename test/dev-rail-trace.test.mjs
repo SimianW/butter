@@ -147,6 +147,7 @@ test('a jump that lands records its start, its tries, its readiness waits and "l
       mountedTo: 0,
       earlier: false,
       mounted: false,
+      leave: false, // a jump toward the chat's end shows ChatGPT no leave gesture
       path: 'trip',
       direction: 'down',
     },

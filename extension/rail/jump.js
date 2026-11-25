@@ -132,6 +132,7 @@
       turns,
       targetTop,
     );
+    const gesture = globalThis.ButterLeaveGesture || require('../shared/leave-gesture.js');
 
     // `want`: an earlier trip for a bookmark (its key) on the dots. Pages load only until bookmarks/
     // content.js places it under a question, then the trip lands on its text as a bookmark jump does.
@@ -166,6 +167,10 @@
       model.journey({ pinned: true });
       view.kick(); // setActive kicks only when the index changes
       let el = turns.el(id);
+      // Before the target can mount and grow: ChatGPT stops following the end (shared/leave-gesture.js).
+      const dest = earlier ? 0 : el ? targetTop(el) : Math.max(0, turns.estimate(i) - TOP_INSET);
+      const shown = gesture.leave(sc(), dest);
+      trace('leave', () => ({ tok, shown }));
       // Close by: glide there.
       if (
         !earlier &&
@@ -418,9 +423,12 @@
       }
     };
 
-    const scrollEnd = () =>
+    // The scroll's own end, not the leave gesture step's: that comes first, the chat not moved yet.
+    const scrollEnd = (s = sc(), from = s.scrollTop) =>
       new Promise((r) => {
-        sc().addEventListener('scrollend', r, { once: true });
+        const wait = () => s.addEventListener('scrollend', end, { once: true });
+        const end = () => (s.scrollTop === from ? wait() : r());
+        wait();
         setTimeout(r, 1500);
       });
     // The browser's smooth scrolling runs on the compositor: it keeps going if the page is busy.

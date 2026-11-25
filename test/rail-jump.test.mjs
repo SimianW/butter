@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
+import { FakeElement, fakeEvents, fakeObservers } from './helpers/rail-dom.mjs';
 
 const read = (f) => fs.readFileSync(new URL(`../extension/rail/${f}`, import.meta.url), 'utf8');
 
@@ -22,6 +22,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     return id;
   };
   const ctx = vm.createContext({
+    ...fakeEvents(),
     ResizeObserver,
     matchMedia: () => ({ matches: false }),
     performance: { now: () => now },
@@ -32,7 +33,7 @@ function setup({ count = 5, gap = 100, hasPrev = false } = {}) {
     },
     setTimeout,
   });
-  for (const f of ['readiness.js', 'jump.js'])
+  for (const f of ['../shared/leave-gesture.js', 'readiness.js', 'jump.js'])
     vm.runInContext(read(f), ctx, { filename: `rail/${f}` });
 
   // The scroller and its turns.

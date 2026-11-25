@@ -117,6 +117,11 @@
           direction: top == null ? null : top > 64 ? 'down' : 'up',
         });
       },
+      // Whether the jump showed ChatGPT the leave gesture (shared/leave-gesture.js): its start's `leave`.
+      leave({ tok, shown }) {
+        const j = jumps.get(tok);
+        if (j) j.start.leave = !!shown;
+      },
       // Glide, trip, or a takeover of the trip in flight; `m` is the trip's direction (+1 up).
       path({ tok, path, m }) {
         const j = jumps.get(tok);

@@ -10,8 +10,9 @@
     layoutCheck = globalThis.__butterLayoutCheck,
     textsOf = globalThis.__butterPreviewTexts,
     landingOf = globalThis.__butterSeekLanding,
-    diagnosticsOf = globalThis.__butterSeekDiagnostics;
-  if (!core || !page || !textsOf || !landingOf || !diagnosticsOf) return;
+    diagnosticsOf = globalThis.__butterSeekDiagnostics,
+    gesture = globalThis.ButterLeaveGesture; // shared/leave-gesture-main.js
+  if (!core || !page || !textsOf || !landingOf || !diagnosticsOf || !gesture) return;
   const S = { v: 2, events: [], updates: [], sessions: [], presses: [], active: false };
   let seekFacts = {},
     statusPath = location.pathname;
@@ -38,7 +39,6 @@
     active = null,
     pendingCommit = null,
     held = false,
-    releaseScroll = null,
     lastPointerDown = -1e9;
   const act = core.createActivation();
   let revealOwner = null,
@@ -598,7 +598,7 @@
   };
   const isScroller = (el) => el?.matches?.('.thread-scroll-container') && el.clientHeight > 0;
   function down(e) {
-    if (disabled()) return;
+    if (disabled() || !gesture.readers(e)) return; // the rail's leave gesture is no press
     if (e.type === 'pointerdown') lastPointerDown = e.timeStamp;
     else if (Math.abs(e.timeStamp - lastPointerDown) < 50) return; // mousedown after a handled pointerdown
     if (e.button === 0) held = true;
@@ -716,7 +716,7 @@
   addEventListener(
     'scroll',
     (e) => {
-      if (e === releaseScroll) return;
+      if (!gesture.readers(e)) return; // the release's own, or the rail's leave gesture
       const a = active || pendingCommit;
       if (!a && candidate && e.target === candidate.sc) {
         const r = act.scroll({
@@ -773,7 +773,8 @@
     },
     true,
   );
-  const up = (type) => () => {
+  const up = (type) => (e) => {
+    if (!gesture.readers(e)) return;
     held = false;
     const r = act.up();
     if (r === 'reset' && candidate) {
@@ -782,9 +783,8 @@
       candidate = null;
     }
     if (active && type === 'pointerup') {
-      // ChatGPT unpins the chat's end only on a scroll its listener sees before its own pointerup;
-      // the drag's were swallowed. Sent before finish, so the release still reads the same top.
-      active.sc.dispatchEvent((releaseScroll = new Event('scroll')));
+      // ChatGPT's end pin needs a scroll before its pointerup (the drag's were swallowed); before finish.
+      gesture.release(active.sc);
     }
     if (active) finish(type);
   };
