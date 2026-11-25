@@ -22,7 +22,8 @@
 //   against the turn's innerText.length. The string never leaves the page; only its length does.
 //   U4_FINDS=<n> (default 1): after (a), n-1 later window.find calls, each on another held block at
 //   least 10 blocks from the ones used, picked again before each call, watched for 30 frames; (c)
-//   keeps at least 10 blocks from all of them.
+//   keeps at least 10 blocks from all of them. Each call's record has `at`, its start in page time
+//   (performance.now), to cut a TRACE_AT trace at it.
 // veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
 // 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
 // and after its rendering update (leaks: { sampled, start, drawn }).
@@ -185,7 +186,7 @@ function installUx(cfg) {
       const found = window.find(str, false, false, true, false, false, false);
       const ms = q1(now() - t0), y1 = g.s.scrollTop;
       const selIn = sel.rangeCount ? a.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
-      out.find = { block: a.i, len: str.length, found, callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), ...(await watch(a.b, t0)) };
+      out.find = { block: a.i, len: str.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), ...(await watch(a.b, t0)) };
       sel.removeAllRanges();
     } else out.find = { none: true };
     const used = a ? [a.i] : [];
@@ -203,7 +204,7 @@ function installUx(cfg) {
       const ms = q1(now() - t0), y1 = g.s.scrollTop;
       const selIn = sel.rangeCount ? b2.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
       const w = await watch(b2.b, t0, 30);
-      out.finds.push({ k, block: b2.i, len: s2.length, found, callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end });
+      out.finds.push({ k, block: b2.i, len: s2.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end });
       sel.removeAllRanges();
     }
     await raf();

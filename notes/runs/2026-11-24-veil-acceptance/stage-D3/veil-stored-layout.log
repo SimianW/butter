@@ -1,0 +1,13 @@
+REPORT build 0.1.0-alpha.22+veilaccept.veil, fixture math12; stored as found: layout store rows 0, opts null, layoutConsent -, butterLayoutCleared absent
+REPORT first load: 2 turns after loading earlier history, 317 answer blocks; layout store rows 0 → 1; cache stats {"observed":47,"records":7,"refreshes":1,"recordMs":128.5000001192093,"recordMax":12,"restored":0,"blocksRestored":0,"hooks":179,"parked":0,"released":0,"held":0,"approx":6,"adopted":1}
+REPORT after reload: 26 samples over undefined ms (24 at load, 1 in a pass through the chat); turns 2, answer blocks 317; restored turns 0, blocks 0, restore misses {}
+REPORT after reload: turns with inline content-visibility auto, max 0 (end 0); answer blocks with it, max 0 (end 0)
+REPORT after reload, most in any sample: answer blocks at opacity 0 0, data-butter-veil 0, rendered veiled (veil check) 0, data-butter-unrendered 0, in_progress 0; inline-cv blocks at opacity 0 0, veiled 0; inline-cv turns at opacity 0 0
+REPORT after reload, per sample (ms: scrollTop/scrollHeight, blocks, opacity0, veil, cvTurns/cvBlocks, restored): 5207:64631/65543,467,0,0,0/0,0 6644:66643/67555,467,0,0,0/0,0 7557:66677/67589,467,0,0,0/0,0 8078:66677/67589,467,0,0,0/0,0 8597:66677/67589,467,0,0,0/0,0 9115:66677/67589,467,0,0,0/0,0 9634:66677/67589,467,0,0,0/0,0 10152:66677/67589,467,0,0,0/0,0 10673:66677/67589,467,0,0,0/0,0 11193:66677/67589,467,0,0,0/0,0 12154:66677/67589,467,0,0,0/0,0 12881:66677/67589,467,0,0,0/0,0 13398:66677/67589,467,0,0,0/0,0 13917:66677/67589,467,0,0,0/0,0 14435:66677/67589,467,0,0,0/0,0 14955:66677/67589,467,0,0,0/0,0 15473:66677/67589,467,0,0,0/0,0 15992:66677/67589,467,0,0,0/0,0 16510:66677/67589,467,0,0,0/0,0 17029:66677/67589,467,0,0,0/0,0 17548:66677/67589,467,0,0,0/0,0 18067:66677/67589,467,0,0,0/0,0 18586:66677/67589,467,0,0,0/0,0 19105:66677/67589,467,0,0,0/0,0 24487:117911/118823,317,0,0,0/0,0 26002:117911/118823,317,0,0,0/0,0
+FAIL stored-layout-restored: restored turns 0, blocks 0, most inline-cv blocks in a sample 0: no stored layout was restored, so the check did not run
+PASS stored-layout-none-opacity0
+PASS stored-layout-cv-not-veiled
+REPORT put back: layout store rows 0 after layouts off, 0 at the end (found 0); butter and butterLayoutCleared values same as found true (cleared key found absent, now absent), opts null
+PASS stored-layout-opts-put-back
+SUMMARY FAIL (1 FAIL)
+veil-stored-layout exit=1 92 s at 2026-11-25T23:04:43Z
