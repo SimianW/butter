@@ -56,3 +56,26 @@ from them by 1.1–1.5%, all glyph-edge compression speckle.
 
 Both GIFs show only the extension popup: no URL bar, account, chat title or chat text. Checked on a
 contact sheet of each GIF at one frame per second.
+
+## On real ChatGPT (lab 2, `math12`)
+
+Dev build of `1bd355c` (`0.1.0-alpha.22+dev.13`), a fresh unpacked path with empty storage, lock
+`rail-pin-171h`, 23:11–23:20 UTC, send guard on, nothing sent. Logs in [live/](live/); the fresh
+install check is [adhoc/t1-defaults.mjs](adhoc/t1-defaults.mjs).
+
+| Run | `PASS` | `FAIL` | Exit | Log |
+|---|---:|---:|---:|---|
+| Fresh install's defaults | 10 | 0 | 0 | [live/t1-defaults.log](live/t1-defaults.log) |
+| `seek-pin-live.mjs`, 6 releases and 1 write | 6 | 0 | 0 | [live/t2-seek-pin.log](live/t2-seek-pin.log) |
+| `rail-jump-live.mjs`, 7 jumps | 9 | 0 | 0 | [live/t3-rail-jump.log](live/t3-rail-jump.log) |
+| `seek-landing-live.mjs`, 5 positions | 5 | 0 | 0 | [live/t4-seek-landing.log](live/t4-seek-landing.log) |
+
+- A fresh install stores only `{defaultsVersion: 2}`; the page's off list is `older seek layout`; the
+  rail is on with no setting written; a real thumb drag shows no seek preview and scrolls the chat.
+  After a click on the popup's Smoother scrolling switch, the off list drops `older` and `seek`
+  without a reload and a thumb drag shows the preview.
+- Each edited harness script switched Smoother scrolling on for its run and put the stored options
+  back (`REPORT options put back: same as before true`); each run's control was pulled.
+- **Not run live:** the update's one-time switch-off (an update from `v0.1.0-alpha.22` cannot be
+  staged in the lab; unit tests only), the layouts row's "Needs Smoother scrolling" and the layout
+  store closing and reopening with `seek`. The build predates review round 2's fixes (`e1ae25c`).

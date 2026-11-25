@@ -1,0 +1,7 @@
+release exit 0
+{"lab": 2, "lab_released": true, "perf_released": false}
+status after release:
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}
+EXIT 0

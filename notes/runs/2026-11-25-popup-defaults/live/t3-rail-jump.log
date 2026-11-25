@@ -1,0 +1,22 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout","probe":true,"questions":12,"hasPrev":false,"height":348465,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+REPORT control math12 pulled (back at the end at 1705 ms): write 0 with pin true, pin after true; [ms, scrollTop, scrollHeight, vh] every 500 ms [[863,0,348329,912],[2117,347553,348465,912],[2626,347553,348465,912],[3135,347553,348465,912],[3646,347553,348465,912],[4156,347553,348465,912],[4666,347553,348465,912],[5176,347553,348465,912],[5685,347553,348465,912],[5990,347553,348465,912]]
+popup-defaults math12 from=end-pinned pin=true to=0 phase=reload-setup class=clean samples=166 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+popup-defaults math12 from=end-pinned pin=true to=1 phase=settled class=clean samples=148 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→1
+popup-defaults math12 from=end-pinned pin=true to=2 phase=settled class=clean samples=207 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→2
+popup-defaults math12 from=end-pinned pin=true to=3 phase=settled class=clean samples=178 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→3
+popup-defaults math12 from=top-unpinned pin=false to=0 phase=settled class=clean samples=153 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→0
+popup-defaults math12 from=top-unpinned pin=false to=3 phase=settled class=clean samples=176 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→3
+popup-defaults math12 from=previous pin=false to=2 phase=settled class=clean samples=171 pinAtClick=false pinAtEnd=false
+PASS jump math12 previous→2
+PASS anchoring (8 wheel unpins with cv on)
+PASS control (1 of 1 pulled)
+SUMMARY {"jumps":7,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":5,"rawReversalCount":10,"unpinChecks":8,"anchoringOn":0,"cvOff":0,"starts":{"top-unpinned":2,"end-pinned":4,"previous":1},"pinUnread":0,"controls":1,"controlsPulled":1,"setupErrors":0,"fails":0}
+REPORT options put back: same as before true
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-25-popup-defaults/t3-rail-jump.json
+EXIT 0
