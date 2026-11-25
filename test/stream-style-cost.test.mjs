@@ -27,7 +27,7 @@ before(async () => {
 });
 after(() => browser?.close());
 
-/* global document, requestAnimationFrame -- runs in the page */
+/* global document, requestAnimationFrame, MutationObserver -- runs in the page */
 function build({ turns, blocks }) {
   const block = (i) =>
     `<p>Block ${i}: <span class="katex"><span>x</span><sub>${i}</sub></span> and some prose.</p>`;
@@ -49,24 +49,41 @@ function build({ turns, blocks }) {
     ).join('')}${turn(turns, 'in_progress', blocks)}</div></div>`;
 }
 
-// Runs in the page: append `n` blocks to the in-progress answer, one per frame.
-async function stream(n) {
+// Runs in the page: append `n` blocks to the in-progress answer, one per frame, and move the view
+// down `scroll` px each frame. Counts the veils set and removed meanwhile (GLOSSARY.md).
+async function stream({ n, scroll }) {
   const md = document.querySelector(
     '[data-talvt-turn-state="in_progress"] [data-markdown-text-style]',
   );
+  const sc = document.querySelector('.thread-scroll-container');
+  const veils = { set: 0, removed: 0 };
+  const watch = new MutationObserver((records) => {
+    for (const r of records) veils[r.oldValue === null ? 'set' : 'removed']++;
+  });
+  watch.observe(md, {
+    attributeFilter: ['data-butter-veil'],
+    attributeOldValue: true,
+    subtree: true,
+  });
   const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
   await frame();
   for (let i = 0; i < n; i++) {
     const p = document.createElement('p');
     p.innerHTML = `Streamed ${i}: <span class="katex"><span>y</span><sub>${i}</sub></span> more.`;
     md.append(p);
+    sc.scrollTop += scroll;
     await frame();
   }
   await frame();
+  watch.disconnect();
+  return veils;
 }
 
-// Elements restyled per streamed update in a fresh page with the given stylesheet.
-async function styledPerUpdate(css) {
+// Elements restyled per streamed update in a fresh page with the given stylesheet, and the veils
+// set and removed meanwhile. With `scroll`, the view starts at the in-progress answer's start and
+// moves down `scroll` px per update: it reaches blocks veiled since the page was built, which are
+// unveiled, while streamed blocks land far below it and are veiled.
+async function styledPerUpdate(css, { scroll = 0 } = {}) {
   const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
   try {
     await page.route('**/*', (route) =>
@@ -90,23 +107,41 @@ async function styledPerUpdate(css) {
       const sc = document.querySelector('.thread-scroll-container');
       sc.scrollTop = sc.scrollHeight;
     });
+    if (scroll)
+      await page.evaluate(() => {
+        const sc = document.querySelector('.thread-scroll-container');
+        const answer = document.querySelector('[data-talvt-turn-state="in_progress"]');
+        sc.scrollTop += answer.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      });
     // Let the in-progress answer's flush pass, so none lands inside the measured window.
     await page.waitForTimeout(1500);
     await browser.startTracing(page, { categories: ['devtools.timeline'] });
-    await page.evaluate(stream, UPDATES);
+    const veils = await page.evaluate(stream, { n: UPDATES, scroll });
     const trace = JSON.parse(await browser.stopTracing());
     const elements = trace.traceEvents
       .filter((e) => e.name === 'UpdateLayoutTree')
       .reduce((sum, e) => sum + (e.args?.elementCount ?? e.args?.data?.elementCount ?? 0), 0);
-    return elements / UPDATES;
+    return { perUpdate: elements / UPDATES, veils };
   } finally {
     await page.close();
   }
 }
 
 test('a streamed update restyles about its own block, not the whole answer', async () => {
-  const perUpdate = await styledPerUpdate(read('stream/containment.css'));
+  const { perUpdate } = await styledPerUpdate(read('stream/containment.css'));
   console.log(`elements restyled per streamed update: ${perUpdate}`);
+  assert.ok(perUpdate >= 1, 'no UpdateLayoutTree element counts in the trace');
+  assert.ok(perUpdate < 50, `${perUpdate} elements restyled per update (limit 50)`);
+});
+
+test('with veils set and removed during the stream, an update still restyles about its own block', async () => {
+  // The veil's attribute is set and removed on single blocks; its selectors must not make Chromium
+  // restyle the answer's other blocks when it changes.
+  const { perUpdate, veils } = await styledPerUpdate(read('stream/containment.css'), {
+    scroll: 40,
+  });
+  console.log(`with veils changing (${JSON.stringify(veils)}): ${perUpdate} elements per update`);
+  assert.ok(veils.set > 0 && veils.removed > 0, `veils set ${veils.set}, removed ${veils.removed}`);
   assert.ok(perUpdate >= 1, 'no UpdateLayoutTree element counts in the trace');
   assert.ok(perUpdate < 50, `${perUpdate} elements restyled per update (limit 50)`);
 });

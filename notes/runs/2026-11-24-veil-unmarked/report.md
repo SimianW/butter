@@ -180,6 +180,12 @@ Results: head `PASS tw-hr-unmarked`. With pv0 the `<hr>` keeps `data-butter-veil
 the 120 px placeholder, is held (`data-butter-unrendered`), and stays `auto`, as in the study's
 dry page (`PASS ua-hr-held`).
 
+**After merging `feat/implement-spec-170` (`0e526b5`, which carries the veil):** the same recipe
+against that branch's `extension/` gives the `<hr>` `veil true, opacity 0` while streaming and
+`veil false, opacity 1` after completion (`PASS tw-hr-unmarked`, `PASS ua-hr-held`).
+`veil-unmarked-scroll.mjs` gives `away: veil false, opacity 1`: it is not veiled again after it
+rendered. Headless only; no live run of that build was made here.
+
 ## Checked, not a bug
 
 **The marker never unobserves a 0 px block.** Headless: a finished turn of 200 `<p>` + a 0 px

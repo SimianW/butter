@@ -15,9 +15,11 @@
 // Stage 3 (2026-11-24 stream settle): block counts and settle marks after the window, the last
 // turn's height at three moments, prototype S's settle marks and Z's fast-path counters.
 // Stage 4 (2026-11-24 stream veil): veiled blocks in every sample, the tail after the standard
-// window (TAIL_MS) and its hydration (stream-veil-probe.mjs).
+// window (TAIL_MS) and its hydration (stream-veil-probe.mjs). #173: rendered veiled blocks in every
+// sample and after the window, for the veil-none-rendered verdict (stream-veil-verdicts.mjs).
 import { traceWindow } from './stream-run-opts.mjs';
 import { splitTail, tailReport, veilReport } from './stream-veil-probe.mjs';
+import { veilCheckScript } from './stream-veil-verdicts.mjs';
 import { installUnmarkedProbe, unmarkedFinish } from './stream-unmarked-probe.mjs';
 
 // In the page (MAIN world, init script). Self-contained.
@@ -123,7 +125,9 @@ function hydrationSample() {
   const num = n => (h.hasAttribute(n) ? Number(h.getAttribute(n)) : null);
   const z = window[Symbol.for('chatgpt-butter.read-fast')];
   const veil = last ? [...last.querySelectorAll('[data-butter-veil]')] : [];
-  return { t: performance.now(), veiled: veil.length, veiledNotAuto: veil.filter(b => getComputedStyle(b).contentVisibility !== 'auto').length, inProgress: !!document.querySelector('[data-talvt-turn-state="in_progress"]'), hydrated: num('data-butter-hydrated'), pending: num('data-butter-hydrate-pending'),
+  // Rendered veiled blocks in the last turn (veil-none-rendered; stream-veil-verdicts.mjs).
+  const leaks = window.__veilCheck && last ? window.__veilCheck.count(last) : null;
+  return { t: performance.now(), leaks, veiled: veil.length, veiledNotAuto: veil.filter(b => getComputedStyle(b).contentVisibility !== 'auto').length, inProgress: !!document.querySelector('[data-talvt-turn-state="in_progress"]'), hydrated: num('data-butter-hydrated'), pending: num('data-butter-hydrate-pending'),
     measuring: document.querySelectorAll('[data-butter-measure]').length, unrendered: last ? last.querySelectorAll('[data-butter-unrendered]').length : 0, seen: last ? last.querySelectorAll('[data-butter-seen]').length : 0,
     turnH: last ? Math.round(last.getBoundingClientRect().height) : null, settle: document.querySelectorAll('[data-butter-settle]').length, z: z ? { fast: z.fast, native: z.native } : null };
 }
@@ -136,7 +140,7 @@ function answerGeo() {
   const COLUMN = '[data-markdown-text-style="assistant-message"]', KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
   const blocks = t ? [...t.querySelectorAll(`${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`)] : [];
   const z = window[Symbol.for('chatgpt-butter.read-fast')];
-  return { turn: h(t), answer: h(md), scrollHeight: sc?.scrollHeight ?? null,
+  return { turn: h(t), answer: h(md), scrollHeight: sc?.scrollHeight ?? null, leaks: window.__veilCheck?.count(document) ?? null,
     blocks: { n: blocks.length, cvAuto: blocks.filter(b => getComputedStyle(b).contentVisibility === 'auto').length, seen: blocks.filter(b => b.hasAttribute('data-butter-seen')).length,
       unrendered: blocks.filter(b => b.hasAttribute('data-butter-unrendered')).length, settleLeft: document.querySelectorAll('[data-butter-settle]').length,
       veiled: blocks.filter(b => b.hasAttribute('data-butter-veil')).length, veiledNotAuto: blocks.filter(b => b.hasAttribute('data-butter-veil') && getComputedStyle(b).contentVisibility !== 'auto').length, measuring: blocks.filter(b => b.hasAttribute('data-butter-measure')).length },
@@ -150,6 +154,7 @@ const HARNESS = /eval at evaluate|UtilityScript\.evaluate/;
 export async function streamWindows(page, cdp, env, out) {
   const api = env.APIPROBE === '1', armAt = Number(env.APIPROBE_AT || 100000);
   if (api) await page.addInitScript(installApiProbe);
+  await page.addInitScript(veilCheckScript());
   const unm = env.UNMARKED === '1'; // #172: blocks never marked (stream-unmarked-probe.mjs)
   if (unm) await page.addInitScript(installUnmarkedProbe);
   const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, 10000, out.replace(/\.json$/, '') + '.trace.json');

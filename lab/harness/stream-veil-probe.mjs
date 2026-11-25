@@ -17,7 +17,10 @@
 //   on every animation frame, 7 points down the text column inside the view are hit-tested with
 //   document.elementFromPoint; a hit's nearest answer block counts when it has data-butter-veil or
 //   computes opacity 0. Steps are counted from the page's wheel events. Then one scrollTop write
-//   to the middle of the streamed answer, with the same test for 30 frames.
+//   to the middle of the streamed answer, with the same test for 30 frames. For veil-none-rendered
+//   (stream-veil-verdicts.mjs) each frame also counts whether a tested point is on a block that
+//   window.__veilCheck finds rendered at opacity 0, at the frame's start (leakStart) and again in a
+//   task posted from the frame's rAF, after drawing (leakDrawn).
 
 const r1 = v => Math.round(v * 10) / 10;
 
@@ -96,7 +99,8 @@ function startVeil() {
   const COLUMN = '[data-markdown-text-style="assistant-message"]';
   const blockOf = e => { for (; e && e !== document.body; e = e.parentElement) if (e.parentElement?.matches(`${COLUMN}, [class*="DilResponseRoot"]`) && !e.matches('[data-dil-source-message-id]')) return e; return null; };
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
-  const V = (window.__veilProbe = { on: true, phase: 'end', up: 0, down: 0, frames: [], n: 0, hit: 0, onBlock: 0 });
+  const V = (window.__veilProbe = { on: true, phase: 'end', up: 0, down: 0, frames: [], n: 0, hit: 0, onBlock: 0, leakStart: 0, leakDrawn: 0 });
+  const leakAt = (s, x) => { const r = s.getBoundingClientRect(); for (let k = 0; k < 7; k++) { const b = blockOf(document.elementFromPoint(x, r.top + (s.clientHeight * (k + 0.5)) / 7)); if (b && window.__veilCheck?.leaking(b)) return true; } return false; };
   addEventListener('wheel', e => { if (e.deltaY < 0) { V.up++; V.phase = `up ${V.up}`; } else if (e.deltaY > 0) { V.down++; V.phase = `down ${V.down}`; } }, { capture: true, passive: true });
   const tick = () => {
     if (!V.on) return;
@@ -114,6 +118,10 @@ function startVeil() {
       }
       V.n++; V.onBlock += blocks;
       if (veiled || op0) { V.hit++; V.frames.push({ i: V.n, t: Math.round(performance.now()), phase: V.phase, veiled, op0 }); }
+      if (leakAt(s, x)) V.leakStart++;
+      const mc = new MessageChannel();
+      mc.port1.onmessage = () => { if (leakAt(s, x)) V.leakDrawn++; };
+      mc.port2.postMessage(0);
     }
     V.raf = requestAnimationFrame(tick);
   };
@@ -125,7 +133,7 @@ function stopVeil() {
   const V = window.__veilProbe;
   V.on = false;
   cancelAnimationFrame(V.raf);
-  return { n: V.n, hit: V.hit, onBlock: V.onBlock, frames: V.frames, up: V.up, down: V.down };
+  return { n: V.n, hit: V.hit, onBlock: V.onBlock, frames: V.frames, up: V.up, down: V.down, leakStart: V.leakStart, leakDrawn: V.leakDrawn };
 }
 // A scrollTop write to the middle of the streamed answer (the last turn), then the test for 30
 // frames (at most 300 frames: n counts only frames with the scroller and an answer column).
@@ -133,7 +141,7 @@ async function jumpMid() {
   const s = [...document.querySelectorAll('.thread-scroll-container')].find(x => x.clientHeight > 0);
   const t = [...s.querySelectorAll('[data-turn-key]')].at(-1), V = window.__veilProbe;
   const sr = s.getBoundingClientRect(), tr = t.getBoundingClientRect();
-  Object.assign(V, { on: true, phase: 'mid', n: 0, hit: 0, onBlock: 0, frames: [] });
+  Object.assign(V, { on: true, phase: 'mid', n: 0, hit: 0, onBlock: 0, frames: [], leakStart: 0, leakDrawn: 0 });
   const from = s.scrollTop;
   V.raf = requestAnimationFrame(V.tick);
   s.scrollTop = Math.round(s.scrollTop + tr.top - sr.top + tr.height / 2 - s.clientHeight / 2);
@@ -155,7 +163,7 @@ export async function veilProbe(page, env, summary) {
       const w = await page.evaluate(() => window.__veilStop());
       const m = await page.evaluate(jumpMid);
       summary.veilProbe = { wheel: w, mid: m };
-      const fmt = (r, what) => `${what}: frames sampled ${r.n} (point hits on an answer block ${r.onBlock}), frames with a tested point on a veiled or opacity-0 block ${r.hit}, longest consecutive run ${runs(r.frames)}, by step ${JSON.stringify(byPhase(r.frames))}, veiled/op0 hits ${r.frames.reduce((a, f) => a + f.veiled, 0)}/${r.frames.reduce((a, f) => a + f.op0, 0)}`;
+      const fmt = (r, what) => `${what}: frames sampled ${r.n} (point hits on an answer block ${r.onBlock}), frames with a tested point on a veiled or opacity-0 block ${r.hit}, longest consecutive run ${runs(r.frames)}, by step ${JSON.stringify(byPhase(r.frames))}, veiled/op0 hits ${r.frames.reduce((a, f) => a + f.veiled, 0)}/${r.frames.reduce((a, f) => a + f.op0, 0)}; frames with a rendered block at opacity 0 under a point ${r.leakStart} at the frame's start, ${r.leakDrawn} after drawing`;
       return [fmt(w, `veil probe, wheel phase (${w.up} wheel events up, ${w.down} down)`), fmt(m, `veil probe, scrollTop write to the streamed answer's middle (${m.from} → ${m.to})`)];
     },
   };
