@@ -21,7 +21,7 @@ run_file, out = Path(sys.argv[1]), Path(sys.argv[2])
 picks = [(a, int(b)) for a, b in (x.split(':') for x in (sys.argv[3:] or ['math9:1', 'math12:5']))]
 run = json.loads(run_file.read_text())
 witnesses = [
-    next(j for j in run['jumps'] if j['case'] == case and j['from'] == 'top' and j['to'] == to)
+    next(j for j in run['jumps'] if j['case'] == case and j['from'] in ('top', 'top-unpinned') and j['to'] == to)
     for case, to in picks
 ]
 assert all(j.get('recording') for j in witnesses), 'record with RECORD=1 RECORD_ALL=1'

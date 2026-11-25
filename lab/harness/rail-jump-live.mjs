@@ -2,8 +2,20 @@
 // EXT=/snap-readable/dev/butter loads exactly that extension; EXT= is the native control.
 // LAB_ID=2 FIXTURES=math9,math12 OUT=<numeric-results.json> LABEL=head SMOOTHER=off
 // RECORD=1 records first failing examples via x11grab (private MP4s in /tmp).
-// Exit 1: a failed or visibly detoured jump, or, with Butter's `cv` setting on, the chat's scroll
-// anchoring on at a wheel unpin's check (`anchoringOn`). Exit 2: setup error.
+// With the extension it turns the rail on (Experimental, off on a new install) and puts the stored
+// options back as found. Each jump starts from a named start state (rail-jump-start.mjs):
+// `top-unpinned`, `end-pinned` (`top` and `bottom` are their aliases), `previous` (where the last jump
+// ended) or a question's index. Per fixture, after loading earlier history, a control writes
+// scrollTop to question 0 with the end pin set and no rail jump: `REPORT control <fixture> pulled|held`.
+// ONLY=<json steps> replaces the sequence: [{"from":"end-pinned","to":0}, ...]; a negative `to` counts
+// from the last question; `"reload": true` runs the step right after the reload, before earlier
+// history loads. HOLD_MS (3000) is how long a top start must hold.
+// Verdict lines: `PASS jump <fixture> <start>→<to>`, `FAIL jump ...: <why>` (a failed or visibly
+// detoured jump), `FAIL anchoring` (with Butter's `cv` setting on, the chat's scroll anchoring on at a
+// wheel unpin's check), and `FAIL control` when no fixture's control was pulled (the run could not
+// see the end pull). A fixture whose control held only gets a REPORT: its end-pinned PASS lines are
+// not evidence there. Exit 1 on any FAIL; 2 on a setup error, including a start that will not hold
+// (`SETUP-ERROR jump ...`; the run goes on without that jump), which takes precedence.
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -12,16 +24,33 @@ import { spawn, execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
 import { installScrollProbe } from './rail-jump-scroll-probe.mjs';
 import { installProbe, classify } from './rail-jump-live-page.mjs';
+import { STATES, startName, setStart, control, endWriters } from './rail-jump-start.mjs';
 
 const fixtures = (process.env.FIXTURES || 'math9,math12').split(',');
 const label = process.env.LABEL || 'loaded';
+const ONLY = process.env.ONLY ? JSON.parse(process.env.ONLY) : null;
+for (const { from } of ONLY ?? []) if (!STATES.includes(startName(from)) && from !== 'previous' && !Number.isInteger(from)) {
+  console.error(`ONLY: unknown start ${JSON.stringify(from)} (${[...STATES, 'top', 'bottom', 'previous'].join(', ')} or a question index)`);
+  process.exit(2);
+}
 const borrowed = !!process.env.LAB_OWNER;
 const lab = borrowed ? { ...L.getLab(process.env.LAB_ID || 2), owner: process.env.LAB_OWNER }
   : L.acquire(process.env.LAB_ID || 'auto', { owner: `rail-jump-live-${process.pid}`, needsFixture: fixtures[0], wait: 1800, perf: true });
-const summary = { label, at: new Date().toISOString(), lab: lab.id, fixtures: [], jumps: [], guard: { enabled: true, sendAttempts: 0, blockedMutations: 0 }, cleanup: {}, unpinChecks: [] };
-let browser, context, page, ff, worker, previousSettings, cdp;
+const summary = { label, at: new Date().toISOString(), lab: lab.id, fixtures: [], jumps: [], controls: [], setupErrors: [], guard: { enabled: true, sendAttempts: 0, blockedMutations: 0 }, cleanup: {}, unpinChecks: [] };
+let browser, context, page, ff, worker, previousSettings, cdp, fails = 0;
 const worlds = new Map();
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+const verdict = (ok, check, why) => { if (!ok) fails++; console.log(ok ? `PASS ${check}` : `FAIL ${check}: ${why}`); };
+const HOLD_MS = Number(process.env.HOLD_MS ?? 3000);
+// The default sequence: one jump right after the reload (from the end; before earlier history has
+// loaded, a start at the top cannot hold: ChatGPT loads a page and moves the chat), then from both
+// start states to every question, then four from where the previous jump ended.
+const sequence = n => [
+  { from: 'end-pinned', to: 0, reload: true },
+  ...Array.from({ length: n }, (_, to) => ({ from: 'top-unpinned', to })),
+  ...Array.from({ length: n }, (_, to) => ({ from: 'end-pinned', to })),
+  { from: 'previous', to: 0 }, { from: 'previous', to: 1 }, { from: 'previous', to: -1 }, { from: 'previous', to: -2 },
+];
 // The per-frame evidence is tens of MB of raw capture: it stays local (notes/runs/README.md).
 const out = process.env.OUT || path.join(L.root(), 'captures/rail-jump-live', `${label}.json`);
 const recordings = new Set();
@@ -101,41 +130,44 @@ async function unpin() {
   const off = [before, check].map(anchoringOff);
   check.ok = off.includes(false) ? false : off[1];
   summary.unpinChecks.push(check);
-  if (check.ok === false) console.log(`UNPIN anchoring on with cv: ${JSON.stringify(check)}`);
+  if (check.ok === false) verdict(false, 'anchoring', `the chat's scroll anchoring is on with cv at a wheel unpin: ${JSON.stringify(check)}`);
 }
+const pinText = p => p == null ? 'null' : String(p);
 async function jump(name, from, to, phase) {
-  await prepare();
-  let calibration = null;
+  const tag = `${name} ${from}→${to}`;
+  const meta = await prepare();
+  if (!Number.isInteger(to) || to < 0 || to >= meta.questions) {
+    summary.setupErrors.push({ jump: tag, why: `no question ${to}` });
+    console.log(`SETUP-ERROR jump ${tag}: no question ${to} (${meta.questions} questions)`); return;
+  }
+  let calibration = null, start;
   if (!worker) {
     const original = await page.evaluate(() => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight).scrollTop);
     calibration = await page.evaluate(to => window.__railJumpLive.calibrate(to), to);
-    await page.evaluate(({ from, original }) => {
-      const s = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight);
-      s.scrollTop = from === 'previous' ? original : from === 'top' ? 0 : s.scrollHeight;
-    }, { from, original });
-    await page.waitForTimeout(700);
+    if (from === 'previous') {
+      await page.evaluate(original => { [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight).scrollTop = original; }, original);
+      await page.waitForTimeout(700);
+    }
   }
-  const file = await recordStart(summary.jumps.length + 1, phase);
   if (Number.isInteger(from)) {
     await unpin();
     await page.evaluate(from => window.__railJumpLive.calibrate(from), from);
     await page.evaluate(from => window.__railJumpLive.position(from), from);
     await page.waitForTimeout(700);
-  } else if (from !== 'previous') {
-    // ChatGPT can move during setup too. Do not label an actual top start as a bottom start.
-    let positioned = false;
-    for (let retry = 0; retry < 8; retry++) {
-      positioned = await page.evaluate(from => {
-        const s = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight);
-        const desired = from === 'top' ? 0 : s.scrollHeight - s.clientHeight;
-        if (Math.abs(s.scrollTop - desired) <= 2) return true;
-        s.scrollTop = desired; return false;
-      }, from);
-      if (positioned) break;
-      await page.waitForTimeout(250);
+    start = { state: `question-${from}`, ok: true, pin: await page.evaluate(() => window.__railJumpLive.pin()) };
+  } else if (from === 'previous') {
+    start = { state: 'previous', ok: true, pin: await page.evaluate(() => window.__railJumpLive.pin()) };
+  } else {
+    // ChatGPT can move or re-pin during setup: a start that will not hold is not a measured jump.
+    start = await setStart(page, from, { unpin, holdMs: HOLD_MS });
+    if (!start.ok) {
+      summary.setupErrors.push({ jump: tag, phase, start });
+      console.log(`SETUP-ERROR jump ${tag}: the ${from} start did not hold after ${start.attempts} attempts (${start.why}; pin ${pinText(start.pin)})`);
+      return;
     }
-    if (!positioned) throw Error('could not establish the requested starting edge');
   }
+  if (start.pin == null) console.log(`REPORT pin ${tag}: ChatGPT's end pin was unreadable at the start (null); the start is not checked against it`);
+  const file = await recordStart(summary.jumps.length + 1, phase);
   let traceEvents = [];
   const traceData = e => traceEvents.push(...e.value);
   if (process.env.TRACE === '1') {
@@ -164,17 +196,32 @@ async function jump(name, from, to, phase) {
     data.browserTrace = traceEvents.filter(e => /ScrollAnchor|ScrollAnimation|ScrollOffset|scroll animation|scroll offset animation|^NotifyAnimationFinished$|^SetScrollOffset$|^Type$|^Adjust$|^ComputeAdjustment$|^FindAnchor$/.test(e.name)).map(e => ({ name:e.name, pid:e.pid, tid:e.tid, t: origin == null ? null : (e.ts-origin)/1000, ph:e.ph, args:numeric(e.args) }));
   }
   if (worker && !data.events.some(e => e.type === 'rail-jump')) throw Error('click produced no dev rail trace; not a measured jump');
-  const result = { case: name, from, to, phase, calibration, ...classify(data), ...data };
+  const result = { case: name, from, to, phase, startState: start, calibration, ...classify(data), ...data, endWriters: endWriters(data.scrollCalls) };
   await recordStop(file, result);
   if (nativeEvidence && fs.existsSync(nativeEvidence) && worker) {
     const native = JSON.parse(fs.readFileSync(nativeEvidence));
-    const proof = native.jumps.find(j => j.case === name && j.frames.at(-1).targetIndex === result.frames.at(-1).targetIndex && j.from === from && j.to === to && j.phase === phase && Math.abs(j.start - result.start) <= 32 && ((!result.failed || (j.failed && j.failureReason === result.failureReason)) && (!result.detour || (j.detour && (!result.losses.length || j.losses.length) && (!result.excursions.length || j.excursions.length)))) && (j.failed || j.detour));
+    const proof = native.jumps.find(j => j.case === name && j.frames.at(-1).targetIndex === result.frames.at(-1).targetIndex && startName(j.from) === from && j.to === to && j.phase === phase && Math.abs(j.start - result.start) <= 32 && ((!result.failed || (j.failed && j.failureReason === result.failureReason)) && (!result.detour || (j.detour && (!result.losses.length || j.losses.length) && (!result.excursions.length || j.excursions.length)))) && (j.failed || j.detour));
     if (proof && result.class !== 'clean') { result.nativeAssertion = result.class; result.class = 'native'; result.nativeEvidence = nativeEvidence; }
   }
   summary.jumps.push(result);
   const why = result.class === 'clean' ? `samples=${result.samples}` : `positions=${JSON.stringify(result.changes.map(p => [p.t, Math.round(p.y)]))} targetTop=${result.targetTop} reversals=${result.reversals.length}`;
-  console.log(`${label} ${name} from=${from} to=${to} phase=${phase} class=${result.class} ${why}`);
+  console.log(`${label} ${name} from=${from} pin=${pinText(start.pin)} to=${to} phase=${phase} class=${result.class} ${why} pinAtClick=${pinText(result.pinAtStart)} pinAtEnd=${pinText(result.pinAtEnd)}`);
+  const last = result.frames.at(-1), end = Math.round(last.h - last.vh);
+  const writers = result.endWriters.length ? `; writes to the chat's end: ${JSON.stringify(result.endWriters)}` : '';
+  verdict(['clean', 'native'].includes(result.class), `jump ${tag}`, `${result.failed ? `failed (${result.failureReason})` : 'visibly detoured'}, ended at ${Math.round(result.final)} of end ${end}${writers}`);
+  if (result.class === 'native') console.log(`REPORT jump ${tag}: ${result.nativeAssertion} as without Butter (${result.nativeEvidence})`);
   fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, JSON.stringify(summary));
+}
+async function runControl(name) {
+  const c = { case: name, ...await control(page, { unpin }) };
+  summary.controls.push(c);
+  if (!c.ok) {
+    summary.setupErrors.push({ control: name, start: c.start });
+    console.log(`SETUP-ERROR control ${name}: the end-pinned start did not hold (${c.start.why}; pin ${pinText(c.start.pin)})`); return;
+  }
+  const how = c.pulled ? `pulled (back at the end at ${c.at} ms)` : c.at === 'never-left' ? 'held (never left the end region)' : 'held';
+  const note = c.pulled ? '' : `; ${name}'s end-pinned PASS lines are not evidence that a pull was prevented`;
+  console.log(`REPORT control ${name} ${how}: write ${c.write} with pin ${pinText(c.start.pin)}, pin after ${pinText(c.pinAtEnd)}; [ms, scrollTop, scrollHeight, vh] every 500 ms ${JSON.stringify(c.trace)}${note}`);
 }
 try {
   if (Object.hasOwn(process.env, 'EXT')) {
@@ -201,12 +248,15 @@ try {
   summary.build = worker ? await worker.evaluate(() => chrome.runtime.getManifest().version_name) : 'no extension';
   summary.chromium = browser.version();
   summary.instrumentation = { probes: process.env.PROBE !== '0', tracing: process.env.TRACE === '1', categories: process.env.TRACE === '1' ? process.env.TRACE_CATEGORIES || 'blink,blink.user_timing' : null };
-  if (process.env.SMOOTHER === 'off' || process.env.OPTS) {
-    if (!worker) throw Error('SMOOTHER needs the extension');
+  const custom = process.env.SMOOTHER === 'off' || process.env.OPTS;
+  if (custom && !worker) throw Error('SMOOTHER and OPTS need the extension');
+  if (worker) {
+    // The rail is off on a new install (Experimental): turn it on; OPTS or SMOOTHER set the rest.
     previousSettings = await worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter ?? null);
-    const opts = process.env.OPTS ? JSON.parse(process.env.OPTS) : { container: false, cv: false, throttle: false };
+    const opts = process.env.OPTS ? JSON.parse(process.env.OPTS) : custom ? { container: false, cv: false, throttle: false } : {};
+    const base = custom ? { container: true, cv: true, throttle: true } : {};
     summary.opts = opts;
-    await worker.evaluate(async opts => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, container: true, cv: true, throttle: true, rail: true, ...opts } } }); }, opts);
+    await worker.evaluate(async ({ opts, base }) => { const { butter = {} } = await chrome.storage.local.get('butter'); await chrome.storage.local.set({ butter: { ...butter, opts: { ...butter.opts, ...base, rail: true, ...opts } } }); }, { opts, base });
   }
   page = context.pages().find(p => p !== worker) || await context.newPage();
   for (const other of context.pages()) if (other !== page && other !== worker) await other.close();
@@ -216,44 +266,40 @@ try {
   await cdp.send('Runtime.enable');
   if (process.env.PROBE !== '0') await page.addInitScript(installScrollProbe, 'MAIN');
   await page.bringToFront();
+  // A negative `to` counts from the last of the `n` questions loaded.
+  const run = async (name, steps, n, phase) => { for (const [k, s] of steps.entries()) await jump(name, startName(s.from), s.to < 0 ? n + s.to : s.to, phase(k)); };
   for (const name of fixtures) {
     // Immediately after the reload exposes its rail (before loading all earlier history).
-    if (!process.env.ONLY) {
-      const cold = await open(name, 0, false);
-      await unpin(); await page.evaluate(() => window.__railJumpLive.edge('top'));
-      await jump(name, 'top', cold.questions - 1, 'reload');
-      await unpin(); await page.evaluate(() => window.__railJumpLive.edge('bottom'));
-      await jump(name, 'bottom', 0, 'reload');
-    }
+    const cold = (ONLY ?? sequence(0)).filter(s => s.reload);
+    if (cold.length) await run(name, cold, (await open(name, 0, false)).questions, () => 'reload');
     const meta = await open(name); summary.fixtures.push({ name, ...meta });
     if (meta.questions < 2 || (worker && !meta.trace)) throw Error('fixture/trace precondition failed');
     console.log(`FIXTURE ${name} ${JSON.stringify(meta)}`);
-    // From both extremes to every tick, including unmounted turns. The first trip follows reload/setup;
-    // later ones use the settled page. Extra adjacent and far transitions start at the previous target.
-    const n = meta.questions;
-    const steps = process.env.ONLY ? JSON.parse(process.env.ONLY) : [
-      ...Array.from({ length: n }, (_, to) => ({ from: 'top', to })),
-      ...Array.from({ length: n }, (_, to) => ({ from: 'bottom', to })),
-      { from: 'previous', to: 0 }, { from: 'previous', to: 1 },
-      { from: 'previous', to: n - 1 }, { from: 'previous', to: n - 2 },
-    ];
-    for (let k = 0; k < steps.length; k++) {
-      const { from, to } = steps[k];
-      if (from !== 'previous' && !Number.isInteger(from)) { await unpin(); await page.evaluate(from => window.__railJumpLive.edge(from), from); await page.waitForTimeout(700); }
-      await jump(name, from, to, k === 0 ? 'reload-setup' : 'settled');
-    }
+    await runControl(name);
+    // From both start states to every tick, including unmounted turns. The first trip follows
+    // setup; later ones use the settled page. Extra adjacent and far transitions start at the
+    // previous target.
+    await run(name, (ONLY ?? sequence(meta.questions)).filter(s => !s.reload), meta.questions, k => k === 0 ? 'reload-setup' : 'settled');
     await unpin(); // the last jump's pin ends too
   }
+  if (summary.controls.some(c => c.ok) && !summary.controls.some(c => c.pulled))
+    verdict(false, 'control', 'no fixture\'s control was pulled (no pin or no growth after the write): this run cannot see the end pull');
   summary.counts = Object.fromEntries(fixtures.map(name => [name, Object.fromEntries(['clean', 'detour', 'failed', 'native'].map(c => [c, summary.jumps.filter(j => j.case === name && j.class === c).length]))]));
-  summary.metrics = { jumps: summary.jumps.length, failed: summary.jumps.filter(j=>j.failed).length, visibleDetour: summary.jumps.filter(j=>j.detour).length, native: summary.jumps.filter(j=>j.class === 'native').length, gated: summary.jumps.filter(j=>!['clean','native'].includes(j.class)).length, postCompletion: summary.jumps.filter(j=>j.postCompletion.length).length, postCompletionEventMoves: summary.jumps.filter(j=>j.postEndMoves.length).length, afterLanding: summary.jumps.filter(j=>j.afterLanding.length).length, rawReversal: summary.jumps.filter(j=>j.reversals.length).length, rawReversalCount: summary.jumps.reduce((n,j)=>n+j.reversals.length,0), unpinChecks: summary.unpinChecks.length, anchoringOn: summary.unpinChecks.filter(c => c.ok === false).length, cvOff: summary.unpinChecks.filter(c => c.ok === null).length };
+  summary.metrics = { jumps: summary.jumps.length, failed: summary.jumps.filter(j=>j.failed).length, visibleDetour: summary.jumps.filter(j=>j.detour).length, native: summary.jumps.filter(j=>j.class === 'native').length, gated: summary.jumps.filter(j=>!['clean','native'].includes(j.class)).length, postCompletion: summary.jumps.filter(j=>j.postCompletion.length).length, postCompletionEventMoves: summary.jumps.filter(j=>j.postEndMoves.length).length, afterLanding: summary.jumps.filter(j=>j.afterLanding.length).length, rawReversal: summary.jumps.filter(j=>j.reversals.length).length, rawReversalCount: summary.jumps.reduce((n,j)=>n+j.reversals.length,0), unpinChecks: summary.unpinChecks.length, anchoringOn: summary.unpinChecks.filter(c => c.ok === false).length, cvOff: summary.unpinChecks.filter(c => c.ok === null).length,
+    starts: Object.fromEntries(['top-unpinned', 'end-pinned', 'previous'].map(s => [s, summary.jumps.filter(j => j.from === s).length])), pinUnread: summary.jumps.filter(j => j.startState.pin == null).length,
+    controls: summary.controls.length, controlsPulled: summary.controls.filter(c => c.pulled).length, setupErrors: summary.setupErrors.length, fails };
   console.log(`SUMMARY ${JSON.stringify(summary.metrics)}`);
-  process.exitCode = summary.jumps.some(j => !['clean','native'].includes(j.class)) || summary.metrics.anchoringOn ? 1 : 0;
+  process.exitCode = summary.setupErrors.length ? 2 : fails ? 1 : 0;
 } catch (error) {
   summary.error = error.message.replace(/https?:\/\/\S+/g, '<private-url>');
   console.error(`HARNESS ERROR: ${summary.error}`); process.exitCode = 2;
 } finally {
   if (ff) { ff.stdin.write('q'); await new Promise(resolve => ff.on('close', resolve)); }
-  if (previousSettings !== undefined && worker) await worker.evaluate(value => value == null ? chrome.storage.local.remove('butter') : chrome.storage.local.set({ butter: value }), previousSettings).catch(() => {});
+  if (previousSettings !== undefined && worker) {
+    const back = await worker.evaluate(async value => { await (value == null ? chrome.storage.local.remove('butter') : chrome.storage.local.set({ butter: value })); return (await chrome.storage.local.get('butter')).butter ?? null; }, previousSettings).catch(() => undefined);
+    summary.cleanup.optionsPutBack = JSON.stringify(back) === JSON.stringify(previousSettings);
+    console.log(`REPORT options put back: same as before ${summary.cleanup.optionsPutBack}`);
+  }
   await browser?.close().catch(() => {});
   if (!borrowed) {
     try { const restored = await L.restore(lab, { log: () => {} }); summary.cleanup.restored = restored.ok; }
