@@ -20,6 +20,9 @@
 //   (c) scrollIntoView({block: 'center'}) on another such block; for both, up to 90 frames: in
 //   view, veil, opacity, content rendered; (b) selectAllChildren(last turn): toString().length
 //   against the turn's innerText.length. The string never leaves the page; only its length does.
+//   U4_FINDS=<n> (default 1): after (a), n-1 later window.find calls, each on another held block at
+//   least 10 blocks from the ones used, picked again before each call, watched for 30 frames; (c)
+//   keeps at least 10 blocks from all of them.
 // veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
 // 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
 // and after its rendering update (leaks: { sampled, start, drawn }).
@@ -140,9 +143,9 @@ function installUx(cfg) {
   U.wheelStart = () => { U.wheelOn = true; const g = geom(); return { x: Math.round(g.x), y: Math.round(g.r.top + g.s.clientHeight / 2) }; };
   // u4
   const raf = () => new Promise(r => requestAnimationFrame(() => r()));
-  const watch = async (b, t0) => {
+  const watch = async (b, t0, frames = 90) => {
     const rows = [];
-    for (let n = 1; n <= 90; n++) {
+    for (let n = 1; n <= frames; n++) {
       await raf();
       const g = geom(), f = flags(b);
       rows.push({ n, t: q1(now() - t0), y: q1(g.s.scrollTop), top: q1(b.getBoundingClientRect().top - g.r.top), inView: inView(b, g), f, ok: !(f & 7) });
@@ -185,8 +188,26 @@ function installUx(cfg) {
       out.find = { block: a.i, len: str.length, found, callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), ...(await watch(a.b, t0)) };
       sel.removeAllRanges();
     } else out.find = { none: true };
+    const used = a ? [a.i] : [];
+    out.finds = [];
+    for (let k = 1; a && k < (cfg.u4Finds || 1); k++) {
+      await raf();
+      let b2 = null, s2 = null;
+      for (const [b, i] of held().list) { if (used.some(u => Math.abs(u - i) < 10)) continue; s2 = unique(b); if (s2) { b2 = { b, i }; break; } }
+      if (!b2) { out.finds.push({ k, none: true }); break; }
+      used.push(b2.i);
+      document.activeElement?.blur?.();
+      sel.removeAllRanges();
+      const g = geom(), y0 = g.s.scrollTop, f0 = flags(b2.b), t0 = now();
+      const found = window.find(s2, false, false, true, false, false, false);
+      const ms = q1(now() - t0), y1 = g.s.scrollTop;
+      const selIn = sel.rangeCount ? b2.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
+      const w = await watch(b2.b, t0, 30);
+      out.finds.push({ k, block: b2.i, len: s2.length, found, callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end });
+      sel.removeAllRanges();
+    }
     await raf();
-    const c = h.list.find(([b, i]) => (!a || Math.abs(i - a.i) >= 10) && b.hasAttribute('data-butter-unrendered'));
+    const c = h.list.find(([b, i]) => used.every(u => Math.abs(i - u) >= 10) && b.hasAttribute('data-butter-unrendered'));
     if (c) {
       const g = geom(), y0 = g.s.scrollTop, f0 = flags(c[0]), t0 = now();
       c[0].scrollIntoView({ block: 'center' });
@@ -309,13 +330,13 @@ function analyse(raw, drv, mode) {
 }
 
 const fmtBlank = b => `veil/opacity 0 ${b.veil.frames} (longest ${b.veil.longest.frames} frames, ${b.veil.longest.ms} ms), skipped ${b.skipped.frames} (longest ${b.skipped.longest.frames}, ${b.skipped.longest.ms} ms), either ${b.any.frames} (longest ${b.any.longest.frames}, ${b.any.longest.ms} ms${b.any.longest.from != null ? ` from ${b.any.longest.from}` : ''})`;
-const fr = r => (r ? `${r.n} (${r.t} ms)` : 'never in 90');
+const fr = (r, n = 90) => (r ? `${r.n} (${r.t} ms)` : `never in ${n}`);
 const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags before ${w.flagsBefore}, scrollTop ${w.y0} → ${w.yAfterCall} in the call; first frame in view ${fr(w.firstInView)} (top ${w.topFirstInView ?? '-'} px below the view's top), unveiled at opacity 1 and rendered ${fr(w.firstUnveiled)}, both ${fr(w.firstOk)}; after 90 frames scrollTop ${w.end.y}, top ${w.end.top} px, in view ${w.end.inView}, flags ${w.end.f}`);
 
 export async function uxProbe(page, env, summary, schedEnd) {
   const mode = (env.UX || '').split(',').filter(Boolean);
   if (!mode.length) return { finish: async () => [] };
-  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null });
+  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
   const task = drive(page, mode, env).catch(e => ({ error: String(e.message).slice(0, 200) }));
   return {
     async finish() {
@@ -340,6 +361,7 @@ export async function uxProbe(page, env, summary, schedEnd) {
       if (u) {
         lines.push(`${P} u4 held blocks in the last 30%: ${u.held.candidates} of ${u.held.blocks} blocks (veiled ones ${u.held.veiledAny})`);
         lines.push(`${P} u4 (a) window.find: ${u.find.none ? 'no unique string found' : `string of ${u.find.len} chars in ${fmtWatch(u.find)}; returned ${u.find.found} in ${u.find.callMs} ms, selection in the block ${u.find.selectionInBlock}`}`);
+        for (const x of u.finds ?? []) lines.push(`${P} u4 (a) window.find, later call ${x.k}: ${x.none ? 'no unique string in another held block' : `string of ${x.len} chars in block ${x.block}, flags before ${x.flagsBefore}, scrollTop ${x.y0} → ${x.yAfterCall} in the call; returned ${x.found} in ${x.callMs} ms, selection in the block ${x.selectionInBlock}; first frame in view ${fr(x.firstInView, 30)}, unveiled at opacity 1 and rendered ${fr(x.firstUnveiled, 30)}; after 30 frames scrollTop ${x.end.y}, in view ${x.end.inView}, flags ${x.end.f}`}`);
         lines.push(`${P} u4 (c) scrollIntoView: ${fmtWatch(u.intoView)}`);
         lines.push(`${P} u4 (b) selectAllChildren(last turn).toString().length ${u.select.selLen} (${u.select.selMs} ms), innerText.length ${u.select.innerLen} (${u.select.innerMs} ms; ${u.select.innerLen2} two frames later), equal ${u.select.equal}, textContent.length ${u.select.textLen}; veiled blocks before ${u.select.veiledBefore}, after ${u.select.veiledAfter}`);
       }
