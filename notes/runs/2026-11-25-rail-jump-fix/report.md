@@ -99,6 +99,7 @@ Each ended with `lab-restore` exit 0 (no extension, empty composer) and `lab-loc
 
 ## Files
 
-- `after.gif` (800 px, 5.0 s, 0.8 MB), made by `adhoc/after-gif.py` from the recording run.
+- `after.gif` (800 px, 5.0 s, 0.4 MB), made by `adhoc/after-gif.py` from the recording run with the chat text pixelated
+  in 20 px blocks, as in `before.gif`; all 60 frames were checked and no word of chat text can be read at full size.
 - `a1-*.log`, `a2-rec.log`, `b*.log`, `smoke/*.log`: scrubbed logs (URLs `<url>`, home `~`).
 - `adhoc/stream-jump-live.mjs` (the jump during a replay), `adhoc/rail-opt.mjs`, `adhoc/run.sh`.

@@ -232,7 +232,7 @@
   document.addEventListener(
     'pointerdown',
     (e) => {
-      if (boxOpen && ButterLeaveGesture.readers(e) && !e.composedPath().includes(ui.host))
+      if (boxOpen && ButterLeaveGesture.isReaderInput(e) && !e.composedPath().includes(ui.host))
         closeBox();
     },
     true,

@@ -2,7 +2,7 @@
 // (`ButterLeaveGesture`), for the seek preview (seek/preview-main.js) and the history thumb hold
 // (history/conversation-main.js). How ChatGPT decides that the reader left the chat's end is in the
 // isolated world's shared/leave-gesture.js; a file loads in one world only (test/seek-ui.test.mjs),
-// so `readers` here is the other copy of its own. test/seek-release-pin.test.mjs drives it against
+// so `isReaderInput` here is the other copy of its own. test/seek-release-pin.test.mjs drives it against
 // the fake of ChatGPT's end pin.
 (() => {
   const ButterLeaveGesture = {
@@ -14,7 +14,7 @@
     },
     // Whether event `e` is the reader's own input rather than one Butter dispatched (the rail's leave
     // gesture, from the isolated world, or the release's scroll event).
-    readers: (e) => e.isTrusted !== false,
+    isReaderInput: (e) => e.isTrusted !== false,
   };
 
   globalThis.ButterLeaveGesture = ButterLeaveGesture;

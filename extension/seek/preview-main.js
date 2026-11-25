@@ -598,7 +598,7 @@
   };
   const isScroller = (el) => el?.matches?.('.thread-scroll-container') && el.clientHeight > 0;
   function down(e) {
-    if (disabled() || !gesture.readers(e)) return; // the rail's leave gesture is no press
+    if (disabled() || !gesture.isReaderInput(e)) return; // the rail's leave gesture is no press
     if (e.type === 'pointerdown') lastPointerDown = e.timeStamp;
     else if (Math.abs(e.timeStamp - lastPointerDown) < 50) return; // mousedown after a handled pointerdown
     if (e.button === 0) held = true;
@@ -716,7 +716,7 @@
   addEventListener(
     'scroll',
     (e) => {
-      if (!gesture.readers(e)) return; // the release's own, or the rail's leave gesture
+      if (!gesture.isReaderInput(e)) return; // the release's own, or the rail's leave gesture
       const a = active || pendingCommit;
       if (!a && candidate && e.target === candidate.sc) {
         const r = act.scroll({
@@ -774,7 +774,7 @@
     true,
   );
   const up = (type) => (e) => {
-    if (!gesture.readers(e)) return;
+    if (!gesture.isReaderInput(e)) return;
     held = false;
     const r = act.up();
     if (r === 'reset' && candidate) {

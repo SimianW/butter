@@ -172,3 +172,18 @@ test('a glide from the chat end lands on its question as a smooth scroll and sta
     `the chat went to question 3 in ${passed.size} steps, not as a smooth scroll: ${r.tops.slice(0, 30)}`,
   );
 });
+
+// The glide's cutoff: a mounted question less than 1.5 viewports away. The chat's end is put 1638 px
+// (1.5 * CLIENT) below question 3's landing spot, plus `px`; the jump starts there, at the end.
+const atCutoff = async (px) => {
+  const end = TOPS[3] - TOP_INSET + CLIENT * 1.5 + px;
+  const r = await jump({ scrollHeight: end + CLIENT, go: (t) => t.jump.go(3) });
+  assert.equal(of(r, 'rail-jump')[0].leave, true, 'the jump showed the leave gesture');
+  shows(r, 3);
+  return of(r, 'rail-jump')[0].path;
+};
+
+test("the glide's cutoff is read before the leave gesture's 1 px step", async () => {
+  assert.equal(await atCutoff(-1), 'glide', 'control: 1 px inside the cutoff the jump glides');
+  assert.equal(await atCutoff(0), 'trip', 'exactly at the cutoff the jump takes the trip');
+});

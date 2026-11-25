@@ -27,9 +27,13 @@
   };
   // The rail's leave gesture (shared/leave-gesture.js) is a scrollbar press too, but not the reader's
   // (shared/leave-gesture-main.js).
-  const readers = (e) => window.ButterLeaveGesture.readers(e);
   const down = (e) => {
-    if (!readers(e) || olderOff() || e.button !== 0 || (e.pointerType && e.pointerType !== 'mouse'))
+    if (
+      !window.ButterLeaveGesture.isReaderInput(e) ||
+      olderOff() ||
+      e.button !== 0 ||
+      (e.pointerType && e.pointerType !== 'mouse')
+    )
       return;
     const s = e.target;
     if (!s?.matches?.('.thread-scroll-container') || s.scrollHeight <= s.clientHeight) return;
@@ -56,7 +60,11 @@
   };
   for (const type of ['pointerdown', 'mousedown']) window.addEventListener(type, down, true);
   for (const type of ['pointerup', 'mouseup', 'pointercancel'])
-    window.addEventListener(type, (e) => readers(e) && release(), true);
+    window.addEventListener(
+      type,
+      (e) => window.ButterLeaveGesture.isReaderInput(e) && release(),
+      true,
+    );
   window.addEventListener('blur', release); // Not capture: focusing the scrollbar blurs the composer.
   window.addEventListener(
     'mousemove',

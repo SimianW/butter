@@ -29,8 +29,8 @@ nothing was typed, Enter was never pressed, nothing was sent. Raw captures (MP4s
 3. Step 2, the recorded one: the harness's one-pixel wheel notch at the chat's end, then the edge write to the end. Stage
    1a found that this sets or keeps ChatGPT's end pin (`ao`, 3 of 3). Then a trusted click on the rail's first tick
    (question 0).
-4. The GIF is that click's recording: crop x 580, y 88, 1020×912 (the chat column and the rail), composer band masked, real
-   speed. It plays 9.5 s from 0.25 s before the click.
+4. The GIF is that click's recording: crop x 580, y 88, 1020×912 (the chat column and the rail), chat text pixelated, composer
+   band masked, real speed. It plays 9.5 s from 0.25 s before the click.
 
 The run repeated steps 1–2 (`ONLY` with four steps); both `bottom→0` jumps failed the same way. The GIF shows the first one
 (jump 2 of the run).
@@ -54,7 +54,7 @@ python3 -I notes/runs/2026-11-24-rail-jump-before/adhoc/before-gif.py <captures>
   notes/runs/2026-11-24-rail-jump-before/before.gif math12:bottom:0 0.22
 ```
 
-`adhoc/before-gif.py` keeps `rail-jump-gif.py`'s crop, its composer mask and its storyboards. It differs in three ways:
+`adhoc/before-gif.py` keeps `rail-jump-gif.py`'s crop, its composer mask and its storyboards. It differs in four ways:
 
 - It takes one witness `fixture:from:to`, so a jump from the bottom can be the witness.
 - It plays at real speed, cut to 9.5 s.
@@ -63,6 +63,8 @@ python3 -I notes/runs/2026-11-24-rail-jump-before/adhoc/before-gif.py <captures>
   onto the video's clock by 0.22 s. That offset was measured: ChatGPT's footer (shown only at the chat's end) reappears
   in the video at 2.567, 4.700 and 6.767 s. The probe first sampled the end at 2.347, 4.459 and 6.545 s, so video =
   probe + 0.22 s.
+- It pixelates the chat column above the band (x 0–960, y 0–700) in 20 px blocks, as `wheel-jump-gif.py` does; the
+  rail and its ticks (x 960–1020) stay sharp.
 
 `adhoc/rail-jump-gif.py` is the harness script with only the witness selection widened to `fixture:from:to`. It made the
 first, unlabelled version; it is kept for comparison.
@@ -96,9 +98,8 @@ follows what was shown.
 **Storyboards checked.** All 114 frames of the final GIF were viewed on 8 sheets. Three earlier builds of the GIF were
 each looked at too, and none was kept. Seen in the frames:
 
-- Fixture text: the end of the fixture's convex-optimization notes (formulas, Chinese and English headings), a user
-  bubble "test" and its reply "测试成功，消息已收到" ("test succeeded, message received"). The same kind of fixture text is in
-  the committed 11-16 rail GIFs.
+- Chat text: pixelated in 20 px blocks in every frame, so no word of it can be read at full size (the user bubble,
+  headings, formulas and the date line included); the blocks still show where the chat holds text and when it moves.
 - ChatGPT's footer line, the rail, and ChatGPT's grey placeholder bars for unmounted turns. These fill every frame while
   the chat is at question 0, and also while it is at the end between the pulls.
 - Chromium's own "Restore pages? Chromium didn't shut down correctly" bubble in the top right corner of every frame.
@@ -116,7 +117,7 @@ width=800
 height=715
 nb_frames=114
 duration=9.500000
-size=1103166
+size=785389
 ```
 
 PIL: `(800, 715)`, 114 frames, loop 0. 1,103,166 bytes (under 3 MB), 9.5 s (at most 10 s), 800 px wide, 12 fps. No

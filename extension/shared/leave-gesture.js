@@ -8,8 +8,8 @@
 // (measured on 2026-11-24, notes/runs/2026-11-24-rail-jump-gesture/report.md). The rail's jump
 // (rail/jump.js) shows it through here. A file loads in one world only (test/seek-ui.test.mjs), so
 // the seek preview's release, in the MAIN world, has its part in shared/leave-gesture-main.js,
-// which holds the other copy of `readers`. DOM events cross script worlds and expando properties
-// do not, so `readers(e)` is how both worlds tell the gesture (and any other event Butter
+// which holds the other copy of `isReaderInput`. DOM events cross script worlds and expando properties
+// do not, so `isReaderInput(e)` is how both worlds tell the gesture (and any other event Butter
 // dispatches) from the reader's own input. test/rail-jump-end-pin.test.mjs drives it against a
 // fake of ChatGPT's end pin.
 (() => {
@@ -61,7 +61,7 @@
       return true;
     },
     // Whether event `e` is the reader's own input rather than one Butter dispatched.
-    readers: (e) => e.isTrusted !== false,
+    isReaderInput: (e) => e.isTrusted !== false,
   };
 
   globalThis.ButterLeaveGesture = ButterLeaveGesture;

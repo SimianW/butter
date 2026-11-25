@@ -11,10 +11,12 @@
 // from the last question; `"reload": true` runs the step right after the reload, before earlier
 // history loads. HOLD_MS (3000) is how long a top start must hold.
 // Verdict lines: `PASS jump <fixture> <start>→<to>`, `FAIL jump ...: <why>` (a failed or visibly
-// detoured jump), `FAIL anchoring` (with Butter's `cv` setting on, the chat's scroll anchoring on at a
-// wheel unpin's check), and `FAIL control` when no fixture's control was pulled (the run could not
-// see the end pull). A fixture whose control held only gets a REPORT: its end-pinned PASS lines are
-// not evidence there. Exit 1 on any FAIL; 2 on a setup error, including a start that will not hold
+// detoured jump), `PASS anchoring (<n> wheel unpins with cv on)` or `FAIL anchoring ...` (with
+// Butter's `cv` setting on, the chat's scroll anchoring on at a wheel unpin's check, each such check
+// also a `REPORT anchoring on` line; no line when no check ran with `cv` on), and
+// `PASS control (<k> of <n> pulled)` or `FAIL control ...` when no fixture's control was pulled (the
+// run could not see the end pull). A fixture whose control held only gets a REPORT: its end-pinned
+// PASS lines are not evidence there. Exit 1 on any FAIL; 2 on a setup error, including a start that will not hold
 // (`SETUP-ERROR jump ...`; the run goes on without that jump), which takes precedence.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -130,7 +132,7 @@ async function unpin() {
   const off = [before, check].map(anchoringOff);
   check.ok = off.includes(false) ? false : off[1];
   summary.unpinChecks.push(check);
-  if (check.ok === false) verdict(false, 'anchoring', `the chat's scroll anchoring is on with cv at a wheel unpin: ${JSON.stringify(check)}`);
+  if (check.ok === false) console.log(`REPORT anchoring on with cv at a wheel unpin: ${JSON.stringify(check)}`);
 }
 const pinText = p => p == null ? 'null' : String(p);
 async function jump(name, from, to, phase) {
@@ -282,8 +284,10 @@ try {
     await run(name, (ONLY ?? sequence(meta.questions)).filter(s => !s.reload), meta.questions, k => k === 0 ? 'reload-setup' : 'settled');
     await unpin(); // the last jump's pin ends too
   }
-  if (summary.controls.some(c => c.ok) && !summary.controls.some(c => c.pulled))
-    verdict(false, 'control', 'no fixture\'s control was pulled (no pin or no growth after the write): this run cannot see the end pull');
+  const cvChecks = summary.unpinChecks.filter(c => c.ok !== null), anchoringOn = cvChecks.filter(c => c.ok === false).length;
+  if (cvChecks.length) verdict(!anchoringOn, `anchoring (${cvChecks.length} wheel unpins with cv on)`, `the chat's scroll anchoring was on at ${anchoringOn} of them (REPORT anchoring lines)`);
+  const ran = summary.controls.filter(c => c.ok), pulled = summary.controls.filter(c => c.pulled);
+  if (ran.length) verdict(pulled.length > 0, `control (${pulled.length} of ${ran.length} pulled)`, 'no fixture\'s control was pulled (no pin or no growth after the write): this run cannot see the end pull');
   summary.counts = Object.fromEntries(fixtures.map(name => [name, Object.fromEntries(['clean', 'detour', 'failed', 'native'].map(c => [c, summary.jumps.filter(j => j.case === name && j.class === c).length]))]));
   summary.metrics = { jumps: summary.jumps.length, failed: summary.jumps.filter(j=>j.failed).length, visibleDetour: summary.jumps.filter(j=>j.detour).length, native: summary.jumps.filter(j=>j.class === 'native').length, gated: summary.jumps.filter(j=>!['clean','native'].includes(j.class)).length, postCompletion: summary.jumps.filter(j=>j.postCompletion.length).length, postCompletionEventMoves: summary.jumps.filter(j=>j.postEndMoves.length).length, afterLanding: summary.jumps.filter(j=>j.afterLanding.length).length, rawReversal: summary.jumps.filter(j=>j.reversals.length).length, rawReversalCount: summary.jumps.reduce((n,j)=>n+j.reversals.length,0), unpinChecks: summary.unpinChecks.length, anchoringOn: summary.unpinChecks.filter(c => c.ok === false).length, cvOff: summary.unpinChecks.filter(c => c.ok === null).length,
     starts: Object.fromEntries(['top-unpinned', 'end-pinned', 'previous'].map(s => [s, summary.jumps.filter(j => j.from === s).length])), pinUnread: summary.jumps.filter(j => j.startState.pin == null).length,
