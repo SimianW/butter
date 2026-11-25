@@ -8,20 +8,11 @@
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import {
-  BLOCK_PX,
-  build,
-  installSampler,
-  effectiveness,
-  stream,
-  frames,
-} from './helpers/veil-page.mjs';
+import { openChat, scrollTo, effectiveness, stream, frames } from './helpers/veil-page.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const read = (file) => readFileSync(`${root}extension/${file}`, 'utf8');
 const FRAMES_AFTER = 12; // frames sampled after each step, at least
 
 let browser;
@@ -32,34 +23,14 @@ after(() => browser?.close());
 
 /* global document, window, getComputedStyle -- runs in the page */
 
-// In the page: moves the view so that `el`'s top is `offset` px below the view's top.
-function scrollTo({ selector, index, offset = 0 }) {
-  const sc = document.querySelector('.thread-scroll-container');
-  const all = [...document.querySelectorAll(selector)];
-  const el = all.at(index < 0 ? index : Math.min(index, all.length - 1));
-  sc.scrollTop += el.getBoundingClientRect().top - sc.getBoundingClientRect().top - offset;
-  return all.length;
-}
-
 async function scenario({ renderer, transition }) {
-  const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
+  const page = await openChat(browser, `${root}extension/`, {
+    turns: 2,
+    blocks: 40,
+    renderer,
+    transition,
+  });
   try {
-    await page.route('**/*', (route) =>
-      route.request().isNavigationRequest()
-        ? route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>veil</title>' })
-        : route.abort(),
-    );
-    await page.goto('https://butter.invalid/c/00000000-0000-0000-0000-000000000000');
-    await page.addStyleTag({ content: read('stream/containment.css') });
-    await page.addScriptTag({ content: read('stream/offscreen.js') });
-    await page.evaluate(build, { turns: 2, blocks: 40, renderer, transition, blockPx: BLOCK_PX });
-    await page.evaluate(installSampler);
-    // History blocks render once, and the flush marks them seen.
-    await page.waitForFunction(
-      () =>
-        document.querySelectorAll('[data-talvt-turn-state="complete"] p[data-butter-seen]')
-          .length === 80,
-    );
     const step = async (name, act, n = FRAMES_AFTER) => {
       await page.evaluate((s) => (window.veilStep = s), name);
       await act();

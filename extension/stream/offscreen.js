@@ -14,8 +14,8 @@
 // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
 // An answer block that starts being skipped before it ever rendered is veiled (data-butter-veil,
 // containment.css) until it renders: the veil comes off first thing when it stops being skipped,
-// at the flush that marks it seen, when its answer leaves in_progress (unless it is held), and
-// when cv goes off.
+// at the flush that marks it seen, when its answer leaves in_progress (unless it is held), when
+// cv goes off, and when it comes back into the page outside the veil's rules (see watch()).
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
@@ -26,6 +26,7 @@
   const KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
   const BLOCKS = `${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`;
   const TARGETS = `[data-turn-key], ${BLOCKS}`;
+  const BUSY = '[data-talvt-turn-state="in_progress"]'; // a turn whose answer is streaming
   // Marks are flushed in one batch per second: each flush is one style invalidation pass instead
   // of one per streamed block. The delay also lets Chrome record the sizes before we mark.
   const FLUSH_MS = 1000;
@@ -115,6 +116,12 @@
   });
   const watch = (el) => {
     if (el.hasAttribute('data-turn-key')) globalThis.butterNavTurn?.(el); // history rail's turn tracker (rail/turns.js)
+    // A block that comes into the page veiled, not held and outside a streaming turn left the veil's
+    // rules where no completion sweep saw it (its turn completed out of the document, or it moved),
+    // so it renders: unveil it before a hold brings it back under the rules on screen, which draws
+    // a frame before the state-change event that would unveil it.
+    if (el.hasAttribute(VEIL) && !el.hasAttribute('data-butter-unrendered') && !el.closest(BUSY))
+      unveil(el);
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {
@@ -132,8 +139,7 @@
       // unveil them all.
       if (r.type === 'attributes') {
         const t = r.target.closest?.('[data-turn-key]');
-        const busy = '[data-talvt-turn-state="in_progress"]';
-        if (t && !t.matches(busy) && !t.querySelector(busy)) {
+        if (t && !t.matches(BUSY) && !t.querySelector(BUSY)) {
           for (const el of queue)
             if (skipped.has(el) && t.contains(el))
               (queue.delete(el), waiting.add(el), rendered(el));

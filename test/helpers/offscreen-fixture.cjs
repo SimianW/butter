@@ -2,14 +2,19 @@
 // answer blocks, and drivers for what the browser and ChatGPT report to the marker: sizes
 // (ResizeObserver), content-visibility state changes, timers (the flush), completion of the answer
 // and the `cv` setting. `calls` logs the marker's effects in order (attribute writes, observe).
+// For the state paths (Stop, Regenerate, Edit, version switch, hidden chat, remount): elements
+// leave and come back (`detach`, `attach`, `leave`, `back`), the answer's blocks are replaced
+// (`replace`), the turn goes back to in_progress (`restart`), and with `{ frames: false }` no frame
+// runs until `frame()` (a hidden tab).
 const vm = require('node:vm');
 const fs = require('node:fs');
 
 const VEIL = 'data-butter-veil';
 
-function offscreenFixture({ blocks: count = 1 } = {}) {
+function offscreenFixture({ blocks: count = 1, frames = true } = {}) {
   const listeners = {},
     timers = [],
+    rafs = [],
     observed = new Set(),
     calls = [];
   let resized, mutated;
@@ -21,6 +26,7 @@ function offscreenFixture({ blocks: count = 1 } = {}) {
   };
   const el = (attrs = {}) => ({
     attrs: { ...attrs },
+    nodeType: 1,
     isConnected: true,
     firstElementChild: null,
     hasAttribute(n) {
@@ -41,15 +47,23 @@ function offscreenFixture({ blocks: count = 1 } = {}) {
     querySelector: () => null,
     querySelectorAll: () => [],
   });
-  // An answer block matches the marker's block selectors, which name the answer column.
-  const blocks = Array.from({ length: count }, () => ({
+  // An answer block matches the marker's block selectors, which name the answer column; its
+  // closest streaming turn is the turn while the answer is in_progress and the block is in it.
+  const block = () => ({
     ...el(),
     matches: (s) => s.includes('assistant-message'),
-  }));
+    closest(s) {
+      return this.isConnected && (s.includes('in_progress') ? streaming : s.includes('turn-key'))
+        ? turn
+        : null;
+    },
+  });
+  const blocks = Array.from({ length: count }, block);
   const turn = el({ 'data-turn-key': 'a' });
-  turn.matches = (s) => s.includes('in_progress') && streaming;
+  turn.matches = (s) => (s.includes('in_progress') ? streaming : s.includes('turn-key'));
   turn.contains = (x) => x === turn || blocks.includes(x);
   turn.querySelectorAll = (s) => select(blocks, s);
+  Object.defineProperty(turn, 'firstElementChild', { get: () => blocks[0] ?? null });
   const state = { ...el(), closest: () => turn };
   const root = {
     ...el(),
@@ -85,13 +99,19 @@ function offscreenFixture({ blocks: count = 1 } = {}) {
       observe() {}
     },
     setTimeout: (fn) => timers.push(fn),
-    requestAnimationFrame: (fn) => fn(),
+    requestAnimationFrame: (fn) => (frames ? fn() : rafs.push(fn)),
   };
   vm.createContext(context);
   vm.runInContext(
     fs.readFileSync(require.resolve('../../extension/stream/offscreen.js'), 'utf8'),
     context,
   );
+  const added = (nodes) => mutated([{ type: 'childList', target: root, addedNodes: nodes }]);
+  const attach = (...els) => {
+    for (const e of els) e.isConnected = true;
+    added(els);
+  };
+  const detach = (...els) => els.forEach((e) => (e.isConnected = false));
   return {
     block: blocks[0],
     blocks,
@@ -104,10 +124,32 @@ function offscreenFixture({ blocks: count = 1 } = {}) {
     size: (target, height) => resized([{ target, contentRect: { height } }]),
     cv: (target, skipped) => listeners.contentvisibilityautostatechange({ target, skipped }),
     timers: () => timers.splice(0).forEach((fn) => fn()),
-    complete: () => {
+    // The turn leaves in_progress. Not observed: the turn was out of the document then.
+    complete: ({ observed = true } = {}) => {
       streaming = false;
+      if (observed) mutated([{ type: 'attributes', target: state, addedNodes: [] }]);
+    },
+    // The turn goes back to in_progress (a regenerated answer streams into it).
+    restart: () => {
+      streaming = true;
       mutated([{ type: 'attributes', target: state, addedNodes: [] }]);
     },
+    detach,
+    attach,
+    // The whole turn leaves the document, and comes back as one inserted node.
+    leave: () => detach(turn, ...blocks),
+    back: () => {
+      for (const e of [turn, ...blocks]) e.isConnected = true;
+      added([turn]);
+    },
+    // ChatGPT removes the answer's blocks and inserts `n` new ones; returns them.
+    replace: (n) => {
+      detach(...blocks);
+      blocks.splice(0, blocks.length, ...Array.from({ length: n }, block));
+      added([...blocks]);
+      return [...blocks];
+    },
+    frame: () => rafs.splice(0).forEach((fn) => fn()),
     // The `cv` setting (Smoother streaming's off-screen skipping), off also when Butter is paused.
     setting: (on) => {
       off = !on;
