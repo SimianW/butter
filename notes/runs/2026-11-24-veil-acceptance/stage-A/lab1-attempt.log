@@ -1,0 +1,3 @@
+HARNESS ERROR: browserType.connectOverCDP: connect ECONNREFUSED 127.0.0.1:9222
+SUMMARY head-ats12-1: 0 FAILs
+exit=2 elapsed=35s since-lock=37s
