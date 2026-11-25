@@ -343,7 +343,7 @@ try {
     if (!hookOk) throw Object.assign(Error('replay hook not in the fetch chain; nothing pressed'), { setup: true });
     await page.evaluate(() => window.__rp.watch());
     await startLaf(page);
-    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0]);
+    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0], { display: lab.display });
     await page.keyboard.press('Enter');
     const samples = []; let stopSeen = null, t0 = Date.now(), lastY = null, drops = [];
     const total = schedule.at(-1)[0];
