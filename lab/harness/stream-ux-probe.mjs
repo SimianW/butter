@@ -23,11 +23,15 @@
 //   U4_FINDS=<n> (default 1): after (a), n-1 later window.find calls, each on another held block at
 //   least 10 blocks from the ones used, picked again before each call, watched for 30 frames; (c)
 //   keeps at least 10 blocks from all of them.
+//   U4_FINDBAR=1: the browser's find bar instead, on (a)'s block and string, typed as X input on
+//   the lab's display (stream-findbar-probe.mjs); no window.find, scrollIntoView or select-all.
 // veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
 // 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
 // and after its rendering update (leaks: { sampled, start, drawn }).
 // Settle rule (u1, u2): the first frame at least 100 ms after the write; its centre block is the
 // anchor whose rect top is then followed every frame (a new anchor when it disconnects).
+
+import { findbarDrive, fmtFindbar } from './stream-findbar-probe.mjs';
 
 const r1 = v => Math.round(v * 10) / 10;
 const pause = ms => new Promise(r => setTimeout(r, ms));
@@ -171,6 +175,13 @@ function installUx(cfg) {
     }
     return null;
   };
+  // u4's first block and string; also the find-bar mode's (stream-findbar-probe.mjs).
+  U.pickHeld = () => {
+    const h = held(), info = { blocks: h.n, candidates: h.list.length, veiledAny: h.veiledAny };
+    for (const [b, i] of h.list) { const str = unique(b); if (str) return { b, i, str, held: info }; }
+    return { held: info };
+  };
+  Object.assign(U, { flags, geom, inView });
   U.u4 = async () => {
     const out = {};
     document.activeElement?.blur?.();
@@ -246,7 +257,7 @@ async function waitFor(page, fn, ms) {
 }
 
 // The node side: u3's wheel notches and u4, concurrently with the harness's loop.
-async function drive(page, mode, env) {
+async function drive(page, mode, env, ctx) {
   const out = {};
   const limit = Number(env.UX_WAIT || 200000);
   if (mode.includes('u3')) {
@@ -263,7 +274,10 @@ async function drive(page, mode, env) {
     out.sent = sent;
   }
   if (!(await waitFor(page, () => window.__ux.sampled, limit))) return { ...out, error: 'sampling did not end' };
-  if (mode.includes('u4')) { await pause(500); out.u4 = await page.evaluate(() => window.__ux.u4()); }
+  if (mode.includes('u4')) {
+    await pause(500);
+    out.u4 = env.U4_FINDBAR === '1' ? { findbar: await findbarDrive(page, env, ctx.display) } : await page.evaluate(() => window.__ux.u4());
+  }
   return out;
 }
 
@@ -333,11 +347,12 @@ const fmtBlank = b => `veil/opacity 0 ${b.veil.frames} (longest ${b.veil.longest
 const fr = (r, n = 90) => (r ? `${r.n} (${r.t} ms)` : `never in ${n}`);
 const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags before ${w.flagsBefore}, scrollTop ${w.y0} → ${w.yAfterCall} in the call; first frame in view ${fr(w.firstInView)} (top ${w.topFirstInView ?? '-'} px below the view's top), unveiled at opacity 1 and rendered ${fr(w.firstUnveiled)}, both ${fr(w.firstOk)}; after 90 frames scrollTop ${w.end.y}, top ${w.end.top} px, in view ${w.end.inView}, flags ${w.end.f}`);
 
-export async function uxProbe(page, env, summary, schedEnd) {
+// ctx.display: the lab's X display, for U4_FINDBAR=1.
+export async function uxProbe(page, env, summary, schedEnd, ctx = {}) {
   const mode = (env.UX || '').split(',').filter(Boolean);
   if (!mode.length) return { finish: async () => [] };
   await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
-  const task = drive(page, mode, env).catch(e => ({ error: String(e.message).slice(0, 200) }));
+  const task = drive(page, mode, env, ctx).catch(e => ({ error: String(e.message).slice(0, 200) }));
   return {
     async finish() {
       const drv = await task;
@@ -358,7 +373,8 @@ export async function uxProbe(page, env, summary, schedEnd) {
         lines.push(`${P} u3 wheel: ${w.steps} notches from +${w.firstAt} to +${w.lastAt} ms (sent every ${w.sendGapMedian} ms median, max gap ${w.sendGapMax}, longest dispatch ${w.sendAckMax} ms), tracked ${w.tracked} of the first ${w.steps - 1} (lost ${w.lost}, none ${w.none}; the last, closed 150 ms after the last notch: dY ${w.lastStep?.dY}, doc ${w.lastStep?.doc}); scrollTop moved other than 100 px in ${w.offDelta} steps (sum of moves ${w.dYsum} px; first ${w.offDeltaList.map(x => `#${x.k}:${x.dY}`).join(' ') || '-'}); centre block moved > 4 px beyond the notch (visual) in ${w.visualOver4} (max ${w.maxVisual}; ${w.visualSizes.slice(0, 20).join(', ') || '-'}), in the document (doc) in ${w.docOver4} (max ${w.maxDoc}; ${w.docSizes.slice(0, 20).join(', ') || '-'})`);
       }
       const u = drv?.u4;
-      if (u) {
+      if (u?.findbar) lines.push(...fmtFindbar(P, u.findbar));
+      else if (u) {
         lines.push(`${P} u4 held blocks in the last 30%: ${u.held.candidates} of ${u.held.blocks} blocks (veiled ones ${u.held.veiledAny})`);
         lines.push(`${P} u4 (a) window.find: ${u.find.none ? 'no unique string found' : `string of ${u.find.len} chars in ${fmtWatch(u.find)}; returned ${u.find.found} in ${u.find.callMs} ms, selection in the block ${u.find.selectionInBlock}`}`);
         for (const x of u.finds ?? []) lines.push(`${P} u4 (a) window.find, later call ${x.k}: ${x.none ? 'no unique string in another held block' : `string of ${x.len} chars in block ${x.block}, flags before ${x.flagsBefore}, scrollTop ${x.y0} → ${x.yAfterCall} in the call; returned ${x.found} in ${x.callMs} ms, selection in the block ${x.selectionInBlock}; first frame in view ${fr(x.firstInView, 30)}, unveiled at opacity 1 and rendered ${fr(x.firstUnveiled, 30)}; after 30 frames scrollTop ${x.end.y}, in view ${x.end.inView}, flags ${x.end.f}`}`);
