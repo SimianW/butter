@@ -1,0 +1,18 @@
+{"run": 1, "build": "no-veil", "clear": 62, "S": [9.8, 3], "L": [9.1, 3], "PP": 5.7, "P": 6.1, "sum": 30.7}
+{"run": 1, "build": "veil-before", "clear": 67.4, "S": [11.3, 6], "L": [15.1, 6], "PP": 9, "P": 10.2, "sum": 45.6}
+{"run": 1, "build": "veil-fixed", "clear": 65.1, "S": [11.1, 6], "L": [9.2, 3], "PP": 8, "P": 10.4, "sum": 38.7}
+{"run": 2, "build": "no-veil", "clear": 67.7, "S": [10, 3], "L": [9.2, 3], "PP": 6, "P": 6.6, "sum": 31.8}
+{"run": 2, "build": "veil-before", "clear": 70.6, "S": [10.5, 6], "L": [12.8, 6], "PP": 8.2, "P": 9.7, "sum": 41.2}
+{"run": 2, "build": "veil-fixed", "clear": 67.3, "S": [10.7, 6], "L": [9.4, 3], "PP": 7.8, "P": 9.8, "sum": 37.7}
+{"run": 3, "build": "no-veil", "clear": 52.9, "S": [9.9, 3], "L": [9.3, 3], "PP": 5.9, "P": 6.7, "sum": 31.8}
+{"run": 3, "build": "veil-before", "clear": 69.8, "S": [10.3, 6], "L": [13.4, 6], "PP": 8.3, "P": 9.8, "sum": 41.8}
+{"run": 3, "build": "veil-fixed", "clear": 67.7, "S": [10.6, 6], "L": [9.1, 3], "PP": 7.8, "P": 9.7, "sum": 37.2}
+{"run": 4, "build": "no-veil", "clear": 65.9, "S": [9.7, 3], "L": [8.8, 3], "PP": 5.9, "P": 6.1, "sum": 30.5}
+{"run": 4, "build": "veil-before", "clear": 70.1, "S": [10.2, 6], "L": [12.9, 6], "PP": 8.3, "P": 9.3, "sum": 40.7}
+{"run": 4, "build": "veil-fixed", "clear": 68.6, "S": [10.3, 6], "L": [8.9, 3], "PP": 7.7, "P": 9.8, "sum": 36.7}
+{"run": 5, "build": "no-veil", "clear": 68.3, "S": [9.6, 3], "L": [9.1, 3], "PP": 5.9, "P": 6.3, "sum": 30.9}
+{"run": 5, "build": "veil-before", "clear": 55.4, "S": [10.5, 6], "L": [13.4, 6], "PP": 8.4, "P": 10.3, "sum": 42.6}
+{"run": 5, "build": "veil-fixed", "clear": 68.4, "S": [10.4, 6], "L": [8.9, 3], "PP": 7.8, "P": 9.7, "sum": 36.8}
+noveil: write -> clear ms 62, 67.7, 52.9, 65.9, 68.3 (median 65.9)
+alt: write -> clear ms 67.4, 70.6, 69.8, 70.1, 55.4 (median 69.8)
+real: write -> clear ms 65.1, 67.3, 67.7, 68.6, 68.4 (median 67.7)
