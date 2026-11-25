@@ -6,8 +6,9 @@
 
 // Opens the synthetic chat in a new page of `browser`, with Butter's containment stylesheet and
 // marker from `extension` (a directory path ending in /), the sampler running, and the history
-// blocks marked seen. `opts` go to build().
-export async function openChat(browser, extension, opts) {
+// blocks marked seen. `opts` go to build(). `sources` ({ css, js }) replace the stylesheet and the
+// marker read from `extension` (test/helpers/veil-variants.mjs).
+export async function openChat(browser, extension, opts, sources = {}) {
   const { readFileSync } = await import('node:fs');
   const read = (file) => readFileSync(`${extension}${file}`, 'utf8');
   const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
@@ -17,8 +18,8 @@ export async function openChat(browser, extension, opts) {
       : route.abort(),
   );
   await page.goto('https://butter.invalid/c/00000000-0000-0000-0000-000000000000');
-  await page.addStyleTag({ content: read('stream/containment.css') });
-  await page.addScriptTag({ content: read('stream/offscreen.js') });
+  await page.addStyleTag({ content: sources.css ?? read('stream/containment.css') });
+  await page.addScriptTag({ content: sources.js ?? read('stream/offscreen.js') });
   await page.evaluate(build, { blockPx: BLOCK_PX, ...opts });
   await page.evaluate(installSampler);
   const history = opts.turns * opts.blocks;
@@ -37,7 +38,9 @@ export const BLOCK_PX = 40;
 
 // In the page: completed history turns (classic answers, `blocks` each) and one empty answer that
 // is `in_progress`, in the given renderer. The answer starts with a wide block and a table frame,
-// which are never skipped and so never veiled.
+// which are never skipped and so never veiled. An <hr> is styled as on chatgpt.com (Tailwind's
+// preflight): `height: 0` in a border box, so its content box stays 0 px even when skipped and the
+// marker never queues it (notes/runs/2026-11-24-veil-unmarked/report.md).
 export function build({ turns, blocks, renderer, transition, blockPx }) {
   const p = (i) => `<p>Block ${i}: <span class="katex"><span>x</span></span> and some prose.</p>`;
   const answer = (n) => Array.from({ length: n }, (_, i) => p(i)).join('');
@@ -61,6 +64,7 @@ export function build({ turns, blocks, renderer, transition, blockPx }) {
   const fixed = `<div data-wide-block><span>wide</span></div><div class="TableFrame-x"><span>table</span></div>`;
   document.body.innerHTML = `<style>
       body { margin: 0 } p { margin: 0; height: ${blockPx}px; line-height: 24px }
+      hr { box-sizing: border-box; height: 0; border: 0 solid; border-top-width: 1px; margin: 24px 0 }
       #chat { height: 700px }
       .thread-scroll-container { height: 700px; overflow: auto; width: 768px }
       ${transition ? '[data-markdown-text-style] *, [data-turn-key] { transition: opacity 0.4s }' : ''}
@@ -72,12 +76,19 @@ export function build({ turns, blocks, renderer, transition, blockPx }) {
 }
 
 // In the page: starts the sampler. On every frame, at its start (requestAnimationFrame), every
-// block that computes opacity 0 while its first child is rendered is a violation; so is any turn,
-// wide block, table frame or Dil source wrapper at opacity 0. After the frame is drawn (a task
-// queued from the frame), the blocks that were rendered at its start, and so drawn, are checked
-// again. A block that the browser decides to render only after the frame is drawn (its proximity
-// to the view is computed after paint) is not counted there: it renders in the next frame, whose
-// start sample checks it. Also counts opacity transitions, and remembers which blocks rendered.
+// block that computes opacity 0 while its content is rendered is a violation; so is any turn,
+// wide block, table frame or Dil source wrapper at opacity 0. A block's content is rendered when
+// its first element child is; a block without one (an <hr>) renders when it is not under
+// `content-visibility: auto`, or when its last state-change event said it is not skipped
+// (window.blockRendered). After the frame is drawn (a task queued from the frame), the blocks
+// that were rendered at its start, and so drawn, are checked again. A block that the browser
+// decides to render only after the frame is drawn (its proximity to the view is computed after
+// paint) is not counted there: it renders in the next frame, whose start sample checks it.
+// A block that was drawn once (rendered after a frame was drawn, or reported not skipped) and
+// computes opacity 0 later is veiled again, also a violation. A frame-start sample alone does not
+// make a block drawn: reading a new block before the browser first decides whether to skip it
+// lays it out without drawing it. Also counts opacity transitions, and remembers which blocks
+// rendered.
 export function installSampler() {
   const w = window;
   w.veilStep = 'setup';
@@ -85,6 +96,12 @@ export function installSampler() {
   w.opacityTransitions = [];
   w.everRendered = new WeakSet();
   w.samples = 0;
+  const lastSkipped = new WeakMap(),
+    drawnOnce = new WeakSet();
+  const rendered = (w.blockRendered = (b) =>
+    b.firstElementChild
+      ? b.firstElementChild.checkVisibility({ contentVisibilityAuto: true })
+      : getComputedStyle(b).contentVisibility !== 'auto' || lastSkipped.get(b) !== true);
   const blocks = () =>
     document.querySelectorAll(
       '[data-markdown-text-style] > *, [data-markdown-text-style] [class*="DilResponseRoot"] > *',
@@ -93,15 +110,22 @@ export function installSampler() {
     document.querySelectorAll(
       '[data-turn-key], [data-wide-block], [class*="TableFrame-"], [data-dil-source-message-id]',
     );
-  const violation = (phase, kind) => w.violations.push({ step: w.veilStep, phase, kind });
+  const violation = (phase, kind, tag) =>
+    w.violations.push({ step: w.veilStep, phase, kind, ...(tag && { tag }) });
   const sample = (phase, list) => {
     w.samples++;
     const drawn = new Set();
     for (const b of list) {
-      if (!b.firstElementChild?.checkVisibility({ contentVisibilityAuto: true })) continue;
+      if (!rendered(b)) {
+        if (drawnOnce.has(b) && getComputedStyle(b).opacity === '0')
+          violation(phase, 'veiled again after it rendered', b.tagName);
+        continue;
+      }
       drawn.add(b);
       w.everRendered.add(b);
-      if (getComputedStyle(b).opacity === '0') violation(phase, 'rendered block at opacity 0');
+      if (phase === 'after drawing') drawnOnce.add(b);
+      if (getComputedStyle(b).opacity === '0')
+        violation(phase, 'rendered block at opacity 0', b.tagName);
     }
     for (const el of never())
       if (getComputedStyle(el).opacity === '0')
@@ -116,7 +140,10 @@ export function installSampler() {
   requestAnimationFrame(frame);
   document.addEventListener(
     'contentvisibilityautostatechange',
-    (e) => e.skipped || w.everRendered.add(e.target),
+    (e) => {
+      lastSkipped.set(e.target, e.skipped);
+      if (!e.skipped) (w.everRendered.add(e.target), drawnOnce.add(e.target));
+    },
     true,
   );
   document.addEventListener('transitionrun', (e) => {
@@ -137,10 +164,7 @@ export function effectiveness() {
   const underAuto = (b) =>
     b.closest('[data-talvt-turn-state="in_progress"]') || b.hasAttribute('data-butter-unrendered');
   const target = blocks.filter(
-    (b) =>
-      underAuto(b) &&
-      !window.everRendered.has(b) &&
-      !b.firstElementChild.checkVisibility({ contentVisibilityAuto: true }),
+    (b) => underAuto(b) && !window.everRendered.has(b) && !window.blockRendered(b),
   );
   const notZero = target.filter((b) => getComputedStyle(b).opacity !== '0').length;
   const entered = [];
@@ -159,17 +183,22 @@ export function effectiveness() {
   };
 }
 
-// In the page: appends `n` blocks to the in_progress answer, `perFrame` at a time.
-export async function stream({ n, perFrame }) {
+// In the page: appends `n` blocks to the in_progress answer, `perFrame` at a time; with `hrEvery`,
+// every `hrEvery`-th block is an <hr>.
+export async function stream({ n, perFrame, hrEvery = 0 }) {
   const column =
     document.querySelector('[data-talvt-turn-state="in_progress"] [class*="DilResponseRoot"]') ??
     document.querySelector('[data-talvt-turn-state="in_progress"] [data-markdown-text-style]');
   const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
   const start = column.children.length;
   for (let i = 0; i < n; i++) {
-    const p = document.createElement('p');
-    p.innerHTML = `Streamed ${start + i}: <span class="katex"><span>y</span></span> more.`;
-    column.append(p);
+    if (hrEvery && (start + i) % hrEvery === hrEvery - 1) {
+      column.append(document.createElement('hr'));
+    } else {
+      const p = document.createElement('p');
+      p.innerHTML = `Streamed ${start + i}: <span class="katex"><span>y</span></span> more.`;
+      column.append(p);
+    }
     if ((i + 1) % perFrame === 0) await frame();
   }
   await frame();

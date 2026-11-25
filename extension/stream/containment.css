@@ -82,8 +82,9 @@ html:not([data-butter-off~="cv"]) [data-markdown-text-style="assistant-message"]
    frame after stream/offscreen.js unveils it (data-butter-unveiled). The first selector also
    covers a veiled block whose answer completes: it renders in ChatGPT's completion task, before
    the marker unveils it. An attribute left on a block outside the veil's rules only turns its
-   transitions off. */
-html:not([data-butter-off~='cv']) [data-butter-veil],
+   transitions off. It holds with cv off too: a block whose veil the marker's cv-off sweep missed
+   would otherwise fade in as the opacity rule stops applying (stream-veil-hr-chromium.test.mjs). */
+[data-butter-veil],
 [data-butter-unveiled] {
   transition: none !important;
 }

@@ -86,6 +86,43 @@ test('at completion, veiled blocks that are not held are unveiled; held blocks s
   assert.ok(!f.veiled(unqueued), 'never queued');
 });
 
+// ChatGPT's <hr> separator (#172): `height: 0` survives size containment, so the marker's
+// ResizeObserver only ever reports a 0 px content box for it. It is never queued, never held and
+// never marked seen, and leaves the `auto` rules at completion with no state-change event.
+const hr = (f) => {
+  const [, el] = f.blocks;
+  f.cv(el, true); // streamed in below the fold
+  f.size(el, 0);
+  return el;
+};
+
+test('a skipped <hr> is veiled, never held, and unveiled at completion', () => {
+  const f = fixture({ blocks: 2 });
+  const [held] = f.blocks;
+  f.cv(held, true);
+  f.size(held, 120);
+  const el = hr(f);
+  f.timers(); // the flush: holds the paragraph, never sees the <hr>
+  assert.ok(f.veiled(el), 'veiled while streaming');
+  assert.ok(!f.unrendered(el) && !f.seen(el), 'never held, never seen');
+  f.complete();
+  assert.ok(!f.veiled(el), 'it renders at completion');
+  assert.ok(f.veiled(held), 'the held paragraph stays veiled');
+  f.size(el, 0);
+  f.timers();
+  assert.ok(!f.veiled(el) && !f.unrendered(el), 'nothing veils or holds it after completion');
+});
+
+test('an <hr> that rendered once is never veiled again', () => {
+  // The first prototype's trap: no mark ever records that the <hr> rendered.
+  const f = fixture({ blocks: 2 });
+  const el = hr(f);
+  f.cv(el, false); // scrolled to
+  f.timers();
+  f.cv(el, true); // scrolled away
+  assert.ok(!f.veiled(el), 'scrolled away after it rendered');
+});
+
 test('turning cv off unveils every block; back on, none is veiled from before', () => {
   const f = fixture({ blocks: 2 });
   const [held, streaming] = f.blocks;

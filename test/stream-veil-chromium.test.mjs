@@ -4,7 +4,10 @@
 // drawn. A sampler checks every block on every frame, at its start and after it is drawn, through
 // each step below and the frames after it. The veil must also work: every skipped, never-rendered
 // block under the `content-visibility: auto` rules computes opacity "0", and a reduced copy of
-// ChatGPT's paint-readiness walk enters no veiled block.
+// ChatGPT's paint-readiness walk enters no veiled block. The answer streams <hr> separators styled
+// as ChatGPT's, which the marker never queues and which leave the `auto` rules at completion with
+// no state-change event (#172); test/stream-veil-hr-chromium.test.mjs takes the veil's covers out
+// one at a time against them.
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -51,16 +54,24 @@ async function scenario({ renderer, transition }) {
     // The view on the answer's start: everything streamed after the first screen is below the fold.
     await page.evaluate(scrollTo, { selector: '#answer', index: 0 });
     await step('stream blocks below the fold', () =>
-      page.evaluate(stream, { n: 240, perFrame: 6 }),
+      page.evaluate(stream, { n: 240, perFrame: 6, hrEvery: 20 }),
     );
     await check('while streaming');
+    const hrs = await page.evaluate(
+      () => document.querySelectorAll('#answer hr[data-butter-veil]').length,
+    );
+    assert.ok(hrs >= 8, `few veiled <hr> blocks (${hrs})`);
     await step('scrollTop onto veiled blocks while streaming', () =>
       page.evaluate(scrollTo, { selector: veiled, index: 20, offset: 100 }),
     );
     await step('scrollTop back to the answer start while streaming', () =>
       page.evaluate(scrollTo, { selector: '#answer', index: 0 }),
     );
-    await step('stream more blocks', () => page.evaluate(stream, { n: 60, perFrame: 6 }), 2);
+    await step(
+      'stream more blocks',
+      () => page.evaluate(stream, { n: 60, perFrame: 6, hrEvery: 20 }),
+      2,
+    );
     // ChatGPT lays the answer out in the task that marks it complete, before observers run.
     await step('complete the answer', () =>
       page.evaluate(() => {
