@@ -20,6 +20,9 @@
 //   (c) scrollIntoView({block: 'center'}) on another such block; for both, up to 90 frames: in
 //   view, veil, opacity, content rendered; (b) selectAllChildren(last turn): toString().length
 //   against the turn's innerText.length. The string never leaves the page; only its length does.
+// veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
+// 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
+// and after its rendering update (leaks: { sampled, start, drawn }).
 // Settle rule (u1, u2): the first frame at least 100 ms after the write; its centre block is the
 // anchor whose rect top is then followed every frame (a new anchor when it disconnects).
 
@@ -36,7 +39,7 @@ function installUx(cfg) {
   const now = () => performance.now(), q1 = v => Math.round(v * 10) / 10;
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
   const lastTurn = () => { const t = sc()?.querySelectorAll('[data-turn-key]'); return t?.[t.length - 1] ?? null; };
-  const U = (window.__ux = { cfg, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [] });
+  const U = (window.__ux = { cfg, leaks: { sampled: 0, start: 0, drawn: 0 }, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [] });
   let list = [], idx = new Map();
   const other = new WeakSet(), evSkip = new WeakSet();
   const reindex = () => { const t = lastTurn(); list = t ? [...t.querySelectorAll(BLOCKS)] : []; idx = new Map(list.map((b, i) => [b, i])); };
@@ -58,6 +61,7 @@ function installUx(cfg) {
   const centre = g => { for (const k of [3, 2, 4, 1, 5, 0, 6]) { const p = point(g, k); if (p) return { ...p, k }; } return null; };
   const inView = (b, g) => { const br = b.getBoundingClientRect(); return br.bottom > g.r.top && br.top < g.r.bottom; };
   const num = n => { const h = document.documentElement; return h.hasAttribute(n) ? Number(h.getAttribute(n)) : null; };
+  const leakAny = () => { const g = geom(), c = window.__veilCheck; if (!g || !c) return false; for (let k = 0; k < 7; k++) { const p = point(g, k); if (p && c.leaking(p.b)) return true; } return false; };
   let anchor = null;
   const pickAnchor = (g, why) => { const c = centre(g); anchor = c?.b ?? null; U.anchors.push({ t: q1(now()), why, i: c?.i ?? null, k: c?.k ?? null, top: c ? q1(c.top) : null }); };
   const frame = () => {
@@ -73,9 +77,10 @@ function installUx(cfg) {
         const pts = [];
         for (let k = 0; k < 7; k++) { const p = point(g, k); pts.push(p ? [p.i, q1(p.top), flags(p.b)] : null); }
         U.frames.push([q1(t), q1(g.s.scrollTop), g.s.scrollHeight, num('data-butter-hydrate-pending'), num('data-butter-hydrated'), ip ? 1 : 0, anchor ? q1(anchor.getBoundingClientRect().top) : null, pts]);
+        if (window.__veilCheck) { U.leaks.sampled++; if (leakAny()) U.leaks.start++; }
         // After this frame's rendering update (what was painted): scrollTop and the anchor's top.
         const mc = new MessageChannel(), a0 = anchor;
-        mc.port1.onmessage = () => U.post.push([q1(t), q1(now()), q1(g.s.scrollTop), a0?.isConnected ? q1(a0.getBoundingClientRect().top) : null]);
+        mc.port1.onmessage = () => { U.post.push([q1(t), q1(now()), q1(g.s.scrollTop), a0?.isConnected ? q1(a0.getBoundingClientRect().top) : null]); if (leakAny()) U.leaks.drawn++; };
         mc.port2.postMessage(0);
       }
     } catch (e) { if (U.err.length < 5) U.err.push(String(e.message).slice(0, 120)); }
@@ -315,11 +320,11 @@ export async function uxProbe(page, env, summary, schedEnd) {
   return {
     async finish() {
       const drv = await task;
-      const raw = await page.evaluate(() => { const U = window.__ux; return { frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
+      const raw = await page.evaluate(() => { const U = window.__ux; return { leaks: U.leaks, frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
       const lines = [];
-      if (raw.gone == null) { summary.ux = { mode, raw: { err: raw.err, frames: raw.frames.length }, drv }; return [`ux: completion not seen (${raw.frames.length} frames, errors ${JSON.stringify(raw.err)}, drive ${JSON.stringify(drv?.error ?? null)})`]; }
+      if (raw.gone == null) { summary.ux = { mode, leaks: raw.leaks, raw: { err: raw.err, frames: raw.frames.length }, drv }; return [`ux: completion not seen (${raw.frames.length} frames, errors ${JSON.stringify(raw.err)}, drive ${JSON.stringify(drv?.error ?? null)})`]; }
       const a = analyse(raw, drv, mode);
-      summary.ux = { mode, ...a, u4: drv?.u4 ?? null, driveError: drv?.error ?? null };
+      summary.ux = { mode, ...a, leaks: raw.leaks, u4: drv?.u4 ?? null, driveError: drv?.error ?? null };
       const P = `ux ${mode.join('+')}`;
       lines.push(`${P}: completion (first frame without in_progress) ${a.goneAfterEnter} ms after Enter, last in_progress frame ${a.lastIpBeforeGone} ms before; ${a.frames} frames sampled from 1 s before to 16 s after, frame interval median ${a.frameMs.median} ms, max ${a.frameMs.max} ms; acts ${a.acts.map(x => `${x.kind} at +${x.rt} ms (scrollTop ${x.y0} → ${x.y1}, scrollHeight ${x.H}${x.info ? `, ${JSON.stringify(x.info)}` : ''})`).join('; ') || 'none'}${a.errors.length ? `; errors ${JSON.stringify(a.errors)}` : ''}${drv?.error ? `; drive ${drv.error}` : ''}`);
       lines.push(`${P} (ii) frames with a tested point on a veiled / skipped block, whole window: ${fmtBlank(a.blank.all)}; from the act on: ${fmtBlank(a.blank.afterAct)}; frames with no point on an answer block ${a.blank.noBlockFrames}; first such frames (ms: per point 0-7 flag bits, - none) ${a.firstBlank.map(f => `${f.rt}:${f.pts}`).join(' ') || 'none'}`);

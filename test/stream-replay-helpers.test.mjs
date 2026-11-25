@@ -87,7 +87,17 @@ test('traceWindow: the closing tick creates the trace file in a directory that d
 
 // A page whose evaluate runs the probe's in-page code in a vm context with a controlled
 // animation-frame queue. evaluate() runs frames until a returned promise settles (at most 1000).
-function fakePage({ column = true } = {}) {
+// A MessageChannel whose message arrives on the next turn of the event loop (Node's own would
+// keep the process alive once onmessage is set).
+class FakeChannel {
+  constructor() {
+    this.port1 = { onmessage: null };
+    this.port2 = { postMessage: () => setImmediate(() => this.port1.onmessage?.({ data: 0 })) };
+  }
+}
+
+// leak: every tested point is on a block that window.__veilCheck finds rendered at opacity 0.
+function fakePage({ column = true, leak = false } = {}) {
   let id = 0;
   let queue = [];
   const rect = { top: 0, bottom: 800, left: 0, right: 800, width: 800, height: 800 };
@@ -102,13 +112,19 @@ function fakePage({ column = true } = {}) {
   const document = {
     body: {},
     querySelectorAll: (q) => (q === '.thread-scroll-container' ? [sc] : column ? [col] : []),
-    elementFromPoint: () => null,
+    elementFromPoint: () => (leak ? block : null),
+  };
+  const block = {
+    parentElement: { matches: () => true },
+    matches: () => false,
+    hasAttribute: () => false,
   };
   const ctx = vm.createContext({
     document,
     performance: { now: () => 0 },
     addEventListener: () => {},
     getComputedStyle: () => ({ opacity: '1' }),
+    MessageChannel: FakeChannel,
     requestAnimationFrame: (cb) => {
       queue.push([++id, cb]);
       return id;
@@ -118,6 +134,7 @@ function fakePage({ column = true } = {}) {
     },
   });
   ctx.window = ctx;
+  ctx.__veilCheck = { leaking: (b) => b === block };
   const page = {
     frames: 0,
     frame() {
@@ -167,4 +184,18 @@ test('veil probe: without an answer column the jump to the middle gives up after
   await vp.finish();
   assert.equal(summary.veilProbe.mid.n, 0);
   assert.equal(page.frames, 300);
+});
+
+test("veil probe: a rendered block at opacity 0 under a point counts at the frame's start and after drawing", async () => {
+  const page = fakePage({ leak: true });
+  const summary = {};
+  const vp = await veilProbe(page, { VEILPROBE: '1' }, summary);
+  for (let i = 0; i < 4; i++) {
+    page.frame();
+    await new Promise((res) => setImmediate(res));
+  }
+  await vp.finish();
+  const w = summary.veilProbe.wheel;
+  assert.deepEqual([w.n, w.leakStart, w.leakDrawn], [4, 4, 4]);
+  assert.equal(summary.veilProbe.mid.leakStart, summary.veilProbe.mid.n);
 });
