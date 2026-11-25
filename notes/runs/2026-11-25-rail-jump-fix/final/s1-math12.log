@@ -1,0 +1,66 @@
+s1-math12 math12 from=end-pinned pin=true to=0 phase=reload class=clean samples=198 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+REPORT control math12 pulled (back at the end at 1927 ms): write 0 with pin true, pin after true; [ms, scrollTop, scrollHeight, vh] every 500 ms [[1054,0,348185,912],[2340,347409,348321,912],[2849,347409,348321,912],[3358,347409,348321,912],[3868,347409,348321,912],[4378,347409,348321,912],[4887,347409,348321,912],[5397,347409,348321,912],[5906,347409,348321,912]]
+s1-math12 math12 from=top-unpinned pin=false to=0 phase=reload-setup class=clean samples=145 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→0
+s1-math12 math12 from=top-unpinned pin=false to=1 phase=settled class=clean samples=163 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→1
+s1-math12 math12 from=top-unpinned pin=false to=2 phase=settled class=clean samples=216 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→2
+s1-math12 math12 from=top-unpinned pin=false to=3 phase=settled class=clean samples=186 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→3
+s1-math12 math12 from=top-unpinned pin=false to=4 phase=settled class=clean samples=165 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→4
+s1-math12 math12 from=top-unpinned pin=false to=5 phase=settled class=clean samples=214 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→5
+s1-math12 math12 from=top-unpinned pin=false to=6 phase=settled class=clean samples=211 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→6
+s1-math12 math12 from=top-unpinned pin=false to=7 phase=settled class=clean samples=215 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→7
+s1-math12 math12 from=top-unpinned pin=false to=8 phase=settled class=clean samples=211 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→8
+s1-math12 math12 from=top-unpinned pin=false to=9 phase=settled class=clean samples=213 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→9
+s1-math12 math12 from=top-unpinned pin=false to=10 phase=settled class=clean samples=174 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→10
+s1-math12 math12 from=top-unpinned pin=false to=11 phase=settled class=clean samples=206 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→11
+s1-math12 math12 from=end-pinned pin=true to=0 phase=settled class=clean samples=165 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+s1-math12 math12 from=end-pinned pin=true to=1 phase=settled class=clean samples=159 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→1
+s1-math12 math12 from=end-pinned pin=true to=2 phase=settled class=clean samples=160 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→2
+s1-math12 math12 from=end-pinned pin=true to=3 phase=settled class=clean samples=163 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→3
+s1-math12 math12 from=end-pinned pin=true to=4 phase=settled class=clean samples=171 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→4
+s1-math12 math12 from=end-pinned pin=true to=5 phase=settled class=clean samples=164 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→5
+s1-math12 math12 from=end-pinned pin=true to=6 phase=settled class=clean samples=148 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→6
+s1-math12 math12 from=end-pinned pin=true to=7 phase=settled class=clean samples=153 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→7
+s1-math12 math12 from=end-pinned pin=true to=8 phase=settled class=clean samples=146 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→8
+s1-math12 math12 from=end-pinned pin=true to=9 phase=settled class=clean samples=169 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→9
+s1-math12 math12 from=end-pinned pin=true to=10 phase=settled class=clean samples=179 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→10
+s1-math12 math12 from=end-pinned pin=true to=11 phase=settled class=clean samples=144 pinAtClick=true pinAtEnd=true
+PASS jump math12 end-pinned→11
+s1-math12 math12 from=previous pin=true to=0 phase=settled class=clean samples=171 pinAtClick=true pinAtEnd=false
+PASS jump math12 previous→0
+s1-math12 math12 from=previous pin=false to=1 phase=settled class=clean samples=162 pinAtClick=false pinAtEnd=false
+PASS jump math12 previous→1
+s1-math12 math12 from=previous pin=false to=11 phase=settled class=clean samples=171 pinAtClick=false pinAtEnd=false
+PASS jump math12 previous→11
+s1-math12 math12 from=previous pin=false to=10 phase=settled class=clean samples=178 pinAtClick=false pinAtEnd=false
+PASS jump math12 previous→10
+PASS anchoring (28 wheel unpins with cv on)
+PASS control (1 of 1 pulled)
+SUMMARY {"jumps":29,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":22,"rawReversalCount":46,"unpinChecks":28,"anchoringOn":0,"cvOff":0,"starts":{"top-unpinned":12,"end-pinned":13,"previous":4},"pinUnread":0,"controls":1,"controlsPulled":1,"setupErrors":0,"fails":0}
+REPORT options put back: same as before true
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-25-rail-jump-fix/final/s1-math12.json
+EXIT 0 (started 04:19:42 UTC, ended 04:25:42 UTC)

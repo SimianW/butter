@@ -45,6 +45,23 @@ the rail's first tick. The readout in the black band gives where the chat is and
   pulled there. The run's exit 1 is the harness's rule that a run whose control was never pulled
   cannot see the end pull. On 2026-11-24 the unfixed build also had 0 failed jumps on `math9`.
 
+## The final build (`de0819d`, after the review fixes)
+
+The runs above were made on `6696bce`. The code review then moved where `rail/jump.js` reads the
+glide cutoff and the trip's direction (before the gesture's step) and renamed the input predicate,
+so one full `math12` run and one seek-pin run were repeated on the dev build of `de0819d`
+(`0.1.0-alpha.22+dev.3`, `~/snap/chromium/common/rail-pin-171g/dev/butter`), lock `rail-pin-171g`,
+04:19–04:28 UTC:
+
+| Run | `PASS` | `FAIL` | Control | Exit | Log |
+|---|---:|---:|---|---:|---|
+| `rail-jump-live.mjs`, `math12`, default sequence | 29 `PASS jump`, `PASS control`, `PASS anchoring` | 0 | pulled at 1927 ms | 0 | [final/s1-math12.log](final/s1-math12.log) |
+| `seek-pin-live.mjs`, 6 releases and 1 write | 6 `PASS seek-pin` | 0 | pulled at 3367 ms | 0 | [final/s2-seek-pin.log](final/s2-seek-pin.log) |
+
+By the run's rail trace, 27 jumps were trips and 2 were glides (`top-unpinned`→0 and
+`end-pinned`→11), and neither glide showed the leave gesture. **No live jump glided with the leave
+gesture shown**: a glide from the pinned end away from it is covered by the unit test only.
+
 ## Seek release (`seek-pin-live.mjs`, `math12`, fixed build)
 
 12 releases, estimated destinations: 12 `PASS seek-pin`, 0 pulled, all 12 landed on the previewed
@@ -81,6 +98,7 @@ turned it on and put the stored options back afterwards. Stored-layout destinati
 ## Not established
 
 - Stories 14 and 16 on real ChatGPT (above).
+- A glide with the leave gesture shown, on real ChatGPT (above).
 - Stored-layout seek destinations; a bookmark jump, a click on the three dots and a keyboard jump on
   real ChatGPT (covered by the unit tests only).
 - What shrinks and grows near questions 0–2 of `math12`, and why `math9` has no such growth.
