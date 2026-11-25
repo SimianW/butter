@@ -1,6 +1,6 @@
 # The leave gesture on real ChatGPT (issue #171, stage 3) — 2026-11-25
 
-Lab 2, fixed dev build `0.1.0-alpha.22+dev.2` (`python3 scripts/package.py --dev` at `64d27d2`,
+Lab 2, fixed dev build `0.1.0-alpha.22+dev.2` (`python3 scripts/package.py --dev` at `6696bce`,
 unpacked to `~/snap/chromium/common/rail-pin-171d/dev/butter`; `extension/` unchanged since). The
 unfixed build is `e37e393`'s (`~/snap/chromium/common/rail-pin-171a/dev/butter`). Send guard on in
 every connection; nothing was sent. Raw captures stay in
@@ -18,7 +18,7 @@ no rail jump) was pulled to the chat's end, so the runs could see the bug. On th
 same harness fails `end-pinned`→0, 1 and 2 with ChatGPT's own writes to the end named in each line.
 The seek release, now sent through the shared module, held 12 of 12 with 2 of 2 controls pulled.
 
-| Before (`e37e393`) | After (`64d27d2`) |
+| Before (`e37e393`) | After (`6696bce`) |
 |---|---|
 | ![before](../2026-11-24-rail-jump-before/before.gif) | ![after](after.gif) |
 
