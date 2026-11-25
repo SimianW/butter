@@ -4,6 +4,33 @@
 // "in the page" are passed to page.evaluate and must not use anything from this module.
 /* global document, window, getComputedStyle, requestAnimationFrame, setTimeout -- in the page */
 
+// Opens the synthetic chat in a new page of `browser`, with Butter's containment stylesheet and
+// marker from `extension` (a directory path ending in /), the sampler running, and the history
+// blocks marked seen. `opts` go to build().
+export async function openChat(browser, extension, opts) {
+  const { readFileSync } = await import('node:fs');
+  const read = (file) => readFileSync(`${extension}${file}`, 'utf8');
+  const page = await browser.newPage({ viewport: { width: 1000, height: 800 } });
+  await page.route('**/*', (route) =>
+    route.request().isNavigationRequest()
+      ? route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>veil</title>' })
+      : route.abort(),
+  );
+  await page.goto('https://butter.invalid/c/00000000-0000-0000-0000-000000000000');
+  await page.addStyleTag({ content: read('stream/containment.css') });
+  await page.addScriptTag({ content: read('stream/offscreen.js') });
+  await page.evaluate(build, { blockPx: BLOCK_PX, ...opts });
+  await page.evaluate(installSampler);
+  const history = opts.turns * opts.blocks;
+  await page.waitForFunction(
+    (n) =>
+      document.querySelectorAll('[data-talvt-turn-state="complete"] p[data-butter-seen]').length ===
+      n,
+    history,
+  );
+  return page;
+}
+
 // The answer's blocks are kept in a column (`answerRoot`): the markdown root in the classic
 // renderer, the DilResponseRoot inside the Dil source wrapper in the Dil renderer.
 export const BLOCK_PX = 40;
@@ -146,6 +173,15 @@ export async function stream({ n, perFrame }) {
     if ((i + 1) % perFrame === 0) await frame();
   }
   await frame();
+}
+
+// In the page: moves the view so that `el`'s top is `offset` px below the view's top.
+export function scrollTo({ selector, index, offset = 0 }) {
+  const sc = document.querySelector('.thread-scroll-container');
+  const all = [...document.querySelectorAll(selector)];
+  const el = all.at(index < 0 ? index : Math.min(index, all.length - 1));
+  sc.scrollTop += el.getBoundingClientRect().top - sc.getBoundingClientRect().top - offset;
+  return all.length;
 }
 
 // In the page: waits `n` frames.
