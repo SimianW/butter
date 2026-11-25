@@ -91,7 +91,7 @@
     (document.documentElement?.getAttribute?.('data-butter-off') || '').split(/\s+/);
   const disabled = () => !!document.documentElement?.hasAttribute?.('data-butter-disabled');
   const cvOff = () => disabled() || offList().includes('cv');
-  // Records serve the seek preview and remount restore (cv); stored layouts serve only seek.
+  // Records serve the seek preview and remount restore (cv); stored ones load only with seek on.
   const needed = () => {
     const off = offList();
     return !disabled() && !(off.includes('seek') && off.includes('cv'));

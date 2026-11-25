@@ -32,7 +32,7 @@ const lab = heldLab(L, env);
 
 let browser, restoreOptions;
 try {
-  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT));
+  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT, { scrolling: true }));
   const n = await openFixture(L, lab, page, FIXTURE, !NATIVE);
   report(`${FIXTURE}: history loaded, ${n} entries`);
   for (const [i, f] of AT.entries()) {

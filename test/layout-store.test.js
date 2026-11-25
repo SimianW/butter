@@ -297,6 +297,23 @@ test('closed then reopened, the page loads saved layouts and writes new ones aga
   assert.ok(f.storage.worker.counters.reads > counts.reads, 'reopened: loaded');
 });
 
+// The plain user action: Smoother scrolling off, then on again, on a chat already open, with no
+// new conversation data and no new texts: the saved record is loaded again and prepare() uses it.
+test('reopened with no new data or texts, the saved record is back and prepare uses it', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
+  for (let i = 0; i < 20; i++) await new Promise(setImmediate);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1);
+  const prepared = f.api.prepare(f.sc, ['t']);
+  assert.equal(prepared.storedTurns, 1);
+  assert.equal(prepared.decisions[0].after.fromStorage, true);
+});
+
 test('merged prepare synchronously uses prefetched memory with no disk reads at drag time', async () => {
   const f = fixture();
   await f.api.setTexts(conv, texts);

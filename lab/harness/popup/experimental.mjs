@@ -24,6 +24,8 @@ export const experimentalCases = [
   ...both('34-LANG-exp-faults-saved', { saved: true, broken: ['scrolling', 'layout'], page: 'experimental' }),
   // The store build's tallest state: one fault on a main-page storage row (its two-line text).
   ...both('35-LANG-main-one-fault', { ...updated, broken: ['bookmarks'] }),
+  // A remembered layouts fault with Smoother scrolling off: the row says what it needs, not the fault.
+  ...both('36-LANG-exp-needs-fault', { ...updated, broken: ['layout'], page: 'experimental' }),
 ];
 
 // The approved mockup's panels (popup-rail-bookmarks-main.html, each a section.panel[id] whose
@@ -156,13 +158,16 @@ export async function checkExperimentalCard(page, config, state) {
   const needs = await page.evaluate(() => prefs.opts.layout && !prefs.opts.seek);
   const line = await page.locator('.row:has([data-switch="layout"]) .d').evaluateAll((list) => list.map((e) => ({ text: e.textContent, clear: !!e.querySelector('.lk'), status: e.querySelector('[role="status"]')?.textContent }))[0] ?? { text: '' });
   const hint = config.lang === 'en' ? 'Needs Smoother scrolling' : '需要先打开长对话滚动更顺';
-  if (needs && !config.broken) assert.deepEqual(line, { text: hint, clear: false, status: hint }, state);
+  if (needs) assert.deepEqual(line, { text: hint, clear: false, status: hint }, state);
+  if (needs) assert.equal(await page.locator('.row.bad:has([data-switch="layout"])').count(), 0, `${state}: a row that needs a switch is not broken`);
   else assert.ok(!/Needs Smoother|长对话滚动更顺/.test(line.text), `${state}: ${line.text}`);
 }
 
 // Live, from the main page with layouts on, Smoother scrolling off and 14 chats of layouts saved:
 // the Experimental page's layouts row says what it needs; switching Smoother scrolling on brings
-// back the saved line and Clear; Clear and Cancel work there, with focus moving as on the main page.
+// back the saved line and Clear; Clear and Cancel work there, with focus moving as on the main page;
+// switching Smoother scrolling off while Clear asks drops the question for the needs line, and it
+// does not come back with the switch.
 export async function checkLayoutsLive(page) {
   await page.locator('.exp-row').click();
   const line = () => page.locator('.row:has([data-switch="layout"]) .d').textContent();
@@ -175,6 +180,13 @@ export async function checkLayoutsLive(page) {
   await page.locator('[data-store="layouts"][data-clear="cancel"]').click();
   assert.equal(await page.locator('[data-store="layouts"][data-clear="ask"]').count(), 1);
   assert.equal(await page.evaluate(() => document.activeElement?.dataset.clear), 'ask');
+  await page.locator('[data-store="layouts"][data-clear="ask"]').click();
+  await page.locator('[data-switch="scrolling"]').click();
+  await page.waitForFunction(() => document.querySelector('.row:has([data-switch="layout"]) .d')?.textContent === 'Needs Smoother scrolling');
+  assert.equal(await page.locator('[data-store="layouts"]').count(), 0, 'the question is dropped');
+  await page.locator('[data-switch="scrolling"]').click();
+  await page.waitForFunction(() => /14 chats, about 3\.4 MB/.test(document.querySelector('.row:has([data-switch="layout"]) .d')?.textContent));
+  assert.equal(await page.locator('[data-store="layouts"][data-clear="confirm"]').count(), 0, 'the question does not come back');
 }
 
 // A state taller than the popup scrolls inside it (the dev build with one fault: 541 px of content

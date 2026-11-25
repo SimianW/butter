@@ -244,3 +244,74 @@ test('a layouts fault with layouts saved keeps Clear beside the fault text', asy
   g.go('experimental');
   assert.match(descriptions(g.html()).layout, /^Unavailable for now\.[^[]*$/);
 });
+
+// Switching off the switch a storage row needs while its question is open (#171 review L2): the
+// row shows what it needs, the question is dropped and does not come back with the switch.
+test('switching Smoother scrolling off while Clear asks drops the question for the needs line', async () => {
+  const f = await started(inUse, {
+    ...saved,
+    'butter-layout-clear': { conversations: 0, bytes: 0 },
+  });
+  f.go('experimental');
+  f.clear('layouts', 'ask');
+  assert.equal(ask(f.html(), 'layouts')[0], 'Clear 14 saved layouts?');
+  // Off, by the switch and by another popup's write (storage.onChanged), with the echo each way.
+  f.toggle('scrolling');
+  await tick();
+  f.changed({ butter: { newValue: f.saved.at(-1).butter } }, 'local');
+  await tick();
+  assert.equal(ask(f.html(), 'layouts'), undefined, 'the question is gone');
+  assert.equal(descriptions(f.html()).layout, 'Needs Smoother scrolling');
+  f.clear('layouts', 'confirm');
+  await tick();
+  assert.equal(f.sent.filter((m) => m.type === 'butter-layout-clear').length, 0, 'nothing cleared');
+  f.toggle('scrolling');
+  await tick();
+  f.changed({ butter: { newValue: f.saved.at(-1).butter } }, 'local');
+  await tick();
+  assert.equal(ask(f.html(), 'layouts'), undefined, 'the question does not come back');
+  assert.equal(descriptions(f.html()).layout, '14 chats, about 3.4 MB [Clear]');
+  // The same from another popup's write: the question is dropped there too.
+  f.clear('layouts', 'ask');
+  f.changed({ butter: { newValue: { layoutConsent: 'granted' } } }, 'local');
+  await tick();
+  assert.equal(ask(f.html(), 'layouts'), undefined);
+  assert.equal(descriptions(f.html()).layout, 'Needs Smoother scrolling');
+});
+
+// Bookmarks in the same sequence: with bookmarks saved, the row with the rail off still shows
+// what it holds and Clear (its saved line ranks above "Needs the question rail"), so its question
+// stays open and its Clear still clears.
+test('switching the question rail off while Bookmarks asks keeps the question: its saved line ranks first', async () => {
+  const f = await started(inUse, { ...saved, 'butter-bookmark-clear': { count: 0, bytes: 0 } });
+  f.clear('bookmarks', 'ask');
+  f.toggle('rail');
+  await tick();
+  f.changed({ butter: { newValue: f.saved.at(-1).butter } }, 'local');
+  await tick();
+  assert.equal(ask(f.html(), 'bookmarks')[0], 'Clear 12 bookmarks?');
+  f.clear('bookmarks', 'confirm');
+  await tick();
+  assert.equal(f.sent.filter((m) => m.type === 'butter-bookmark-clear').length, 1);
+});
+
+// A remembered layouts fault (session storage) cannot clear while Smoother scrolling is off,
+// since layouts then never report ok: the row says what it needs instead of the fault.
+test('a remembered layouts fault gives way to the needs line while Smoother scrolling is off', async () => {
+  const f = popup(saved);
+  f.finish(
+    { butter: { layoutConsent: 'granted' } },
+    { butterFailures: { layout: { layout: true } } },
+  );
+  await tick();
+  f.go('experimental');
+  assert.equal(descriptions(f.html()).layout, 'Needs Smoother scrolling');
+  assert.doesNotMatch(f.html(), /<label class="row bad" for="sw-layout">/);
+  f.changed({ butter: { newValue: inUse } }, 'local');
+  await tick();
+  assert.match(
+    descriptions(f.html()).layout,
+    /^Unavailable for now\./,
+    'with it on, the fault shows',
+  );
+});

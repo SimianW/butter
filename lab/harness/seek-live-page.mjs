@@ -18,17 +18,18 @@ export function heldLab(L, env) {
 }
 
 // Restarts the lab browser with exactly `ext` (empty: none), connects with the send guard on and
-// keeps one ChatGPT tab. With Butter it switches Smoother scrolling on for the run (it starts off):
-// call the returned `restoreOptions()` before closing the browser to put the stored settings back.
-export async function startLab(L, lab, env, ext) {
+// keeps one ChatGPT tab. It writes no settings unless `scrolling` is set: then, with Butter, it
+// switches Smoother scrolling on for the run (it starts off), and the caller must call the returned
+// `restoreOptions()` in its `finally`, before closing the browser, to put the stored settings back.
+export async function startLab(L, lab, env, ext, { scrolling = false } = {}) {
   execFileSync(path.join(L.root(), 'bin/lab'), ['restart-browser'], { env: { ...env, LAB_ID: String(lab.id), LAB_EXTENSIONS: ext, LAB_FLAGS: '' }, stdio: 'pipe' });
   for (let n = 0; n < 60 && !(await L.cdpVersion(lab)); n++) await pause(500);
-  await pause(2500);
+  await pause(Number(env.LAB_SETTLE_MS ?? 2500)); // the restarted browser settles; 0 in the unit test
   const { browser, context } = await L.connect(lab);
   if (typeof (await L.sendGuard(context, lab)) !== 'function') { await browser.close().catch(() => {}); throw Error('send guard not installed'); }
   const page = context.pages().find(p => p.url().startsWith('https://chatgpt.com')) || context.pages()[0];
   for (const o of context.pages()) if (o !== page) await o.close();
-  const restoreOptions = ext ? await switchOn(L, lab, context) : null;
+  const restoreOptions = ext && scrolling ? await switchOn(L, lab, context) : null;
   return { browser, context, page, restoreOptions };
 }
 

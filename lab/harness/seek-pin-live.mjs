@@ -93,7 +93,7 @@ const counts = { release: 0, releasePulled: 0, landed: 0, write: 0, writePulled:
 
 let browser, restoreOptions;
 try {
-  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT));
+  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT, { scrolling: true }));
   const n = await openFixture(L, lab, page, FIXTURE, !NATIVE);
   report(`${FIXTURE}: history loaded, ${n} entries; ${NATIVE ? 'no extension' : 'Butter'}; trials ${JSON.stringify(AT.map((f, i) => `${KINDS[i % KINDS.length]}@${f}`))}`);
   for (const [i, f] of AT.entries()) {
