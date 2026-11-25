@@ -167,7 +167,14 @@ globalThis.__butterLayoutPersistence = ({ turns, conv, scroller, shownColumn }) 
   });
   let loadedConv = null,
     loading = null,
-    loadSerial = 0;
+    loadSerial = 0,
+    lastTexts = null; // the open chat's texts, as setTexts last got them
+  // Reopened (Smoother scrolling or layouts switched on again): a close retires any setTexts in
+  // flight, so the open chat's texts are set up again, as if the store had never closed.
+  const reopen = () =>
+    lastTexts?.conv === conv()
+      ? persistence.setTexts(lastTexts.conv, lastTexts.texts)
+      : prefetch(conv());
   const send = (op, data = {}) =>
     new Promise((resolve) => {
       const id = ++serial;
@@ -245,7 +252,7 @@ globalThis.__butterLayoutPersistence = ({ turns, conv, scroller, shownColumn }) 
       const was = diskEnabled;
       diskEnabled = !!result.enabled;
       if (!diskEnabled) retire();
-      else if (!was) prefetch(conv());
+      else if (!was) reopen();
     }
     if (result.cleared) {
       retire();
@@ -280,6 +287,7 @@ globalThis.__butterLayoutPersistence = ({ turns, conv, scroller, shownColumn }) 
   });
   const persistence = {
     async setTexts(conv, texts) {
+      lastTexts = { conv, texts };
       const epoch = epochs.get(conv) || 0;
       const token = scope;
       if (diskEnabled && account && loadedConv !== conv) await prefetch(conv);

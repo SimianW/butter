@@ -11,8 +11,10 @@ const QUICK = { LAB_SETTLE_MS: '0' }; // no wait for a browser that is not there
 
 // A lab whose `bin/lab restart-browser` does nothing, one ChatGPT tab, and Butter as its first
 // extension. `opened` lists the extension pages a run opened; `writes` the settings it stored.
-function fakeLab() {
+// Its folder goes when test `t` ends.
+function fakeLab(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'butter-fake-lab-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, 'bin'));
   fs.writeFileSync(path.join(root, 'bin/lab'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
   const opened = [],
@@ -53,22 +55,22 @@ function fakeLab() {
   return { L, lab: { id: 9 }, opened, writes, stored: () => stored };
 }
 
-test('startLab writes no settings unless the caller asks for Smoother scrolling', async () => {
-  const f = fakeLab();
+test('startLab writes no settings unless the caller asks for Smoother scrolling', async (t) => {
+  const f = fakeLab(t);
   const run = await startLab(f.L, f.lab, QUICK, '/fake/butter');
   assert.equal(run.restoreOptions ?? null, null, 'nothing to restore');
   assert.deepEqual(f.opened, [], 'no extension page opened');
   assert.deepEqual(f.writes, [], 'no settings written');
 });
 
-test('with scrolling, startLab switches Smoother scrolling on and its restore puts it back', async () => {
-  const f = fakeLab();
+test('with scrolling, startLab switches Smoother scrolling on and its restore puts it back', async (t) => {
+  const f = fakeLab(t);
   const run = await startLab(f.L, f.lab, QUICK, '/fake/butter', { scrolling: true });
   assert.deepEqual(f.stored().opts, { seek: true, older: true });
   assert.equal(await run.restoreOptions(), true);
   assert.deepEqual(f.stored().opts, { seek: false, older: false });
   // No extension, nothing written even when asked.
-  const g = fakeLab();
+  const g = fakeLab(t);
   assert.equal(
     (await startLab(g.L, g.lab, QUICK, '', { scrolling: true })).restoreOptions ?? null,
     null,

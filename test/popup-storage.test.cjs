@@ -283,7 +283,12 @@ test('switching Smoother scrolling off while Clear asks drops the question for t
 // what it holds and Clear (its saved line ranks above "Needs the question rail"), so its question
 // stays open and its Clear still clears.
 test('switching the question rail off while Bookmarks asks keeps the question: its saved line ranks first', async () => {
-  const f = await started(inUse, { ...saved, 'butter-bookmark-clear': { count: 0, bytes: 0 } });
+  let held = saved['butter-bookmark-usage'];
+  const f = await started(inUse, {
+    ...saved,
+    'butter-bookmark-usage': () => held,
+    'butter-bookmark-clear': () => (held = { count: 0, bytes: 0 }),
+  });
   f.clear('bookmarks', 'ask');
   f.toggle('rail');
   await tick();
@@ -293,6 +298,11 @@ test('switching the question rail off while Bookmarks asks keeps the question: i
   f.clear('bookmarks', 'confirm');
   await tick();
   assert.equal(f.sent.filter((m) => m.type === 'butter-bookmark-clear').length, 1);
+  // Nothing saved now, but "Cleared" shows for its 2 s before "Needs the question rail".
+  assert.equal(descriptions(f.html()).bookmarks, 'Cleared');
+  f.timers.at(-1).fn();
+  await tick();
+  assert.equal(descriptions(f.html()).bookmarks, 'Needs the question rail');
 });
 
 // A remembered layouts fault (session storage) cannot clear while Smoother scrolling is off,
