@@ -325,3 +325,19 @@ test('a remembered layouts fault gives way to the needs line while Smoother scro
     'with it on, the fault shows',
   );
 });
+
+// A failed layouts Clear, then Smoother scrolling switched off: "Unavailable" gives way to the
+// needs line (only a finished Clear's "Cleared" stays for its 2 s).
+test('after a failed layouts Clear, switching Smoother scrolling off shows the needs line', async () => {
+  const f = await started(inUse, { ...saved, 'butter-layout-clear': { error: 'layout-storage' } });
+  f.go('experimental');
+  f.clear('layouts', 'ask');
+  f.clear('layouts', 'confirm');
+  await tick();
+  assert.equal(descriptions(f.html()).layout, 'Unavailable [Clear]');
+  f.toggle('scrolling');
+  await tick();
+  f.changed({ butter: { newValue: f.saved.at(-1).butter } }, 'local');
+  await tick();
+  assert.equal(descriptions(f.html()).layout, 'Needs Smoother scrolling');
+});

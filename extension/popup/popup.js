@@ -178,10 +178,8 @@ function storageLine(t, name, description) {
     count = facts.count,
     kind = ButterPopup.storageLine({
       ...facts,
-      clear:
-        showsNeeds(st) && ButterPopup.storageLine({ clear: st.clear }) === 'confirm'
-          ? 'idle'
-          : st.clear,
+      // Only a finished Clear's "Cleared" shows over the needs line, for its 2 s.
+      clear: showsNeeds(st) && st.clear !== 'done' ? 'idle' : st.clear,
     });
   const clear = `<button type="button" class="lk" data-clear="ask" data-store="${name}">${t.clear}</button>`;
   const text = {
