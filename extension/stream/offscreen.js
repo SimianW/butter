@@ -16,6 +16,8 @@
 // containment.css) until it renders: the veil comes off first thing when it stops being skipped,
 // at the flush that marks it seen, when its answer leaves in_progress (unless it is held), when
 // cv goes off, and when it comes back into the page outside the veil's rules (see watch()).
+// Pre-layout: a held block's first style and layout, and the relayout its math fonts bring, would
+// otherwise wait for whatever first needs them (a find, a jump into the answer); see prelayout().
 (() => {
   const off = () =>
     document.documentElement?.getAttribute('data-butter-off')?.split(' ').includes('cv');
@@ -59,6 +61,56 @@
     unveiled.add(el);
     if (unveiled.size === 1) requestAnimationFrame(settle);
   };
+  // Pre-layout (GLOSSARY.md): once an answer has completed, its held blocks are laid out in idle
+  // time, a few per idle callback, so that a later find or jump into them finds them laid out, as
+  // when ChatGPT's telemetry walk read into them at completion before the veil stopped it. A layout
+  // read inside a skipped block (a Range over its contents; the block's own box is contained) makes
+  // Chromium update that subtree on the spot, and the result persists. The blocks stay skipped,
+  // held and veiled: nothing is drawn, written or resized. The first pass waits until the answer
+  // has completed (never in an opened chat) and FLUSH_MS more, out of ChatGPT's completion work.
+  // Web fonts that the pass itself requests (KaTeX's) arrive after it and invalidate the blocks laid
+  // out before them, so every finished font load lays the laid-out blocks out again (a clean block
+  // costs nothing). Each idle callback stops after CHUNK_MS, one block at least (live, one block
+  // took 1-17 ms), and stops for good when cv goes off or the document is hidden; a block is
+  // skipped once it has rendered, left the page or its turn streams again.
+  const CHUNK_MS = 8,
+    pending = new Set(),
+    laid = new Set();
+  let idle = 0,
+    range;
+  const due = (el) =>
+    el.isConnected &&
+    waiting.has(el) &&
+    el.hasAttribute('data-butter-unrendered') &&
+    !el.closest(BUSY);
+  const stopped = () => off() || document.visibilityState === 'hidden';
+  const stop = () => {
+    pending.clear();
+    if (idle) cancelIdleCallback(idle);
+    idle = 0;
+  };
+  const chunk = (deadline) => {
+    idle = 0;
+    if (stopped()) return stop();
+    const end = performance.now() + Math.min(CHUNK_MS, deadline.timeRemaining());
+    for (const el of pending) {
+      pending.delete(el);
+      if (!due(el)) continue;
+      range ??= document.createRange();
+      range.selectNodeContents(el);
+      range.getBoundingClientRect();
+      laid.add(el);
+      if (performance.now() >= end) break;
+    }
+    if (pending.size) idle = requestIdleCallback(chunk);
+  };
+  const prelayout = (els) => {
+    for (const el of laid) if (!due(el)) laid.delete(el);
+    if (stopped()) return;
+    for (const el of els) if (due(el)) pending.add(el);
+    if (pending.size && !idle) idle = requestIdleCallback(chunk);
+  };
+  document.fonts?.addEventListener('loadingdone', () => laid.size && prelayout([...laid]));
   const flush = () => {
     scheduled = false;
     if (off()) {
@@ -146,6 +198,8 @@
           for (const el of t.querySelectorAll(`[${VEIL}]`))
             if (!el.hasAttribute('data-butter-unrendered')) unveil(el);
           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
+          if (r.oldValue === 'in_progress')
+            setTimeout(() => prelayout(t.querySelectorAll('[data-butter-unrendered]')), FLUSH_MS);
         }
       }
     }
@@ -153,10 +207,12 @@
     childList: true,
     subtree: true,
     attributes: true,
+    attributeOldValue: true,
     attributeFilter: ['data-talvt-turn-state'],
   });
   document.addEventListener('butter-settings', () => {
     if (off()) {
+      stop();
       ro.disconnect();
       queue.clear();
       waiting.clear();

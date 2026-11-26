@@ -6,18 +6,29 @@
 // leave and come back (`detach`, `attach`, `leave`, `back`), the answer's blocks are replaced
 // (`replace`), the turn goes back to in_progress (`restart`), and with `{ frames: false }` no frame
 // runs until `frame()` (a hidden tab).
+// For pre-layout: idle callbacks run only when `idle()` is called, on a fake clock that each layout
+// read inside a block (a Range over its contents) advances by `readMs`; `laidOut` lists the blocks
+// read, in order; `hide()`/`show()` set the document's visibility, `fontsLoaded()` reports web fonts
+// done loading, and `complete({ from })` names the state the turn left (an opened chat's turn was
+// never in_progress).
 const vm = require('node:vm');
 const fs = require('node:fs');
 
 const VEIL = 'data-butter-veil';
 
-function offscreenFixture({ blocks: count = 1, frames = true } = {}) {
+function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {}) {
   const listeners = {},
     timers = [],
     rafs = [],
     observed = new Set(),
-    calls = [];
-  let resized, mutated;
+    calls = [],
+    idles = [],
+    laidOut = [],
+    fontListeners = [];
+  let resized,
+    mutated,
+    clock = 0,
+    visibility = 'visible';
   let streaming = true,
     off = false;
   const select = (list, s) => {
@@ -76,7 +87,24 @@ function offscreenFixture({ blocks: count = 1, frames = true } = {}) {
       documentElement: root,
       addEventListener: (n, fn) => (listeners[n] = fn),
       querySelectorAll: (s) => root.querySelectorAll(s),
+      get visibilityState() {
+        return visibility;
+      },
+      fonts: { addEventListener: (n, fn) => n === 'loadingdone' && fontListeners.push(fn) },
+      createRange: () => ({
+        selectNodeContents(e) {
+          this.node = e;
+        },
+        getBoundingClientRect() {
+          laidOut.push(this.node);
+          clock += readMs;
+          return {};
+        },
+      }),
     },
+    performance: { now: () => clock },
+    requestIdleCallback: (fn) => idles.push(fn),
+    cancelIdleCallback: (id) => (idles[id - 1] = null),
     ResizeObserver: class {
       constructor(fn) {
         resized = fn;
@@ -125,14 +153,15 @@ function offscreenFixture({ blocks: count = 1, frames = true } = {}) {
     cv: (target, skipped) => listeners.contentvisibilityautostatechange({ target, skipped }),
     timers: () => timers.splice(0).forEach((fn) => fn()),
     // The turn leaves in_progress. Not observed: the turn was out of the document then.
-    complete: ({ observed = true } = {}) => {
+    complete: ({ observed = true, from = 'in_progress' } = {}) => {
       streaming = false;
-      if (observed) mutated([{ type: 'attributes', target: state, addedNodes: [] }]);
+      if (observed)
+        mutated([{ type: 'attributes', target: state, addedNodes: [], oldValue: from }]);
     },
     // The turn goes back to in_progress (a regenerated answer streams into it).
     restart: () => {
       streaming = true;
-      mutated([{ type: 'attributes', target: state, addedNodes: [] }]);
+      mutated([{ type: 'attributes', target: state, addedNodes: [], oldValue: 'complete' }]);
     },
     detach,
     attach,
@@ -150,6 +179,24 @@ function offscreenFixture({ blocks: count = 1, frames = true } = {}) {
       return [...blocks];
     },
     frame: () => rafs.splice(0).forEach((fn) => fn()),
+    laidOut,
+    // Runs idle callbacks, including the ones they request, until none is left (or `max` ran), each
+    // with up to 50 ms of idle time; returns how long each one took on the fake clock.
+    idle: ({ max = Infinity } = {}) => {
+      const took = [];
+      while (took.length < max && idles.some(Boolean)) {
+        const i = idles.findIndex(Boolean);
+        const fn = idles[i];
+        idles[i] = null;
+        const start = clock;
+        fn({ didTimeout: false, timeRemaining: () => Math.max(0, start + 50 - clock) });
+        took.push(clock - start);
+      }
+      return took;
+    },
+    hide: () => (visibility = 'hidden'),
+    show: () => (visibility = 'visible'),
+    fontsLoaded: () => fontListeners.forEach((fn) => fn({})),
     // The `cv` setting (Smoother streaming's off-screen skipping), off also when Butter is paused.
     setting: (on) => {
       off = !on;

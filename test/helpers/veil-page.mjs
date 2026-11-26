@@ -7,7 +7,8 @@
 // Opens the synthetic chat in a new page of `browser`, with Butter's containment stylesheet and
 // marker from `extension` (a directory path ending in /), the sampler running, and the history
 // blocks marked seen. `opts` go to build(). `sources` ({ css, js }) replace the stylesheet and the
-// marker read from `extension` (test/helpers/veil-variants.mjs).
+// marker read from `extension` (test/helpers/veil-variants.mjs). With `opts.sampler` false the
+// sampler does not run, so that nothing but the page forces style or layout.
 export async function openChat(browser, extension, opts, sources = {}) {
   const { readFileSync } = await import('node:fs');
   const read = (file) => readFileSync(`${extension}${file}`, 'utf8');
@@ -21,7 +22,7 @@ export async function openChat(browser, extension, opts, sources = {}) {
   await page.addStyleTag({ content: sources.css ?? read('stream/containment.css') });
   await page.addScriptTag({ content: sources.js ?? read('stream/offscreen.js') });
   await page.evaluate(build, { blockPx: BLOCK_PX, ...opts });
-  await page.evaluate(installSampler);
+  if (opts.sampler !== false) await page.evaluate(installSampler);
   const history = opts.turns * opts.blocks;
   await page.waitForFunction(
     (n) =>
@@ -184,8 +185,10 @@ export function effectiveness() {
 }
 
 // In the page: appends `n` blocks to the in_progress answer, `perFrame` at a time; with `hrEvery`,
-// every `hrEvery`-th block is an <hr>.
-export async function stream({ n, perFrame, hrEvery = 0 }) {
+// every `hrEvery`-th block is an <hr>. With `math`, each block holds six KaTeX-like spans nested
+// `math` deep (about 13 layout objects per level), as a long math answer's do, and the word
+// `zq<i>zq` for a find to land on.
+export async function stream({ n, perFrame, hrEvery = 0, math = 0 }) {
   const column =
     document.querySelector('[data-talvt-turn-state="in_progress"] [class*="DilResponseRoot"]') ??
     document.querySelector('[data-talvt-turn-state="in_progress"] [data-markdown-text-style]');
@@ -196,7 +199,11 @@ export async function stream({ n, perFrame, hrEvery = 0 }) {
       column.append(document.createElement('hr'));
     } else {
       const p = document.createElement('p');
-      p.innerHTML = `Streamed ${start + i}: <span class="katex"><span>y</span></span> more.`;
+      const nest = (k, d) =>
+        d ? `<span class="katex">x${k}<span class="mord">${nest(k, d - 1)}</span></span>` : `y${k}`;
+      p.innerHTML = math
+        ? `Streamed zq${start + i}zq ${Array.from({ length: 6 }, (_, k) => nest(k, math)).join(' ')}`
+        : `Streamed ${start + i}: <span class="katex"><span>y</span></span> more.`;
       column.append(p);
     }
     if ((i + 1) % perFrame === 0) await frame();
