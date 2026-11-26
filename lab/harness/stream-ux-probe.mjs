@@ -41,13 +41,13 @@
 // Settle rule (u1, u2): the first frame at least 100 ms after the write; its centre block is the
 // anchor whose rect top is then followed every frame (a new anchor when it disconnects).
 
-import { findbarDrive, fmtFindbar } from './stream-findbar-probe.mjs';
+import { beforePaint, findbarDrive, fmtFindbar } from './stream-findbar-probe.mjs';
 
 const r1 = v => Math.round(v * 10) / 10;
 const pause = ms => new Promise(r => setTimeout(r, ms));
 
-// In the page. Self-contained.
-function installUx(cfg) {
+// In the page. Self-contained. Exported for test/stream-findbar-before-paint-chromium.test.mjs.
+export function installUx(cfg) {
   if (window.__ux) return;
   const COLUMN = '[data-markdown-text-style="assistant-message"]';
   const KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
@@ -161,16 +161,21 @@ function installUx(cfg) {
   U.wheelStart = () => { U.wheelOn = true; const g = geom(); return { x: Math.round(g.x), y: Math.round(g.r.top + g.s.clientHeight / 2) }; };
   // u4
   const raf = () => new Promise(r => requestAnimationFrame(() => r()));
+  // Each row: the frame's start (rAF); `paint`: [in view, flags] before paint (beforePaint), when
+  // b's size changed in that frame. `paint0`: a report before row 1, in the frame whose rAF ran the
+  // act (u4's later calls and (c) run after `await raf()`); its frame start is not sampled.
   const watch = async (b, t0, frames = 90) => {
-    const rows = [];
+    let paint0 = null;
+    const rows = [], o = beforePaint(b, (v, f) => { const r = rows.at(-1); if (r) r.paint = [v, f]; else paint0 = [v, f]; });
     for (let n = 1; n <= frames; n++) {
       await raf();
       const g = geom(), f = flags(b);
-      rows.push({ n, t: q1(now() - t0), y: q1(g.s.scrollTop), top: q1(b.getBoundingClientRect().top - g.r.top), inView: inView(b, g), f, ok: !(f & 7) });
+      rows.push({ n, t: q1(now() - t0), y: q1(g.s.scrollTop), top: q1(b.getBoundingClientRect().top - g.r.top), inView: inView(b, g), f, ok: !(f & 7), paint: null });
     }
+    o.disconnect();
     const firstOk = rows.find(r => r.ok && r.inView), firstIn = rows.find(r => r.inView), firstUnveiled = rows.find(r => r.ok);
     const fr = r => (r ? { n: r.n, t: r.t } : null);
-    return { firstInView: fr(firstIn), firstOk: fr(firstOk), firstUnveiled: fr(firstUnveiled), topFirstInView: firstIn?.top ?? null, end: rows.at(-1), rows };
+    return { firstInView: fr(firstIn), firstOk: fr(firstOk), firstUnveiled: fr(firstUnveiled), topFirstInView: firstIn?.top ?? null, end: rows.at(-1), rows, paint0 };
   };
   const held = () => {
     reindex();
@@ -195,7 +200,21 @@ function installUx(cfg) {
     for (const [b, i] of h.list) { const str = unique(b); if (str) return { b, i, str, held: info }; }
     return { held: info };
   };
-  Object.assign(U, { flags, geom, inView });
+  // The before-paint sample: a ResizeObserver on block `b` calls onSample(in view, flags) after the
+  // frame's layout and before its paint. Made after the marker's `sized` observer (offscreen.js, from
+  // document_start), it runs after `sized` in the same frame (observers run in creation order, one
+  // list per document for every script world; test/stream-findbar-before-paint-chromium.test.mjs),
+  // so it reads what is drawn after `sized` unveils a block that just rendered. A frame-start
+  // (rAF) read comes before that, and a task posted from the rAF after the state-change event's.
+  // It reports only frames where b's size changes: the frame b renders (placeholder to real
+  // height) and the first frame after observe(); not a block whose rendered height equals its
+  // placeholder, nor an opacity change at an unchanged size.
+  const beforePaint = (b, onSample) => {
+    const o = new ResizeObserver(() => { const g = geom(); onSample(g ? inView(b, g) : false, flags(b)); });
+    o.observe(b);
+    return o;
+  };
+  Object.assign(U, { flags, geom, inView, beforePaint });
   U.u4 = async () => {
     const out = {};
     // A dev build's pre-layout counters, written on <html> only when asked (none on a release build).
@@ -238,7 +257,7 @@ function installUx(cfg) {
       const ms = q1(now() - t0), y1 = g.s.scrollTop;
       const selIn = sel.rangeCount ? b2.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
       const w = await watch(b2.b, t0, 30);
-      out.finds.push({ k, block: b2.i, len: s2.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end });
+      out.finds.push({ k, block: b2.i, len: s2.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end, rows: w.rows, paint0: w.paint0 });
       sel.removeAllRanges();
     }
     await raf();
@@ -386,6 +405,16 @@ function analyse(raw, drv, mode) {
 
 const fmtBlank = b => `veil/opacity 0 ${b.veil.frames} (longest ${b.veil.longest.frames} frames, ${b.veil.longest.ms} ms), skipped ${b.skipped.frames} (longest ${b.skipped.longest.frames}, ${b.skipped.longest.ms} ms), either ${b.any.frames} (longest ${b.any.longest.frames}, ${b.any.longest.ms} ms${b.any.longest.from != null ? ` from ${b.any.longest.from}` : ''})`;
 const fr = (r, n = 90) => (r ? `${r.n} (${r.t} ms)` : `never in ${n}`);
+// A watch's before-paint sample (U.beforePaint): the first frame with the block in view and not
+// skipped, its flags at the frame's start and before paint, and the frames drawn with it rendered
+// at opacity 0.
+// Frame 0: the act's own frame, when the act ran in its rAF (only its before-paint sample).
+export const fmtPaint = (w, n = 90) => {
+  if (w.none || !w.rows) return 'no candidate block';
+  const rows = [...(w.paint0 ? [{ n: 0, t: 0, inView: false, f: null, paint: w.paint0 }] : []), ...w.rows];
+  const bp = beforePaint(rows.map(r => ({ inView: r.inView, flags: r.f, paint: r.paint ?? null }))), r = rows[bp.first];
+  return `first frame rendered in view (not skipped) ${r ? `${r.n}${r.n ? ` (${r.t} ms)` : " (the act's own frame)"}, flags at its start ${r.f ?? '-'}, before paint ${r.paint?.[1] ?? 'no report'}` : `never in ${n}`}; frames drawn with the block rendered at opacity 0 ${bp.opacity0} (of ${bp.samples} before-paint samples in ${n} frames${w.paint0 ? ' and the act\'s own' : ''})`;
+};
 const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags before ${w.flagsBefore}, scrollTop ${w.y0} → ${w.yAfterCall} in the call; first frame in view ${fr(w.firstInView)} (top ${w.topFirstInView ?? '-'} px below the view's top), unveiled at opacity 1 and rendered ${fr(w.firstUnveiled)}, both ${fr(w.firstOk)}; after 90 frames scrollTop ${w.end.y}, top ${w.end.top} px, in view ${w.end.inView}, flags ${w.end.f}`);
 
 // ctx.display: the lab's X display, for U4_FINDBAR=1.
@@ -420,8 +449,11 @@ export async function uxProbe(page, env, summary, schedEnd, ctx = {}) {
       else if (u) {
         lines.push(`${P} u4 held blocks in the last 30%: ${u.held.candidates} of ${u.held.blocks} blocks (veiled ones ${u.held.veiledAny})`);
         lines.push(`${P} u4 (a) window.find: ${u.find.none ? 'no unique string found' : `string of ${u.find.len} chars in ${fmtWatch(u.find)}; returned ${u.find.found} in ${u.find.callMs} ms, selection in the block ${u.find.selectionInBlock}`}`);
+        lines.push(`${P} u4 (a) window.find before paint (a ResizeObserver on the block after the marker's; frames where its size changed): ${fmtPaint(u.find)}`);
         for (const x of u.finds ?? []) lines.push(`${P} u4 (a) window.find, later call ${x.k}: ${x.none ? 'no unique string in another held block' : `string of ${x.len} chars in block ${x.block}, flags before ${x.flagsBefore}, scrollTop ${x.y0} → ${x.yAfterCall} in the call; returned ${x.found} in ${x.callMs} ms, selection in the block ${x.selectionInBlock}; first frame in view ${fr(x.firstInView, 30)}, unveiled at opacity 1 and rendered ${fr(x.firstUnveiled, 30)}; after 30 frames scrollTop ${x.end.y}, in view ${x.end.inView}, flags ${x.end.f}`}`);
+        for (const x of u.finds ?? []) if (!x.none) lines.push(`${P} u4 (a) window.find, later call ${x.k}, before paint: ${fmtPaint(x, 30)}`);
         lines.push(`${P} u4 (c) scrollIntoView: ${fmtWatch(u.intoView)}`);
+        lines.push(`${P} u4 (c) scrollIntoView before paint: ${fmtPaint(u.intoView)}`);
         lines.push(`${P} u4 (b) selectAllChildren(last turn).toString().length ${u.select.selLen} (${u.select.selMs} ms), innerText.length ${u.select.innerLen} (${u.select.innerMs} ms; ${u.select.innerLen2} two frames later), equal ${u.select.equal}, textContent.length ${u.select.textLen}; veiled blocks before ${u.select.veiledBefore}, after ${u.select.veiledAfter}`);
       }
       return lines;
