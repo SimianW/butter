@@ -6,6 +6,8 @@
 // (stream-prelayout-chromium.test.mjs).
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const v8 = require('node:v8');
+const vm = require('node:vm');
 const { offscreenFixture } = require('./helpers/offscreen-fixture.cjs');
 
 // A fixture whose answer streamed `n` blocks below the fold, all held by the flush.
@@ -90,22 +92,41 @@ test('it never starts when cv is off at the start', () => {
   assert.deepEqual(f.laidOut, []);
 });
 
-test('it stops when the document is hidden, and never starts in a hidden document', () => {
+test('it pauses while the document is hidden and resumes where it stopped when it shows', () => {
+  const f = completed(held(10));
+  f.idle({ max: 1 });
+  const before = f.laidOut.length;
+  assert.ok(before > 0 && before < 10, `${before} laid out in the first callback`);
+  f.hide();
+  f.idle();
+  assert.equal(f.laidOut.length, before, 'paused while hidden');
+  f.show();
+  f.idle();
+  assert.deepEqual(f.laidOut, f.blocks, 'the rest once it shows, each block once');
+});
+
+test('a start in a hidden document waits until it shows', () => {
+  const f = held(3);
+  f.complete();
+  f.hide();
+  f.timers();
+  f.idle();
+  assert.deepEqual(f.laidOut, [], 'nothing while hidden');
+  f.show();
+  f.idle();
+  assert.deepEqual(f.laidOut, f.blocks);
+});
+
+test('a document that shows after cv went off lays nothing out', () => {
   const f = completed(held(10));
   f.idle({ max: 1 });
   const before = f.laidOut.length;
   f.hide();
-  f.idle();
+  f.setting(false);
+  f.setting(true);
   f.show();
   f.idle();
-  assert.equal(f.laidOut.length, before, 'stopped');
-  const g = held(3);
-  g.complete();
-  g.hide();
-  g.timers();
-  g.show();
-  g.idle();
-  assert.deepEqual(g.laidOut, [], 'never started');
+  assert.equal(f.laidOut.length, before);
 });
 
 test('it stops when the turn goes back to in_progress', () => {
@@ -162,4 +183,29 @@ test('a font load before any pass lays nothing out', () => {
   f.fontsLoaded();
   f.idle();
   assert.deepEqual(f.laidOut, []);
+});
+
+// A full garbage collection (the flag is set at run time, so `node --test` needs no option).
+v8.setFlagsFromString('--expose-gc');
+const gc = vm.runInNewContext('gc');
+
+test('a block pre-layout laid out is not kept once it has left the page', async () => {
+  // The user opens another chat: the answer's elements leave the page for good, and the new
+  // chat's turns load complete. Nothing may keep the old blocks alive.
+  const f = completed(held(5));
+  f.idle();
+  assert.equal(f.laidOut.length, 5);
+  // The first block stays referenced by the fixture and the last by the marker's Range.
+  const gone = f.blocks.slice(1, 4).map((b) => new WeakRef(b));
+  f.replace(0);
+  f.complete({ from: 'complete' });
+  f.calls.length = 0;
+  f.laidOut.length = 0;
+  await new Promise((resolve) => setImmediate(resolve));
+  gc();
+  assert.deepEqual(
+    gone.map((r) => r.deref() === undefined),
+    [true, true, true],
+    'collected',
+  );
 });

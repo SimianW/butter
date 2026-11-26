@@ -1,6 +1,6 @@
 // #172 follow-up to veil-unmarked-synthetic.mjs: a skipped height-0 <hr> (ChatGPT's) in an
 // in_progress answer is scrolled into view, then away again, with Butter's real containment.css and
-// offscreen.js from <extension dir> in headless Chromium. Prints one JSON line: the hr's
+// offscreen.js from <extension dir> in headless Chromium. Prints one REPORT line of JSON: the hr's
 // content-visibility state events, its veil and opacity before, for 4 frames after the scroll in,
 // and after the scroll away. REPORT-style output only; no verdict.
 // node lab/harness/veil-unmarked-scroll.mjs <extension dir>
@@ -29,5 +29,5 @@ const r = await page.evaluate(async () => {
   const away = { veil: hr.hasAttribute('data-butter-veil'), opacity: getComputedStyle(hr).opacity };
   return { away, before, scrolledAt: Math.round(t), events: ev, frames, after: hr.getAttributeNames().join(' ') };
 });
-console.log(JSON.stringify(r));
+console.log(`REPORT ${JSON.stringify(r)}`);
 await b.close();

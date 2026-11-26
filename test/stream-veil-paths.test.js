@@ -90,20 +90,20 @@ test('Regenerate and Edit, blocks replaced: the new answer has no block veiled f
   assert.ok(old.every((b) => !b.isConnected));
 });
 
-test('Regenerate and Edit, block elements reused with their old marks on: a reused block renders unveiled', () => {
+test('Regenerate and Edit, block elements reused with their old marks on: the new answer has no block veiled from before', () => {
   // React keeps the old answer's elements and rewrites their content; Butter's attributes stay.
   const f = fixture({ blocks: 3 });
   const { held, queued } = streamed(f);
   f.timers(); // the queued block is held too
   f.cv(queued, false); // rendered once in the old answer
   f.complete();
+  assert.ok(f.veiled(held), 'held in the old answer: still veiled');
   f.restart(); // the new answer streams into the same elements
-  // A reused held block keeps its veil only while it stays skipped (its unrendered mark keeps it
-  // under the rules): when the new answer's content in it renders, it is unveiled first.
-  assert.ok(f.veiled(held));
-  f.calls.length = 0;
+  // The veils left from the old answer come off when the turn streams again; such a block only
+  // loses the telemetry gain (it is still skipped, so nothing shows).
+  assert.ok(!f.veiled(held), 'no veil from before');
   f.cv(held, false);
-  assert.deepEqual(f.calls[0].slice(2), ['data-butter-veil']);
+  assert.ok(!f.veiled(held));
   // A reused block that rendered once is never veiled again.
   f.cv(queued, true);
   assert.ok(!f.veiled(queued));
@@ -121,7 +121,7 @@ test('Edit while the answer streams, elements reused: veiled blocks stay veiled 
   const [a, b] = f.blocks;
   f.cv(a, true);
   f.cv(b, true);
-  f.restart();
+  f.restart({ from: 'in_progress' });
   f.cv(a, false);
   assert.ok(!f.veiled(a) && f.veiled(b));
   f.complete();
