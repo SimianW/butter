@@ -17,6 +17,13 @@
 // "settled": the first frame of the last in-view run that lasts until Escape; "drawn": in view with
 // no veil, opacity 0 or skipped content. Frames (LoAF) count in a window when they start in it;
 // "to match" ends at the settled drawn frame.
+// Before paint: each frame's sample is completed, when the block's size changed in that frame, by
+// [in view, flags] read after layout and before paint (stream-ux-probe.mjs's U.beforePaint), after
+// the marker's `sized` observer has unveiled a block that just rendered. "Rendered": the first frame
+// with the block in view and its content not skipped; "drawn at opacity 0": frames, Ctrl+F to
+// Escape, whose before-paint sample has the block in view, not skipped and at opacity 0. The
+// frame-start flags cannot tell these apart: in the frame a find renders the block they read 11
+// (veil, opacity 0, held) on every build (notes/runs/2026-11-24-veil-acceptance/final/find-frame).
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -26,8 +33,8 @@ const HELPER = path.join(path.dirname(fileURLToPath(import.meta.url)), 'xtest-ty
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const r1 = (v) => Math.round(v * 10) / 10;
 
-// In the page; needs stream-ux-probe.mjs's window.__ux (pickHeld, flags, geom, inView).
-function installFindbar() {
+// In the page; needs stream-ux-probe.mjs's window.__ux (pickHeld, flags, geom, inView, beforePaint).
+export function installFindbar() {
   const U = window.__ux, q1 = (v) => Math.round(v * 10) / 10;
   const p = U.pickHeld();
   if (!p.b) return { none: true, held: p.held };
@@ -41,10 +48,14 @@ function installFindbar() {
   }
   const onKey = (e) => F.keys.push([q1(e.timeStamp), e.code, e.ctrlKey]);
   addEventListener('keydown', onKey, true);
+  // `row`: this frame's sample, which the before-paint sample (U.beforePaint) completes.
+  let row = null;
+  F.obs.push(U.beforePaint(p.b, (v, f) => { if (row) row[5] = [v, f]; }));
   const frame = () => {
     if (!F.on) return;
     const g = U.geom();
-    if (g && F.frames.length < 3000) F.frames.push([q1(performance.now()), q1(g.s.scrollTop), q1(p.b.getBoundingClientRect().top - g.r.top), U.inView(p.b, g), U.flags(p.b)]);
+    row = g && F.frames.length < 3000 ? [q1(performance.now()), q1(g.s.scrollTop), q1(p.b.getBoundingClientRect().top - g.r.top), U.inView(p.b, g), U.flags(p.b)] : null;
+    if (row) F.frames.push(row);
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -90,9 +101,22 @@ function sumIn(entries, from, to, t0) {
   return { frames: e.length, blocking: r1(e.reduce((a, x) => a + x[2], 0)), longest: top ? top[1] : 0, longestAt: top ? r1(top[0] - t0) : null };
 }
 
+// The before-paint sample over a block's frames, each { inView, flags } at the frame's start and
+// `paint`, [in view, flags] after layout and before paint (null: no report in that frame). `first`:
+// the index of the first frame with the block in view and its content not skipped, by the
+// before-paint sample where there is one, else by the frame's start; `opacity0`: frames whose
+// before-paint sample has the block in view, not skipped (bit 4 clear) and at opacity 0 (bit 2
+// set), i.e. frames drawn with it rendered at opacity 0; `samples`: frames with a sample.
+export function beforePaint(frames) {
+  const shown = (inView, f) => inView && !(f & 4);
+  const first = frames.findIndex(({ inView, flags, paint }) => (paint && shown(...paint)) || shown(inView, flags));
+  const sampled = frames.filter((f) => f.paint);
+  return { first, opacity0: sampled.filter(({ paint: [v, f] }) => shown(v, f) && f & 2).length, samples: sampled.length };
+}
+
 // stamps: the helper's key presses (epoch ms; the first is Ctrl+F, the last chord is Escape);
-// frames: [page ms, scrollTop, block top, in view, flags]; loaf: [start, duration, blocking];
-// keys: the page's keydowns [timeStamp, code, ctrl].
+// frames: [page ms, scrollTop, block top, in view, flags, before-paint sample [in view, flags] or
+// absent]; loaf: [start, duration, blocking]; keys: the page's keydowns [timeStamp, code, ctrl].
 export function findbarAnalyse({ timeOrigin, stamps, frames, loaf, keys }) {
   const t = stamps.map((s) => ({ kind: s.kind, t: s.at - timeOrigin }));
   const t0 = t[0].t, chars = t.filter((s) => s.kind === 'char');
@@ -114,6 +138,8 @@ export function findbarAnalyse({ timeOrigin, stamps, frames, loaf, keys }) {
   for (const f of inFind) { if (f[1] !== prevY) moves.push(f[0]); prevY = f[1]; }
   const gaps = frames.slice(1).map((f, j) => [frames[j][0], f[0] - frames[j][0]]).filter(([s]) => s >= t0 && s < escK);
   const pageF = keys.find((k) => k[1] === 'KeyF' && k[2]);
+  const bp = beforePaint(inFind.map((f) => ({ inView: f[3], flags: f[4], paint: f[5] ?? null })));
+  const renderedF = inFind[bp.first];
   return {
     keys: { chars: chars.length, lastKey: rel(lastKey), escape: escK === Infinity ? null : rel(escK), gapMedian: median(chars.slice(1).map((c, j) => r1(c.t - chars[j].t))), pageCtrlF: pageF ? rel(pageF[0]) : null },
     match,
@@ -125,6 +151,8 @@ export function findbarAnalyse({ timeOrigin, stamps, frames, loaf, keys }) {
     find: sumIn(loaf, t0, escK, t0),
     toMatch: sumIn(loaf, t0, settledDrawnF ? settledDrawnF[0] + 0.001 : escK, t0),
     afterEsc: sumIn(loaf, escK, Infinity, t0),
+    rendered: renderedF ? { ...at(renderedF), beforePaint: renderedF[5]?.[1] ?? null } : null,
+    drawnAtOpacity0: { frames: bp.opacity0, samples: bp.samples },
   };
 }
 
@@ -138,5 +166,6 @@ export function fmtFindbar(P, f) {
     `${P} u4 find bar: string of ${f.len} chars in block ${f.block} (held candidates ${f.held.candidates} of ${f.held.blocks}, veiled ${f.held.veiledAny}), flags before ${f.flagsBefore}, scrollTop ${f.y0}; keys: Ctrl+F, ${f.keys.chars} chars every ${f.gapMs} ms (median ${f.keys.gapMedian}), last at +${f.keys.lastKey} ms, Escape at +${f.keys.escape} ms; page keydown for Ctrl+F at ${f.keys.pageCtrlF ?? 'never'} ms (clock check)${f.keyError ? `; key error ${f.keyError}` : ''}`,
     `${P} u4 find bar match: settled in view ${fm(f.settled)}, settled and drawn (no veil, opacity 0 or skipped) ${fm(f.settledDrawn)}; first in view ${fm(f.match)}, first drawn ${fm(f.matchDrawn)}; scrollTop ${f.scroll.y0} → ${f.scroll.yEnd}, ${f.scroll.moves} moves (first +${f.scroll.first}, last +${f.scroll.last} ms); after Escape selection ${f.selLen} chars, in the block ${f.selInBlock}, flags ${f.flagsEnd}`,
     `${P} u4 find bar frames (LoAF starting in the window): Ctrl+F to Escape ${fw(f.find)}; Ctrl+F to the settled drawn match ${fw(f.toMatch)}; after Escape ${fw(f.afterEsc)}; longest sampled frame interval Ctrl+F to Escape ${f.frameMax} ms; longtasks Ctrl+F to Escape ${fw(f.longtask)}`,
+    `${P} u4 find bar before paint (a ResizeObserver on the block after the marker's; frames where its size changed): first rendered in view (not skipped) ${f.rendered ? `+${f.rendered.rt} ms (${f.rendered.sinceLastKey} ms after the last key; scrollTop ${f.rendered.y}), flags at the frame's start ${f.rendered.flags}, before paint ${f.rendered.beforePaint ?? 'no report'}` : 'never before Escape'}; frames drawn with the matched block rendered at opacity 0, Ctrl+F to Escape: ${f.drawnAtOpacity0.frames} (of ${f.drawnAtOpacity0.samples} before-paint samples)`,
   ];
 }
