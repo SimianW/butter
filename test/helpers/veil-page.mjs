@@ -8,7 +8,8 @@
 // marker from `extension` (a directory path ending in /), the sampler running, and the history
 // blocks marked seen. `opts` go to build(). `sources` ({ css, js }) replace the stylesheet and the
 // marker read from `extension` (test/helpers/veil-variants.mjs). With `opts.sampler` false the
-// sampler does not run, so that nothing but the page forces style or layout.
+// sampler does not run, so that nothing but the page forces style or layout. With `opts.isolated`
+// the marker runs in an isolated script world (CDP), as the extension's content script does.
 export async function openChat(browser, extension, opts, sources = {}) {
   const { readFileSync } = await import('node:fs');
   const read = (file) => readFileSync(`${extension}${file}`, 'utf8');
@@ -20,7 +21,9 @@ export async function openChat(browser, extension, opts, sources = {}) {
   );
   await page.goto('https://butter.invalid/c/00000000-0000-0000-0000-000000000000');
   await page.addStyleTag({ content: sources.css ?? read('stream/containment.css') });
-  await page.addScriptTag({ content: sources.js ?? read('stream/offscreen.js') });
+  const marker = sources.js ?? read('stream/offscreen.js');
+  if (opts.isolated) await isolated(page, marker);
+  else await page.addScriptTag({ content: marker });
   await page.evaluate(build, { blockPx: BLOCK_PX, ...opts });
   if (opts.sampler !== false) await page.evaluate(installSampler);
   const history = opts.turns * opts.blocks;
@@ -31,6 +34,21 @@ export async function openChat(browser, extension, opts, sources = {}) {
     history,
   );
   return page;
+}
+
+// Runs `js` in a new isolated world of `page`'s main frame.
+async function isolated(page, js) {
+  const cdp = await page.context().newCDPSession(page);
+  const { frameTree } = await cdp.send('Page.getFrameTree');
+  const world = await cdp.send('Page.createIsolatedWorld', {
+    frameId: frameTree.frame.id,
+    worldName: 'butter',
+  });
+  const r = await cdp.send('Runtime.evaluate', {
+    expression: js,
+    contextId: world.executionContextId,
+  });
+  if (r.exceptionDetails) throw new Error(`marker: ${r.exceptionDetails.text}`);
 }
 
 // The answer's blocks are kept in a column (`answerRoot`): the markdown root in the classic
