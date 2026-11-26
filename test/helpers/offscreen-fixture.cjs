@@ -1,7 +1,8 @@
 // A fake DOM for stream/offscreen.js (the off-screen marker): one turn whose answer holds `blocks`
 // answer blocks, and drivers for what the browser and ChatGPT report to the marker: sizes
 // (ResizeObserver), content-visibility state changes, timers (the flush), completion of the answer
-// and the `cv` setting. `calls` logs the marker's effects in order (attribute writes, observe).
+// and the `cv` setting. `calls` logs the marker's effects in order (attribute writes, observe by the
+// measuring observer).
 // For the state paths (Stop, Regenerate, Edit, version switch, hidden chat, remount): elements
 // leave and come back (`detach`, `attach`, `leave`, `back`), the answer's blocks are replaced
 // (`replace`), the turn goes back to in_progress (`restart`), and with `{ frames: false }` no frame
@@ -22,14 +23,13 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
   const listeners = {},
     timers = [],
     rafs = [],
-    observed = new Set(),
+    observers = [], // every ResizeObserver the marker made, in order: { fn, targets }
     calls = [],
     idles = [],
     idleTimeouts = [],
     laidOut = [],
     fontListeners = [];
-  let resized,
-    mutated,
+  let mutated,
     clock = 0,
     visibility = 'visible';
   let streaming = true,
@@ -94,6 +94,9 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
       ),
     getAttribute: (n) => (n === 'data-butter-off' && off ? 'cv' : null),
   };
+  // The marker's measuring observer, which queues blocks for the flush, is the one it makes last;
+  // the one before it watches veiled blocks' heights.
+  const measuring = () => observers.at(-1);
   const context = {
     document: {
       documentElement: root,
@@ -119,17 +122,18 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
     cancelIdleCallback: (id) => (idles[id - 1] = null),
     ResizeObserver: class {
       constructor(fn) {
-        resized = fn;
+        this.o = { fn, targets: new Set() };
+        observers.push(this.o);
       }
       observe(e) {
-        calls.push(['observe', e]);
-        observed.add(e);
+        if (this.o === measuring()) calls.push(['observe', e]);
+        this.o.targets.add(e);
       }
       unobserve(e) {
-        observed.delete(e);
+        this.o.targets.delete(e);
       }
       disconnect() {
-        observed.clear();
+        this.o.targets.clear();
       }
     },
     MutationObserver: class {
@@ -151,17 +155,32 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
     for (const e of els) e.isConnected = true;
     added(els);
   };
-  const detach = (...els) => els.forEach((e) => (e.isConnected = false));
+  // An element that leaves the page has no box: the browser reports 0 px to the observers that
+  // observe it (at its next frame).
+  const detach = (...els) => {
+    for (const e of els) e.isConnected = false;
+    for (const o of observers)
+      for (const e of els) if (o.targets.has(e)) o.fn([{ target: e, contentRect: { height: 0 } }]);
+  };
   return {
     block: blocks[0],
     blocks,
     turn,
-    observed,
+    // The blocks the measuring observer observes, and the ones the veil's height watch observes.
+    get observed() {
+      return measuring().targets;
+    },
+    heightWatched: (e) => observers.slice(0, -1).some((o) => o.targets.has(e)),
     calls,
     seen: (e) => e.hasAttribute('data-butter-seen'),
     unrendered: (e) => e.hasAttribute('data-butter-unrendered'),
     veiled: (e) => e.hasAttribute(VEIL),
-    size: (target, height) => resized([{ target, contentRect: { height } }]),
+    // The browser reports a size: to every observer that observes `target`, and to the measuring
+    // one whether it does or not.
+    size: (target, height) => {
+      for (const o of observers)
+        if (o === measuring() || o.targets.has(target)) o.fn([{ target, contentRect: { height } }]);
+    },
     cv: (target, skipped) => listeners.contentvisibilityautostatechange({ target, skipped }),
     timers: () => timers.splice(0).forEach((fn) => fn()),
     // The turn leaves in_progress. Not observed: the turn was out of the document then.
