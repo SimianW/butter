@@ -1,0 +1,24 @@
+acquire attempt=1 start 2026-11-26T22:23:10Z
+acquire attempt=1 lab=2 exit=0 waited=587s at 2026-11-26T22:32:57Z
+run 1 veil4-ats12-findbar-1 start 2026-11-26T22:32:57Z
+veil4-ats12-findbar-1 exit=0 elapsed=213s since-lock=213s at 2026-11-26T22:36:30Z
+run 2 veil3-ats12-findbar-1 start 2026-11-26T22:36:30Z
+veil3-ats12-findbar-1 exit=0 elapsed=208s since-lock=421s at 2026-11-26T22:39:58Z
+run 3 main3-ats12-findbar-1 start 2026-11-26T22:39:58Z
+main3-ats12-findbar-1 exit=0 elapsed=208s since-lock=629s at 2026-11-26T22:43:26Z
+run 4 veil4-ats12-findbar-2 start 2026-11-26T22:43:26Z
+veil4-ats12-findbar-2 exit=0 elapsed=208s since-lock=837s at 2026-11-26T22:46:54Z
+run 5 veil3-ats12-findbar-2 start 2026-11-26T22:46:54Z
+veil3-ats12-findbar-2 exit=0 elapsed=214s since-lock=1051s at 2026-11-26T22:50:28Z
+run 6 main3-ats12-findbar-2 start 2026-11-26T22:50:28Z
+main3-ats12-findbar-2 exit=0 elapsed=214s since-lock=1265s at 2026-11-26T22:54:02Z
+run 7 veil4-ats12-findbar-3 start 2026-11-26T22:54:02Z
+veil4-ats12-findbar-3 exit=0 elapsed=214s since-lock=1479s at 2026-11-26T22:57:36Z
+restore start 2026-11-26T22:57:36Z
+restore exit=0 at 2026-11-26T22:57:47Z
+{"lab": 2, "lab_released": true, "perf_released": true}
+release exit=0 at 2026-11-26T22:57:47Z
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}
+done 2026-11-26T22:57:47Z runs=7 since-lock=1490s
