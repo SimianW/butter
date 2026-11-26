@@ -316,8 +316,17 @@ test('reopened with no new data or texts, the saved record is back and prepare u
 
 // Smoother scrolling off and on again while the open chat's texts are still being set up: the close
 // retires that setup, so the reopened chat uses no saved layout until fresh conversation data sets
-// its texts up again. `hold(f)` pauses the setup at one step and returns its release.
+// its texts up again. `hold(f)` pauses the setup at one step and returns `held()`, true once the
+// setup is paused there, and its release. The toggle waits for `held()`, not for a count of
+// event-loop turns: the first hash runs on the thread pool, and a slow one outlasts any count.
 // Known gap, tracked in #182.
+const until = async (reached, what) => {
+  const end = Date.now() + 5000;
+  while (!reached()) {
+    assert.ok(Date.now() < end, what);
+    await new Promise(setImmediate);
+  }
+};
 const toggleDuringSetup = async (hold) => {
   const saved = fixture();
   await saved.api.setTexts(conv, texts);
@@ -325,11 +334,11 @@ const toggleDuringSetup = async (hold) => {
   await saved.api.flush();
   // A new page on the same worker (its disk holds the saved row).
   const f = fixture({ worker: saved.storage.worker });
-  const release = hold(f);
+  const { held, release } = hold(f);
   // The store opens (the bridge's state reply) and starts its first read before the texts arrive.
   await new Promise(setImmediate);
   const setup = f.api.setTexts(conv, texts);
-  for (let i = 0; i < 5; i++) await new Promise(setImmediate);
+  await until(held, 'the setup reached its hold');
   f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
   assert.equal(Object.keys(f.api.records(f.sc)).length, 0, 'closed: none used');
   f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
@@ -349,16 +358,18 @@ test('gap: a toggle while the saved layouts are being read leaves none used unti
     // Hold the worker's first read of saved layouts.
     const message = f.storage.worker.message;
     let release;
-    const held = new Promise((r) => (release = r));
+    const gate = new Promise((r) => (release = r));
     let first = true;
+    let holding = false;
     f.storage.worker.message = async (m) => {
       if (first && m.type === 'butter-layout-load') {
         first = false;
-        await held;
+        holding = true;
+        await gate;
       }
       return message(m);
     };
-    return async () => release();
+    return { held: () => holding, release: async () => release() };
   }));
 test('gap: a toggle while the texts are being hashed leaves none used until fresh data', () =>
   toggleDuringSetup((f) => {
@@ -370,11 +381,7 @@ test('gap: a toggle while the texts are being hashed leaves none used until fres
       if (first && m.type === 'butter-layout-load') f.control.hold = !(first = false);
       return result;
     };
-    return async () => {
-      for (let i = 0; i < 20 && !f.control.release; i++) await new Promise(setImmediate);
-      assert.ok(f.control.release, 'the hash was held');
-      await f.control.release();
-    };
+    return { held: () => !!f.control.release, release: () => f.control.release() };
   }));
 
 test('merged prepare synchronously uses prefetched memory with no disk reads at drag time', async () => {
