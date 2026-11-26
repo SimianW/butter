@@ -88,7 +88,7 @@ export const liveLauncher =
     if (mode === 'wash') {
       await live.worker.evaluate(() =>
         chrome.storage.local.set({
-          butter: { enabled: true, lang: 'en', layoutConsent: 'declined', bookmarkNotice: 'acknowledged', opts: { rail: true, bookmark: true } },
+          butter: { enabled: true, lang: 'en', layoutConsent: 'declined', bookmarkNotice: 'acknowledged', opts: { rail: true, bookmark: true, older: true, seek: true } },
         }),
       );
       // The theme attribute lives in the page only: a load puts ChatGPT's own theme back.

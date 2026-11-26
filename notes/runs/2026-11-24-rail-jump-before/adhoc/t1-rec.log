@@ -1,0 +1,7 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+t1-rec math12 from=top to=11 phase=reload-setup class=clean samples=145
+t1-rec math12 from=bottom to=0 phase=settled class=failed positions=[[92,347398],[113,347334],[136,347254],[174,347117],[187,347078],[211,347028],[236,347011],[257,346997],[279,346977],[305,20],[1453,385],[2347,347409],[3489,20],[3568,385],[4459,347409],[5580,20],[5663,385],[6545,347409]] targetTop=null reversals=5
+t1-rec math12 from=top to=11 phase=settled class=clean samples=145
+t1-rec math12 from=bottom to=0 phase=settled class=failed positions=[[101,347398],[131,347377],[140,347334],[157,347254],[194,347172],[208,347078],[228,347050],[251,347011],[274,346997],[300,20],[1371,385],[2256,347409],[3431,20],[3512,385],[4393,347409],[5544,20],[5621,385],[6518,347409]] targetTop=null reversals=5
+SUMMARY {"jumps":4,"failed":2,"visibleDetour":0,"native":0,"gated":2,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":2,"rawReversalCount":10,"unpinChecks":5,"anchoringOn":0,"cvOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-before/t1-rec.json

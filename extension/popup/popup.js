@@ -35,7 +35,8 @@ const T = {
     note: '打开前不会保存。Butter 只保存布局数字，不保存聊天内容，30 天后自动删除。',
     clear: '清除',
     undone: '无法撤销。',
-    rail: '需要先打开问题导航条',
+    // A storage row whose feature needs another switch that is off: ButterPopup.storageLine's `needs`.
+    needs: { rail: '需要先打开问题导航条', scrolling: '需要先打开长对话滚动更顺' },
     cancel: '取消',
     cleared: '已清除',
     bad: '暂不可用',
@@ -67,7 +68,7 @@ const T = {
     note: 'Off until you turn it on. Butter saves layout numbers only, never chat text, and deletes them after 30 days. ',
     clear: 'Clear',
     undone: "This can't be undone.",
-    rail: 'Needs the question rail',
+    needs: { rail: 'Needs the question rail', scrolling: 'Needs Smoother scrolling' },
     cancel: 'Cancel',
     cleared: 'Cleared',
     bad: 'Unavailable',
@@ -114,6 +115,8 @@ const stores = {
     saved: (u, lang) => ButterPopup.formatBookmarks(u, lang),
     // Bookmarks are kept while off, so their usage shows whatever the switches say.
     shown: () => true,
+    // Bookmarks show on the page only with the question rail.
+    needs: () => (prefs.opts.bookmark && !prefs.opts.rail ? 'rail' : ''),
     usageType: 'butter-bookmark-usage',
     clearType: 'butter-bookmark-clear',
   },
@@ -125,8 +128,11 @@ const stores = {
     timer: 0,
     count: (u) => u.conversations || 0,
     saved: (u, lang) => ButterPopup.formatUsage(u, lang),
-    // Switching layouts off deletes them: usage only while the switch is on.
-    shown: () => prefs.opts.layout,
+    // Switching layouts off deletes them: usage only while the switch is on. Only the scrollbar
+    // preview reads them, so without Smoother scrolling they are kept but unused, and the row says
+    // what it needs in place of what it holds.
+    shown: () => prefs.opts.layout && prefs.opts.seek,
+    needs: () => (prefs.opts.layout && !prefs.opts.seek ? 'scrolling' : ''),
     usageType: 'butter-layout-usage',
     clearType: 'butter-layout-clear',
   },
@@ -152,24 +158,35 @@ theme();
 const repo = 'https://github.com/SimianW/butter';
 const switchButton = (key, on, name) =>
   `<button class="tg ${on ? 'on' : ''}" id="sw-${key}" role="switch" aria-checked="${on}" aria-label="${name}" data-switch="${key}"></button>`;
+// What a storage row's usage and switches say, apart from its clear state.
+const usageFacts = (st) => {
+  const shown = st.shown();
+  return {
+    available: !shown || st.available,
+    count: shown ? st.count(st.usage) : 0,
+    needs: st.needs(),
+  };
+};
+// A row that says what it needs (its switch needs another that is off) says so whatever its clear
+// state; render drops a pending question there, so it does not come back with the switch.
+const showsNeeds = (st) => ButterPopup.storageLine(usageFacts(st)) === 'needs';
 // A storage row's second line: the saved line and Clear, or what ButterPopup.storageLine picks.
 // The text is a live region; Clear is a real button after it (a space and 8 px), outside the region.
 function storageLine(t, name, description) {
   const st = stores[name],
-    shown = st.shown(),
-    count = shown ? st.count(st.usage) : 0,
+    facts = usageFacts(st),
+    count = facts.count,
     kind = ButterPopup.storageLine({
-      clear: st.clear,
-      available: !shown || st.available,
-      count,
-      needsRail: name === 'bookmarks' && !prefs.opts.rail && prefs.opts.bookmark,
+      ...facts,
+      // Only a finished Clear's "Cleared" shows over the needs line, for its 2 s.
+      clear: showsNeeds(st) && st.clear !== 'done' ? 'idle' : st.clear,
     });
   const clear = `<button type="button" class="lk" data-clear="ask" data-store="${name}">${t.clear}</button>`;
   const text = {
     cleared: t.cleared,
     unavailable: t.bad,
     saved: st.saved(st.usage, prefs.lang),
-    rail: t.rail,
+    needs: t.needs[st.needs()],
     description,
   }[kind];
   // A failed clear offers Clear again while there is a count to name.
@@ -206,12 +223,15 @@ function patch(old, next) {
   before.slice(after.length).forEach((n) => n.remove());
 }
 function render() {
+  for (const st of Object.values(stores))
+    if (st.clear === 'confirm' && showsNeeds(st)) st.clear = 'idle';
   const t = T[prefs.lang],
     state = ButterStatus.masterState(prefs, connected),
     paused = state === 'paused';
-  // Faults show on the page that lists their group, so only that page's groups count here.
+  // Faults show on the page that lists their group, so only that page's groups count here. A row
+  // that needs a switch that is off is not broken: it cannot report ok to clear a fault.
   const broken = pages[page].filter(
-    (k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused,
+    (k) => failures[k] && ButterStatus.groupOn(prefs, k) && !paused && !stores[storeOf(k)]?.needs(),
   );
   document.documentElement.lang = prefs.lang === 'zh' ? 'zh-CN' : 'en';
   // A row is a label wrapping its switch, so a click anywhere on the row toggles that group.
@@ -224,7 +244,11 @@ function render() {
     const [ic, n, d] = t.groups[groupKeys.indexOf(key)],
       bad = broken.includes(key),
       store = storeOf(key);
-    if (store && ButterPopup.storageLine({ clear: stores[store].clear }) === 'confirm')
+    if (
+      store &&
+      !showsNeeds(stores[store]) &&
+      ButterPopup.storageLine({ clear: stores[store].clear }) === 'confirm'
+    )
       return askRow(t, store);
     // A faulted storage row keeps Clear after the fault text while it holds anything.
     const held = store && bad && stores[store].shown() && stores[store].count(stores[store].usage);
@@ -329,8 +353,9 @@ root.addEventListener('click', (e) => {
     const name = target.dataset.store,
       st = stores[name];
     if (!st) return;
+    // Only from the question: a dropped question's Clear clears nothing.
     if (target.dataset.clear === 'confirm') {
-      clearStore(name);
+      if (st.clear === 'confirm') clearStore(name);
       return;
     }
     flow(st, target.dataset.clear);

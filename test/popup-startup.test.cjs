@@ -23,9 +23,9 @@ test('rows are labels wrapping their switches, in order on each page, with the c
       on: true,
     },
     {
-      key: 'scrolling',
-      name: 'Smoother scrolling',
-      description: 'Preview while you drag the scrollbar',
+      key: 'rail',
+      name: 'Question rail',
+      description: 'Click a question on the right to jump',
       on: true,
     },
     {
@@ -34,56 +34,60 @@ test('rows are labels wrapping their switches, in order on each page, with the c
       description: 'Select text, ask about it in a new branch',
       on: true,
     },
-  ]);
-  f.go('experimental');
-  assert.deepEqual(rows(f.html()), [
-    {
-      key: 'rail',
-      name: 'Question rail',
-      description: 'Click a question on the right to jump',
-      on: false,
-    },
     {
       key: 'bookmarks',
       name: 'Bookmarks',
       description: 'Select text, mark the spot to jump back',
+      on: true,
+    },
+  ]);
+  f.go('experimental');
+  assert.deepEqual(rows(f.html()), [
+    {
+      key: 'scrolling',
+      name: 'Smoother scrolling',
+      description: 'Preview while you drag the scrollbar',
       on: false,
     },
     {
       key: 'layout',
       name: 'Remember long-chat layouts',
-      description: 'Faster jumps when you come back',
+      description: 'Needs Smoother scrolling',
       on: true,
     },
   ]);
   f.changed(
     {
       butter: {
-        newValue: { layoutConsent: 'granted', lang: 'zh', opts: { branch: false, rail: true } },
+        newValue: {
+          layoutConsent: 'granted',
+          lang: 'zh',
+          opts: { branch: false, rail: false, older: true, seek: true },
+        },
       },
     },
     'local',
   );
   assert.deepEqual(rows(f.html()), [
     {
-      key: 'rail',
-      name: '问题导航条',
-      description: '右侧列出你问过的问题，点一下就跳过去',
+      key: 'scrolling',
+      name: '长对话滚动更顺',
+      description: '拖动滚动条先看预览，松手再加载',
       on: true,
     },
-    { key: 'bookmarks', name: '书签', description: '选中文字，标记位置，随时跳回', on: false },
     { key: 'layout', name: '记住长对话的布局', description: '再次打开时跳转更快', on: true },
   ]);
   f.go('main');
   assert.deepEqual(rows(f.html()), [
     { key: 'streaming', name: '回答生成时更顺', description: '长回答输出时页面不卡', on: true },
     {
-      key: 'scrolling',
-      name: '长对话滚动更顺',
-      description: '拖动滚动条先看预览，松手再加载',
-      on: true,
+      key: 'rail',
+      name: '问题导航条',
+      description: '右侧列出你问过的问题，点一下就跳过去',
+      on: false,
     },
     { key: 'branch', name: '在分支中问', description: '选中文字，在新分支里提问', on: false },
+    { key: 'bookmarks', name: '书签', description: '需要先打开问题导航条', on: true },
   ]);
 });
 
@@ -157,9 +161,9 @@ test('the branch switch writes only the branch setting', async () => {
 test('switch and language clicks before the startup settings read are ignored, so they cannot save defaults', async () => {
   const f = popup();
   const stored = {
-    defaultsVersion: 1,
+    defaultsVersion: 2,
     layoutConsent: 'granted',
-    opts: { rail: true, bookmark: true },
+    opts: { rail: false, older: true, seek: true },
   };
   f.toggle('branch');
   f.toggle('master');
@@ -178,11 +182,8 @@ test('switch and language clicks before the startup settings read are ignored, s
   await tick();
   const { butter } = f.saved.at(-1);
   assert.equal(f.saved.length, 1);
-  assert.equal(butter.defaultsVersion, 1);
-  assert.deepEqual(
-    [butter.opts.rail, butter.opts.bookmark, butter.opts.branch],
-    [true, true, false],
-  );
+  assert.equal(butter.defaultsVersion, 2);
+  assert.deepEqual([butter.opts.rail, butter.opts.seek, butter.opts.branch], [false, true, false]);
   assert.equal(butter.enabled, true);
   assert.equal(butter.lang, 'en');
 });
@@ -229,7 +230,7 @@ test('with two or more broken groups, each faulted row shows the short one-line 
   assert.deepEqual(faulted(f.html()), ['streaming', 'branch']);
   assert.equal(descriptions(f.html()).streaming, 'Unavailable; resumes on its own.');
   assert.equal(descriptions(f.html()).branch, 'Unavailable; resumes on its own.');
-  assert.equal(descriptions(f.html()).scrolling, 'Preview while you drag the scrollbar');
+  assert.equal(descriptions(f.html()).rail, 'Click a question on the right to jump');
   assert.match(f.html(), /<div class="d" role="status">Unavailable; resumes/);
   f.changed({ butter: { newValue: { layoutConsent: 'granted', lang: 'zh' } } }, 'local');
   assert.equal(descriptions(f.html()).streaming, '暂时不可用，Butter 会自动恢复。');
@@ -266,8 +267,9 @@ test('paused marks the features card paused, keeps every switch as set, and show
     rows(f.html()).map(({ key, on }) => [key, on]),
     [
       ['streaming', true],
-      ['scrolling', true],
+      ['rail', false],
       ['branch', true],
+      ['bookmarks', true],
     ],
   );
   assert.deepEqual(faulted(f.html()), []);

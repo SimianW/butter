@@ -1,0 +1,22 @@
+REPORT build 0.1.0-alpha.22+dev.13
+REPORT storage keys after install: ["butter"]
+PASS install settings {defaultsVersion: 2}, no opts
+REPORT math12: history loaded, 12 entries (Smoother scrolling off: native loading)
+REPORT data-butter-off: ["older","seek","layout"]
+PASS data-butter-off lists older and seek
+PASS data-butter-off does not list rail or bookmark
+PASS rail on with no setting written
+REPORT drag with Smoother scrolling off: thumb 894 → 463; scrollTop end 347529 → held 176140 → after 176140 (viewport 912); __seekDump true; preview host false, shown false, active false, updates 0; sessions 0 → 0
+PASS no seek preview with Smoother scrolling off
+PASS the drag scrolls the chat natively
+REPORT popup Smoother scrolling switch before: aria-checked false
+REPORT popup Smoother scrolling switch after: aria-checked true
+REPORT stored after the switch: opts.older true, opts.seek true, opts.rail true, opts.bookmark true, defaultsVersion 2
+PASS switch stores older and seek on
+REPORT data-butter-off after the switch: ["layout"]
+PASS data-butter-off drops older and seek without a reload
+REPORT drag with Smoother scrolling on: thumb 894 → 463; scrollTop end 348702 → held 177334 → after 162024 (viewport 912); __seekDump true; preview host true, shown true, active true, updates 17; sessions 0 → 1
+PASS seek preview with Smoother scrolling on
+PASS stored settings put back as found
+SUMMARY t1-defaults: 0 FAILs
+EXIT 0

@@ -184,11 +184,13 @@ function idleReport(d) {
 }
 
 const summary = { label: LABEL, fixture: FIXTURE, at: new Date().toISOString(), lab: lab.id, ms: MS, sample: SAMPLE, typeAt: TYPE_AT, guard: { blockedMutations: 0, sendAttempts: 0, prepare: 0 } };
-let browser, exit = 0;
+let browser, restoreOptions, exit = 0;
 const save = () => { fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(summary)); };
 try {
   let context, page;
-  ({ browser, context, page } = await startLab(L, lab, env, env.EXT));
+  // Smoother scrolling on, as in this probe's earlier runs (it was on by default then): with it
+  // off, the layout store stays closed and the background work measured here differs.
+  ({ browser, context, page, restoreOptions } = await startLab(L, lab, env, env.EXT, { scrolling: true }));
   await context.route('**/*', route => {
     const req = route.request();
     let host = ''; try { host = new URL(req.url()).hostname; } catch {}
@@ -263,6 +265,7 @@ try {
   console.log(`HARNESS ERROR: ${scrub(e.message)}`);
   summary.error = scrub(e.message); exit = 2;
 } finally {
+  await restoreOptions?.().catch(() => {});
   await browser?.close().catch(() => {});
   save();
 }

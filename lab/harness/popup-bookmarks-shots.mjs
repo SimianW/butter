@@ -13,8 +13,10 @@
 // card, card, rows, second lines, Clear, pills, note, footer; relative to the popup) with the
 // mockup's at zoom 1, and fails on a difference over 1 px.
 // Fails when a state is over 600 px or a row's text overflows it.
-// Since #158 both rows are on the popup's Experimental page, which this opens first; the #108
-// mockup draws them on the main page, so its box comparison no longer matches.
+// Bookmarks is on the popup's main page and layouts on its Experimental page (with Smoother
+// scrolling, which they need, switched on here): each panel shows the page of the row it is about
+// (`page`, main unless it says experimental). The #108 mockup draws both rows on one page, so its
+// box comparison no longer matches.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { launchButter, repo } from './runner/chromium.mjs';
@@ -41,7 +43,7 @@ const PANELS = [
   { id: 'after', state: 'Everything on; 12 bookmarks and 14 chats of layouts saved' },
   { id: 'after-empty', state: 'Everything on; nothing saved', bookmarks: 0, layouts: 0 },
   { id: 'after-confirm', state: 'Clear on Bookmarks clicked: the question', step: 'ask-bookmarks' },
-  { id: 'after-confirm-layouts', state: 'Clear on layouts clicked: the question', step: 'ask-layouts' },
+  { id: 'after-confirm-layouts', state: 'Clear on layouts clicked: the question', step: 'ask-layouts', page: 'experimental' },
   { id: 'after-cleared', state: 'Bookmarks just cleared (held at "Cleared")', step: 'clear-bookmarks' },
   { id: 'after-off', state: 'Bookmarks switched off, 12 still saved', butter: { opts: { bookmark: false } } },
   { id: 'after-dark', state: 'As `after`, dark theme', dark: true },
@@ -50,6 +52,7 @@ const PANELS = [
     state: 'Layout consent pending (its note shows), 12 bookmarks saved',
     butter: { layoutConsent: 'pending' },
     layouts: 0,
+    page: 'experimental',
   },
   // States the mockup does not draw (no box comparison): the spec's paused card and the rail note.
   { id: 'extra-paused', state: 'Butter paused: the whole card greys, Clear and switches still usable', butter: { enabled: false }, extra: true },
@@ -63,7 +66,6 @@ try {
   const { context, worker, errors } = await launchButter({ defer, name: 'butter-popup-shots', viewport: { width: 360, height: 900 } });
   const page = await context.newPage();
   await page.goto(worker.url().replace('/storage/layout-worker.js', '/popup/popup.html'));
-  await page.locator('.exp-row').click();
   await page.waitForSelector('#sw-bookmarks');
   await page.evaluate(() => document.fonts.ready);
   if (process.env.MOCKUP) {
@@ -148,7 +150,7 @@ try {
     for (const lang of ['en', 'zh']) {
       await page.emulateMedia({ colorScheme: panel.dark ? 'dark' : 'light', reducedMotion: 'reduce' });
       await seed(panel.bookmarks ?? 12, panel.layouts ?? 14);
-      const butter = { enabled: true, lang, layoutConsent: 'granted', ...panel.butter, opts: { layout: true, rail: true, bookmark: true, ...panel.butter?.opts } };
+      const butter = { enabled: true, lang, layoutConsent: 'granted', ...panel.butter, opts: { layout: true, rail: true, bookmark: true, older: true, seek: true, ...panel.butter?.opts } };
       await page.evaluate(async (butter) => {
         for (const st of Object.values(stores)) {
           clearTimeout(st.timer);
@@ -159,6 +161,7 @@ try {
         await Promise.all(Object.keys(stores).map(refreshUsage));
         await poll();
       }, butter);
+      await page.evaluate((next) => { if (document.querySelector('.page').dataset.page !== next) go(next); }, panel.page || 'main');
       if (panel.step === 'ask-bookmarks') await page.locator('button.lk[data-store="bookmarks"]').click();
       if (panel.step === 'ask-layouts') await page.locator('button.lk[data-store="layouts"]').click();
       if (panel.step === 'clear-bookmarks') {

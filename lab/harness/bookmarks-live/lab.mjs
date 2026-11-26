@@ -177,7 +177,8 @@ export async function launchLive({ L, mode, source, fixture, record, defer }) {
       return get(...args);
     };
     return chrome.storage.local.set({
-      butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true } },
+      // The thumb drags read Smoother scrolling's held state, and it starts off.
+      butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true, older: true, seek: true } },
     });
   });
   summary.shortcut = await worker.evaluate(async () => (await chrome.commands.getAll()).find((c) => c.name === 'bookmark')?.shortcut);

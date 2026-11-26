@@ -146,7 +146,7 @@ const worker =
 assert.equal(new URL(worker.url()).pathname, '/dev/worker.js');
 // After the install event's own settings write (its marker, #158), so it cannot land over ours.
 await installed(worker);
-await worker.evaluate(() => chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true }, defaultsVersion: 1 } }));
+await worker.evaluate(() => chrome.storage.local.set({ butter: { enabled: true, lang: 'en', layoutConsent: 'declined', opts: { rail: true, bookmark: true, older: true, seek: true }, defaultsVersion: 2 } }));
 const commands = await worker.evaluate(() => chrome.commands.getAll());
 assert.equal(commands.find((c) => c.name === 'save-bug')?.shortcut, 'Alt+Shift+B');
 

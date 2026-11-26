@@ -1,0 +1,4 @@
+restore lab 2: restarting browser (now {"pid":1367576,"extensions":["~/snap/chromium/common/rail-pin-171d/dev/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 1380174)
+restored {"lab":2,"restarted":true,"url":"<url>","composer":"","pages":["<url>"],"browser":{"pid":1380174,"extensions":[],"flags":[]},"at":"2026-11-25T03:11:41.911Z","ok":true}

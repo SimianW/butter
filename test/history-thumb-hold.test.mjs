@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import ButterLeaveGesture from '../extension/shared/leave-gesture-main.js';
 const page =
   'https://chatgpt.com/backend-api/conversations/12345678-1234-1234-1234-123456789abc/messages?before=abc&num_turns=10';
 function setup({ rtl = false, overlay = false } = {}) {
@@ -22,6 +23,7 @@ function setup({ rtl = false, overlay = false } = {}) {
   doc.hidden = false;
   doc.addEventListener('butter-nav', (e) => messages.push(JSON.parse(e.detail)));
   win.__butterConfig = { olderPageTurns: 2 };
+  win.ButterLeaveGesture = ButterLeaveGesture; // shared/leave-gesture-main.js loads first
   const scroller = {
     matches: (s) => s === '.thread-scroll-container',
     scrollHeight: 5000,
@@ -81,9 +83,11 @@ function setup({ rtl = false, overlay = false } = {}) {
       clearTimeout: (id) => timers.delete(id),
     },
   );
+  // The reader's input, as the browser delivers it (`isTrusted: false`: one Butter dispatched).
   const emit = (target, type, props = {}) => {
     const e = new Event(type);
-    for (const [k, v] of Object.entries(props)) Object.defineProperty(e, k, { value: v });
+    for (const [k, v] of Object.entries({ isTrusted: true, ...props }))
+      Object.defineProperty(e, k, { value: v });
     target.dispatchEvent(e);
   };
   return {
@@ -307,3 +311,19 @@ for (const rtl of [false, true])
       await p;
       assert.equal(s.calls.length, 1);
     });
+test("the rail's leave gesture on the scrollbar neither holds earlier pages nor ends a hold", async () => {
+  const s = setup();
+  const gesture = { isTrusted: false, pointerType: 'mouse' };
+  s.down(gesture, 'pointerdown');
+  s.up('pointerup', gesture);
+  await s.fetch();
+  assert.equal(s.calls.length, 1, 'no hold: the page loads at once');
+  s.down({}, 'pointerdown'); // the reader holds the thumb
+  const p = s.fetch();
+  s.down(gesture, 'pointerdown');
+  s.up('pointerup', gesture);
+  assert.equal(s.calls.length, 1, "the reader's hold goes on");
+  s.up('pointerup');
+  await p;
+  assert.equal(s.calls.length, 2);
+});

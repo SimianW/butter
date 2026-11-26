@@ -7,14 +7,14 @@ import vm from 'node:vm';
 import seekMeta from '../../extension/seek/seek-meta.js';
 import bookmarks from '../../extension/bookmarks/model.js';
 import { RAIL_SCRIPTS } from '../../lab/harness/rail-scripts.mjs';
-import { FakeElement, fakeObservers } from './rail-dom.mjs';
+import { FakeElement, fakeEvents, fakeObservers } from './rail-dom.mjs';
 
-// The rail's scripts under rail/ in manifest order, the adapter last (its other dependencies, seek's
-// card text and the bookmark rules, are given as globals).
-const sources = RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')).map((f) => [
-  f,
-  fs.readFileSync(new URL(`../../extension/${f}`, import.meta.url), 'utf8'),
-]);
+// The leave gesture and the rail's scripts under rail/ in manifest order, the adapter last (its
+// other dependencies, seek's card text and the bookmark rules, are given as globals).
+const sources = [
+  'shared/leave-gesture.js',
+  ...RAIL_SCRIPTS.filter((f) => f.startsWith('rail/')),
+].map((f) => [f, fs.readFileSync(new URL(`../../extension/${f}`, import.meta.url), 'utf8')]);
 export const conversation = '12345678-1234-1234-1234-123456789abc';
 
 // `nested`: turns sit in the virtualizer's content box > wrapper > window, as on ChatGPT, rather
@@ -46,6 +46,7 @@ export function setup({
   const mutationObservers = [];
   let colorScheme = 'light';
   const ctx = vm.createContext({
+    ...fakeEvents(),
     document,
     ButterSeekMeta: seekMeta,
     ButterBookmarks: bookmarks, // the manifest loads bookmarks/model.js before the rail

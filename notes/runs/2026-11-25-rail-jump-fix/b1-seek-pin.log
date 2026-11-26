@@ -1,0 +1,6 @@
+HARNESS ERROR: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('chatgpt-butter-nav[data-on]')
+
+SUMMARY seek-pin: 0 FAILs
+EXIT 2 (started 03:11:50 UTC, ended 03:12:30 UTC)

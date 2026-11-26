@@ -122,6 +122,7 @@ function release({ model, target, offset = 100, layout = false, parent = 'own', 
     'seek/preview-texts-main.js',
     'seek/landing-main.js',
     'seek/seek-diagnostics-main.js',
+    'shared/leave-gesture-main.js',
   ])
     vm.runInContext(read(f), ctx, { filename: f });
   const rows = model.map((h, i) => ({

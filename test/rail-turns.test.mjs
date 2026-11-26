@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 import ButterRailModel from '../extension/rail/model.js';
+import ButterLeaveGesture from '../extension/shared/leave-gesture.js';
 import { FakeElement, fakeObservers } from './helpers/rail-dom.mjs';
 
 const source = fs.readFileSync(new URL('../extension/rail/turns.js', import.meta.url), 'utf8');
@@ -65,6 +66,7 @@ function setup({ count = 10 } = {}) {
   };
   const ctx = vm.createContext({
     ButterRailModel,
+    ButterLeaveGesture,
     Element: FakeElement,
     ResizeObserver: observers.ResizeObserver,
     IntersectionObserver: observers.IntersectionObserver,

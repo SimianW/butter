@@ -12,6 +12,7 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
     'rail/wave.js',
     'rail/grid.js',
     'rail/model.js',
+    'shared/leave-gesture.js',
     'rail/turns.js',
     'rail/trip.js',
     'rail/readiness.js',
@@ -24,8 +25,16 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
   const manifest = {
     content_scripts: [
       { js: ['shared/status.js', 'seek/seek-meta.js', 'bookmarks/model.js', 'rail/wave.js'] },
-      { world: 'MAIN', js: ['rail/main-only.js'] },
-      { js: ['rail/extra.js', 'rail/model.js', 'rail/rail.js', 'branch/ui.js'] },
+      { world: 'MAIN', js: ['rail/main-only.js', 'shared/leave-gesture-main.js'] },
+      {
+        js: [
+          'rail/extra.js',
+          'rail/model.js',
+          'shared/leave-gesture.js',
+          'rail/rail.js',
+          'branch/ui.js',
+        ],
+      },
     ],
   };
   assert.deepEqual(railScripts(manifest), [
@@ -34,7 +43,13 @@ test("the rail's scripts follow the manifest, a new rail/ script included", () =
     'rail/wave.js',
     'rail/extra.js',
     'rail/model.js',
+    'shared/leave-gesture.js',
     'rail/rail.js',
   ]);
+  // A manifest from before the leave gesture (#171) still reads, for historical baselines.
+  const older = {
+    content_scripts: [{ js: ['seek/seek-meta.js', 'bookmarks/model.js', 'rail/rail.js'] }],
+  };
+  assert.deepEqual(railScripts(older), ['seek/seek-meta.js', 'bookmarks/model.js', 'rail/rail.js']);
   assert.throws(() => railScripts({ content_scripts: [{ js: ['rail/rail.js', 'rail/x.js'] }] }));
 });

@@ -99,7 +99,8 @@ try {
         await setup(source,false);await click(8);await done();
         if(kind==='keyboard')await p.keyboard.press('PageUp');
         if(kind==='touch')await p.evaluate(()=>document.querySelector('.thread-scroll-container').dispatchEvent(new Event('touchstart')));
-        if(kind==='scrollbar')await p.evaluate(()=>{const sc=document.querySelector('.thread-scroll-container');sc.dispatchEvent(new PointerEvent('pointerdown',{clientX:sc.getBoundingClientRect().right}));});
+        // A trusted press on the scrollbar: since #171 the rail ignores a script's pointerdown (its own leave gesture).
+        if(kind==='scrollbar'){const b=await p.evaluate(()=>{const r=document.querySelector('.thread-scroll-container').getBoundingClientRect();return {x:r.right-5,y:r.top+r.height/2};});await p.mouse.move(b.x,b.y);await p.mouse.down();await p.mouse.up();}
         await p.waitForTimeout(200);
         const before=await state('t8');
         await p.evaluate(()=>document.querySelector('[data-turn-key="t7"]').style.height='3300px');await p.waitForTimeout(200);

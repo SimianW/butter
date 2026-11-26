@@ -10,6 +10,9 @@
       new CustomEvent('butter-layout-response', { detail: JSON.stringify(detail) }),
     );
   const announce = () => emit({ state: true, enabled });
+  // Saved layouts serve only the scrollbar preview (seek): while it is off the page loads and
+  // writes none, as with layouts off, but the worker keeps them, to use again when seek is on.
+  const open = (settings) => settings.opts.layout && settings.opts.seek;
   const migrate = () => {
     if (!migrationReady || migrated || consent === 'pending') return;
     migrated = true;
@@ -58,7 +61,7 @@
     if (changes.butter) {
       settingsVersion++;
       const settings = ButterStatus.normalize(changes.butter.newValue);
-      enabled = settings.opts.layout;
+      enabled = open(settings);
       consent = settings.layoutConsent;
       announce();
       migrate();
@@ -70,7 +73,7 @@
     .then(({ butter, butterLayoutMigrated }) => {
       if (!settingsVersion) {
         const settings = ButterStatus.normalize(butter);
-        enabled = settings.opts.layout;
+        enabled = open(settings);
         consent = settings.layoutConsent;
       }
       announce();

@@ -227,11 +227,13 @@
     hideSelectionUI();
     stopRun?.();
   });
-  // Esc or a click outside closes the box; the draft stays for this selection.
+  // Esc or a click outside closes the box; the draft stays for this selection. The rail's leave
+  // gesture (shared/leave-gesture.js) is no click: a jump from the keyboard leaves the box open.
   document.addEventListener(
     'pointerdown',
     (e) => {
-      if (boxOpen && !e.composedPath().includes(ui.host)) closeBox();
+      if (boxOpen && ButterLeaveGesture.isReaderInput(e) && !e.composedPath().includes(ui.host))
+        closeBox();
     },
     true,
   );

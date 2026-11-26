@@ -1,5 +1,6 @@
 const test = require('node:test'),
-  assert = require('node:assert/strict');
+  assert = require('node:assert/strict'),
+  status = require('../extension/shared/status.js');
 const vm = require('node:vm'),
   fs = require('node:fs'),
   crypto = require('node:crypto').webcrypto;
@@ -101,9 +102,9 @@ function fixture() {
     getComputedStyle: () => ({ font: '16px system-ui' }),
   };
   const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
-  ctx.window = ctx;
-  vm.createContext(ctx);
   const own = require('node:path').join(__dirname, '../extension');
+  ctx.ButterLeaveGesture = require(`${own}/shared/leave-gesture-main.js`); // preview-main needs it
+  vm.createContext(Object.assign(ctx, { window: ctx }));
   // REVIEW_SOURCE may point at an older tree; load the scripts it lacks from this repo's extension/.
   const sourceOf = (name) => {
     const file = `${process.env.REVIEW_SOURCE || own}/${name}.js`;
@@ -620,9 +621,8 @@ test('WARM dispatch refreshes invalidated stored fingerprints before restore and
     }
     assert.ok(f.ctx.testActive.readable, 'Readiness still completes');
     f.event('butter-status-request');
-    const status = require('../extension/shared/status.js');
     assert.equal(
-      status.classify(probeFacts).seek,
+      status.classify(probeFacts, { opts: { seek: true } }).seek,
       unstable ? 'fail' : 'ok',
       'A normal release engages seek only when its landing succeeds',
     );
@@ -697,7 +697,7 @@ test('F6 first-question and semantic landings validate the achievable scroll des
       frames.shift()();
     }
     f.event('butter-status-request');
-    const state = require(repo + '/extension/shared/status.js').classify(facts).seek;
+    const state = status.classify(facts, { opts: { seek: true } }).seek;
     console.log(
       'Clamped top:',
       f.sc.scrollTop,

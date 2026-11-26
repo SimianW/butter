@@ -30,9 +30,9 @@ if (!env.LAB_OWNER || env.EXT == null) { console.error('LAB_OWNER= and EXT= are 
 const NATIVE = env.EXT === '';
 const lab = heldLab(L, env);
 
-let browser;
+let browser, restoreOptions;
 try {
-  let page; ({ browser, page } = await startLab(L, lab, env, env.EXT));
+  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT, { scrolling: true }));
   const n = await openFixture(L, lab, page, FIXTURE, !NATIVE);
   report(`${FIXTURE}: history loaded, ${n} entries`);
   for (const [i, f] of AT.entries()) {
@@ -92,6 +92,6 @@ try {
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
-} finally { await browser?.close().catch(() => {}); }
+} finally { await restoreOptions?.().catch(() => {}); await browser?.close().catch(() => {}); }
 console.log(`SUMMARY seek-landing: ${fails} FAIL${fails === 1 ? '' : 's'}`);
 process.exit(exit || (fails ? 1 : 0));

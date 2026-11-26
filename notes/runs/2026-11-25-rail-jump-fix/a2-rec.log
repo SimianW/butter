@@ -1,0 +1,13 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":12,"hasPrev":false,"height":348321,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+REPORT control math12 pulled (back at the end at 1913 ms): write 0 with pin true, pin after true; [ms, scrollTop, scrollHeight, vh] every 500 ms [[1036,0,348185,912],[2329,347409,348321,912],[2839,347409,348321,912],[3346,347409,348321,912],[3856,347409,348321,912],[4364,347409,348321,912],[4873,347409,348321,912],[5383,347409,348321,912],[5891,347409,348321,912],[5993,347409,348321,912]]
+a2-rec math12 from=top-unpinned pin=false to=11 phase=reload-setup class=clean samples=172 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→11
+a2-rec math12 from=end-pinned pin=true to=0 phase=settled class=clean samples=168 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+a2-rec math12 from=top-unpinned pin=false to=11 phase=settled class=clean samples=170 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→11
+a2-rec math12 from=end-pinned pin=true to=0 phase=settled class=clean samples=173 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+SUMMARY {"jumps":4,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":2,"rawReversalCount":4,"unpinChecks":6,"anchoringOn":0,"cvOff":0,"starts":{"top-unpinned":2,"end-pinned":2,"previous":0},"pinUnread":0,"controls":1,"controlsPulled":1,"setupErrors":0,"fails":0}
+REPORT options put back: same as before true
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-25-rail-jump-fix/a2-rec.json

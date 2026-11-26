@@ -11,6 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
+import { switchOn } from './runner/options.mjs';
 
 const env = process.env;
 const FIXTURE = env.FIXTURE || 'ats12', TICK = Number(env.TICK || 4);
@@ -22,7 +23,7 @@ const held = (() => { try { return fs.readFileSync(path.join(lab.lockPath, 'owne
 if (held !== env.LAB_OWNER) { console.error(`lab ${lab.id} lock is held by ${held}`); process.exit(2); }
 const PAGE = /\/backend-api\/conversations?\/[0-9a-f-]{36}(\/messages)?(?:\?|$)/;
 const norm = s => (s || '').replace(/\s+/g, ' ').trim();
-let browser, exit = 0;
+let browser, exit = 0, restoreOptions;
 try {
   execFileSync(path.join(L.root(), 'bin/lab'), ['restart-browser'], { env: { ...env, LAB_ID: String(lab.id), LAB_EXTENSIONS: env.EXT, LAB_FLAGS: '' }, stdio: 'pipe' });
   for (let n = 0; n < 60 && !(await L.cdpVersion(lab)); n++) await pause(500);
@@ -31,6 +32,8 @@ try {
   if (typeof (await L.sendGuard(context, lab)) !== 'function') throw Error('send guard not installed');
   const page = context.pages().find(p => p.url().startsWith('https://chatgpt.com')) || context.pages()[0];
   for (const o of context.pages()) if (o !== page) await o.close();
+  // The probe loads all earlier history: Smoother scrolling is on for the run (it starts off).
+  restoreOptions = await switchOn(L, lab, context);
   const pages = [];
   page.on('response', async r => {
     if (r.request().method() !== 'GET' || !PAGE.test(r.url())) return;
@@ -159,5 +162,5 @@ try {
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
-} finally { await browser?.close().catch(() => {}); }
+} finally { await restoreOptions?.().catch(() => {}); await browser?.close().catch(() => {}); }
 process.exit(exit);
