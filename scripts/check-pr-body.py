@@ -365,9 +365,10 @@ def check_after_review(sha, diff, base, root):
             f"Verdict diff hash {diff} is not the diff of the reviewed commit {sha} against the "
             f"base ({actual}): the Verdict names the commit review-loop approved and the hash "
             f"`{DIFF_HASH_COMMAND} {base} {sha}` prints for it; never point it at a commit no "
-            f"review saw. If the hash was right when the review recorded it, {base} has since "
-            "taken in part of this PR's history (the parent PR of a stack merged, say), and the "
-            "review read another diff: run a new review-loop round"
+            f"review saw. If the hash was right when the review recorded it, this PR's merge base "
+            f"has moved since: {base} took in part of this PR's history (the parent PR of a stack "
+            "merged, say), or the PR now targets another base branch than the one the review "
+            f"used. The review read another diff: run a new review-loop round against {base}"
         ], []
     hash_pass = f"diff hash {diff} is the diff of the reviewed commit {sha}"
     reviewed, conflicted = replayed_tree(full, base, root)
