@@ -1,4 +1,5 @@
 """Run with: python3 -m unittest discover -s scripts -p 'test_*.py'."""
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -16,7 +17,8 @@ check_body = check_pr_body.check_body
 check_caps = check_pr_body.check_caps
 parse_caps = check_pr_body.parse_caps
 
-REVIEWED = "- **Verdict:** approved at `abc1234`"
+DIFF = "0123456789ab"
+REVIEWED = f"- **Verdict:** approved at `abc1234` (diff `{DIFF}`)"
 REVIEWERS = "- **Reviewers:** gpt-6.2-sol ×3 → claude-opus-5-5 ×1"
 
 
@@ -91,50 +93,50 @@ class VerdictItemTest(unittest.TestCase):
     def test_tier_one_without_verdict_item_fails(self):
         failures, _ = check_body(tier(1), 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
-        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[0])
+        self.assertIn("needs a `- **Verdict:** approved at <sha> (diff <12-hex>)` item", failures[0])
 
     def test_full_review_section_passes(self):
         body = f"Summary\n\n## Review\n\n{tier(2)}\n{REVIEWED}\n{REVIEWERS}\n"
         failures, passes = check_body(body, 2, ["extension/stream/x.js"])
         self.assertEqual(failures, [])
-        self.assertIn("tier 2 has a `- **Verdict:** approved at abc1234` item", passes)
+        self.assertIn("tier 2 has a `- **Verdict:** approved at abc1234 (diff 0123456789ab)` item", passes)
 
     def test_reviewers_item_is_not_required(self):
         failures, _ = check_body(f"{tier(1)}\n{REVIEWED}", 1, ["scripts/a.py"])
         self.assertEqual(failures, [])
 
     def test_unapproved_verdict_fails(self):
-        body = f"{tier(1)}\n- **Verdict:** changes requested at `abc1234`"
+        body = f"{tier(1)}\n- **Verdict:** changes requested at `abc1234` (diff `{DIFF}`)"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
         self.assertIn("**Verdict:** approved", failures[0])
 
     def test_verdict_is_case_sensitive(self):
-        body = f"{tier(1)}\n- **Verdict:** Approved at `abc1234`"
+        body = f"{tier(1)}\n- **Verdict:** Approved at `abc1234` (diff `{DIFF}`)"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
     def test_verdict_item_must_start_the_line(self):
-        body = f"{tier(1)}\nNot - **Verdict:** approved at `abc1234`"
+        body = f"{tier(1)}\nNot - **Verdict:** approved at `abc1234` (diff `{DIFF}`)"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
     def test_star_bullet_verdict_passes(self):
         seen = []
-        body = "* **Tier:** 1\n* **Verdict:** approved at `fd81ae1`"
-        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        body = f"* **Tier:** 1\n* **Verdict:** approved at `fd81ae1` (diff `{DIFF}`)"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha, diff: seen.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(seen, ["fd81ae1"])
 
     def test_sha_without_backticks_passes(self):
         seen = []
-        body = f"{tier(1)}\n- **Verdict:** approved at fd81ae1"
-        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        body = f"{tier(1)}\n- **Verdict:** approved at fd81ae1 (diff {DIFF})"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha, diff: seen.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(seen, ["fd81ae1"])
 
     def test_unbalanced_backticks_fail(self):
-        body = f"{tier(1)}\n- **Verdict:** approved at `fd81ae1"
+        body = f"{tier(1)}\n- **Verdict:** approved at `fd81ae1 (diff `{DIFF}`)"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
 
@@ -146,11 +148,11 @@ class VerdictItemTest(unittest.TestCase):
         failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
         self.assertEqual(len(failures), 2)
         self.assertIn("no `- **Tier:** N` item", failures[0])
-        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[1])
+        self.assertIn("needs a `- **Verdict:** approved at <sha> (diff <12-hex>)` item", failures[1])
 
     def test_missing_verdict_item_prints_the_item_to_add(self):
-        failures, _ = check_body(tier(1), 1, ["scripts/a.py"], head="1234abc")
-        self.assertIn("add `- **Verdict:** approved at 1234abc`", failures[0])
+        failures, _ = check_body(tier(1), 1, ["scripts/a.py"], head="1234abc", head_diff=DIFF)
+        self.assertIn("add `- **Verdict:** approved at 1234abc (diff 0123456789ab)`", failures[0])
 
     def test_missing_tier_item_prints_the_item_to_add(self):
         failures, _ = check_body(REVIEWED, 2, ["extension/stream/x.js"])
@@ -160,32 +162,51 @@ class VerdictItemTest(unittest.TestCase):
         body = f"{tier(1)}\n- **Verdict:** approved"
         failures, _ = check_body(body, 1, ["scripts/a.py"])
         self.assertEqual(len(failures), 1)
-        self.assertIn("add `- **Verdict:** approved at <sha>`", failures[0])
+        self.assertIn("add `- **Verdict:** approved at <sha> (diff <12-hex>)`", failures[0])
 
     def test_override_verdict_passes(self):
         seen = []
-        body = f"{tier(2)}\n- **Verdict:** overridden by simian at `fd81ae1`"
-        failures, passes = check_body(body, 2, ["extension/stream/x.js"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        body = f"{tier(2)}\n- **Verdict:** overridden by simian at `fd81ae1` (diff `{DIFF}`)"
+        failures, passes = check_body(body, 2, ["extension/stream/x.js"], review_gate=lambda sha, diff: seen.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(seen, ["fd81ae1"])
-        self.assertIn("tier 2 has a `- **Verdict:** overridden by simian at fd81ae1` item", passes)
+        self.assertIn("tier 2 has a `- **Verdict:** overridden by simian at fd81ae1 (diff 0123456789ab)` item", passes)
 
     def test_override_verdict_needs_a_user(self):
         for who in ("overridden", "overridden by", "overridden by @simian", "overridden by two words"):
-            body = f"{tier(1)}\n- **Verdict:** {who} at `fd81ae1`"
+            body = f"{tier(1)}\n- **Verdict:** {who} at `fd81ae1` (diff `{DIFF}`)"
             failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
             self.assertEqual(len(failures), 1, who)
 
     def test_sha_is_read_from_the_last_verdict_item(self):
         seen = []
-        body = f"{tier(1)}\n- **Verdict:** approved at `1111111`\n- **Verdict:** approved at `2222222`"
-        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: seen.append(sha) or ([], []))
+        body = f"{tier(1)}\n- **Verdict:** approved at `1111111` (diff `{DIFF}`)\n- **Verdict:** approved at `2222222` (diff `{DIFF}`)"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha, diff: seen.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(seen, ["2222222"])
 
+    def test_verdict_without_a_diff_hash_fails(self):
+        body = f"{tier(1)}\n- **Verdict:** approved at `abc1234`"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
+        self.assertEqual(len(failures), 1)
+        self.assertIn("scripts/check-pr-body.py diff-hash", failures[0])
+
+    def test_diff_hash_is_twelve_hex_digits(self):
+        for diff in ("0123456789a", "0123456789abc", "0123456789ag", "`0123456789ab", "0123456789ab`"):
+            body = f"{tier(1)}\n- **Verdict:** approved at `abc1234` (diff {diff})"
+            failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=self.fail)
+            self.assertEqual(len(failures), 1, diff)
+
+    def test_the_gate_gets_the_diff_hash_in_lower_case(self):
+        seen = []
+        body = f"{tier(1)}\n- **Verdict:** approved at `abc1234` (diff `0123456789AB`)"
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha, diff: seen.append(diff) or ([], []))
+        self.assertEqual(failures, [])
+        self.assertEqual(seen, [DIFF])
+
     def test_gate_failures_fail_the_body(self):
         body = f"{tier(1)}\n{REVIEWED}"
-        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha: ([f"bad {sha}"], []))
+        failures, _ = check_body(body, 1, ["scripts/a.py"], review_gate=lambda sha, diff: ([f"bad {sha}"], []))
         self.assertEqual(failures, ["bad abc1234"])
 
     def test_tier_zero_skips_the_gate(self):
@@ -278,7 +299,7 @@ class HiddenTextTest(unittest.TestCase):
         failures, _ = check_body(body, 2, ["scripts/a.py"])
         self.assertEqual(len(failures), 2, failures)
         self.assertIn("no `- **Tier:** N` item", failures[0])
-        self.assertIn("needs a `- **Verdict:** approved at <sha>` item", failures[1])
+        self.assertIn("needs a `- **Verdict:** approved at <sha> (diff <12-hex>)` item", failures[1])
         caps, _ = check_caps(body, self.CAPS_BEFORE, self.CAPS_AFTER)
         self.assertEqual(len(caps), 1, caps)
 
@@ -299,9 +320,9 @@ class HiddenTextTest(unittest.TestCase):
         self.assert_hidden(f"  ```\n{self.ITEMS}\n  ```\n")
 
     def test_real_items_win_over_example_items_in_a_fence(self):
-        body = f"```markdown\n{tier(0)}\n- **Verdict:** approved at `1111111`\n```\n\n{tier(2)}\n{REVIEWED}\n"
+        body = f"```markdown\n{tier(0)}\n- **Verdict:** approved at `1111111` (diff `{DIFF}`)\n```\n\n{tier(2)}\n{REVIEWED}\n"
         shas = []
-        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha: shas.append(sha) or ([], []))
+        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha, diff: shas.append(sha) or ([], []))
         self.assertEqual(failures, [])
         self.assertEqual(shas, ["abc1234"])
 
@@ -365,7 +386,7 @@ class HiddenTextTest(unittest.TestCase):
 
     def test_an_unclosed_comment_opener_after_text_is_literal(self):
         body = f"Skip comments that start with `<!--` and fenced code.\n\n## Review\n\n{tier(2)}\n{REVIEWED}\n"
-        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha: ([], []))
+        failures, _ = check_body(body, 2, ["scripts/a.py"], review_gate=lambda sha, diff: ([], []))
         self.assertEqual(failures, [])
 
     def test_an_abrupt_empty_comment_closes(self):
@@ -431,8 +452,21 @@ class ReviewedCommitTest(unittest.TestCase):
             env={**os.environ, "PR_BODY": body},
         )
 
-    def body(self, sha=None, tier=1):
-        verdict = f"- **Verdict:** approved at `{sha}`" if sha else "- **Verdict:** approved"
+    def diff_hash(self, *args, base="main"):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check-pr-body.py"), "diff-hash", base, *args],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return result.stdout.strip()
+
+    def body(self, sha=None, tier=1, diff=None):
+        """A Review section whose Verdict names sha and, unless diff is given, sha's diff hash."""
+        if sha and diff is None:
+            diff = self.diff_hash(sha)
+        verdict = f"- **Verdict:** approved at `{sha}` (diff `{diff}`)" if sha else "- **Verdict:** approved"
         return f"## Review\n\n- **Tier:** {tier}\n{verdict}\n{REVIEWERS}"
 
     def test_nothing_changed_after_the_sha_passes(self):
@@ -444,14 +478,116 @@ class ReviewedCommitTest(unittest.TestCase):
         result = self.run_check(self.body(self.rev("HEAD")))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_wrong_diff_hash_fails(self):
+        result = self.run_check(self.body(self.reviewed, diff=DIFF))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(
+            f"FAIL: Verdict diff hash {DIFF} is not the diff of the reviewed commit {self.reviewed} "
+            f"against the base ({self.diff_hash(self.reviewed)})",
+            result.stdout,
+        )
+
+    def test_verdict_moved_to_a_later_commit_with_the_reviewed_hash_fails(self):
+        reviewed_diff = self.diff_hash(self.reviewed)
+        self.write("extension/dev/capture.js", "export const a = 3;\n")
+        self.commit("after review")
+        result = self.run_check(self.body(self.rev("HEAD")[:7], diff=reviewed_diff))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(f"FAIL: Verdict diff hash {reviewed_diff} is not the diff", result.stdout)
+
+    def test_diff_hash_holds_after_the_base_is_merged_in(self):
+        reviewed_diff = self.diff_hash(self.reviewed)
+        self.git("checkout", "-q", "main")
+        self.write("extension/shared/util.js", "export const u = 9;\n")
+        self.commit("main moves")
+        self.git("checkout", "-q", "pr")
+        self.git("merge", "-q", "--no-edit", "main")
+        result = self.run_check(self.body(self.reviewed, diff=reviewed_diff))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: diff hash {reviewed_diff} is the diff of the reviewed commit {self.reviewed}", result.stdout)
+
+    def stack_a_child_on_the_pr(self):
+        """Branch `child` off the `pr` branch with one more commit; return its short sha."""
+        self.git("checkout", "-q", "-b", "child")
+        self.write("extension/shared/util.js", "export const u = 2;\n")
+        self.commit("child change")
+        return self.rev("HEAD")[:7]
+
+    def merge_the_pr_into_main(self):
+        self.git("checkout", "-q", "main")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge pr", "pr")
+        self.git("checkout", "-q", "child")
+
+    def test_stacked_pr_reviewed_against_its_parent_keeps_its_verdict_when_the_parent_merges(self):
+        child = self.stack_a_child_on_the_pr()
+        body = self.body(child, diff=self.diff_hash(child, base="pr"))
+        result = self.run_check(body, base="pr")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.merge_the_pr_into_main()
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: nothing changed after the reviewed commit {child}", result.stdout)
+
+    def test_stacked_pr_reviewed_against_main_needs_a_new_round_when_the_parent_merges(self):
+        child = self.stack_a_child_on_the_pr()
+        body = self.body(child, diff=self.diff_hash(child))
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.merge_the_pr_into_main()
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(f"is not the diff of the reviewed commit {child} against the base", result.stdout)
+        self.assertIn(
+            "If the hash was right when the review recorded it, main has since taken in part of "
+            "this PR's history (the parent PR of a stack merged, say), and the review read "
+            "another diff: run a new review-loop round",
+            result.stdout,
+        )
+
+    def test_diff_hash_of_a_clean_tree_is_the_hash_of_head(self):
+        diff = self.diff_hash()
+        self.assertRegex(diff, r"\A[0-9a-f]{12}\Z")
+        self.assertEqual(diff, self.diff_hash("HEAD"))
+        self.assertEqual(diff, self.diff_hash(self.reviewed))
+
+    def test_diff_hash_reads_commits_only(self):
+        clean = self.diff_hash()
+        self.write("extension/dev/capture.js", "export const a = 3;\n")
+        self.assertEqual(self.diff_hash(), clean)
+        self.commit("more")
+        self.assertNotEqual(self.diff_hash(), clean)
+
+    def test_diff_hash_is_review_loops_formula(self):
+        # review-loop's seats compute the hash with this formula when a repo has no checker, so
+        # the two must agree: SHA-256 of `<merge-base tree>..<rev tree>` and a newline.
+        trees = f"{self.rev('main^{tree}')}..{self.rev('HEAD^{tree}')}\n"
+        self.assertEqual(self.diff_hash(), hashlib.sha256(trees.encode("ascii")).hexdigest()[:12])
+
+    def test_diff_hash_takes_at_most_a_base_and_a_rev(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check-pr-body.py"), "diff-hash", "main", "HEAD", "extra"],
+            capture_output=True,
+            text=True,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("usage:", result.stderr)
+
+    def test_agent_instructions_changed_after_the_sha_fail(self):
+        self.write("AGENTS.md", "# Agent notes\n")
+        self.commit("instructions after review")
+        result = self.run_check(self.body(self.reviewed))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("reach tier 1: AGENTS.md (agent instructions)", result.stdout)
+
     def test_verdict_without_sha_fails(self):
         result = self.run_check(self.body())
         self.assertEqual(result.returncode, 1)
         head = self.rev("HEAD")[:7]
-        self.assertIn(f"add `- **Verdict:** approved at {head}`", result.stdout)
+        self.assertIn(f"add `- **Verdict:** approved at {head} (diff {self.diff_hash()})`", result.stdout)
 
     def test_unknown_sha_fails(self):
-        result = self.run_check(self.body("deadbeef"))
+        result = self.run_check(self.body("deadbeef", diff=DIFF))
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("FAIL: reviewed commit deadbeef is not in this checkout", result.stdout)
         self.assertIn("rebase, amend or force-push", result.stdout)
@@ -861,7 +997,7 @@ class ReviewedCommitTest(unittest.TestCase):
         self.git("checkout", "-q", "-b", "raise")
         self.write("eslint.config.mjs", self.caps_config({"extension/big.js": 640}))
         self.commit("raise the cap")
-        body = "## Review\n\n- **Tier:** 1\n" + REVIEWED.replace("abc1234", self.rev("HEAD")[:7])
+        body = "## Review\n\n- **Tier:** 1\n" + REVIEWED.replace("abc1234", self.rev("HEAD")[:7]).replace(DIFF, self.diff_hash())
         result = self.run_check(body)
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("FAIL: the PR raises the max-lines cap for extension/big.js from 600 to 640", result.stdout)

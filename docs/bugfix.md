@@ -42,11 +42,13 @@ shows the bug gone.
 
 ## 4. Review and ship
 
-Run `python3 scripts/review-tier.py origin/main` and follow the Workflow rule in
-[AGENTS.md](../AGENTS.md). The PR body carries the step 1 result, the step 2 command and both
-recordings.
+Follow [docs/agents/workflow.md](agents/workflow.md) to review the fix, run the PR-body check and
+ship. The PR body carries the step 1 result, the step 2 command and both recordings.
 
 The PR body says `Closes #N` only when the fix was seen working on real ChatGPT: a live-lab run,
 or the user on a test build. Otherwise it says `Refs #N`, and the issue stays open until then.
 
-Done when: the PR is open with the `- **Tier:** N` item in its Review section and, for tiers 1 and 2, an APPROVE recorded as `- **Verdict:** approved at <sha>`, or the user's override of a stuck loop as `- **Verdict:** overridden by <user> at <sha>`.
+Done when: the PR is open with the `- **Tier:** N` item in its Review section and passes the
+local PR-body check; for tiers 1 and 2 it records an APPROVE as
+``- **Verdict:** approved at `<sha>` (diff `<12-hex>`)``, or the user's override of a stuck loop
+as ``- **Verdict:** overridden by <user> at `<sha>` (diff `<12-hex>`)``.

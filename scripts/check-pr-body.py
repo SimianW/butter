@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Check that a PR body records the review the repo's workflow requires.
 
-Usage: PR_BODY=... python3 scripts/check-pr-body.py [base]   (base defaults to origin/main)
+Usage: PR_BODY=... python3 scripts/check-pr-body.py [base]       check a PR body (CI)
+       python3 scripts/check-pr-body.py diff-hash [base] [rev]   print a Verdict item's diff hash
+
+base defaults to origin/main.
 
 The body records the review in a Markdown list, conventionally under a `## Review` heading at its
 end:
@@ -9,19 +12,26 @@ end:
     ## Review
 
     - **Tier:** 1
-    - **Verdict:** approved at `fd81ae1`
+    - **Verdict:** approved at `fd81ae1` (diff `a1b2c3d4e5f6`)
     - **Reviewers:** gpt-6.2-sol ×3 → claude-opus-5-5 ×1
 
 The Tier item (`-` or `*` bullet, `- **Tier:** N`) must give N = 0, 1 or 2 and at least the tier
 scripts/review-tier.py computes against base; the first Tier item counts. When that tier is 1 or
-2, the body must also carry a Verdict item `- **Verdict:** approved at <sha>` (`-` or `*` bullet,
-backticks around the sha optional, 7 to 40 hex digits), or its override form
-`- **Verdict:** overridden by <user> at <sha>`, which records the user shipping a stuck
-review-loop (`<user>` is a login without `@`). When several Verdict items exist, the last
-one counts. The Reviewers item is for humans; the check does not read it. The sha must exist in
-this checkout and be an ancestor of HEAD: a rewrite that drops the approved commit from HEAD's
-history (a rebase, or an amend or force-push of that commit) fails the check, because
-review-loop's After approval updates a PR only by merging the base branch in.
+2, the body must also carry a Verdict item `- **Verdict:** approved at <sha> (diff <12-hex>)`
+(`-` or `*` bullet, backticks around the sha and the hash optional, 7 to 40 hex digits and 12), or
+its override form `- **Verdict:** overridden by <user> at <sha> (diff <12-hex>)`, which records
+the user shipping a stuck review-loop (`<user>` is a login without `@`). When several Verdict
+items exist, the last one counts. The Reviewers item is for humans; the check does not read it.
+The sha must exist in this checkout and be an ancestor of HEAD: a rewrite that drops the approved
+commit from HEAD's history (a rebase, or an amend or force-push of that commit) fails the check,
+because review-loop's After approval updates a PR only by merging the base branch in.
+<12-hex> must be the diff hash of <sha>, which is what the review's seats report they read: the
+first 12 hex digits of the SHA-256 of `<base tree>..<sha tree>` and a newline, the two full tree
+ids of <sha> and of its merge base with base. `diff-hash [base] [rev]` prints it for rev (HEAD by
+default); it reads commits only, so commit the change first. It is review-loop's own formula, and
+no git config setting can change it. The merge base moves only when base takes in part of the
+PR's own history, as when a PR stacked on another is reviewed against base and the other then
+merges; a PR reviewed against the branch it is stacked on keeps its hash through that merge.
 Nothing after the sha may reach tier 1 or 2: <sha> is replayed onto the current base with
 `git merge-tree` (so a base-branch merge after the review does not count, even in files the PR
 also changed), and the paths that differ between that tree and the working tree are classified
@@ -54,6 +64,7 @@ whitespace findings do not count.
 Items inside HTML comments (`<!-- ... -->`) and fenced code blocks do not count: they never render.
 Exits 0 when the body passes and 1 with one line per failure otherwise.
 """
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -77,7 +88,9 @@ CAP_ITEM = re.compile(r"[-*] \*\*Cap raised:\*\* `([^`]+)` (new|[0-9]+) (?:→|-
 CONFLICT_MARKER = re.compile(r"(.+):([0-9]+): leftover conflict marker")
 VERDICT_ITEM = re.compile(
     r"[-*] \*\*Verdict:\*\* (approved|overridden by [^`@\s]+) at (`?)([0-9a-fA-F]{7,40})\2"
+    r" \(diff (`?)([0-9a-fA-F]{12})\4\)"
 )
+DIFF_HASH_COMMAND = "python3 scripts/check-pr-body.py diff-hash"
 
 
 def rendered_lines(body):
@@ -137,8 +150,18 @@ def tier_item(tier):
     return f"- **Tier:** {tier}"
 
 
-def verdict_item(sha=None):
-    return f"- **Verdict:** approved at {sha or '<sha>'}"
+def verdict_item(sha=None, diff=None):
+    return f"- **Verdict:** approved at {sha or '<sha>'} (diff {diff or '<12-hex>'})"
+
+
+def diff_hash(base_rev, rev, root):
+    """Return the diff hash from base_rev to rev: the first 12 hex digits of the SHA-256 of
+    `<base tree>..<rev tree>` and a newline, with git's full tree ids."""
+    base_tree, rev_tree = (
+        review_tier.git("rev-parse", "--verify", f"{commit}^{{tree}}", cwd=root).decode().strip()
+        for commit in (base_rev, rev)
+    )
+    return hashlib.sha256(f"{base_tree}..{rev_tree}\n".encode("ascii")).hexdigest()[:12]
 
 
 class CapsError(Exception):
@@ -236,12 +259,13 @@ def check_conflict_markers(markers):
     return [], ["no leftover conflict markers"]
 
 
-def check_body(body, tier, reasons, review_gate=None, head=None):
+def check_body(body, tier, reasons, review_gate=None, head=None, head_diff=None):
     """Return (failures, passes): message lists for a body against the computed tier and reasons.
 
-    review_gate(sha) checks the approved commit against the checkout and returns its own
-    (failures, passes); main passes one, and without it only the body's lines are checked.
-    head, when given, fills the sha in the Verdict item the failure messages suggest.
+    review_gate(sha, diff) checks the approved commit and its diff hash (in lower case) against
+    the checkout and returns its own (failures, passes); main passes one, and without it only the
+    body's lines are checked. head and head_diff, when given, fill the sha and the diff hash in
+    the Verdict item the failure messages suggest.
     """
     lines = rendered_lines(body)
     failures, passes = [], []
@@ -269,13 +293,15 @@ def check_body(body, tier, reasons, review_gate=None, head=None):
     verdicts = [match for match in map(VERDICT_ITEM.fullmatch, lines) if match]
     if not verdicts:
         failures.append(
-            f"tier {tier} needs a `- **Verdict:** approved at <sha>` item; add `{verdict_item(head)}`"
+            f"tier {tier} needs a `{verdict_item()}` item; add `{verdict_item(head, head_diff)}` "
+            f"(`{DIFF_HASH_COMMAND} [base] <sha>` prints the diff hash of the commit review-loop "
+            "approved)"
         )
         return failures, passes
-    verdict, sha = verdicts[-1].group(1), verdicts[-1].group(3)
-    passes.append(f"tier {tier} has a `- **Verdict:** {verdict} at {sha}` item")
+    verdict, sha, diff = verdicts[-1].group(1), verdicts[-1].group(3), verdicts[-1].group(5).lower()
+    passes.append(f"tier {tier} has a `- **Verdict:** {verdict} at {sha} (diff {diff})` item")
     if review_gate is not None:
-        gate_failures, gate_passes = review_gate(sha)
+        gate_failures, gate_passes = review_gate(sha, diff)
         failures.extend(gate_failures)
         passes.extend(gate_passes)
     return failures, passes
@@ -314,8 +340,9 @@ def is_ancestor(sha, root):
     return status == 0
 
 
-def check_after_review(sha, base, root):
-    """Return (failures, passes) for the changes made after the approved commit sha."""
+def check_after_review(sha, diff, base, root):
+    """Return (failures, passes) for the approved commit sha, the diff hash the Verdict gives for
+    it, and the changes made after it."""
     try:
         full = review_tier.git("rev-parse", "--verify", "--quiet", f"{sha}^{{commit}}", cwd=root)
     except review_tier.GitError:
@@ -331,10 +358,22 @@ def check_after_review(sha, base, root):
             "(rebase, amend or force-push); follow review-loop's After approval and merge the base "
             "branch in instead of rebasing"
         ], []
+    old_base = review_tier.git("merge-base", full, base, cwd=root).decode().strip()
+    actual = diff_hash(old_base, full, root)
+    if actual != diff:
+        return [
+            f"Verdict diff hash {diff} is not the diff of the reviewed commit {sha} against the "
+            f"base ({actual}): the Verdict names the commit review-loop approved and the hash "
+            f"`{DIFF_HASH_COMMAND} {base} {sha}` prints for it; never point it at a commit no "
+            f"review saw. If the hash was right when the review recorded it, {base} has since "
+            "taken in part of this PR's history (the parent PR of a stack merged, say), and the "
+            "review read another diff: run a new review-loop round"
+        ], []
+    hash_pass = f"diff hash {diff} is the diff of the reviewed commit {sha}"
     reviewed, conflicted = replayed_tree(full, base, root)
     changed = sorted(set(review_tier.changed_since(reviewed, root)) | conflicted)
     if not changed:
-        return [], [f"nothing changed after the reviewed commit {sha}"]
+        return [], [hash_pass, f"nothing changed after the reviewed commit {sha}"]
     tier, reasons = classify_after_review(changed, reviewed, conflicted, root)
     if tier >= 1:
         return [
@@ -344,7 +383,10 @@ def check_after_review(sha, base, root):
             "resolution and an override goes back to the user; otherwise run a new review-loop "
             "round"
         ], []
-    return [], [f"changes after the reviewed commit {sha} are tier 0: {'; '.join(reasons)}"]
+    return [], [
+        hash_pass,
+        f"changes after the reviewed commit {sha} are tier 0: {'; '.join(reasons)}",
+    ]
 
 
 def classify_after_review(changed, reviewed, conflicted, root):
@@ -368,15 +410,36 @@ def classify_after_review(changed, reviewed, conflicted, root):
     return 2, (others if tier == 2 else []) + [manifest]
 
 
+def print_diff_hash(base, rev):
+    """Print the diff hash of the commit rev against its merge base with base."""
+    try:
+        root = review_tier.git("rev-parse", "--show-toplevel").decode().strip()
+        merge_base = review_tier.git("merge-base", rev, base, cwd=root).decode().strip()
+        print(diff_hash(merge_base, rev, root))
+    except (review_tier.GitError, OSError) as error:
+        print(f"check-pr-body: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def main(argv):
-    if len(argv) > 1 or (argv and argv[0].startswith("-")):
-        print("usage: PR_BODY=... python3 scripts/check-pr-body.py [base]", file=sys.stderr)
+    hash_mode = bool(argv) and argv[0] == "diff-hash"
+    args = argv[1:] if hash_mode else argv
+    if len(args) > (2 if hash_mode else 1) or any(arg.startswith("-") for arg in args):
+        print(
+            "usage: PR_BODY=... python3 scripts/check-pr-body.py [base]\n"
+            f"       {DIFF_HASH_COMMAND} [base] [rev]",
+            file=sys.stderr,
+        )
         return 2
-    base = argv[0] if argv else "origin/main"
+    base = args[0] if args else "origin/main"
+    if hash_mode:
+        return print_diff_hash(base, args[1] if len(args) == 2 else "HEAD")
     try:
         root = review_tier.git("rev-parse", "--show-toplevel").decode().strip()
         merge_base, paths, before, after, format_only = review_tier.collect(base)
         head = review_tier.git("rev-parse", "--short", "HEAD", cwd=root).decode().strip()
+        head_diff = diff_hash(merge_base, "HEAD", root)
         caps_before, caps_after = caps_at(merge_base, root), working_caps(root)
         markers = conflict_markers(merge_base, root)
     except (review_tier.GitError, review_tier.ToolError, CapsError, OSError) as error:
@@ -391,8 +454,9 @@ def main(argv):
             os.environ.get("PR_BODY", ""),
             tier,
             reasons,
-            review_gate=lambda sha: check_after_review(sha, base, root),
+            review_gate=lambda sha, diff: check_after_review(sha, diff, base, root),
             head=head,
+            head_diff=head_diff,
         )
     except (review_tier.GitError, review_tier.ToolError, OSError) as error:
         print(f"check-pr-body: {error}", file=sys.stderr)
