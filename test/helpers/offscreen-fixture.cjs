@@ -78,7 +78,12 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
   turn.contains = (x) => x === turn || blocks.includes(x);
   turn.querySelectorAll = (s) => select(blocks, s);
   Object.defineProperty(turn, 'firstElementChild', { get: () => blocks[0] ?? null });
-  const state = { ...el(), closest: () => turn };
+  // The element that carries data-talvt-turn-state: it matches in_progress while the answer streams.
+  const state = {
+    ...el(),
+    closest: () => turn,
+    matches: (s) => s.includes('in_progress') && streaming,
+  };
   const root = {
     ...el(),
     firstElementChild: turn,

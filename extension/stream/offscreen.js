@@ -216,9 +216,10 @@
           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
           if (r.oldValue === 'in_progress')
             setTimeout(() => prelayout(t.querySelectorAll('[data-butter-unrendered]')), FLUSH_MS);
-        } else if (t && r.oldValue !== 'in_progress')
+        } else if (t && r.oldValue !== 'in_progress' && r.target.matches(BUSY))
           // The turn streams again (Regenerate, Edit), maybe into its old elements: no veil from
           // before stays on. A held block so unveiled is still skipped; it only loses the gain.
+          // Only the change into in_progress counts, not another state change inside a busy turn.
           for (const el of t.querySelectorAll(`[${VEIL}]`)) unveil(el);
       }
     }
