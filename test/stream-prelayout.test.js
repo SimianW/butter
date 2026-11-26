@@ -46,6 +46,20 @@ test('each idle callback lays out a few blocks and stays well under a long frame
   );
 });
 
+test('on a page that is never idle, each callback runs on a short timeout and still lays out a few blocks', () => {
+  // Live, a page drawing a long frame every frame got no idle period for 15 s after completion,
+  // and a find then paid for the blocks never laid out (round2/prelayout-live/report.md).
+  const f = completed(held(40, { readMs: 4 }));
+  const took = f.idle({ timedOut: true });
+  assert.equal(f.laidOut.length, 40);
+  assert.ok(
+    f.idleTimeouts.length && f.idleTimeouts.every((ms) => ms > 0 && ms <= 100),
+    `requested with timeouts ${f.idleTimeouts}`,
+  );
+  assert.ok(took.length <= 20, `${took.length} callbacks for 40 blocks: one block each`);
+  assert.ok(Math.max(...took) <= 20, `longest callback ${Math.max(...took)} ms`);
+});
+
 test('it writes nothing: no block is marked, held, unveiled or observed by it', () => {
   const f = completed(held(5));
   f.calls.length = 0;

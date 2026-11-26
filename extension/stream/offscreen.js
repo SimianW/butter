@@ -73,7 +73,13 @@
   // costs nothing). Each idle callback stops after CHUNK_MS, one block at least (live, one block
   // took 1-17 ms), and stops for good when cv goes off or the document is hidden; a block is
   // skipped once it has rendered, left the page or its turn streams again.
+  // A page that draws a frame every frame (a requestAnimationFrame loop, a scroll) gets no idle
+  // periods at all: live, no idle callback ran for 15 s after completion. So each callback is also
+  // due WAIT_MS after it is requested, and one that runs on that timeout still lays out CHUNK_MS
+  // of blocks, at most one short task per WAIT_MS on a busy page
+  // (notes/runs/2026-11-24-veil-acceptance/round2/prelayout-live/report.md).
   const CHUNK_MS = 8,
+    WAIT_MS = 50,
     pending = new Set(),
     laid = new Set();
   let idle = 0,
@@ -92,7 +98,9 @@
   const chunk = (deadline) => {
     idle = 0;
     if (stopped()) return stop();
-    const end = performance.now() + Math.min(CHUNK_MS, deadline.timeRemaining());
+    const end =
+      performance.now() +
+      (deadline.didTimeout ? CHUNK_MS : Math.min(CHUNK_MS, deadline.timeRemaining()));
     for (const el of pending) {
       pending.delete(el);
       if (!due(el)) continue;
@@ -102,13 +110,13 @@
       laid.add(el);
       if (performance.now() >= end) break;
     }
-    if (pending.size) idle = requestIdleCallback(chunk);
+    if (pending.size) idle = requestIdleCallback(chunk, { timeout: WAIT_MS });
   };
   const prelayout = (els) => {
     for (const el of laid) if (!due(el)) laid.delete(el);
     if (stopped()) return;
     for (const el of els) if (due(el)) pending.add(el);
-    if (pending.size && !idle) idle = requestIdleCallback(chunk);
+    if (pending.size && !idle) idle = requestIdleCallback(chunk, { timeout: WAIT_MS });
   };
   document.fonts?.addEventListener('loadingdone', () => laid.size && prelayout([...laid]));
   const flush = () => {
