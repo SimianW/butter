@@ -1,0 +1,7 @@
+BUILD 0.1.0-alpha.22+dev.1
+HARNESS ERROR: locator.waitFor: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('chatgpt-butter-nav[data-on]')
+
+    at ~/.t3/worktrees/butter/t3-2c337714-52446d0d43947e7c/notes/runs/2026-11-24-rail-jump-pin/adhoc/rpin.mjs:89:65
+EXIT 2; raw ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-pin/r1-smoke.json

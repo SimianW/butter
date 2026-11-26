@@ -12,6 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
+import { switchOn } from './runner/options.mjs';
 
 const env = process.env;
 const label = env.LABEL || 'history', FIXTURE = env.FIXTURE || 'math12', EXPECT = Number(env.EXPECT || 2);
@@ -24,7 +25,7 @@ const lab = { ...L.getLab(env.LAB_ID || 2), owner: env.LAB_OWNER };
 const held = (() => { try { return fs.readFileSync(path.join(lab.lockPath, 'owner'), 'utf8').split('\n')[0].trim(); } catch { return null; } })();
 if (held !== env.LAB_OWNER) { console.error(`lab ${lab.id} lock is held by ${held}`); process.exit(2); }
 const PAGE = /\/backend-api\/conversations?\/[0-9a-f-]{36}(\/messages)?(?:\?|$)/;
-let browser;
+let browser, restoreOptions;
 try {
   if (env.EXT !== undefined) {
     execFileSync(path.join(L.root(), 'bin/lab'), ['restart-browser'], { env: { ...env, LAB_ID: String(lab.id), LAB_EXTENSIONS: env.EXT, LAB_FLAGS: '' }, stdio: 'pipe' });
@@ -36,6 +37,8 @@ try {
   const ext = L.browserArgs(lab)?.extensions[0] || null;
   const page = context.pages().find(p => p.url().startsWith('https://chatgpt.com')) || context.pages()[0];
   for (const o of context.pages()) if (o !== page) await o.close();
+  // Smoother scrolling's `older` asks the small earlier pages this run checks; it starts off.
+  restoreOptions = await switchOn(L, lab, context);
   const reqs = [];
   page.on('request', r => {
     if (r.method() !== 'GET' || !PAGE.test(r.url())) return;
@@ -75,6 +78,6 @@ try {
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
-} finally { await browser?.close().catch(() => {}); }
+} finally { await restoreOptions?.().catch(() => {}); await browser?.close().catch(() => {}); }
 console.log(`SUMMARY ${label}: ${fails} FAIL${fails === 1 ? '' : 's'}`);
 process.exit(exit || (fails ? 1 : 0));

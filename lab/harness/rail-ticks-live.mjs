@@ -34,6 +34,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
+import { switchOn } from './runner/options.mjs';
 
 const env = process.env;
 const fixtures = (env.FIXTURES || 'ats12,math12').split(',');
@@ -56,7 +57,7 @@ if (!env.EXT) { console.error('EXT= must name an unpacked Butter build (the rail
 const lab = borrowed ? { ...L.getLab(env.LAB_ID || 2), owner: env.LAB_OWNER }
   : L.acquire(env.LAB_ID || 'auto', { owner: `rail-ticks-live-${process.pid}`, needsFixture: fixtures[0], wait: 1800 });
 const summary = { label, at: new Date().toISOString(), lab: lab.id, fixtures: {}, guard: { blockedMutations: 0, sendAttempts: 0 }, cleanup: {} };
-let browser, context, page, phase = 'setup';
+let browser, context, page, phase = 'setup', restoreOptions = null;
 
 // ---- In the page. Everything below runs in ChatGPT's MAIN world; texts and keys stay there.
 function pageHelpers() {
@@ -365,6 +366,8 @@ try {
   });
   page = context.pages()[0] || await context.newPage();
   for (const other of context.pages()) if (other !== page) await other.close();
+  // The fixtures load all earlier history: Smoother scrolling is on for the run (it starts off).
+  restoreOptions = await switchOn(L, lab, context);
   await page.bringToFront();
   summary.chromium = browser.version();
   for (const name of fixtures) {
@@ -372,11 +375,13 @@ try {
     catch (e) { verdict(false, `${name} setup`, String(e.message).replace(/https?:\/\/\S+/g, '<url>').slice(0, 200)); code = 2; }
   }
   report(`guard sendAttempts=${summary.guard.sendAttempts} blockedMutations=${summary.guard.blockedMutations}`);
+  await restoreOptions?.(); restoreOptions = null;
   await browser.close();
 } catch (e) {
   console.log(`HARNESS ERROR ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').slice(0, 300)}`);
   code = 2;
 } finally {
+  await restoreOptions?.().catch(() => {});
   summary.lines = lines;
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(summary, null, 1));

@@ -1,0 +1,27 @@
+t2-math9 math9 from=top to=4 phase=reload class=detour positions=[[4660,207977],[4681,207956],[4699,207913],[4719,207833],[4763,207696],[4790,207629],[4821,207590],[4857,207556],[4887,207549],[4911,132375],[7710,210475],[9309,134365],[9394,127967],[10381,129650],[12075,212158],[13380,127602],[14012,129273],[15185,129650],[15693,129638],[15711,129615],[15731,129563],[15752,129485],[15770,129427],[15807,129344],[15826,129329],[15847,129318],[16045,129287]] targetTop=64 reversals=6
+t2-math9 math9 from=bottom to=0 phase=reload class=clean samples=203
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":9,"hasPrev":false,"height":295527,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+t2-math9 math9 from=top to=0 phase=reload-setup class=clean samples=151
+t2-math9 math9 from=top to=1 phase=settled class=clean samples=167
+t2-math9 math9 from=top to=2 phase=settled class=clean samples=215
+t2-math9 math9 from=top to=3 phase=settled class=clean samples=178
+t2-math9 math9 from=top to=4 phase=settled class=clean samples=170
+t2-math9 math9 from=top to=5 phase=settled class=clean samples=173
+t2-math9 math9 from=top to=6 phase=settled class=clean samples=187
+t2-math9 math9 from=top to=7 phase=settled class=clean samples=187
+t2-math9 math9 from=top to=8 phase=settled class=clean samples=163
+t2-math9 math9 from=bottom to=0 phase=settled class=clean samples=177
+t2-math9 math9 from=bottom to=1 phase=settled class=clean samples=184
+t2-math9 math9 from=bottom to=2 phase=settled class=clean samples=165
+t2-math9 math9 from=bottom to=3 phase=settled class=clean samples=180
+t2-math9 math9 from=bottom to=4 phase=settled class=clean samples=177
+t2-math9 math9 from=bottom to=5 phase=settled class=clean samples=175
+t2-math9 math9 from=bottom to=6 phase=settled class=clean samples=178
+t2-math9 math9 from=bottom to=7 phase=settled class=clean samples=177
+t2-math9 math9 from=bottom to=8 phase=settled class=clean samples=177
+t2-math9 math9 from=previous to=0 phase=settled class=clean samples=180
+t2-math9 math9 from=previous to=1 phase=settled class=clean samples=166
+t2-math9 math9 from=previous to=8 phase=settled class=clean samples=145
+t2-math9 math9 from=previous to=7 phase=settled class=clean samples=164
+SUMMARY {"jumps":24,"failed":0,"visibleDetour":1,"native":0,"gated":1,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":21,"rawReversalCount":46,"unpinChecks":21,"anchoringOn":0,"cvOff":0}
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-24-rail-jump-before/t2-math9.json

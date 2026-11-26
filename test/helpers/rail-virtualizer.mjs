@@ -4,13 +4,18 @@
 // 5725 px, scrollHeight 7619, clientHeight 1092, so the bottom is scrollTop 6527. A turn is mounted
 // while it is within 1500 px of the viewport. As Chrome does for a target that leaves the DOM, the
 // position observer reports an unmounted turn with an empty boundingClientRect; a mounted one with
-// its real box. test/rail-jump-detours.test.mjs and test/rail-jump-lost.test.mjs use it.
+// its real box. As in Chrome (measured in headless Chromium for #171): every change of scrollTop is
+// followed on the next frame by the browser's own scroll event on the scroller; a smooth scrollTo
+// moves the chat over SMOOTH_MS and ends with a scrollend; an instant move ends with a scrollend on
+// the next frame, even when a smooth scroll started in the same task. A write stops a smooth scroll. test/rail-jump-detours.test.mjs, test/rail-jump-lost.test.mjs and
+// test/rail-jump-end-pin.test.mjs use it.
 import fs from 'node:fs';
 import vm from 'node:vm';
 import ButterRailModel from '../../extension/rail/model.js';
-import { FakeElement, fakeObservers } from './rail-dom.mjs';
+import { chatgptEndPin } from './chatgpt-end-pin.mjs';
+import { FakeElement, fakeEvents, fakeObservers } from './rail-dom.mjs';
 
-const read = (f) => fs.readFileSync(new URL(`../../extension/rail/${f}`, import.meta.url), 'utf8');
+const read = (f) => fs.readFileSync(new URL(`../../extension/${f}`, import.meta.url), 'utf8');
 export const TOPS = [84, 1883, 3418, 5725],
   HEIGHTS = [1787, 1523, 2294, 1736],
   SCROLL_HEIGHT = 7619,
@@ -18,7 +23,13 @@ export const TOPS = [84, 1883, 3418, 5725],
   BOTTOM = SCROLL_HEIGHT - CLIENT,
   MARGIN = 1500;
 // The rail scripts a jump needs, in the manifest's order.
-const SCRIPTS = ['turns.js', 'readiness.js', 'jump.js'];
+const SCRIPTS = ['shared/leave-gesture.js', 'rail/turns.js', 'rail/readiness.js', 'rail/jump.js'];
+// With `endPin`, questions 0-2 grow this long after each mount, as on the real page (a turn's
+// measured height replaces its estimate: the transcript shrinks and grows back within 0.3 s to 3 s
+// of the mount, its total height unchanged).
+export const GROWS = [0, 1, 2],
+  GROW_MS = [300, 1200, 2500],
+  SMOOTH_MS = 300;
 
 // The chat opens at its top. Returns the tracker and the jump, the scroller, `writes` (every
 // scrollTop write the rail made, clamped as the browser does), the turn elements `els`, the journey
@@ -29,22 +40,39 @@ const SCRIPTS = ['turns.js', 'readiness.js', 'jump.js'];
 // - `run(ms)`: runs timers and frames for `ms`; `now()`: the page's clock.
 // A wheel on the scroller cancels the jump, as rail/rail.js wires the tracker's `scrolled`.
 // `trace(step, fields)`: the dev build's trace hook (dev/rail-trace.js), given the rail as rail.js
-// lends it. `hasPrev`: the chat has earlier pages left (they never load here).
-export function setup({ trace, hasPrev = false } = {}) {
+// lends it. `hasPrev`: the chat has earlier pages left (they never load here). `reduced`: the reader
+// prefers reduced motion. `scrollHeight`: the chat's height (the last turn ends 158 px above it).
+// `endPin`: ChatGPT's end pin (test/helpers/chatgpt-end-pin.mjs) runs on the scroller, as `pin`:
+// the chat opens at its end with the pin set, and each of GROWS grows GROW_MS after it mounts.
+// `wheel(deltaY, to)`: the reader's wheel moves the chat to `to`; `grow(px)`: an answer streams
+// `px` more at the chat's end.
+export function setup({
+  trace,
+  hasPrev = false,
+  reduced = false,
+  scrollHeight = SCROLL_HEIGHT,
+  endPin = false,
+} = {}) {
   let now = 10_000,
     nextId = 1,
-    top = 0;
+    top = 0,
+    height = scrollHeight,
+    scrolled = false, // scrollTop changed since the last frame: the browser's scroll event is due
+    ended = false, // an instant move: its scrollend is due on the next frame
+    smooth = null; // the smooth scroll under way: { from, to, at }
+  const heights = [...HEIGHTS.slice(0, -1), scrollHeight - TOPS.at(-1) - 158];
   const frames = new Map(),
     timers = new Map();
   const observers = fakeObservers();
   const window = new FakeElement();
   const ctx = vm.createContext({
     ButterRailModel,
+    ...fakeEvents(),
     Element: FakeElement,
     ResizeObserver: observers.ResizeObserver,
     IntersectionObserver: observers.IntersectionObserver,
     addEventListener: window.addEventListener.bind(window),
-    matchMedia: () => ({ matches: false }),
+    matchMedia: () => ({ matches: reduced }),
     performance: { now: () => now },
     requestAnimationFrame(callback) {
       const id = nextId++;
@@ -57,7 +85,7 @@ export function setup({ trace, hasPrev = false } = {}) {
       return id;
     },
   });
-  for (const f of SCRIPTS) vm.runInContext(read(f), ctx, { filename: `rail/${f}` });
+  for (const f of SCRIPTS) vm.runInContext(read(f), ctx, { filename: f });
 
   // The rail presentation model, as far as the tracker and the jump use it.
   const st = { flying: false, pinned: false, busy: null, active: null };
@@ -102,23 +130,24 @@ export function setup({ trace, hasPrev = false } = {}) {
     onMount = [];
   Object.assign(scroller, {
     className: 'thread-scroll-container',
-    scrollHeight: SCROLL_HEIGHT,
     clientHeight: CLIENT,
     clientWidth: 985,
     offsetWidth: 1000,
     getBoundingClientRect: () => ({ top: 0, bottom: CLIENT, left: 0, right: 1000, width: 1000 }),
-    scrollTo({ top: to }) {
-      this.scrollTop = to;
+    scrollTo({ top: to, behavior }) {
+      if (behavior !== 'smooth') this.scrollTop = to;
+      else smooth = { from: top, to: clamp(to), at: now };
     },
   });
+  Object.defineProperty(scroller, 'scrollHeight', { get: () => height });
   const els = TOPS.map((t, i) => {
     const el = new FakeElement('article');
     el.setAttribute('data-turn-key', `q${i}`);
     el.isConnected = false;
     el.getBoundingClientRect = () => ({
       top: t - top,
-      bottom: t + HEIGHTS[i] - top,
-      height: HEIGHTS[i],
+      bottom: t + heights[i] - top,
+      height: heights[i],
     });
     el.querySelector = () => null;
     return el;
@@ -127,7 +156,7 @@ export function setup({ trace, hasPrev = false } = {}) {
   const layout = () => {
     const changed = [];
     els.forEach((el, i) => {
-      const inWindow = TOPS[i] < top + CLIENT + MARGIN && TOPS[i] + HEIGHTS[i] > top - MARGIN;
+      const inWindow = TOPS[i] < top + CLIENT + MARGIN && TOPS[i] + heights[i] > top - MARGIN;
       if (inWindow && !el.isConnected) {
         el.isConnected = true;
         scroller.append(el);
@@ -154,13 +183,22 @@ export function setup({ trace, hasPrev = false } = {}) {
     }));
     if (entries.length) io.callback(entries);
   };
-  const clamp = (value) => Math.max(0, Math.min(BOTTOM, Math.round(value)));
+  const clamp = (value) => Math.max(0, Math.min(height - CLIENT, Math.round(value)));
+  const moveTo = (value, animating = false) => {
+    const to = clamp(value);
+    if (!animating) smooth = null;
+    if (to !== top) {
+      scrolled = true;
+      ended ||= !animating;
+    }
+    top = to;
+    layout();
+  };
   Object.defineProperty(scroller, 'scrollTop', {
     get: () => top,
     set(value) {
-      top = clamp(value);
+      moveTo(value);
       writes.push(top);
-      layout();
     },
   });
 
@@ -211,9 +249,9 @@ export function setup({ trace, hasPrev = false } = {}) {
     trace: trace && ((step, fields) => trace(step, fields())),
   });
 
-  // The chat opens at its top: q0 and q1 mount and are recorded where they are; the tracker
-  // follows the scroller once it has a size.
-  scroller.scrollTop = 0;
+  // The chat opens at its top (with `endPin`, at its end): the turns there mount and are recorded
+  // where they are; the tracker follows the scroller once it has a size.
+  scroller.scrollTop = endPin ? height - CLIENT : 0;
   observers.resize(scroller);
   layout();
   positions().callback(
@@ -226,6 +264,12 @@ export function setup({ trace, hasPrev = false } = {}) {
       })),
   );
   writes.length = 0;
+  scrolled = ended = false;
+  const pin = endPin && chatgptEndPin(scroller, { now: () => now, pinned: true, move: moveTo });
+  if (pin)
+    onMount.push((i) => {
+      if (GROWS.includes(i)) for (const ms of GROW_MS) ctx.setTimeout(() => pin.grew(), ms);
+    });
 
   const t = {
     turns,
@@ -235,11 +279,17 @@ export function setup({ trace, hasPrev = false } = {}) {
     els,
     st,
     trip,
+    pin,
     frameMs: 16,
     now: () => now,
-    page(to) {
-      top = clamp(to);
-      layout();
+    page: moveTo,
+    wheel(deltaY, to) {
+      scroller.emit('wheel', { deltaY });
+      moveTo(to);
+    },
+    grow(px) {
+      height += px;
+      pin?.grew();
     },
     mounted(fn) {
       onMount.push(fn);
@@ -247,6 +297,22 @@ export function setup({ trace, hasPrev = false } = {}) {
     async run(ms) {
       for (const end = now + ms; now < end; ) {
         now += t.frameMs;
+        // The events of the moves since the last frame first, then a smooth scroll's next step
+        // (its events come on the next frame).
+        if (scrolled) {
+          scrolled = false;
+          scroller.emit('scroll', { isTrusted: true }); // the browser's own scroll event
+        }
+        if (ended) {
+          ended = false;
+          scroller.emit('scrollend', { isTrusted: true });
+        }
+        if (smooth) {
+          const f = Math.min(1, (now - smooth.at) / SMOOTH_MS),
+            { to } = smooth;
+          moveTo(smooth.from + (to - smooth.from) * f, true);
+          if (f === 1) [smooth, ended] = [null, true];
+        }
         for (const [id, x] of [...timers].sort((a, b) => a[1].at - b[1].at))
           if (x.at <= now) {
             timers.delete(id);

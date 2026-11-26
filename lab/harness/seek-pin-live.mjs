@@ -91,9 +91,9 @@ const short = trace => trace.filter((_, i) => i % 5 === 0 || i === trace.length 
 const dest = { estimated: 0, 'layout stored': 0, 'layout session': 0, none: 0 };
 const counts = { release: 0, releasePulled: 0, landed: 0, write: 0, writePulled: 0 };
 
-let browser;
+let browser, restoreOptions;
 try {
-  let page; ({ browser, page } = await startLab(L, lab, env, env.EXT));
+  let page; ({ browser, page, restoreOptions } = await startLab(L, lab, env, env.EXT, { scrolling: true }));
   const n = await openFixture(L, lab, page, FIXTURE, !NATIVE);
   report(`${FIXTURE}: history loaded, ${n} entries; ${NATIVE ? 'no extension' : 'Butter'}; trials ${JSON.stringify(AT.map((f, i) => `${KINDS[i % KINDS.length]}@${f}`))}`);
   for (const [i, f] of AT.entries()) {
@@ -148,6 +148,6 @@ try {
 } catch (e) {
   console.log(`HARNESS ERROR: ${String(e.message).replace(/https?:\/\/\S+/g, '<url>').replace(/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}/gi, '<id>')}`);
   exit = 2;
-} finally { await browser?.close().catch(() => {}); }
+} finally { await restoreOptions?.().catch(() => {}); await browser?.close().catch(() => {}); }
 console.log(`SUMMARY seek-pin: ${fails} FAIL${fails === 1 ? '' : 's'}`);
 process.exit(exit || (fails ? 1 : 0));

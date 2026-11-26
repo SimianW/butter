@@ -127,11 +127,14 @@
             landOff(el),
         ),
       );
+    // Where the turn tracker's estimate puts question `i` at its landing spot (it is not mounted).
+    const estimatedTop = (i) => Math.max(0, turns.estimate(i) - TOP_INSET);
     const waits = (globalThis.ButterRailReadiness || require('./readiness.js'))(
       model,
       turns,
       targetTop,
     );
+    const gesture = globalThis.ButterLeaveGesture || require('../shared/leave-gesture.js');
 
     // `want`: an earlier trip for a bookmark (its key) on the dots. Pages load only until bookmarks/
     // content.js places it under a question, then the trip lands on its text as a bookmark jump does.
@@ -166,14 +169,18 @@
       model.journey({ pinned: true });
       view.kick(); // setActive kicks only when the index changes
       let el = turns.el(id);
-      // Close by: glide there.
-      if (
-        !earlier &&
-        !relay &&
-        el &&
-        Math.abs(targetTop(el) - sc().scrollTop) < sc().clientHeight * 1.5 &&
-        !(model.hasPrev && targetTop(el) < PAGE_AT)
-      ) {
+      // Close by: glide there. The path is decided from where the chat was before the gesture's step.
+      const from = sc().scrollTop,
+        close =
+          !earlier &&
+          !relay &&
+          el &&
+          Math.abs(targetTop(el) - from) < sc().clientHeight * 1.5 &&
+          !(model.hasPrev && targetTop(el) < PAGE_AT);
+      // Before the target can mount and grow: ChatGPT stops following the end (shared/leave-gesture.js).
+      const shown = gesture.leave(sc(), earlier ? 0 : el ? targetTop(el) : estimatedTop(i));
+      trace('leave', () => ({ tok, shown }));
+      if (close) {
         journey = null;
         trace('path', () => ({ tok, path: 'glide' }));
         await glide(el, live);
@@ -196,15 +203,7 @@
       const [, b] = turns.measure(seen);
       const m = earlier
         ? 1
-        : -(
-            Math.sign(
-              el
-                ? targetTop(el) - sc().scrollTop
-                : b < 0
-                  ? turns.estimate(i) - sc().scrollTop
-                  : i - b,
-            ) || 1
-          );
+        : -(Math.sign(el ? targetTop(el) - from : b < 0 ? turns.estimate(i) - from : i - b) || 1);
       trace('path', () => ({ tok, path: relay ? 'takeover' : 'trip', m }));
       setBusy(want ? null : id, tok); // a bookmark's trip blinks the dots instead
       let landed = false,
@@ -301,7 +300,7 @@
             // Where the records put the target, it didn't mount: measure again and move toward it.
             if (tries) turns.retarget(i, seen);
             const estimate = turns.estimate(i),
-              written = Math.max(0, estimate - TOP_INSET),
+              written = estimatedTop(i),
               n = tried++;
             sc().scrollTop = written;
             trace('write', () => ({ tok, tries: n, estimate, written }));
@@ -418,9 +417,12 @@
       }
     };
 
-    const scrollEnd = () =>
+    // The scroll's own end, not the leave gesture step's: that comes first, the chat not moved yet.
+    const scrollEnd = (s = sc(), from = s.scrollTop) =>
       new Promise((r) => {
-        sc().addEventListener('scrollend', r, { once: true });
+        const wait = () => s.addEventListener('scrollend', end, { once: true });
+        const end = () => (s.scrollTop === from ? wait() : r());
+        wait();
         setTimeout(r, 1500);
       });
     // The browser's smooth scrolling runs on the compositor: it keeps going if the page is busy.

@@ -16,8 +16,8 @@ export const maxLinesCaps = {
   'lab/harness/popup-qa.mjs': 510,
   'test/branch-run.test.js': 509,
   'test/dev-sources.test.js': 519,
-  'test/height-cache-dom.test.js': 1461,
-  'test/layout-storage.test.js': 565,
+  'test/height-cache-dom.test.js': 1335,
+  'test/layout-storage.test.js': 530,
   'test/seek-landing.test.js': 917,
 };
 
@@ -144,6 +144,10 @@ export default [
     languageOptions: { globals: { ButterPill: 'readonly' } }, // defined in selection/pill.js
   },
   {
+    files: ['extension/branch/content.js'],
+    languageOptions: { globals: { ButterLeaveGesture: 'readonly' } }, // shared/leave-gesture.js
+  },
+  {
     files: ['extension/bookmarks/content.js', 'extension/branch/*.js'],
     languageOptions: { globals: { ButterPageReader: 'readonly' } }, // defined in page/reader.js
   },
@@ -241,6 +245,8 @@ export default [
     files: [
       'extension/popup/model.js',
       'extension/shared/status.js',
+      'extension/shared/leave-gesture.js',
+      'extension/shared/leave-gesture-main.js',
       'extension/seek/seek-meta.js',
       'extension/seek/layout-codec.js',
       'extension/seek/layout-check-main.js',

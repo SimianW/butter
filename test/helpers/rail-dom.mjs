@@ -74,6 +74,11 @@ export class FakeElement {
     atTarget();
     this.emit(type, event, 'bubble');
   }
+  // A script's dispatchEvent: the element's own listeners see the event (made with fakeEvents()).
+  dispatchEvent(event) {
+    this.emit(event.type, event);
+    return true;
+  }
   prepend(child) {
     child.parentElement = this;
     this.children.unshift(child);
@@ -174,6 +179,20 @@ export class FakeElement {
     };
     return this.shadowRoot;
   }
+}
+
+// Event and PointerEvent as a script makes them: `isTrusted` is false, as in a browser. (An event a
+// test hands a listener directly has no `isTrusted`, and counts as the reader's own input.)
+export function fakeEvents() {
+  class Event {
+    constructor(type, init = {}) {
+      Object.assign(this, init);
+      this.type = type;
+      this.isTrusted = false;
+    }
+  }
+  class PointerEvent extends Event {}
+  return { Event, PointerEvent };
 }
 
 // ResizeObserver and IntersectionObserver stand-ins. Each instance records its callback, options

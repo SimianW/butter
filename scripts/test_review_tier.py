@@ -625,6 +625,25 @@ class RuleTests(unittest.TestCase):
             (0, ["extension/popup/fonts/SOURCES.md (Markdown)"]),
         )
 
+    def test_agent_instructions_are_tier_1(self):
+        for path in (
+            "AGENTS.md",
+            "CLAUDE.md",
+            "CODING_STANDARDS.md",
+            "docs/bugfix.md",
+            "docs/agents/seams.md",
+            "docs/agents/workflow.md",
+            "lab/AGENTS.md",
+            "extension/seek/CLAUDE.md",
+        ):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None), (1, [f"{path} (agent instructions)"]))
+
+    def test_other_docs_stay_tier_0(self):
+        for path in ("README.md", "GLOSSARY.md", "docs/development.md", "docs/agents.md", "lab/README.md"):
+            with self.subTest(path=path):
+                self.assertEqual(classify([path], None, None)[0], 0)
+
     def test_markdown_in_high_risk_directory_is_tier_2(self):
         self.assertEqual(classify(["extension/storage/NOTES.md"], None, None)[0], 2)
 

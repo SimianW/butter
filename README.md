@@ -51,28 +51,28 @@ Butter reduces the work ChatGPT repeats as an answer arrives, so long answers st
 
 ### Drag the scrollbar to preview
 
-Drag ChatGPT's scrollbar to skim a lightweight preview. Butter holds loading while you drag, then loads the destination when you let go. Seen answers use their measured layout; unread ones preview from the question's start.
+Experimental, and off until you switch Smoother scrolling on in the popup's Experimental page. Drag ChatGPT's scrollbar to skim a lightweight preview. Butter holds loading while you drag, then loads the destination when you let go. Seen answers use their measured layout; unread ones preview from the question's start.
 
 ![Scrollbar preview while dragging through a long chat](docs/media/store/screenshot-2-1280x800.png)
 
 ### Question rail
 
-Experimental, and off until you switch it on in the popup's Experimental page. A slim rail on the right has one tick per question. Hover to preview a question, click to jump, or use the keyboard.
+A slim rail on the right has one tick per question. Hover to preview a question, click to jump, or use the keyboard.
 [More about the rail →](docs/history-rail.md)
 
 ![Question rail and its hover card](docs/media/store/screenshot-3-1280x800.png)
 
 ### Bookmarks
 
-Experimental, and off until you switch it on in the popup's Experimental page; it needs the question rail. Select text in an answer and click Bookmark, or press the shortcut, to mark the spot; a dot on the rail takes you back. Butter keeps the first three lines of each bookmark on this computer. The popup shows how many bookmarks it holds and their size, switches bookmarks off (keeping the saved ones) and clears them all.
+Select text in an answer and click Bookmark, or press the shortcut, to mark the spot; a dot on the rail takes you back. Butter keeps the first three lines of each bookmark on this computer. The popup shows how many bookmarks it holds and their size, switches bookmarks off (keeping the saved ones) and clears them all.
 
 ### Remember long-chat layouts
 
-Experimental, and off until you switch it on in the popup's Experimental page; switching it on is your consent. Saved layouts help when you return to a long chat: layout numbers and formatting with one-way hashes, never chat text. They expire after 30 days, take at most 50 MB, and can be cleared in the popup. Turning this off deletes saved layouts and stops saving new ones.
+Experimental, and off until you switch it on in the popup's Experimental page; switching it on is your consent. It needs Smoother scrolling, whose preview uses the saved layouts. Saved layouts help when you return to a long chat: layout numbers and formatting with one-way hashes, never chat text. They expire after 30 days, take at most 50 MB, and can be cleared in the popup. Turning this off deletes saved layouts and stops saving new ones.
 
 ### The popup and its settings
 
-Click Butter's toolbar icon to pause Butter, switch streaming, scrolling and Ask in branch on and off, or choose English or Chinese. The **Experimental** row opens a page with the unfinished features, the question rail, bookmarks and saved layouts: switch each on or off there, see how much is saved and clear bookmarks or saved layouts. The row says how many of them are on. Changes apply to open ChatGPT tabs immediately.
+Click Butter's toolbar icon to pause Butter, switch streaming, the question rail, Ask in branch or bookmarks on and off, see how much is saved and clear bookmarks, or choose English or Chinese. The **Experimental** row opens a page with the unfinished features, Smoother scrolling and saved layouts: switch each on or off there, see how much is saved and clear saved layouts. The row says how many of them are on. Changes apply to open ChatGPT tabs immediately.
 
 ![Butter's popup with its feature switches and privacy summary](docs/media/store/screenshot-5-1280x800.png)
 

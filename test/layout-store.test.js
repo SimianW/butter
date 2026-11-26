@@ -4,7 +4,7 @@ const test = require('node:test'),
   fs = require('node:fs'),
   native = require('node:crypto').webcrypto;
 const core = require('../extension/seek/layout-check-main.js');
-function fixture({ known = true, columns } = {}) {
+function fixture({ known = true, columns, worker } = {}) {
   const events = {},
     control = { hold: false, release: null };
 
@@ -70,7 +70,7 @@ function fixture({ known = true, columns } = {}) {
       },
     },
   };
-  const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events);
+  const storage = require('./helpers/layout-fixture.cjs').attachStorage(ctx, events, worker);
   ctx.window = ctx;
   vm.createContext(ctx);
   for (const file of ['layout-persistence-main.js', 'layout-lean-main.js', 'layout-cache-main.js'])
@@ -275,6 +275,114 @@ test('layout-off retires disk-backed entries but preserves the in-session warm c
   assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
   assert.deepEqual(f.storage.worker.counters, counts);
 });
+
+// The bridge closes saved layouts while Smoother scrolling is off (layout-consent.test.js) and
+// reopens them when it is switched on: the page loads and writes again, with what was saved.
+test('closed then reopened, the page loads saved layouts and writes new ones again', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(f.disk.size, 1);
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  const counts = { ...f.storage.worker.counters };
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0, 'closed: none used');
+  assert.deepEqual(f.storage.worker.counters, counts, 'closed: no reads or writes');
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
+  await f.api.setTexts(conv, texts);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1, 'reopened: the saved one is used');
+  assert.ok(f.storage.worker.counters.reads > counts.reads, 'reopened: loaded');
+});
+
+// The plain user action: Smoother scrolling off, then on again, on a chat already open, with no
+// new conversation data and no new texts: the saved record is loaded again and prepare() uses it.
+test('reopened with no new data or texts, the saved record is back and prepare uses it', async () => {
+  const f = fixture();
+  await f.api.setTexts(conv, texts);
+  f.api.record('t', record);
+  await f.api.flush();
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0);
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
+  for (let i = 0; i < 20; i++) await new Promise(setImmediate);
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 1);
+  const prepared = f.api.prepare(f.sc, ['t']);
+  assert.equal(prepared.storedTurns, 1);
+  assert.equal(prepared.decisions[0].after.fromStorage, true);
+});
+
+// Smoother scrolling off and on again while the open chat's texts are still being set up: the close
+// retires that setup, so the reopened chat uses no saved layout until fresh conversation data sets
+// its texts up again. `hold(f)` pauses the setup at one step and returns `held()`, true once the
+// setup is paused there, and its release. The toggle waits for `held()`, not for a count of
+// event-loop turns: the first hash runs on the thread pool, and a slow one outlasts any count.
+// Known gap, tracked in #182.
+const until = async (reached, what) => {
+  const end = Date.now() + 5000;
+  while (!reached()) {
+    assert.ok(Date.now() < end, what);
+    await new Promise(setImmediate);
+  }
+};
+const toggleDuringSetup = async (hold) => {
+  const saved = fixture();
+  await saved.api.setTexts(conv, texts);
+  saved.api.record('t', record);
+  await saved.api.flush();
+  // A new page on the same worker (its disk holds the saved row).
+  const f = fixture({ worker: saved.storage.worker });
+  const { held, release } = hold(f);
+  // The store opens (the bridge's state reply) and starts its first read before the texts arrive.
+  await new Promise(setImmediate);
+  const setup = f.api.setTexts(conv, texts);
+  await until(held, 'the setup reached its hold');
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: false }));
+  assert.equal(Object.keys(f.api.records(f.sc)).length, 0, 'closed: none used');
+  f.event('butter-layout-response', JSON.stringify({ state: true, enabled: true }));
+  await release();
+  await setup;
+  for (let i = 0; i < 20; i++) await new Promise(setImmediate);
+  assert.equal(f.api.prepare(f.sc, ['t']).storedTurns, 0, 'reopened: the gap, none used yet');
+  // Fresh conversation data (preview-texts-main.js calls setTexts with it) brings it back.
+  f.event('butter-seek-data', { conv, before: false, j: { messages: [] } });
+  await f.api.setTexts(conv, texts);
+  const prepared = f.api.prepare(f.sc, ['t']);
+  assert.equal(prepared.storedTurns, 1);
+  assert.equal(prepared.decisions[0].after.fromStorage, true);
+};
+test('gap: a toggle while the saved layouts are being read leaves none used until fresh data', () =>
+  toggleDuringSetup((f) => {
+    // Hold the worker's first read of saved layouts.
+    const message = f.storage.worker.message;
+    let release;
+    const gate = new Promise((r) => (release = r));
+    let first = true;
+    let holding = false;
+    f.storage.worker.message = async (m) => {
+      if (first && m.type === 'butter-layout-load') {
+        first = false;
+        holding = true;
+        await gate;
+      }
+      return message(m);
+    };
+    return { held: () => holding, release: async () => release() };
+  }));
+test('gap: a toggle while the texts are being hashed leaves none used until fresh data', () =>
+  toggleDuringSetup((f) => {
+    // Hold the first hash after the first read: the per-turn digest.
+    const original = f.storage.worker.message;
+    let first = true;
+    f.storage.worker.message = async (m) => {
+      const result = await original(m);
+      if (first && m.type === 'butter-layout-load') f.control.hold = !(first = false);
+      return result;
+    };
+    return { held: () => !!f.control.release, release: () => f.control.release() };
+  }));
 
 test('merged prepare synchronously uses prefetched memory with no disk reads at drag time', async () => {
   const f = fixture();

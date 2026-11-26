@@ -1,0 +1,17 @@
+FIXTURE math12 {"streamingStyles":{"container":"normal","turn":null,"block":null,"contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":12,"hasPrev":false,"height":348445,"mathDisplay":117,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":12,"measuredRows":0,"trace":true}
+REPORT control math12 pulled (back at the end at 1904 ms): write 0 with pin true, pin after true; [ms, scrollTop, scrollHeight, vh] every 500 ms [[1031,0,348309,912],[2318,347533,348445,912],[2828,347533,348445,912],[3338,347533,348445,912],[3847,347533,348445,912],[4356,347533,348445,912],[4866,347533,348445,912],[5376,347533,348445,912],[5887,347533,348445,912],[5988,347533,348445,912]]
+smoke-fixed math12 from=end-pinned pin=true to=0 phase=reload-setup class=clean samples=171 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→0
+smoke-fixed math12 from=end-pinned pin=true to=1 phase=settled class=clean samples=149 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→1
+smoke-fixed math12 from=end-pinned pin=true to=2 phase=settled class=clean samples=199 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→2
+smoke-fixed math12 from=end-pinned pin=true to=3 phase=settled class=clean samples=181 pinAtClick=true pinAtEnd=false
+PASS jump math12 end-pinned→3
+smoke-fixed math12 from=top-unpinned pin=false to=0 phase=settled class=clean samples=143 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→0
+smoke-fixed math12 from=top-unpinned pin=false to=3 phase=settled class=clean samples=164 pinAtClick=false pinAtEnd=false
+PASS jump math12 top-unpinned→3
+SUMMARY {"jumps":6,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":4,"rawReversalCount":8,"unpinChecks":8,"anchoringOn":0,"cvOff":0,"starts":{"top-unpinned":2,"end-pinned":4,"previous":0},"pinUnread":0,"controls":1,"controlsPulled":1,"setupErrors":0,"fails":0}
+REPORT options put back: same as before true
+EXIT 0; evidence ~/.local/share/chatgpt-lab/captures/2026-11-25-rail-jump-harness/smoke-fixed.json

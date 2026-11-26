@@ -24,10 +24,11 @@ reload icon on its extension card, then reload ChatGPT. Keep the folder at the s
 ## Settings
 
 Click Butter's toolbar icon to open the popup. **Enable Butter** pauses or resumes the extension.
-Switches control **Smoother streaming**, **Smoother scrolling** (including drag preview) and
-**Ask in branch**. The **Experimental** row opens the Experimental page, with the unfinished
-features: **Question rail**, **Bookmarks** and **Remember long-chat layouts**. On a new install all
-three are off until you switch them on; an update keeps the rail and Bookmarks as they were.
+Switches control **Smoother streaming**, **Question rail**, **Ask in branch** and **Bookmarks**.
+The **Experimental** row opens the Experimental page, with the unfinished features: **Smoother
+scrolling** (drag preview and faster loading of earlier messages) and **Remember long-chat
+layouts**, which needs Smoother scrolling. Both are off until you switch them on; the update that
+moved Smoother scrolling there switched it off once.
 Changes apply to all open ChatGPT tabs
 immediately. Status shows whether Butter is working in this chat, paused, or waiting for a chat.
 A feature warning appears only after a failure is observed; an unused feature has no warning.

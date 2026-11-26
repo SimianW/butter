@@ -1,0 +1,20 @@
+REPORT storage before the run: sha256 b52308a5b9f681f3, local keys [butter], sync keys [], opts {"rail":true}; OPTS {"rail":true}
+REPORT build 0.1.0-alpha.22+dev.2, fixture math9, 357 chunks over 107 s, jump to question 1 at 15000 ms, back after completion + 3 s
+REPORT opened: scrollTop 142625 of 143537 (fromEnd 0), entries 5, rail ticks 5, pin true
+PASS replay-hook
+REPORT before the jump: 63 streaming samples, at the end (within 4 px) in 0; pin false
+REPORT jump: clicked tick 1 at 15476 ms after Enter, chunks 54/357, scrollTop 142801 of 153894 (fromEnd 10181)
+PASS stream-jump-stays
+REPORT jump reached question 1 at 5800 ms (targetTop 64); samples 781 over 94439 ms; min fromEnd after reaching 155715; pin 2 s after the click false
+REPORT at completion: scrollTop 34645 of 191272, fromEnd 155715, question at the view's top 1, target top 64; window end: scrollTop 34645 of 191272, fromEnd 155715, question at top 1, target top 64
+REPORT growth after the jump: chunks 54 → 357 (of 357), scrollHeight at click 153894, at reaching 191272, at window end 191272 (+0 px after reaching); in_progress at window end 0
+REPORT wheel back: 78 notches of 2400 px + 3 of 300 px, now fromEnd 0, chunks 357/357, done true, in_progress 0, pin true
+REPORT stream-back-follows: not established (the stream completed before the wheel reached the end)
+PASS no-escape
+REPORT network: guard-blocked non-GET 19, WebSockets closed 43, denied in page 204
+PASS server-unchanged
+REPORT server turns: 5 before, 5 after a reload
+REPORT OPTS put back: sha256 b52308a5b9f681f3, same as before true, opts {"rail":true}
+SUMMARY stream-jump: 0 FAILs
+EXIT 0
+EXIT 0 (started 03:26:24 UTC, ended 03:29:58 UTC)

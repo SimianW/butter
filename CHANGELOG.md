@@ -12,11 +12,13 @@
 
 ### Changed
 
-- Moved the question rail, Bookmarks and Remember long-chat layouts to a new Experimental page in
-  the popup, opened from an "Experimental" row that says how many of them are on. The popup now
-  stays one height on both pages, so its links and language switch no longer jump.
-- Changed the question rail, Bookmarks and Remember long-chat layouts to start off on a new
-  install; if you update, they stay as you had them.
+- Moved Smoother scrolling and Remember long-chat layouts to a new Experimental page in the popup,
+  opened from an "Experimental" row that says how many of them are on. The popup now stays one
+  height on both pages, so its links and language switch no longer jump.
+- Changed Smoother scrolling to start off. This update switches it off: switch it on again on the
+  Experimental page to get the scrollbar preview and faster loading of earlier messages back.
+- Changed Remember long-chat layouts to need Smoother scrolling: while Smoother scrolling is off,
+  its row says "Needs Smoother scrolling", and your saved layouts are kept but not used.
 - Changed the key hints in the selection pill's labels to show key symbols (⌥⇧M) instead of key
   names on Windows and Linux, as they already did on a Mac.
 
@@ -24,6 +26,8 @@
 
 - Fixed letting go of the scrollbar in a long chat sometimes ending at the chat's end instead of on
   the question the preview showed.
+- Fixed a jump from the question rail to one of the first questions of a very long chat reaching
+  the question and then showing the chat's end.
 
 ### Removed
 
@@ -32,9 +36,9 @@
 
 ### Known issues
 
-- With "Remember long-chat layouts" on, letting go of the scrollbar in a long chat can again
-  sometimes leave you deep inside the answer before the question the preview showed, after about
-  10 seconds of loading.
+- With Smoother scrolling and "Remember long-chat layouts" both on, letting go of the scrollbar in
+  a long chat can again sometimes leave you deep inside the answer before the question the preview
+  showed, after about 10 seconds of loading.
 
 ## [0.1.0-alpha.22] - 2026-11-20
 

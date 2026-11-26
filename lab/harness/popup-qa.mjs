@@ -11,17 +11,19 @@ import os from 'node:os';
 import { repo } from './runner/chromium.mjs';
 import { evidenceShot } from './runner/shot.mjs';
 import { liveRegions, mockupComparer } from './popup/mockup.mjs';
-import { POPUP_HEIGHT, checkFixedHeight, checkFooterStill, checkFreshInstall, checkPages, experimentalCases, experimentalPanels, seedStores } from './popup/experimental.mjs';
+import { POPUP_HEIGHT, checkFixedHeight, checkFooterStill, checkFreshInstall, checkExperimentalCard, checkLayoutsLive, checkPages, checkScrollsInside, experimentalCases, experimentalPanels, seedStores } from './popup/experimental.mjs';
 const shots = process.env.BUTTER_SHOTS || '/tmp/butter-popup-build';
 await fs.mkdir(shots, { recursive: true });
 const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'butter-popup-qa-'));
+// BUTTER_SCALE=2 takes every shot at device scale 2, as the mockup's screenshot panels are.
+const scale = Number(process.env.BUTTER_SCALE || 1);
 const browser = await chromium.launchPersistentContext(profile, {
   headless: true, channel: 'chromium',
-  viewport: { width: 360, height: 900 },
+  viewport: { width: 360, height: 900 }, deviceScaleFactor: scale,
   args: [`--disable-extensions-except=${repo}/extension`, `--load-extension=${repo}/extension`],
 });
 const errors = [], requests = [], files = [], comparisons = [], heights = {}, liveRects = {}, cleanup = [];
-const { compareMockup, compareFigures } = mockupComparer({ browser, shots, profile, heights, liveRects, errors });
+const { compareMockup, compareShots } = mockupComparer({ browser, shots, profile, heights, liveRects, errors });
 // BUTTER_REDESIGN_MOCKUP=<#35 Mockup.html> compares built states with the mockup's panels on the
 // BUTTER_REDESIGN_SIDE (`before` or `after`, default `after`). Panel key -> built state. Historical
 // and report-only: that mockup draws the single-page popup from before #158, so its panels no
@@ -36,8 +38,9 @@ const redesignStates = {
 };
 // Panels that cannot match, with the reason; they are still measured and reported.
 const redesignExcluded = {};
-// BUTTER_EXPERIMENTAL_MOCKUP=<#158's experimental-page.html> compares the in-scope panels
-// (popup/experimental.mjs) and copies each matched panel's built state to <shots>/panels/<id>.png.
+// BUTTER_EXPERIMENTAL_MOCKUP=<mockups/popup-rail-bookmarks-main.html> compares its panels
+// (popup/experimental.mjs) with BUTTER_SCALE=2, and every run copies each panel's built state to
+// <shots>/panels/<id>.png.
 const experimentalMockup = process.env.BUTTER_EXPERIMENTAL_MOCKUP;
 try {
   const worker = browser.serviceWorkers()[0] || await browser.waitForEvent('serviceworker');
@@ -54,7 +57,8 @@ try {
       return { states: {} };
     };
   });
-  // A fresh profile is a real install (#158): the rail and Bookmarks start off, and no card shows.
+  // A fresh profile is a real install: the rail and Bookmarks start on, Smoother scrolling and
+  // layouts off, and no consent card shows.
   const fresh = await checkFreshInstall(browser, worker);
   // Initialize the database through its public API before seeding.
   await page.evaluate(async () => {
@@ -62,25 +66,26 @@ try {
     await refreshAll();
   });
   let cases = [
-    // A state's `page` is the popup page it shows (main unless it says experimental, #158); the
-    // rail and Bookmarks are on unless it is `fresh` or its `opts` say otherwise.
-    ['01-normal', {}], ['02-problem', { broken: true, page: 'experimental' }], ['03-away', { away: true }],
+    // A state's `page` is the popup page it shows (main unless it says experimental, #158);
+    // Smoother scrolling is on unless it is `fresh` or its `opts` say otherwise.
+    ['01-normal', {}], ['02-problem', { broken: true }], ['03-away', { away: true }],
     ['04-paused', { paused: true }], ['05-confirm', { clear: 'confirm', page: 'experimental' }], ['06-cleared', { clear: 'done', page: 'experimental' }],
-    ['07-normal', {}], ['08-problem', { broken: true, page: 'experimental' }], ['09-en-memory-off', { lang: 'en', memory: false, page: 'experimental' }],
+    ['07-normal', {}], ['08-problem', { broken: true }], ['09-en-memory-off', { lang: 'en', memory: false, page: 'experimental' }],
     ['10-en-paused', { lang: 'en', paused: true }], ['11-melt', { animation: true }], ['12-melt', { animation: true }],
     // Ask in branch (#30): on, off and failed in both languages; refs are panels of the approved mockup.
     ['13-en-branch-on', { lang: 'en' }], ['14-en-branch-off', { lang: 'en', branch: false }],
     ['15-en-branch-failed', { lang: 'en', broken: 'branch' }], ['16-zh-branch-on', { lang: 'zh' }],
     ['17-zh-branch-off', { lang: 'zh', branch: false }], ['18-zh-branch-failed', { lang: 'zh', broken: 'branch' }],
     // English states for the #35 redesign panels.
-    ['19-en-rail-fault', { lang: 'en', broken: true, page: 'experimental' }], ['20-en-layouts-pending', { lang: 'en', consent: 'pending', page: 'experimental' }],
+    ['19-en-rail-fault', { lang: 'en', broken: true }], ['20-en-layouts-pending', { lang: 'en', consent: 'pending', page: 'experimental' }],
     ['21-en-clear-confirm', { lang: 'en', clear: 'confirm', page: 'experimental' }],
     // The consent note in Chinese, for the fixed height (05 covers the Chinese clear confirmation).
     ['22-zh-layouts-pending', { lang: 'zh', consent: 'pending', page: 'experimental' }],
-    // The main page's worst case: every group on it that can fail has failed (the rail's fault
-    // shows on the Experimental page; its worst cases are 31, 32, 51 and 52).
-    ['23-en-all-faults-pending', { lang: 'en', consent: 'pending', broken: ['streaming', 'scrolling', 'rail', 'branch'] }],
-    ['24-zh-all-faults-pending', { lang: 'zh', consent: 'pending', broken: ['streaming', 'scrolling', 'rail', 'branch'] }],
+    // The main page's worst case: every group on it that can fail has failed, each on one line,
+    // with Bookmarks' Clear after its fault (Smoother scrolling's fault shows on the Experimental
+    // page; its worst cases are 31 and 51).
+    ['23-en-all-faults-pending', { lang: 'en', consent: 'pending', saved: true, broken: ['streaming', 'rail', 'branch', 'bookmarks'] }],
+    ['24-zh-all-faults-pending', { lang: 'zh', consent: 'pending', saved: true, broken: ['streaming', 'rail', 'branch', 'bookmarks'] }],
     // The Experimental row and page (#158), in both languages.
     ...experimentalCases,
   ];
@@ -102,7 +107,7 @@ try {
     await page.evaluate(async config => {
       for (const st of Object.values(stores)) { clearTimeout(st.timer); st.clear = 'idle'; }
       fixtureConnected = !config.away;
-      const value = ButterStatus.normalize({ layoutConsent: config.fresh ? undefined : config.consent || 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false, branch: config.branch !== false, rail: !config.fresh, bookmark: !config.fresh, ...config.opts } });
+      const value = ButterStatus.normalize({ layoutConsent: config.fresh ? undefined : config.consent || 'granted', enabled: !config.paused && !config.animation, lang: config.lang || 'zh', opts: { layout: config.memory !== false, branch: config.branch !== false, older: !config.fresh, seek: !config.fresh, ...config.opts } });
       const broken = config.broken === true ? ['rail'] : [config.broken || []].flat();
       await chrome.storage.session.set({ butterFailures: Object.fromEntries(broken.map(k => [k, { [k]: true }])) });
       await chrome.storage.local.set({ butter: value });
@@ -125,10 +130,10 @@ try {
     await page.evaluate(() => document.getAnimations().forEach(a => a.finish()));
     await page.evaluate(() => document.activeElement?.blur());
     assert.equal(await page.locator('body').evaluate(e => e.scrollWidth), 360);
-    // The main page: the master and three rows; the Experimental page: three rows. The question
+    // The main page: the master and four rows; the Experimental page: two rows. The question
     // replaces its row.
     const main = (config.page || 'main') === 'main';
-    assert.equal(await page.locator('[role="switch"]').count(), (main ? 4 : 3) - (config.clear === 'confirm' ? 1 : 0));
+    assert.equal(await page.locator('[role="switch"]').count(), (main ? 5 : 2) - (config.clear === 'confirm' ? 1 : 0));
     assert.equal(await page.locator('.page').getAttribute('data-page'), config.page || 'main');
     // The store popup has no dev script, so its slot renders nothing.
     assert.equal(await page.locator('.devtag, .card.dev').count(), 0, `${name}-${color} shows the dev card`);
@@ -138,7 +143,7 @@ try {
       // The Experimental row counts the experimental switches that are on, and shows no fault.
       const on = await page.evaluate(() => ButterStatus.experimental.filter(k => ButterStatus.groupOn(prefs, k)).length);
       assert.equal(await page.locator('.exp-row .cnt').textContent(), on ? (config.lang === 'en' ? `${on} on` : `已开启 ${on} 项`) : '');
-    } else assert.equal(await page.locator('.card.exp').count(), 1);
+    } else await checkExperimentalCard(page, config, `${name}-${color}`);
     assert.ok(!/待验证|Not yet checked/.test(await page.locator('body').innerText()));
     // With two or more faults on the page showing, every faulted row's short text fits on one line.
     if (await page.locator('.row.bad').count() > 1) for (const [text, lines] of await page.locator('.row.bad .d').evaluateAll(list => list.map(e => {
@@ -196,7 +201,7 @@ try {
     : [];
   const experimentalRefs = experimentalMockup
     // Only the panels whose state this run built (BUTTER_CASES may leave some out).
-    ? await compareFigures(experimentalMockup, Object.entries(experimentalPanels).filter(([, state]) => heights[state]), 'Experimental page mockup (#158), in-scope panels')
+    ? await compareShots(experimentalMockup, Object.entries(experimentalPanels).filter(([, state]) => heights[state]), 'Popup mockup (popup-rail-bookmarks-main.html), after panels (height strict, pixel diff report-only)')
     : [];
   // One screenshot of the real popup per panel, named by the panel's id.
   await fs.mkdir(`${shots}/panels`, { recursive: true });
@@ -216,7 +221,6 @@ try {
   await page.locator('[data-switch="branch"]').click();
   await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.branch === true);
   // Each row is a label around its switch: a click on its description toggles exactly that group.
-  await page.locator('.exp-row').click();
   const opts = async () => (await page.evaluate(() => chrome.storage.local.get('butter'))).butter.opts;
   const railRow = page.locator('.row', { has: page.locator('[data-switch="rail"]') });
   const beforeRow = await opts();
@@ -227,7 +231,6 @@ try {
   await railRow.locator('.n').click();
   await page.waitForFunction(async () => (await chrome.storage.local.get('butter')).butter.opts.rail === true);
   assert.deepEqual(await opts(), beforeRow);
-  await page.locator('.back').click();
   // Every switch stays a named button with its checked state and stable hook.
   for (const e of await page.locator('[role="switch"]').evaluateAll(list => list.map(e => ({ tag: e.tagName, name: e.getAttribute('aria-label'), checked: e.getAttribute('aria-checked'), key: e.dataset.switch }))))
     assert.ok(e.tag === 'BUTTON' && e.name && /^(true|false)$/.test(e.checked) && e.key, JSON.stringify(e));
@@ -279,13 +282,7 @@ try {
   await page.evaluate(() => document.activeElement?.blur());
   await checkPages(page);
   const footerTop = await checkFooterStill(page);
-  await page.locator('.exp-row').click();
-  // Clear and Cancel work from the Experimental page, with focus moving as on the main page.
-  await page.locator('[data-store="layouts"][data-clear="ask"]').click();
-  assert.equal(await page.evaluate(() => document.activeElement?.dataset.clear), 'confirm');
-  await page.locator('[data-store="layouts"][data-clear="cancel"]').click();
-  assert.equal(await page.locator('[data-store="layouts"][data-clear="ask"]').count(), 1);
-  assert.equal(await page.evaluate(() => document.activeElement?.dataset.clear), 'ask');
+  await checkLayoutsLive(page);
   assert.deepEqual(errors, []);
   assert.deepEqual(requests.filter(url => /^https?:/.test(url)), []);
   await page.evaluate(async () => {
@@ -298,8 +295,8 @@ try {
   await fs.writeFile(`${shots}/screenshots.json`, JSON.stringify({ popupUrl, files, errors, remoteRequests: [] }, null, 2));
   // Fail only after every panel has been compared and reported; #35's and #32's are report-only.
   const experimentalMismatched = experimentalRefs.filter(r => r.ok !== true);
-  assert.equal(experimentalMismatched.length, 0, `${experimentalMismatched.length} of ${experimentalRefs.length} panels differ from the Experimental page mockup: ${experimentalMismatched.map(r => r.skipped ? `${r.panel} (skipped: ${r.skipped})` : `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
-  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), every one ${POPUP_HEIGHT} px with nothing overflowing, the footer at y ${footerTop} on both pages, mid-swap and with the privacy note gone, melt frames, branch switch, pause without layout shift, in-row faults, a fresh install with the rail and Bookmarks off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${experimentalMockup ? experimentalRefs.length : Object.keys(experimentalPanels).length} Experimental page mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.length} redesign-mockup panels compared (historical, report-only)${dev ? `, ${dev.refs.length} dev-mockup panels compared (historical, report-only), dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
+  assert.equal(experimentalMismatched.length, 0, `${experimentalMismatched.length} of ${experimentalRefs.length} panels differ from the popup mockup: ${experimentalMismatched.map(r => r.skipped ? `${r.panel} (skipped: ${r.skipped})` : `${r.panel} (${r.built}/${r.reference} px, ${(r.ratio * 100).toFixed(3)}%)`).join('; ')}`);
+  console.log(`PASS: ${files.length} full 360px state screenshots (${cases.length} store states × light/dark${dev ? `, ${dev.states} dev states` : ''}), every one ${POPUP_HEIGHT} px with nothing overflowing but the dev one-fault state, which scrolls inside it (${heights['d7-en-one-fault-light'] ?? '-'} px), the footer at y ${footerTop} on both pages, mid-swap and with the privacy note gone, melt frames, branch switch, pause without layout shift, in-row faults, "Needs Smoother scrolling" and its live switch, a fresh install with the rail and Bookmarks on, Smoother scrolling and layouts off and no card, the Experimental page's swap, focus and motion, ${experimentalRefs.filter(r => r.ok).length} of ${experimentalMockup ? experimentalRefs.length : Object.keys(experimentalPanels).length} popup mockup matches${experimentalMockup ? '' : ' (BUTTER_EXPERIMENTAL_MOCKUP not set)'}, ${redesignRefs.length} redesign-mockup panels compared (historical, report-only)${dev ? `, ${dev.refs.length} dev-mockup panels compared (historical, report-only), dev card actions` : ''}, real worker usage/clear, keyboard, focus, reduced motion; no errors or network requests.`);
 } finally {
   await browser.close(); await fs.rm(profile, { recursive: true, force: true });
   for (const dir of cleanup) await fs.rm(dir, { recursive: true, force: true });
@@ -372,6 +369,9 @@ async function devPopup() {
       ['d4-en-tallest', { consent: 'pending', broken: allFaults }, 'dark'],
       ['d5-zh-recording', { lang: 'zh' }, 'dark'],
       ['d6-zh-tallest', { lang: 'zh', consent: 'pending', broken: allFaults }, 'dark'],
+      // One fault: its two-line text makes the content taller than the popup (541 px in 509), so
+      // it scrolls inside the popup.
+      ['d7-en-one-fault', { broken: ['branch'], scrolls: true }, 'light'],
     ];
     const panels = [], rows = {};
     for (const [name, config, color, panel] of devCases) {
@@ -424,12 +424,12 @@ async function devPopup() {
       assert.equal(row.text.replace(/^Saved\s*/, config.saved ? 'Saved ' : ''), expected, state);
       const file = `${shots}/${state}.png`;
       await evidenceShot(page, file, { target: page.locator('#popup') }); files.push(file);
-      heights[state] = await checkFixedHeight(page, state);
+      heights[state] = config.scrolls ? await checkScrollsInside(page, state) : await checkFixedHeight(page, state);
       liveRects[state] = await page.evaluate(liveRegions);
       if (panel) panels.push([panel, state]);
     }
     // The store popup's main page plus the dev card's 46 px fill the fixed height exactly in the
-    // tallest dev state (checkFixedHeight above).
+    // normal dev states (checkFixedHeight above); a fault's two-line text scrolls (d7).
     console.log('Dev states:');
     for (const [name, , color] of devCases) console.log(`  ${`${name}-${color}`.padEnd(24)} ${heights[`${name}-${color}`]} px  row "${rows[`${name}-${color}`].text}"`);
     const refs = process.env.BUTTER_DEV_MOCKUP ? await compareMockup(process.env.BUTTER_DEV_MOCKUP, panels, 'Dev mockup (#32), dev-*-after panels (historical, report-only)') : [];

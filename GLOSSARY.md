@@ -80,9 +80,9 @@ _Avoid_: disabled
 _Where_: `popup/popup.js`
 
 **Experimental page**:
-The popup's second page, with the unfinished features: the question rail, Bookmarks and Remember
-long-chat layouts (`ButterStatus.experimental`), each off until the user switches it on. Its title is
-the back button. Held in memory only; the popup always opens on the main page.
+The popup's second page, with the unfinished features: Smoother scrolling and Remember long-chat
+layouts (`ButterStatus.experimental`), each off until the user switches it on. Its title is the back
+button. Held in memory only; the popup always opens on the main page.
 _Avoid_: settings page, advanced page
 _Where_: `shared/status.js` (`experimental`, `migrate`), `popup/popup.js`
 
@@ -94,7 +94,9 @@ _Where_: `popup/popup.js`
 
 **Storage row**:
 A popup row whose second line says what a store holds, then its Clear: Bookmarks ("12 saved, about
-7 KB") and Remember long-chat layouts ("14 chats, about 3.4 MB"). Both are on the Experimental page.
+7 KB"), on the main page, and Remember long-chat layouts ("14 chats, about 3.4 MB"), on the
+Experimental page. In place of that line a row says what it needs while that switch is off: "Needs
+the question rail" (Bookmarks with nothing saved), "Needs Smoother scrolling" (layouts).
 _Avoid_: storage line, usage bar (the separate line and bar it replaced)
 _Where_: `popup/popup.js`, `popup/model.js`
 
@@ -247,6 +249,27 @@ turns in between. It belongs to the smoother scrolling switch, not the rail's.
 _Avoid_: pre-send scroll, send jump
 _Where_: `rail/pre-jump.js`
 
+**End pin**:
+ChatGPT's own state in which it keeps the chat at its end as the transcript grows. It is
+ChatGPT's, and Butter cannot read it; it is not the rail's **pinned**. A script's scrollTop write
+never changes it; the reader's own scroll away from the end clears it, and a scroll back to the end
+sets it again.
+_Avoid_: pinned (that is the rail's), follow mode
+_Where_: `shared/leave-gesture.js`, `test/helpers/chatgpt-end-pin.mjs`
+
+**End pull**:
+ChatGPT's scroll back to the chat's end while the end pin is set and the transcript grows (an
+answer streams, or a turn that mounted replaces its estimated height).
+_Avoid_: snap back, reset
+_Where_: `test/helpers/chatgpt-end-pin.mjs`
+
+**Leave gesture**:
+What Butter shows ChatGPT so that ChatGPT clears its end pin: the scrollbar gesture ChatGPT's own
+scroll code takes for the reader scrolling away from the end. A jump shows it with its first move
+when it moves the chat away from the end; the seek preview's release supplies its scroll event.
+_Where_: `shared/leave-gesture.js` (isolated world), `shared/leave-gesture-main.js` (MAIN world),
+`rail/jump.js`, `seek/preview-main.js`
+
 ## Bookmarks
 
 **Bookmark**:
@@ -284,8 +307,8 @@ _Avoid_: badge, indicator
 _Where_: `rail/model.js`, `rail/rail.js`
 
 **Bookmarks switch**:
-The Bookmarks row on the popup's Experimental page (the `bookmark` key, group `bookmarks`), off until
-switched on. Bookmarks show only while Butter, the rail and this switch are on; off hides them and
+The Bookmarks row on the popup's main page (the `bookmark` key, group `bookmarks`), on unless
+switched off. Bookmarks show only while Butter, the rail and this switch are on; off hides them and
 keeps the saved ones.
 _Avoid_: bookmark toggle
 _Where_: `shared/status.js` (`bookmarksOn`), `popup/popup.js`

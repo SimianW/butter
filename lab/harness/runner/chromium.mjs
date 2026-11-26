@@ -37,7 +37,7 @@ export async function launchButter({ defer, name = 'butter-qa', viewport = { wid
 
 // A fresh profile is a new install (#158): on its install event the worker reads the settings and
 // writes them back with the marker `defaultsVersion`. Wait for that write, so it cannot land over a
-// harness's first settings write and switch the rail and Bookmarks off again.
+// harness's first settings write and put the defaults back over it.
 export async function installed(worker) {
   const marked = () => worker.evaluate(async () => (await chrome.storage.local.get('butter')).butter?.defaultsVersion);
   for (let i = 0; i < 100 && !(await marked()); i++) await new Promise((r) => setTimeout(r, 50));

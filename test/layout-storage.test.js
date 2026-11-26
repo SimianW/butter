@@ -208,45 +208,6 @@ test('compact encoding round-trips the same numeric fixture and dictionary-encod
   assert.deepEqual(codec.unpack(packed), source);
   assert.ok(codec.bytes(packed) < codec.bytes(source) / 2);
 });
-test('trial site database is deleted once without reading it, and a blocked delete is retried', async () => {
-  const saved = { butter: { layoutConsent: 'granted' } },
-    events = {},
-    deletes = [];
-  const chrome = {
-    storage: {
-      local: { get: async () => saved, set: async (x) => Object.assign(saved, x) },
-      onChanged: { addListener() {} },
-    },
-    runtime: { sendMessage: async () => ({}) },
-  };
-  const source = fs.readFileSync(require.resolve('../extension/storage/layout-bridge.js'), 'utf8');
-  const run = () =>
-    vm.runInNewContext(source, {
-      chrome,
-      ButterStatus: require('../extension/shared/status.js'),
-      CustomEvent: class {},
-      document: { addEventListener: (n, fn) => (events[n] = fn), dispatchEvent() {} },
-      indexedDB: {
-        deleteDatabase(name) {
-          const r = {};
-          deletes.push({ name, r });
-          return r;
-        },
-      },
-    });
-  run();
-  await new Promise(setImmediate);
-  assert.equal(deletes.length, 1);
-  assert.equal(saved.butterLayoutMigrated, undefined);
-  run();
-  await new Promise(setImmediate);
-  assert.equal(deletes.length, 2);
-  deletes[1].r.onsuccess();
-  run();
-  await new Promise(setImmediate);
-  assert.equal(deletes.length, 2);
-  assert.equal(deletes[0].name, 'butter-seek-cold-geometry-v1');
-});
 test('passive account observer hashes only user id, never accesses credentials or makes requests', async () => {
   const events = [],
     listeners = {},
@@ -392,7 +353,11 @@ test('bridge retries the same put after worker termination before or after commi
     const chrome = {
       storage: {
         local: {
-          get: async () => ({ butterLayoutMigrated: true, butter: { layoutConsent: 'granted' } }),
+          // Layouts granted with Smoother scrolling on, which they need.
+          get: async () => ({
+            butterLayoutMigrated: true,
+            butter: { layoutConsent: 'granted', opts: { seek: true } },
+          }),
         },
         onChanged: { addListener() {} },
       },

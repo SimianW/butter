@@ -6,7 +6,7 @@ import status from '../extension/shared/status.js';
 import pageReader from '../extension/page/reader-main.js';
 import statusCore from '../extension/seek/core-main.js';
 
-// preview-main.js and the factories it calls, in manifest order.
+// preview-main.js and the factories it calls, in manifest order, after the leave gesture.
 const previewScripts = [
   'preview-texts-main',
   'landing-main',
@@ -14,6 +14,10 @@ const previewScripts = [
   'preview-main',
 ];
 const loadPreview = (ctx) => {
+  vm.runInContext(
+    fs.readFileSync(new URL('../extension/shared/leave-gesture-main.js', import.meta.url), 'utf8'),
+    ctx,
+  );
   for (const name of previewScripts)
     vm.runInContext(
       fs.readFileSync(new URL(`../extension/seek/${name}.js`, import.meta.url), 'utf8'),
@@ -43,7 +47,9 @@ test('seek follows the master and seek switches independently of the rail and ot
     CustomEvent: class {},
     chrome: {
       storage: {
-        local: { get: async () => ({ butter: { opts: { rail: false, bookmark: true } } }) },
+        local: {
+          get: async () => ({ butter: { opts: { rail: false, older: true, seek: true } } }),
+        },
         onChanged: {
           addListener: (fn) => {
             changed = fn;
@@ -203,7 +209,8 @@ test('a held thumb drag without a preview model fails, while clicks and rejected
     (events[name] || []).forEach((fn) => fn({ type: name, timeStamp: 100, target: sc, ...extra }));
   const probe = () => {
     fire('butter-status-request');
-    return status.classify(JSON.parse(emitted.at(-1)?.detail || '{}')).seek;
+    return status.classify(JSON.parse(emitted.at(-1)?.detail || '{}'), { opts: { seek: true } })
+      .seek;
   };
   const press = () =>
     fire('pointerdown', {

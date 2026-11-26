@@ -1,0 +1,53 @@
+b2-math9 math9 from=end-pinned pin=true to=0 phase=reload class=clean samples=194 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→0
+FIXTURE math9 {"streamingStyles":{"container":"normal","turn":"auto","block":"auto","contentAnchor":"none"},"scrollerStyle":{"overflowAnchor":"none","scrollSnapType":"none","scrollBehavior":"auto"},"off":"layout bookmark","probe":true,"questions":9,"hasPrev":false,"height":295527,"mathDisplay":194,"nativeShape":"entries-with-separate-row-virtualizer","nativeQuestions":9,"measuredRows":0,"trace":true}
+REPORT control math9 held: write 0 with pin true, pin after true; [ms, scrollTop, scrollHeight, vh] every 500 ms [[761,0,295527,912],[1296,0,295527,912],[1827,0,295527,912],[2337,0,295527,912],[2846,0,295527,912],[3356,0,295527,912],[3866,0,295527,912],[4376,0,295527,912],[4886,0,295527,912],[5395,0,295527,912],[5904,0,295527,912]]; math9's end-pinned PASS lines are not evidence that a pull was prevented
+b2-math9 math9 from=top-unpinned pin=false to=0 phase=reload-setup class=clean samples=152 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→0
+b2-math9 math9 from=top-unpinned pin=false to=1 phase=settled class=clean samples=166 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→1
+b2-math9 math9 from=top-unpinned pin=false to=2 phase=settled class=clean samples=215 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→2
+b2-math9 math9 from=top-unpinned pin=false to=3 phase=settled class=clean samples=190 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→3
+b2-math9 math9 from=top-unpinned pin=false to=4 phase=settled class=clean samples=182 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→4
+b2-math9 math9 from=top-unpinned pin=false to=5 phase=settled class=clean samples=191 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→5
+b2-math9 math9 from=top-unpinned pin=false to=6 phase=settled class=clean samples=187 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→6
+b2-math9 math9 from=top-unpinned pin=false to=7 phase=settled class=clean samples=188 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→7
+b2-math9 math9 from=top-unpinned pin=false to=8 phase=settled class=clean samples=184 pinAtClick=false pinAtEnd=false
+PASS jump math9 top-unpinned→8
+b2-math9 math9 from=end-pinned pin=true to=0 phase=settled class=clean samples=174 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→0
+b2-math9 math9 from=end-pinned pin=true to=1 phase=settled class=clean samples=152 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→1
+b2-math9 math9 from=end-pinned pin=true to=2 phase=settled class=clean samples=164 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→2
+b2-math9 math9 from=end-pinned pin=true to=3 phase=settled class=clean samples=159 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→3
+b2-math9 math9 from=end-pinned pin=true to=4 phase=settled class=clean samples=170 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→4
+b2-math9 math9 from=end-pinned pin=true to=5 phase=settled class=clean samples=152 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→5
+b2-math9 math9 from=end-pinned pin=true to=6 phase=settled class=clean samples=175 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→6
+b2-math9 math9 from=end-pinned pin=true to=7 phase=settled class=clean samples=150 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→7
+b2-math9 math9 from=end-pinned pin=true to=8 phase=settled class=clean samples=156 pinAtClick=true pinAtEnd=false
+PASS jump math9 end-pinned→8
+b2-math9 math9 from=previous pin=false to=0 phase=settled class=clean samples=174 pinAtClick=false pinAtEnd=false
+PASS jump math9 previous→0
+b2-math9 math9 from=previous pin=false to=1 phase=settled class=clean samples=165 pinAtClick=false pinAtEnd=false
+PASS jump math9 previous→1
+b2-math9 math9 from=previous pin=false to=8 phase=settled class=clean samples=149 pinAtClick=false pinAtEnd=false
+PASS jump math9 previous→8
+b2-math9 math9 from=previous pin=false to=7 phase=settled class=clean samples=160 pinAtClick=false pinAtEnd=false
+PASS jump math9 previous→7
+FAIL control: no fixture's control was pulled (no pin or no growth after the write): this run cannot see the end pull
+SUMMARY {"jumps":23,"failed":0,"visibleDetour":0,"native":0,"gated":0,"postCompletion":0,"postCompletionEventMoves":0,"afterLanding":0,"rawReversal":20,"rawReversalCount":42,"unpinChecks":21,"anchoringOn":0,"cvOff":0,"starts":{"top-unpinned":9,"end-pinned":10,"previous":4},"pinUnread":0,"controls":1,"controlsPulled":0,"setupErrors":0,"fails":1}
+REPORT options put back: same as before true
+EXIT 1; evidence ~/.local/share/chatgpt-lab/captures/2026-11-25-rail-jump-fix/b2-math9.json
+EXIT 1 (started 03:17:51 UTC, ended 03:22:36 UTC)

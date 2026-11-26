@@ -44,13 +44,16 @@ test('the confirm question names the count, singular for one, in both languages'
 });
 test('a storage row’s second line, in priority order', () => {
   const line = model.storageLine;
-  const base = { clear: 'idle', available: true, count: 3, needsRail: true };
+  const base = { clear: 'idle', available: true, count: 3, needs: 'rail' };
   assert.equal(line({ ...base, clear: 'done', available: false }), 'cleared');
   assert.equal(line({ ...base, available: false }), 'unavailable');
   assert.equal(line({ ...base, clear: 'error' }), 'unavailable');
   assert.equal(line(base), 'saved');
-  assert.equal(line({ ...base, count: 0 }), 'rail');
-  assert.equal(line({ ...base, count: 0, needsRail: false }), 'description');
+  // `needs` names the switch this row's feature needs while that switch is off.
+  assert.equal(line({ ...base, count: 0 }), 'needs');
+  assert.equal(line({ ...base, count: 0, needs: 'scrolling' }), 'needs');
+  assert.equal(line({ ...base, count: 0, needs: '' }), 'description');
+  assert.equal(line({ ...base, count: 0, needs: undefined }), 'description');
   // While it asks, the row is the question instead.
   assert.equal(line({ ...base, clear: 'confirm' }), 'confirm');
   assert.equal(line({ ...base, clear: 'clearing' }), 'confirm');

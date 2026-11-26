@@ -1,7 +1,9 @@
 // Compares the popup states popup-qa.mjs built with an approved mockup's panels, by pixels and
-// height. Two mockup shapes: `iframes` (each panel an iframe[data-panel] whose srcdoc is the panel,
-// as #35's and #32's mockups) and `figures` (each panel a figure[id] whose .fr frame holds a
-// data-state that the mockup's own popup(state) draws, as #158's experimental-page.html).
+// height. Three mockup shapes: `iframes` (each panel an iframe[data-panel] whose srcdoc is the panel,
+// as #35's and #32's mockups), `figures` (each panel a figure[id] whose .fr frame holds a
+// data-state that the mockup's own popup(state) draws, as #158's experimental-page.html) and
+// `shots` (each panel a section.panel[id] whose last figure is a screenshot of the after state, as
+// popup-rail-bookmarks-main.html).
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { evidenceShot } from '../runner/shot.mjs';
@@ -16,28 +18,32 @@ export const liveRegions = () =>
 
 // `heights[state]` and `liveRects[state]` come from the built states; `shots` holds each built
 // state's `<state>.png`. Each panel must match its state's height and differ in under 0.1% of
-// pixels (by more than 24 in a channel), with the live regions masked.
+// pixels (by more than 24 in a channel), with the live regions masked. Images are compared at the
+// device scale they were taken at (`scale` device px per CSS px; masks are in CSS px).
 export function mockupComparer({ browser, shots, profile, heights, liveRects, errors }) {
   const png = async (file) => `data:image/png;base64,${(await fs.readFile(file)).toString('base64')}`;
   // Share of unmasked pixels that differ by more than 24 in any channel. Each image is cut to its
   // measured height (an element screenshot rounds a fractional bottom up a row); area outside the
   // shorter one counts as different, so a height mismatch still yields a ratio.
-  const ratio = async (page, built, reference, hb, hr, mask) =>
+  const ratio = async (page, built, reference, hb, hr, mask, scale = 1) =>
     page.evaluate(
-      async ([a, b, ha, hb, mask]) => {
-        const load = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = src; });
-        const data = (img, h) => { const c = new OffscreenCanvas(360, h), g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, 360, h).data; };
+      async ([a, b, ha, hb, mask, s]) => {
+        const W = 360 * s;
+        ha = Math.round(ha * s); hb = Math.round(hb * s);
+        mask = mask.map((r) => r.map((v) => v * s));
+        const load = (src) => new Promise((r, no) => { const i = new Image(); i.onload = () => r(i); i.onerror = () => no(new Error('an image did not load')); i.src = src; });
+        const data = (img, h) => { const c = new OffscreenCanvas(W, h), g = c.getContext('2d'); g.drawImage(img, 0, 0); return g.getImageData(0, 0, W, h).data; };
         const [x, y] = await Promise.all([load(a), load(b)]), p = data(x, ha), q = data(y, hb), h = Math.max(ha, hb);
         let n = 0;
-        for (let j = 0; j < h; j++) for (let i = 0; i < 360; i++) {
+        for (let j = 0; j < h; j++) for (let i = 0; i < W; i++) {
           if (mask.some(([l, t, r, b]) => i >= l && i < r && j >= t && j < b)) continue;
           if (j >= ha || j >= hb) { n++; continue; }
-          const k = (j * 360 + i) * 4;
+          const k = (j * W + i) * 4;
           if (Math.max(Math.abs(p[k] - q[k]), Math.abs(p[k + 1] - q[k + 1]), Math.abs(p[k + 2] - q[k + 2])) > 24) n++;
         }
-        return n / (360 * h);
+        return n / (W * h);
       },
-      [await png(built), await png(reference), hb, hr, mask],
+      [await png(built), await png(reference), hb, hr, mask, scale],
     );
   const report = (title, rows) => {
     console.log(`${title}:`);
@@ -63,7 +69,8 @@ export function mockupComparer({ browser, shots, profile, heights, liveRects, er
     const reference = `${shots}/reference-${row.panel}.png`;
     await evidenceShot(page, reference, { target: { x: 0, y: 0, width: 360, height: row.reference } });
     const mask = [...liveRects[row.state], ...(await page.evaluate(liveRegions))];
-    row.ratio = await ratio(page, `${shots}/${row.state}.png`, reference, row.built, row.reference, mask);
+    const scale = await page.evaluate(() => devicePixelRatio);
+    row.ratio = await ratio(page, `${shots}/${row.state}.png`, reference, row.built, row.reference, mask, scale);
     row.ok = row.built === row.reference && row.ratio < 0.001;
     return row;
   }
@@ -111,5 +118,46 @@ export function mockupComparer({ browser, shots, profile, heights, liveRects, er
     await mock.close();
     return report(title, rows);
   }
-  return { compareMockup, compareFigures };
+  // [panel id, built state] for a mockup whose panels are screenshots: each section.panel[id]'s last
+  // figure holds the after state's image, taken at the device scale given by its natural width over
+  // its 360 px width. The built shots must be at the same scale (popup-qa's BUTTER_SCALE). Live
+  // regions are masked as the built state measured them: the screenshot has no DOM to measure.
+  // A panel must match its state's height; the pixel ratio is reported only, because the mockup's
+  // screenshots are lossy WebP taken by headless-shell Chromium, whose glyphs rasterize differently
+  // from this persistent context's (every text line differs at its glyph edges; boxes, icons and
+  // switches do not).
+  async function compareShots(mockupFile, panels, title) {
+    const rows = [];
+    const mock = await browser.newPage({ viewport: { width: 360, height: 900 } });
+    mock.on('pageerror', (e) => errors.push(`mockup: ${e.message}`));
+    await mock.goto(`file://${path.resolve(mockupFile)}`);
+    const builtScale = await mock.evaluate(() => devicePixelRatio);
+    for (const [name, state] of panels) {
+      const row = { panel: name, state };
+      const shot = await mock.evaluate(async (id) => {
+        const img = document.querySelector(`section.panel[id="${id}"] .pair figure:last-of-type img`);
+        if (!img) return null;
+        await img.decode();
+        // The screenshot may be WebP or PNG; hand it back as PNG.
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        return { src: c.toDataURL('image/png'), width: img.naturalWidth, height: img.naturalHeight, css: img.width };
+      }, name);
+      if (!shot) { rows.push({ ...row, skipped: 'no such panel in the mockup' }); continue; }
+      if (!heights[state]) { rows.push({ ...row, skipped: 'state not captured (BUTTER_CASES)' }); continue; }
+      const scale = shot.width / shot.css;
+      if (scale !== builtScale) { rows.push({ ...row, skipped: `the mockup is at scale ${scale}, the build at ${builtScale} (set BUTTER_SCALE=${scale})` }); continue; }
+      const reference = `${shots}/reference-${name}.png`;
+      await fs.writeFile(reference, Buffer.from(shot.src.replace(/^data:image\/png;base64,/, ''), 'base64'));
+      row.built = heights[state];
+      row.reference = shot.height / scale;
+      row.ratio = await ratio(mock, `${shots}/${state}.png`, reference, row.built, row.reference, liveRects[state], scale);
+      row.ok = row.built === row.reference;
+      rows.push(row);
+    }
+    await mock.close();
+    return report(title, rows);
+  }
+  return { compareMockup, compareFigures, compareShots };
 }

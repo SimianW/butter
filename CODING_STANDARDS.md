@@ -10,3 +10,10 @@ without the fix, at a seam from [docs/agents/seams.md](docs/agents/seams.md). If
 be reproduced live, the PR says so and names the lab script and steps that reproduce it.
 
 Flag a fix with neither as `should`.
+
+## Existing tests
+
+A PR that changes, loosens or removes an existing test or assertion lists each one with its reason
+under `Existing tests modified/removed` in the PR body's `## Evidence` section.
+
+Flag a weakened test with no reason given as `should`.

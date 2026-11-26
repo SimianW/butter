@@ -16,61 +16,34 @@ Single-context: `GLOSSARY.md` at the repo root, ADRs in `docs/adr/`. See `docs/a
 
 ## Workflow
 
-- PRs: every change reaches `main` through a PR. Before merging, run
-  `python3 scripts/review-tier.py origin/main` and put the tier it prints in the PR body's
-  `## Review` section as `- **Tier:** N` (the `pr` skill); after an APPROVE, `review-loop` adds
-  the `- **Verdict:** approved at <sha>` and `- **Reviewers:**` items (the Verdict reads
-  `overridden by <user> at <sha>` when the user ships a stuck loop). CI's `pr-body` check
-  enforces the Tier and Verdict items, and the Cap raised items (see File length), and
-  `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py` runs it locally. Open the PR as a
-  draft and mark it ready once that local check passes; `pr-body` runs only on ready PRs.
-  Tier 0 merges on green CI; tiers 1 and 2 merge after `review-loop` returns APPROVE on the
-  final diff, at the round budget the tier sets. When `main` moves after approval and GitHub
-  reports a conflict, follow review-loop's After approval: merge `origin/main` in, never rebase,
-  and never edit the Verdict sha yourself. Do not wait for the Codex GitHub bot's review before
-  merging: if it has already posted when CI is green, handle its comments first; comments that
-  arrive after the merge become a follow-up issue.
-- PR size: CI labels each PR from `size/XS` to `size/XXL` by the lines of code it changes; prose,
-  lock files, binary files and the folders in the script's `SKIP_PREFIXES` (docs, assets and
-  `lab/variants/`) do not count. `python3 scripts/pr-size.py` prints the label locally. The label
-  is CI's to set.
-- File length: every linted file stays within `maxLines` (500) in `eslint.config.mjs`; a file
-  already over it has a cap in `maxLinesCaps`, which may only come down as the file shrinks
-  (`npm run lint` and `test/max-lines-caps.test.mjs`). Split a file along a seam rather than
-  raise its cap. A PR that adds or raises a cap carries one item per cap in its body, such as
-  ``- **Cap raised:** `extension/seek/preview-main.js` 1546 → 1583: <reason>`` (`new` in place
-  of the old cap for an added one); `pr-body` fails without it. A raised cap does not change
-  the tier.
+- PRs & size: every change reaches `main` through a PR. Before opening, updating or merging a PR,
+  read [docs/agents/workflow.md](docs/agents/workflow.md): the review gate, the size label, and
+  what to do after an approval and after the merge.
+- File length: every linted file stays within `maxLines` (500) in `eslint.config.mjs`, which
+  `npm run lint` checks. Split a file along a seam rather than raise its cap; the cap rules are in
+  [docs/agents/workflow.md](docs/agents/workflow.md).
 - Reviews: every gate review before merge, including when the user asks to review a PR or branch,
-  runs `review-loop`. Only `implement` and `implement-spec` work adds a `code-review` pass before
-  it (see New features).
-- Merged branches: once a thread's PR has merged, the thread drops its local branch from its own
-  worktree: `git fetch --prune origin && git switch --detach origin/main && git branch -d <branch>`.
-  `-d` (never `-D`) refuses a branch that is unmerged or still checked out; T3 keeps the worktree.
+  runs `review-loop` at the tier `python3 scripts/review-tier.py origin/main` prints. Only
+  `implement` and `implement-spec` work adds a `code-review` pass before it.
 - Naming: use the terms in [GLOSSARY.md](GLOSSARY.md) for modules, tests and docs; add a term there
   when you coin one.
-- Test seams: [docs/agents/seams.md](docs/agents/seams.md) lists the agreed seams and the skills
-  that test at them without asking the user.
-- Bug fixes: follow [docs/bugfix.md](docs/bugfix.md).
+- Testing & bugs: test at the seams in [docs/agents/seams.md](docs/agents/seams.md), which also
+  lists the skills that test at them without asking the user; fix bugs by
+  [docs/bugfix.md](docs/bugfix.md).
 - Recordings: a visible bug claim carries a GIF of the bug, and a PR with a visible change a before
   and an after GIF; see [docs/agents/recordings.md](docs/agents/recordings.md).
-- Dev docs: [docs/development.md](docs/development.md) has the setup and test commands, and links
-  out per topic (runtime API, releasing). `npm run check` runs every CI check locally.
+- Dev docs: put each module's and test's role in its header comment.
+  [docs/development.md](docs/development.md) has the setup and test commands, and links out per
+  topic (runtime API, releasing). `npm run check` runs every CI check locally.
   `test/agent-doc-size.test.mjs` holds docs/development.md within 46,000 bytes and this file
   within 100 lines.
 - Frontend: before any visible frontend change, use the `mockup-first` skill: show the user a
   mockup and wait for approval. Mockups are saved in `mockups/`. The UI's default language is
   English (`extension/_locales/en/`; `zh_CN` is the second locale), and its fonts, colours and
   tokens are in `extension/popup/popup.css`, described in [design/palette.md](design/palette.md).
-- New features: `to-spec` publishes the spec as a GitHub issue in `SimianW/butter` (`gh`) labelled
-  `ready-for-agent`. Then either `implement <spec>` builds it directly, or `to-tickets` splits it
-  into tickets and `implement-spec <spec>` builds them. Their review runs `code-review` against
-  the spec issue; sort its findings into fix now / follow-up issue / drop, one line of reason
-  each, and stop for the user to choose. File each follow-up as a `ready-for-agent` issue in `SimianW/butter`. After the
-  fixes, `review-loop` gates the final diff at its tier, with the approved refactors listed in
-  its Intent. The work ends in a PR whose body carries `Closes #<issue>` and the Review section's
-  `- **Tier:** N` item. These four skills are user-only, so the user starts each one: when the work reaches a
-  step, tell the user it is time and give the command to type, such as `/to-spec`.
+- New features: before a step of `to-spec`, `to-tickets`, `implement` or `implement-spec`, read
+  [docs/agents/workflow.md](docs/agents/workflow.md). These four skills are user-only: when the
+  work reaches one, tell the user it is time and give the command to type, such as `/to-spec`.
 - Subagents: when a skill calls for a subagent, choose its model by the work it does, from the
   delegation table in your global instructions: an implementer or merger is Build, a reviewer is
   Hunt, a lab or browser runner is Drive, an explorer is Chore. A brief for delegated `implement`

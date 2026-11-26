@@ -112,6 +112,27 @@ export function installProbe() {
       // A real wheel cancels the previous pin before this setup write (the driver sends it).
       const s = scroller(); s.scrollTop = where === 'top' ? 0 : s.scrollHeight;
     },
+    // Where a rail jump would put question `i` (its top 64 px below the scroller's), if it is mounted.
+    questionTop(i) {
+      const s = scroller(), el = [...s.querySelectorAll('[data-turn-key]')].find(el => el.dataset.turnKey === ids[i]);
+      return el ? Math.max(0, Math.round(s.scrollTop + el.getBoundingClientRect().top - s.getBoundingClientRect().top - 64)) : i === 0 ? 0 : null;
+    },
+    geo() { const s = scroller(); return { y: s.scrollTop, h: s.scrollHeight, vh: s.clientHeight, end: s.scrollHeight - s.clientHeight }; },
+    // ChatGPT's end pin, for lab tools only (notes/runs/2026-11-24-rail-jump-pin): the hook ref above
+    // the scroller whose current is exactly {bottom, top}. null unless exactly one is found.
+    pin() {
+      const s = scroller();
+      let f = s && s[Object.keys(s).find(k => k.startsWith('__reactFiber$'))];
+      for (let depth = 0; f && depth < 80; depth++, f = f.return) {
+        const found = [];
+        for (let h = f.memoizedState, i = 0; h && typeof h === 'object' && 'next' in h && i < 400; h = h.next, i++) {
+          const v = h.memoizedState, c = v && typeof v === 'object' && 'current' in v ? v.current : null;
+          if (c && typeof c === 'object' && typeof c.bottom === 'boolean' && typeof c.top === 'boolean' && Object.keys(c).length === 2) found.push(c.bottom);
+        }
+        if (found.length) return found.length === 1 ? found[0] : null;
+      }
+      return null;
+    },
     remember,
     async calibrate(target) {
       // Native control: find the real row by ordinal, rather than trusting Butter estimates or
@@ -153,7 +174,7 @@ export function installProbe() {
       console.timeStamp('rail-cause-start');
       performance.clearMarks('rail-cause-start');
       performance.mark('rail-cause-start');
-      run = { target, targetKey: ids[target], native, at: performance.now(), events: [], frames: [], scrollCalls: [], end: null, done: false };
+      run = { target, targetKey: ids[target], native, at: performance.now(), events: [], frames: [], scrollCalls: [], end: null, done: false, pinAtStart: window.__railJumpLive.pin() };
       document.dispatchEvent(new Event('rail-probe-start'));
       run.frames.push(sample()); requestAnimationFrame(frame);
     },
@@ -176,6 +197,7 @@ export function installProbe() {
     result() {
       const { frames, events, scrollCalls, timedOut, write, target, at, end } = run;
       return { target, frames, events, scrollCalls, timedOut: !!timedOut, nativeWrite: write ?? null,
+        pinAtStart: run.pinAtStart, pinAtEnd: window.__railJumpLive.pin(),
         nativeWriteReadback: run.writeReadback ?? null, nativeWriteMs: run.writeMs ?? null,
         endExactMs: end == null ? null : (run.endAt ?? end) - at,
         endMs: end == null ? null : Math.round(end - at) };
