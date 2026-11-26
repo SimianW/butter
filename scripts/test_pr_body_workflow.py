@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -260,7 +261,15 @@ class PrBodyWorkflowTest(unittest.TestCase):
             path.write_text(path.read_text(encoding="utf-8") + "# A harmless comment.\n", encoding="utf-8")
 
         sha = self.open_pr(touch)
-        code, output = self.run_workflow(f"## Review\n\n- **Tier:** 2\n- **Verdict:** approved at {sha}")
+        diff = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check-pr-body.py"), "diff-hash", "refs/remotes/origin/main"],
+            cwd=self.head,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        verdict = f"- **Verdict:** approved at {sha} (diff {diff})"
+        code, output = self.run_workflow(f"## Review\n\n- **Tier:** 2\n{verdict}")
         self.assertEqual(code, 0, output)
 
 

@@ -5,7 +5,9 @@ Usage: python3 scripts/review-tier.py [base]   (base defaults to origin/main)
 
 Compares `git merge-base HEAD <base>` with the working tree, untracked files included, and prints
 `Review tier: N` followed by one line per file (or manifest key set) that set the tier.
-Tier 2 is high risk, tier 1 is ordinary code, tier 0 needs only the checks.
+Tier 2 is high risk, tier 1 is ordinary code, tier 0 needs only the checks. The files agents take
+their instructions from (AGENT_BASENAMES, AGENT_FILES and AGENT_DIRS) are tier 1 although they are
+Markdown.
 
 A .js, .mjs, .cjs or .css file that exists on both sides and changed only in comments and
 whitespace is tier 0, wherever it lives, except the review gate's own files (GATE_FILES), which are
@@ -48,6 +50,17 @@ GATE_FILES = (
     "scripts/check-pr-body.py",
     "scripts/same-code.mjs",
 )
+# Agent instructions: agents act on these as they act on code, so an edit is reviewed like code.
+# AGENTS.md and CLAUDE.md count in any folder: the tools read nested copies too.
+AGENT_BASENAMES = (
+    "AGENTS.md",
+    "CLAUDE.md",
+)
+AGENT_FILES = (
+    "CODING_STANDARDS.md",
+    "docs/bugfix.md",
+)
+AGENT_DIRS = ("docs/agents/",)
 HIGH_RISK_KEYS = (
     "permissions",
     "optional_permissions",
@@ -145,6 +158,12 @@ def classify_path(path, manifest_before, manifest_after, format_only=frozenset()
         if other:
             return 1, f"{path}: {', '.join(other)} changed"
         return 0, f"{path}: only {', '.join(keys) or 'formatting'} changed"
+    if (
+        PurePosixPath(path).name in AGENT_BASENAMES
+        or path in AGENT_FILES
+        or path.startswith(AGENT_DIRS)
+    ):
+        return 1, f"{path} (agent instructions)"
     if PurePosixPath(path).suffix == ".md":
         return 0, f"{path} (Markdown)"
     if path.startswith(CHECKS_ONLY_DIRS):
