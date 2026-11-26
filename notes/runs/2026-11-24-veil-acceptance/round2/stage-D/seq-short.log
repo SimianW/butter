@@ -1,0 +1,21 @@
+acquire start 2026-11-26T00:13:50Z
+lab=2 exit=0 at 2026-11-26T00:13:50Z
+T0=1795652030
+run 1 head-ats12-u4-1 start 2026-11-26T00:13:50Z
+exit=0 elapsed=208s since-lock=208s
+run 2 veil2-ats12-u4-1 start 2026-11-26T00:17:18Z
+exit=0 elapsed=205s since-lock=413s
+run 3 head-ats12-u4-2 start 2026-11-26T00:20:43Z
+exit=0 elapsed=203s since-lock=616s
+run 4 veil2-ats12-u4-2 start 2026-11-26T00:24:06Z
+exit=0 elapsed=204s since-lock=820s
+run 5 head-ats12-u4-3 start 2026-11-26T00:27:30Z
+exit=0 elapsed=206s since-lock=1026s
+run 6 veil2-ats12-u4-3 start 2026-11-26T00:30:56Z
+exit=0 elapsed=204s since-lock=1230s
+judge exit=0
+restore start 2026-11-26T00:34:20Z
+restore lab 2: restarting browser (now {"pid":3540352,"extensions":["~/snap/chromium/common/veil-accept/veil2/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+restored {"lab":2,"restarted":true,"url":"<home-url>","composer":"","pages":["<home-url>"],"browser":{"pid":3545895,"extensions":[],"flags":[]},"at":"2026-11-26T00:34:31.369Z","ok":true}
+restore exit=0
+done 2026-11-26T00:34:31Z since-lock=1241s
