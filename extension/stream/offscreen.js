@@ -15,7 +15,8 @@
 // An answer block that starts being skipped before it ever rendered is veiled (data-butter-veil,
 // containment.css) until it renders: the veil comes off first thing when it stops being skipped,
 // at the flush that marks it seen, when its answer leaves in_progress (unless it is held), when
-// cv goes off, and when it comes back into the page outside the veil's rules (see watch()).
+// cv goes off or comes back on, when its turn starts streaming again, and when it comes back into
+// the page outside the veil's rules (see watch()).
 // Pre-layout: a held block's first style and layout, and the relayout its math fonts bring, would
 // otherwise wait for whatever first needs them (a find, a jump into the answer); see prelayout().
 (() => {
@@ -69,9 +70,10 @@
   // held and veiled: nothing is drawn, written or resized. The first pass waits until the answer
   // has completed (never in an opened chat) and FLUSH_MS more, out of ChatGPT's completion work.
   // Web fonts that the pass itself requests (KaTeX's) arrive after it and invalidate the blocks laid
-  // out before them, so every finished font load lays the laid-out blocks out again (a clean block
-  // costs nothing). Each idle callback stops after CHUNK_MS, one block at least (live, one block
-  // took 1-17 ms), and stops for good when cv goes off or the document is hidden; a block is
+  // out before them, so every finished font load lays the laid-out blocks still held out again (a
+  // clean block costs nothing). Each idle callback stops after CHUNK_MS, one block at least (live,
+  // one block took 1-17 ms). It stops for good when cv goes off; while the document is hidden it
+  // pauses, and it resumes where it stopped when the document shows (visibilitychange). A block is
   // skipped once it has rendered, left the page or its turn streams again.
   // A page that draws a frame every frame (a requestAnimationFrame loop, a scroll) gets no idle
   // periods at all: live, no idle callback ran for 15 s after completion. So each callback is also
@@ -80,45 +82,51 @@
   // (notes/runs/2026-11-24-veil-acceptance/round2/prelayout-live/report.md).
   const CHUNK_MS = 8,
     WAIT_MS = 50,
-    pending = new Set(),
-    laid = new Set();
+    pending = new Set(), // held blocks queued for pre-layout
+    prelaid = new WeakSet(); // blocks pre-layout has laid out (weak: a block that leaves is let go)
   let idle = 0,
     range;
-  const due = (el) =>
+  // A block pre-layout may lay out: in the page, held and not rendered since, its turn not streaming.
+  const stillHeld = (el) =>
     el.isConnected &&
     waiting.has(el) &&
     el.hasAttribute('data-butter-unrendered') &&
     !el.closest(BUSY);
-  const stopped = () => off() || document.visibilityState === 'hidden';
+  const hidden = () => document.visibilityState === 'hidden';
   const stop = () => {
     pending.clear();
     if (idle) cancelIdleCallback(idle);
     idle = 0;
   };
+  const request = () => {
+    if (pending.size && !idle && !hidden()) idle = requestIdleCallback(chunk, { timeout: WAIT_MS });
+  };
   const chunk = (deadline) => {
     idle = 0;
-    if (stopped()) return stop();
+    if (off()) return stop();
+    if (hidden()) return; // the queue waits for visibilitychange
     const end =
       performance.now() +
       (deadline.didTimeout ? CHUNK_MS : Math.min(CHUNK_MS, deadline.timeRemaining()));
     for (const el of pending) {
       pending.delete(el);
-      if (!due(el)) continue;
+      if (!stillHeld(el)) continue;
       range ??= document.createRange();
       range.selectNodeContents(el);
       range.getBoundingClientRect();
-      laid.add(el);
+      prelaid.add(el);
       if (performance.now() >= end) break;
     }
-    if (pending.size) idle = requestIdleCallback(chunk, { timeout: WAIT_MS });
+    request();
   };
   const prelayout = (els) => {
-    for (const el of laid) if (!due(el)) laid.delete(el);
-    if (stopped()) return;
-    for (const el of els) if (due(el)) pending.add(el);
-    if (pending.size && !idle) idle = requestIdleCallback(chunk, { timeout: WAIT_MS });
+    if (off()) return;
+    for (const el of els) if (stillHeld(el)) pending.add(el);
+    request();
   };
-  document.fonts?.addEventListener('loadingdone', () => laid.size && prelayout([...laid]));
+  const relayout = () => prelayout([...waiting].filter((el) => prelaid.has(el)));
+  document.fonts?.addEventListener('loadingdone', relayout);
+  document.addEventListener('visibilitychange', request);
   const flush = () => {
     scheduled = false;
     if (off()) {
@@ -208,7 +216,10 @@
           for (const el of waiting) if (!el.isConnected) waiting.delete(el);
           if (r.oldValue === 'in_progress')
             setTimeout(() => prelayout(t.querySelectorAll('[data-butter-unrendered]')), FLUSH_MS);
-        }
+        } else if (t && r.oldValue !== 'in_progress')
+          // The turn streams again (Regenerate, Edit), maybe into its old elements: no veil from
+          // before stays on. A held block so unveiled is still skipped; it only loses the gain.
+          for (const el of t.querySelectorAll(`[${VEIL}]`)) unveil(el);
       }
     }
   }).observe(document, {
@@ -218,15 +229,24 @@
     attributeOldValue: true,
     attributeFilter: ['data-talvt-turn-state'],
   });
+  let wasOff = off(); // the event also comes for other settings
   document.addEventListener('butter-settings', () => {
-    if (off()) {
+    const isOff = off();
+    if (isOff) {
       stop();
       ro.disconnect();
       queue.clear();
       waiting.clear();
       // Every block renders with cv off, so none may be veiled again once it is back on.
       for (const el of document.querySelectorAll(`[${VEIL}]`)) (unveil(el), drawn.add(el));
-    } else if (document.documentElement) scan(document.documentElement);
+    } else {
+      // Back on: every block in the page rendered while cv was off, also one streamed or brought
+      // back then, which no event recorded and the cv-off sweep did not see. None keeps a veil,
+      // and none is veiled again.
+      if (wasOff) for (const el of document.querySelectorAll(BLOCKS)) (unveil(el), drawn.add(el));
+      if (document.documentElement) scan(document.documentElement);
+    }
+    wasOff = isOff;
   });
   if (document.documentElement) scan(document.documentElement);
 })();

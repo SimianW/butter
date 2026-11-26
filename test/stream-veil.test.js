@@ -139,6 +139,46 @@ test('turning cv off unveils every block; back on, none is veiled from before', 
   assert.ok(!f.veiled(held) && !f.veiled(streaming));
 });
 
+test('a held block that comes back into the page while cv is off is not veiled once cv is on', () => {
+  // Out of the page when cv went off, the cv-off sweep never saw it; with cv off it renders where it
+  // comes back. Turning cv on puts it back under the rules, on screen.
+  const f = fixture({ blocks: 2 });
+  const [held] = f.blocks;
+  f.cv(held, true);
+  f.size(held, 120);
+  f.timers();
+  assert.ok(f.veiled(held) && f.unrendered(held));
+  f.detach(held);
+  f.setting(false);
+  f.attach(held); // in view
+  f.setting(true);
+  assert.ok(!f.veiled(held), 'unveiled when cv comes on');
+  f.cv(held, true); // skipped again
+  assert.ok(!f.veiled(held), 'rendered with cv off: never veiled again');
+});
+
+test('cv turned on mid-stream: the blocks that rendered while it was off are never veiled', () => {
+  // With cv off nothing is skipped, so no state-change event records that the blocks rendered.
+  const f = fixture({ blocks: 3 });
+  const [a, b, later] = f.blocks;
+  f.detach(later); // streams in after cv comes on
+  f.setting(false);
+  f.setting(true);
+  f.cv(a, true); // under the streaming rule now, below the fold
+  f.cv(b, true);
+  assert.ok(!f.veiled(a) && !f.veiled(b), 'rendered while cv was off');
+  f.attach(later);
+  f.cv(later, true);
+  assert.ok(f.veiled(later), 'a block streamed after cv came on is veiled as before');
+});
+
+test('a settings change that leaves cv on unveils nothing', () => {
+  const f = fixture();
+  f.cv(f.block, true);
+  f.setting(true); // another setting changed: the same event
+  assert.ok(f.veiled(f.block));
+});
+
 test("the dev build's capture keeps the veil's attribute name, as it does for the other marks", () => {
   const { DATA_ATTRIBUTES } = require('../extension/dev/allowlist.js');
   for (const mark of ['data-butter-seen', 'data-butter-unrendered', 'data-butter-veil'])

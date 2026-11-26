@@ -2,7 +2,8 @@
 // real stream/containment.css and stream/offscreen.js over the synthetic chat of
 // test/helpers/veil-page.mjs: Stop, Regenerate and Edit (blocks replaced, or reused with their marks
 // on), a version switch and a hidden chat (the turn leaves the page and comes back), and a Dil
-// remount (a block detached and re-attached). The sampler checks every block on every frame, at its
+// remount (a block detached and re-attached), and the `cv` setting turned on with blocks that rendered
+// while it was off (a stream begun with it off; a held block brought back while it was off). The sampler checks every block on every frame, at its
 // start and after it is drawn: no rendered block is ever veiled. Each case first checks that blocks
 // were veiled when it began, so that it cannot pass without testing anything. The fake-DOM models
 // of the same cases are in stream-veil-paths.test.js; the read-through is
@@ -25,9 +26,16 @@ after(() => browser?.close());
 
 /* global document, window -- runs in the page */
 
-// Runs `body(steps)` on a fresh chat whose answer has streamed `n` blocks below the fold, and
-// returns the sampler's violations.
-async function scenario({ renderer = 'classic', n = 240 } = {}, body) {
+// In the page: turns Butter's `cv` setting on or off, as shared/settings.js does.
+const setting = (on) => {
+  if (on) document.documentElement.removeAttribute('data-butter-off');
+  else document.documentElement.setAttribute('data-butter-off', 'cv');
+  document.dispatchEvent(new Event('butter-settings'));
+};
+
+// Runs `body(steps)` on a fresh chat whose answer has streamed `n` blocks below the fold (with
+// `cvOff`, while `cv` is off), and returns the sampler's violations.
+async function scenario({ renderer = 'classic', n = 240, cvOff = false } = {}, body) {
   const page = await openChat(browser, `${root}extension/`, {
     turns: 2,
     blocks: 40,
@@ -50,6 +58,7 @@ async function scenario({ renderer = 'classic', n = 240 } = {}, body) {
         [value, el],
       );
     await page.evaluate(scrollTo, { selector: '#answer', index: 0 });
+    if (cvOff) await step('turn cv off', () => page.evaluate(setting, false));
     await step('stream blocks below the fold', () => page.evaluate(stream, { n, perFrame: 6 }));
     await body({ page, step, count, state });
     const r = await page.evaluate(() => ({
@@ -138,13 +147,15 @@ test('Regenerate and Edit: block elements are reused with their old marks on', a
       });
       await state('in_progress');
     });
-    await step('scrollTop onto reused veiled blocks while streaming', () =>
-      page.evaluate(scrollTo, onto(veiled, 30)),
+    assert.equal(await count(veiled), 0, 'no veil from the old answer');
+    const held = '#answer [data-butter-unrendered]';
+    await step('scrollTop onto reused held blocks while streaming', () =>
+      page.evaluate(scrollTo, onto(held, 30)),
     );
     await step('more blocks stream', () => page.evaluate(stream, { n: 60, perFrame: 6 }));
     await step('the new answer completes', () => state('complete'));
-    await step('scrollTop onto reused veiled blocks after completion', () =>
-      page.evaluate(scrollTo, onto(veiled, 5)),
+    await step('scrollTop onto reused held blocks after completion', () =>
+      page.evaluate(scrollTo, onto(held, 5)),
     );
     await step('let the flush run', () => page.waitForTimeout(1300));
   });
@@ -225,6 +236,52 @@ test('Dil remount: veiled blocks detached and re-attached with their marks on', 
     assert.ok((await count(veiled)) > 10, 'held blocks are veiled');
     await step('a held block leaves after completion', () => detach(veiled), 3);
     await step('it comes back in view', reattach);
+  });
+  assert.deepEqual(violations, []);
+});
+
+test('cv turned on mid-stream: the blocks that rendered while it was off are never veiled', async () => {
+  const violations = await scenario({ cvOff: true }, async ({ page, step, count, state }) => {
+    assert.equal(await count(veiled), 0, 'nothing is veiled with cv off');
+    await step('turn cv on mid-stream', () => page.evaluate(setting, true));
+    await step('more blocks stream', () => page.evaluate(stream, { n: 60, perFrame: 6 }));
+    assert.ok((await count(veiled)) > 10, 'blocks streamed after cv came on are veiled');
+    await step('scrollTop onto the blocks streamed with cv off', () =>
+      page.evaluate(scrollTo, onto('#answer p', 120)),
+    );
+    await step('the answer completes', () => state('complete'));
+    await step('let the flush run', () => page.waitForTimeout(1300));
+  });
+  assert.deepEqual(violations, []);
+});
+
+test('a held block re-attached in view while cv is off: cv back on draws it unveiled', async () => {
+  const violations = await scenario({}, async ({ page, step, count }) => {
+    await step('the flush holds the blocks', () => page.waitForTimeout(1300));
+    assert.ok((await count('#answer [data-butter-unrendered][data-butter-veil]')) > 10);
+    await step(
+      'a held, veiled block leaves the page',
+      () =>
+        page.evaluate(() => {
+          window.detachedBlock = [
+            ...document.querySelectorAll('#answer [data-butter-unrendered][data-butter-veil]'),
+          ].at(-1);
+          window.detachedBlock.remove();
+        }),
+      3,
+    );
+    await step('turn cv off', () => page.evaluate(setting, false));
+    await step('it comes back in view', () =>
+      page.evaluate(() => {
+        const sc = document.querySelector('.thread-scroll-container').getBoundingClientRect();
+        const inView = [...document.querySelectorAll('#answer p')].find(
+          (p) => p.getBoundingClientRect().top > sc.top + 100,
+        );
+        inView.before(window.detachedBlock);
+      }),
+    );
+    await step('turn cv back on', () => page.evaluate(setting, true));
+    await step('let the flush run', () => page.waitForTimeout(1300));
   });
   assert.deepEqual(violations, []);
 });

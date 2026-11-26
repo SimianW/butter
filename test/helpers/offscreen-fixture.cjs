@@ -10,9 +10,9 @@
 // read inside a block (a Range over its contents) advances by `readMs`; `laidOut` lists the blocks
 // read, in order; `idleTimeouts` the timeout each idle callback was requested with, and
 // `idle({ timedOut: true })` runs them as on a page that is never idle: on their timeout, with no idle
-// time left; `hide()`/`show()` set the document's visibility, `fontsLoaded()` reports web fonts
-// done loading, and `complete({ from })` names the state the turn left (an opened chat's turn was
-// never in_progress).
+// time left; `hide()`/`show()` set the document's visibility and report the change, `fontsLoaded()`
+// reports web fonts done loading, and `complete({ from })` names the state the turn left (an opened
+// chat's turn was never in_progress). A query over the document finds only connected elements.
 const vm = require('node:vm');
 const fs = require('node:fs');
 
@@ -82,7 +82,11 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
   const root = {
     ...el(),
     firstElementChild: turn,
-    querySelectorAll: (s) => select([turn, ...blocks], s),
+    querySelectorAll: (s) =>
+      select(
+        [turn, ...blocks].filter((e) => e.isConnected),
+        s,
+      ),
     getAttribute: (n) => (n === 'data-butter-off' && off ? 'cv' : null),
   };
   const context = {
@@ -161,10 +165,11 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
       if (observed)
         mutated([{ type: 'attributes', target: state, addedNodes: [], oldValue: from }]);
     },
-    // The turn goes back to in_progress (a regenerated answer streams into it).
-    restart: () => {
+    // The turn goes back to in_progress (a regenerated answer streams into it); `from` names the
+    // state it left (in_progress when ChatGPT sets the state again while the answer streams).
+    restart: ({ from = 'complete' } = {}) => {
       streaming = true;
-      mutated([{ type: 'attributes', target: state, addedNodes: [], oldValue: 'complete' }]);
+      mutated([{ type: 'attributes', target: state, addedNodes: [], oldValue: from }]);
     },
     detach,
     attach,
@@ -202,8 +207,8 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
       }
       return took;
     },
-    hide: () => (visibility = 'hidden'),
-    show: () => (visibility = 'visible'),
+    hide: () => ((visibility = 'hidden'), listeners.visibilitychange?.()),
+    show: () => ((visibility = 'visible'), listeners.visibilitychange?.()),
     fontsLoaded: () => fontListeners.forEach((fn) => fn({})),
     // The `cv` setting (Smoother streaming's off-screen skipping), off also when Butter is paused.
     setting: (on) => {
