@@ -1,0 +1,229 @@
+// Final veil acceptance stage L (#177), from stage D3 part 2: prime the layout store, then
+// reload and sample the restored layout. Read-only for the chat: navigate and scroll.
+//
+//   LAB_ID=2 LAB_OWNER=veil-final-L EXT=<veil3 build> TRIGGER=1 FIXTURE=math12 OUT=<json> \
+//     node notes/runs/2026-11-24-veil-acceptance/final/stage-L/stored-layout-check.mjs
+//
+// 1. Restarts the lab browser with EXT, notes the stored `butter` value and the layout store's row
+//    count (IndexedDB butter-layouts-v1, store geometry), then turns "Remember long-chat layouts"
+//    on (opts.layout, layoutConsent granted; older and seek required since #181; rail and bookmark on).
+// 2. Loads FIXTURE, loads all earlier history, scrolls through it a viewport at a time so every
+//    turn is drawn and measured, flushes the layout cache and waits for new rows in the store.
+// 3. Reloads, and samples every 500 ms for 12 s, then once per step of a second pass through the
+//    chat: answer blocks computing opacity 0, blocks with data-butter-veil, rendered veiled blocks
+//    (stream-veil-verdicts.mjs's check), and the turns and blocks with inline content-visibility
+//    auto (the restored layout), with how many of those compute opacity 0 or carry the veil.
+// 4. Switches layouts off with consent granted (the worker then clears the store), checks the row
+//    count is back to what it was, and writes the `butter` value back as found.
+// Verdicts: stored-layout-restored, stored-layout-none-opacity0, stored-layout-cv-not-veiled,
+// stored-layout-opts-put-back. Counts only: no chat text, turn keys or URLs are printed.
+// Stage D3 fixes: (a) the row count no longer creates the database when it is missing (an open
+// without a version made an empty version-1 database, and the worker's version-2 upgrade would then
+// skip creating `geometry`); (b) it stops before changing anything when the store already has rows,
+// since step 4's clear would delete them; (c) the put-back waits for any clear that writing `butter`
+// back starts to finish before it writes `butterLayoutCleared` back. After its first live run (no turn
+// restored): (d) each sample adds count-only diagnostics (the persistence layer's counters, user
+// bubbles and the cache's restore hook targets in them, data-butter-off, the cache's hit list size);
+// (e) the pass after the reload scrolls up from where the chat opened, 0.8 viewport per step (a jump
+// to the top was undone by the page), so older turns mount as a reader would bring them in.
+// (f) TRIGGER=1: before each sample after the reload, read clientWidth on the cache's restore-hook
+// targets (an element in a user bubble whose first child is .text-size-chat), the read ChatGPT made
+// when the hook was written and did not make in the second run, so Butter's own restore() runs.
+import fs from 'node:fs';
+import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+import * as L from '/home/simon/.local/share/chatgpt-lab/lib/lab.mjs';
+import { heldLab, startLab } from '../../../../../lab/harness/seek-live-page.mjs';
+import { veilCheckScript } from '../../../../../lab/harness/stream-veil-verdicts.mjs';
+
+const env = process.env;
+const pause = ms => new Promise(r => setTimeout(r, ms));
+const FIXTURE = env.FIXTURE || 'math12';
+if (!env.EXT) { console.error('EXT= (the veil build) is required'); process.exit(2); }
+const lab = heldLab(L, env);
+const out = { fixture: FIXTURE, samples: [] };
+let fails = 0;
+const report = l => console.log(`REPORT ${l}`);
+const verdict = (ok, check, why) => { console.log(ok ? `PASS ${check}` : `FAIL ${check}: ${why}`); if (!ok) fails++; };
+
+const extIdOf = dir => [...createHash('sha256').update(dir).digest('hex').slice(0, 32)].map(h => String.fromCharCode(97 + parseInt(h, 16))).join('');
+
+// In an extension page: the `butter` value and the layout store's row count.
+async function inExt(context, id, fn, arg) {
+  const w = await context.newPage();
+  try { await w.goto(`chrome-extension://${id}/popup/popup.html`); return await w.evaluate(fn, arg); } finally { await w.close().catch(() => {}); }
+}
+const storeState = async () => {
+  const { butter, butterLayoutCleared } = await chrome.storage.local.get(['butter', 'butterLayoutCleared']);
+  const rows = await new Promise(ok => {
+    const r = indexedDB.open('butter-layouts-v1');
+    let missing = false;
+    // A missing database: abort the upgrade so this read creates nothing.
+    r.onupgradeneeded = () => { missing = true; r.transaction.abort(); };
+    r.onerror = () => ok(missing ? 0 : -1);
+    r.onsuccess = () => {
+      const db = r.result;
+      if (!db.objectStoreNames.contains('geometry')) { db.close(); return ok(0); }
+      const c = db.transaction('geometry').objectStore('geometry').count();
+      c.onsuccess = () => { db.close(); ok(c.result); };
+      c.onerror = () => { db.close(); ok(-1); };
+    };
+  });
+  return { butter, cleared: butterLayoutCleared, rows };
+};
+const setButter = v => (v === undefined ? chrome.storage.local.remove('butter') : chrome.storage.local.set({ butter: v }));
+// The worker's clear writes butterLayoutCleared (a new id each time); put it back as found too.
+const setCleared = v => (v === undefined ? chrome.storage.local.remove('butterLayoutCleared') : chrome.storage.local.set({ butterLayoutCleared: v }));
+const presence = v => v === undefined ? 'absent' : 'present';
+
+// In the page: counts over every answer block in the chat.
+function sample(shouldTrigger) {
+  const COLUMN = '[data-markdown-text-style="assistant-message"]';
+  const KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
+  const BLOCKS = `${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`;
+  const sc = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
+  if (!sc) return null;
+  const hookTargets = [...sc.querySelectorAll('[data-user-message-bubble] *')].filter(e => e.firstElementChild?.classList.contains('text-size-chat'));
+  const attempts = stats => stats ? stats.restored + Object.values(stats.restoreMisses).reduce((sum, n) => sum + n, 0) : null;
+  const beforeTrigger = attempts(window.__heightCacheDump?.().stats);
+  if (shouldTrigger) hookTargets.forEach(e => e.clientWidth);
+  const st = window.__heightCacheDump?.().stats ?? null;
+  const turns = [...sc.querySelectorAll('[data-turn-key]')], blocks = [...sc.querySelectorAll(BLOCKS)];
+  const op0 = b => getComputedStyle(b).opacity === '0';
+  const cvTurns = turns.filter(t => t.style.contentVisibility === 'auto');
+  const cvBlocks = blocks.filter(b => b.style.contentVisibility === 'auto');
+  const num = st ? Object.fromEntries(Object.entries(st).filter(([, v]) => typeof v === 'number')) : null;
+  return {
+    y: Math.round(sc.scrollTop), H: sc.scrollHeight, turns: turns.length, blocks: blocks.length,
+    opacity0: blocks.filter(op0).length, veilAttr: document.querySelectorAll('[data-butter-veil]').length,
+    leaking: window.__veilCheck ? window.__veilCheck.count(sc) : null,
+    unrendered: sc.querySelectorAll('[data-butter-unrendered]').length, inProgress: sc.querySelectorAll('[data-talvt-turn-state="in_progress"]').length,
+    cvTurns: cvTurns.length, cvBlocks: cvBlocks.length, cvBlocksOpacity0: cvBlocks.filter(op0).length,
+    cvBlocksVeil: cvBlocks.filter(b => b.hasAttribute('data-butter-veil') || b.closest('[data-butter-veil]')).length,
+    cvBlocksVeilOpacity1: cvBlocks.filter(b => b.hasAttribute('data-butter-veil') && getComputedStyle(b).opacity === '1').length,
+    cvTurnsOpacity0: cvTurns.filter(op0).length,
+    stats: num, restoreMisses: st?.restoreMisses ?? null, hitList: st?.hits?.length ?? null,
+    beforeTrigger, afterTrigger: attempts(st),
+    persist: (() => { const p = window.__butterLayoutCache?.dump?.(); return p ? { ready: p.ready, loads: p.loads, hits: p.hits, writes: p.writes, entries: p.entries, pending: p.pending, rejected: p.rejected, errors: p.errors } : null; })(),
+    bubbles: sc.querySelectorAll('[data-user-message-bubble]').length,
+    hookTargets: hookTargets.length,
+    off: document.documentElement.getAttribute('data-butter-off'), disabled: document.documentElement.hasAttribute('data-butter-disabled'),
+  };
+}
+const sampleAt = page => page.evaluate(sample, env.TRIGGER === '1');
+const scrollTo = (page, f) => page.evaluate(f => { const sc = [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0); sc.scrollTop = f === 'top' ? 0 : f === 'end' ? sc.scrollHeight : sc.scrollTop + sc.clientHeight * f; return { y: sc.scrollTop, H: sc.scrollHeight, vh: sc.clientHeight }; }, f);
+
+// Up from where the chat is, 0.8 viewport per step, to the top or 150 steps.
+async function passUp(page, each) {
+  for (let k = 0; k < 150; k++) {
+    const g = await scrollTo(page, -0.8); await pause(300);
+    if (each) await each(k);
+    if (g.y <= 0) break;
+  }
+}
+// Every turn drawn once: top to end, 0.8 viewport per step.
+async function pass(page, each) {
+  await scrollTo(page, 'top'); await pause(800);
+  for (let k = 0; k < 400; k++) {
+    const g = await scrollTo(page, 0.8); await pause(250);
+    if (each) await each(k);
+    if (g.y + g.vh >= g.H - 2) break;
+  }
+}
+
+let context, page, id, found = null, exit = 0;
+try {
+  ({ context, page } = await startLab(L, lab, env, env.EXT));
+  const extDir = L.browserArgs(lab)?.extensions?.[0];
+  if (!extDir) throw Error('no extension in the restarted browser');
+  id = extIdOf(extDir);
+  const build = await inExt(context, id, () => chrome.runtime.getManifest().version_name);
+  found = await inExt(context, id, storeState);
+  out.build = build; out.found = { rows: found.rows, opts: found.butter?.opts ?? null, layoutConsent: found.butter?.layoutConsent ?? null };
+  report(`build ${build}, fixture ${FIXTURE}; stored as found: layout store rows ${found.rows}, butter ${presence(found.butter)}, opts ${JSON.stringify(found.butter?.opts ?? null)}, layoutConsent ${found.butter?.layoutConsent ?? '-'}, butterLayoutCleared ${presence(found.cleared)}`);
+  if (found.rows !== 0) { const f = found; found = null; throw Error(`layout store has ${f.rows} rows before the check; the clear in step 4 would delete them, so nothing was changed`); }
+  if (env.OUT) fs.writeFileSync(`${env.OUT}.before.json`, JSON.stringify(found), { mode: 0o600 });
+  const on = { ...(found.butter ?? {}), layoutConsent: 'granted', opts: { ...(found.butter?.opts ?? {}), rail: true, bookmark: true, layout: true, older: true, seek: true } };
+  await inExt(context, id, setButter, on);
+  const active = (await inExt(context, id, storeState)).butter;
+  out.active = { opts: active?.opts ?? null, layoutConsent: active?.layoutConsent ?? null };
+  report(`settings read back before first load: ${JSON.stringify(out.active)}`);
+  if (!isDeepStrictEqual(active, on)) throw Error('stored settings do not match the requested settings');
+  await page.addInitScript(veilCheckScript());
+
+  // First load: make sure a record is stored.
+  const t1 = Date.now();
+  await page.goto(L.fixture(lab, FIXTURE), { waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.locator('.thread-scroll-container:visible [data-turn-key]').first().waitFor({ state: 'attached', timeout: 60000 });
+  await pause(5000);
+  const initial = await page.evaluate(sample);
+  let n = -1;
+  for (let k = 0, stable = 0; k < 30 && stable < 3; k++) {
+    await scrollTo(page, 'top'); await pause(1000);
+    const c = await page.evaluate(() => document.querySelectorAll('.thread-scroll-container [data-turn-key]').length);
+    stable = c === n ? stable + 1 : 0; n = c;
+  }
+  await pass(page);
+  await pause(2000);
+  await page.evaluate(() => window.__butterLayoutCache?.flush?.()).catch(() => {});
+  let rows = found.rows;
+  for (let k = 0; k < 30 && rows <= found.rows; k++) { await pause(1000); rows = (await inExt(context, id, storeState)).rows; }
+  const s1 = await page.evaluate(sample);
+  out.firstLoad = { turnsLoaded: n, rowsAfter: rows, sample: s1, ms: Date.now() - t1 };
+  report(`first load: ${n} turns after loading earlier history, ${s1?.blocks} answer blocks; layout store rows ${found.rows} → ${rows}; cache stats ${JSON.stringify(s1?.stats)}; restore calls without trigger ${s1?.afterTrigger ?? 'unavailable'}`);
+  if (rows <= found.rows) report('first load: no new layout row was stored');
+
+  // Reload: the stored layout is restored.
+  const t2 = Date.now();
+  await page.reload({ waitUntil: 'domcontentloaded', timeout: 90000 });
+  await page.locator('.thread-scroll-container:visible [data-turn-key]').first().waitFor({ state: 'attached', timeout: 60000 });
+  for (let k = 0; k < 24; k++) { const s = await sampleAt(page); if (s) out.samples.push({ phase: 'load', ms: Date.now() - t2, ...s }); await pause(500); }
+  await passUp(page, async k => { const s = await sampleAt(page); if (s) out.samples.push({ phase: 'pass', k, ms: Date.now() - t2, ...s }); });
+  await pause(1500);
+  const sEnd = await sampleAt(page); out.samples.push({ phase: 'end', ms: Date.now() - t2, ...sEnd });
+
+  const S = out.samples;
+  const max = k => Math.max(0, ...S.map(s => s[k] ?? 0));
+  const off = samples => [...new Set(samples.map(s => s?.off))];
+  const activeOnPage = [initial, s1, ...S].every(s => s && 'off' in s && !s.disabled && !s.off?.split(/\s+/).some(k => ['layout', 'seek', 'older'].includes(k)));
+  report(`settings on page: data-butter-off on first load ${JSON.stringify(off([initial, s1]))}, after reload ${JSON.stringify(off(S))}; layout, seek and older active in all checked samples ${activeOnPage}`);
+  const withoutTrigger = S.every(s => s.beforeTrigger != null && s.afterTrigger != null)
+    ? S.reduce((total, s, i) => total + s.beforeTrigger - (S[i - 1]?.afterTrigger ?? 0), 0)
+    : null;
+  report(`after reload: restore calls outside the explicit trigger ${withoutTrigger ?? 'unavailable'}; restored blocks with data-butter-veil at opacity 1: ${S.filter(s => s.cvBlocksVeilOpacity1 > 0).length} samples, ${S.reduce((sum, s) => sum + (s.cvBlocksVeilOpacity1 ?? 0), 0)} block-samples, most in one sample ${max('cvBlocksVeilOpacity1')}`);
+  const restored = sEnd?.stats?.restored ?? null, blocksRestored = sEnd?.stats?.blocksRestored ?? null;
+  report(`after reload: ${S.length} samples over ${S.at(-1)?.ms} ms (${S.filter(s => s.phase === 'load').length} at load, ${S.filter(s => s.phase === 'pass').length} in a pass through the chat); turns ${sEnd?.turns}, answer blocks ${sEnd?.blocks}; restored turns ${restored}, blocks ${blocksRestored}, restore misses ${JSON.stringify(sEnd?.restoreMisses)}`);
+  report(`after reload: turns with inline content-visibility auto, max ${max('cvTurns')} (end ${sEnd?.cvTurns}); answer blocks with it, max ${max('cvBlocks')} (end ${sEnd?.cvBlocks})`);
+  report(`after reload, most in any sample: answer blocks at opacity 0 ${max('opacity0')}, data-butter-veil ${max('veilAttr')}, rendered veiled (veil check) ${max('leaking')}, data-butter-unrendered ${max('unrendered')}, in_progress ${max('inProgress')}; inline-cv blocks at opacity 0 ${max('cvBlocksOpacity0')}, veiled ${max('cvBlocksVeil')}; inline-cv turns at opacity 0 ${max('cvTurnsOpacity0')}`);
+  report(`after reload, diagnostics at load end / pass end: ${JSON.stringify([S.filter(s => s.phase === 'load').at(-1), sEnd].map(s => s && { turns: s.turns, bubbles: s.bubbles, hookTargets: s.hookTargets, off: s.off, disabled: s.disabled, hitList: s.hitList, restoreMisses: s.restoreMisses, persist: s.persist, hooks: s.stats?.hooks, observed: s.stats?.observed, records: s.stats?.records }))}`);
+  report(`after reload, per sample (ms: scrollTop/scrollHeight, blocks, opacity0, veil, cvTurns/cvBlocks, restored): ${S.map(s => `${s.ms}:${s.y}/${s.H},${s.blocks},${s.opacity0},${s.veilAttr},${s.cvTurns}/${s.cvBlocks},${s.stats?.restored ?? '-'}`).join(' ')}`);
+  verdict(rows > found.rows && activeOnPage && restored > 0 && max('cvBlocks') > 0, 'stored-layout-restored', `stored rows ${rows}, layout and scrolling active ${activeOnPage}, restored turns ${restored}, blocks ${blocksRestored}, most inline-cv blocks in a sample ${max('cvBlocks')}`);
+  verdict(max('opacity0') === 0 && max('leaking') === 0, 'stored-layout-none-opacity0', `answer blocks at opacity 0: most ${max('opacity0')} in a sample (rendered veiled ${max('leaking')})`);
+  verdict(max('cvBlocksVeil') === 0 && max('cvBlocksOpacity0') === 0 && max('cvTurnsOpacity0') === 0, 'stored-layout-cv-not-veiled', `inline-cv blocks veiled ${max('cvBlocksVeil')}, at opacity 0 ${max('cvBlocksOpacity0')}; turns at opacity 0 ${max('cvTurnsOpacity0')}`);
+} catch (e) {
+  console.error(`ERROR ${e.stack || e}`); exit = 2;
+} finally {
+  if (context && id && found) {
+    try {
+      // Layouts off with consent granted makes the worker clear the store; then the value as found.
+      await inExt(context, id, setButter, { ...(found.butter ?? {}), layoutConsent: 'granted', opts: { ...(found.butter?.opts ?? {}), layout: false } });
+      let st = null;
+      for (let k = 0; k < 20; k++) { await pause(500); st = await inExt(context, id, storeState); if (st.rows <= found.rows) break; }
+      const rowsCleared = st.rows;
+      await inExt(context, id, setButter, found.butter);
+      // Writing `butter` back may start another clear (layouts off, consent not pending), which
+      // writes butterLayoutCleared again; wait until it has been still for 2 s, then write it back.
+      let last = (await inExt(context, id, storeState)).cleared, still = 0;
+      for (let k = 0; k < 20 && still < 4; k++) { await pause(500); const c = (await inExt(context, id, storeState)).cleared; still = c === last ? still + 1 : 0; last = c; }
+      await inExt(context, id, setCleared, found.cleared);
+      const after = await inExt(context, id, storeState);
+      const same = isDeepStrictEqual(after.butter, found.butter) && isDeepStrictEqual(after.cleared, found.cleared);
+      out.putBack = { rowsCleared, rows: after.rows, same };
+      report(`put back: layout store rows ${rowsCleared} after layouts off, ${after.rows} at the end (found ${found.rows}); butter and butterLayoutCleared values same as found ${same}; butter ${presence(after.butter)}, butterLayoutCleared ${presence(after.cleared)}, opts ${JSON.stringify(after.butter?.opts ?? null)}`);
+      verdict(same && after.rows === found.rows, 'stored-layout-opts-put-back', `butter same ${same}, rows ${after.rows} against ${found.rows}`);
+    } catch (e) { console.error(`ERROR put back: ${e.message}`); exit = 2; }
+  }
+  if (env.OUT) fs.writeFileSync(env.OUT, JSON.stringify(out, null, 1));
+  console.log(`SUMMARY ${exit ? `ERROR (exit ${exit})` : fails ? 'FAIL' : 'PASS'} (${fails} FAIL)`);
+  process.exit(exit || (fails ? 1 : 0));
+}
