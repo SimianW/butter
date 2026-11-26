@@ -20,15 +20,11 @@
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { median } from './stream-shift.mjs';
 
 const HELPER = path.join(path.dirname(fileURLToPath(import.meta.url)), 'xtest-type.py');
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const r1 = (v) => Math.round(v * 10) / 10;
-const median = (a) => {
-  if (!a.length) return null;
-  const b = [...a].sort((x, y) => x - y), m = b.length >> 1;
-  return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2;
-};
 
 // In the page; needs stream-ux-probe.mjs's window.__ux (pickHeld, flags, geom, inView).
 function installFindbar() {

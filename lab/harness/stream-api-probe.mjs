@@ -119,12 +119,15 @@ export function installApiProbe() {
 
 // In the page: counts (attribute selectors and the prototype's counters on <html>), the last turn's
 // height (one rect read; the harness's stream sampler already reads it every 200 ms) and prototype
-// Z's read counters (stream/read-fast-main.js).
+// Z's read counters (stream/read-fast-main.js). Veiled blocks are the last turn's answer blocks
+// that compute opacity "0", not the veil's attribute (spec #170: checks count computed opacity);
+// veil-effective is judged on that count (stream-veil-verdicts.mjs).
 function hydrationSample() {
   const h = document.documentElement, t = document.querySelectorAll('[data-turn-key]'), last = t[t.length - 1];
   const num = n => (h.hasAttribute(n) ? Number(h.getAttribute(n)) : null);
   const z = window[Symbol.for('chatgpt-butter.read-fast')];
-  const veil = last ? [...last.querySelectorAll('[data-butter-veil]')] : [];
+  const COLUMN = '[data-markdown-text-style="assistant-message"]', KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
+  const veil = last ? [...last.querySelectorAll(`${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`)].filter(b => getComputedStyle(b).opacity === '0') : [];
   // Rendered veiled blocks in the last turn (veil-none-rendered; stream-veil-verdicts.mjs).
   const leaks = window.__veilCheck && last ? window.__veilCheck.count(last) : null;
   return { t: performance.now(), leaks, veiled: veil.length, veiledNotAuto: veil.filter(b => getComputedStyle(b).contentVisibility !== 'auto').length, inProgress: !!document.querySelector('[data-talvt-turn-state="in_progress"]'), hydrated: num('data-butter-hydrated'), pending: num('data-butter-hydrate-pending'),

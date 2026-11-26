@@ -100,25 +100,26 @@ function startVeil() {
   const blockOf = e => { for (; e && e !== document.body; e = e.parentElement) if (e.parentElement?.matches(`${COLUMN}, [class*="DilResponseRoot"]`) && !e.matches('[data-dil-source-message-id]')) return e; return null; };
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
   const V = (window.__veilProbe = { on: true, phase: 'end', up: 0, down: 0, frames: [], n: 0, hit: 0, onBlock: 0, leakStart: 0, leakDrawn: 0 });
-  const leakAt = (s, x) => { const r = s.getBoundingClientRect(); for (let k = 0; k < 7; k++) { const b = blockOf(document.elementFromPoint(x, r.top + (s.clientHeight * (k + 0.5)) / 7)); if (b && window.__veilCheck?.leaking(b)) return true; } return false; };
+  // The answer blocks under the 7 points, top to bottom (points on no block left out).
+  const points = (s, x) => { const r = s.getBoundingClientRect(), out = []; for (let k = 0; k < 7; k++) { const b = blockOf(document.elementFromPoint(x, r.top + (s.clientHeight * (k + 0.5)) / 7)); if (b) out.push(b); } return out; };
+  const leaking = bs => bs.some(b => window.__veilCheck?.leaking(b));
+  const leakAt = (s, x) => leaking(points(s, x));
   addEventListener('wheel', e => { if (e.deltaY < 0) { V.up++; V.phase = `up ${V.up}`; } else if (e.deltaY > 0) { V.down++; V.phase = `down ${V.down}`; } }, { capture: true, passive: true });
   const tick = () => {
     if (!V.on) return;
     const s = sc(), col = [...document.querySelectorAll(COLUMN)].at(-1);
     if (s && col) {
       const r = s.getBoundingClientRect(), c = col.getBoundingClientRect(), x = c.left + c.width / 3;
-      let veiled = 0, op0 = 0, blocks = 0;
-      for (let k = 0; k < 7; k++) {
-        const b = blockOf(document.elementFromPoint(x, r.top + (s.clientHeight * (k + 0.5)) / 7));
-        if (!b) continue;
-        blocks++;
+      let veiled = 0, op0 = 0;
+      const hits = points(s, x);
+      for (const b of hits) {
         const v = b.hasAttribute('data-butter-veil'), o = getComputedStyle(b).opacity === '0';
         if (v) veiled++;
         if (o) op0++;
       }
-      V.n++; V.onBlock += blocks;
+      V.n++; V.onBlock += hits.length;
       if (veiled || op0) { V.hit++; V.frames.push({ i: V.n, t: Math.round(performance.now()), phase: V.phase, veiled, op0 }); }
-      if (leakAt(s, x)) V.leakStart++;
+      if (leaking(hits)) V.leakStart++;
       const mc = new MessageChannel();
       mc.port1.onmessage = () => { if (leakAt(s, x)) V.leakDrawn++; };
       mc.port2.postMessage(0);
