@@ -204,3 +204,72 @@ test('after pre-layout, a jump into the held blocks and a find in them lay out f
   assert.ok(real.took.length > 10, `pre-layout ran in ${real.took.length} idle callbacks`);
   assert.ok(longest < 50, `an idle callback took ${longest} ms`);
 });
+
+// In the page: from now until window.busy is false, every frame's main-thread work outlasts the
+// frame (a requestAnimationFrame callback that busy-waits `ms`). Chromium then grants no idle
+// period at all, as on the live lab after completion, where a frame sampler and slow (software)
+// frames left pre-layout without one idle callback for 15 s
+// (notes/runs/2026-11-24-veil-acceptance/round2/prelayout-live/report.md).
+function busyFrames(ms) {
+  window.busy = true;
+  const frame = () => {
+    if (!window.busy) return;
+    const start = performance.now();
+    while (performance.now() - start < ms);
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+// The answer completes on a page that draws a long frame every frame; 4 s later, still busy, a
+// window.find of a held block's word near the end. Returns the objects that find laid out and how
+// long each pre-layout callback took. The page font is served at once (no font pass needed).
+async function busyFind(sources) {
+  const page = await openChat(
+    browser,
+    extension,
+    { turns: 1, blocks: 20, renderer: 'classic', sampler: false },
+    sources,
+  );
+  try {
+    await page.route('**/math.woff2', (route) =>
+      route.fulfill({ body: fontFile, contentType: 'font/woff2' }),
+    );
+    await page.addStyleTag({
+      content: `@font-face { font-family: PageMath; src: url(/math.woff2) format('woff2') }
+        .katex { font-family: PageMath, serif }`,
+    });
+    await page.evaluate(idleProbe);
+    await page.evaluate(scrollTo, { selector: '#answer', index: 0 });
+    await page.evaluate(stream, { n: BLOCKS, perFrame: 6, math: 6 });
+    await page.waitForTimeout(1300); // the flush holds the blocks below the fold
+    const held = await page.evaluate(() => {
+      document
+        .querySelector('[data-talvt-turn-state="in_progress"]')
+        .setAttribute('data-talvt-turn-state', 'complete');
+      return document.querySelectorAll('#answer p[data-butter-unrendered]').length;
+    });
+    assert.ok(held > 200, `few held blocks (${held})`);
+    await page.evaluate(busyFrames, 20);
+    await page.waitForTimeout(4000);
+    const word = `zq${BLOCKS - 10}zq`;
+    const find = await laidOut(page, (w) => ((window.busy = false), window.find(w)), word);
+    assert.equal(await page.evaluate(() => String(window.getSelection())), word);
+    return { find, took: await page.evaluate(() => window.idleProbe.took) };
+  } finally {
+    await page.close();
+  }
+}
+
+test('on a page that is never idle, pre-layout still lays the held blocks out in short tasks', async () => {
+  const none = await busyFind(variant(extension, [marker.prelayout]));
+  const real = await busyFind(variant(extension));
+  const longest = Math.max(0, ...real.took);
+  console.log(
+    `busy page: objects laid out by the find: no pre-layout ${none.find}, pre-layout ${real.find}; ` +
+      `${real.took.length} pre-layout callbacks, longest ${longest.toFixed(1)} ms`,
+  );
+  assert.ok(none.find > 10000, `the find laid out only ${none.find} objects without pre-layout`);
+  assert.ok(real.find * 20 < none.find, `find: ${real.find} vs ${none.find} without pre-layout`);
+  assert.ok(longest < 50, `a pre-layout callback took ${longest} ms`);
+});

@@ -7,7 +7,9 @@
 // 7 points down the view's centre column (the last answer's column centre), the answer block under
 // the point (elementFromPoint; its index in the last turn, its rect top, data-butter-veil /
 // -unrendered / -measure, computed opacity 0, content skipped). "Completion" (gone) is the first
-// frame without [data-talvt-turn-state="in_progress"] after one with it; sampling ends 16 s later.
+// frame without [data-talvt-turn-state="in_progress"] after one with it; sampling ends 16 s later
+// (UX_SAMPLE_MS). The sampler forces style and layout every frame, which on the lab's software-
+// rendered frames leaves the page no idle period while it runs (round2/prelayout-live).
 // - u1: in the first task after that frame, scrollTop = scrollHeight (the harness's toEnd).
 // - u2: 2 s after it (U2_DELAY=<ms> to wait longer or shorter), a scrollTop write puts a block that
 //   still has data-butter-unrendered nearest the answer's middle (or block U2_BLOCK) 40 px above the
@@ -25,6 +27,10 @@
 //   least 10 blocks from the ones used, picked again before each call, watched for 30 frames; (c)
 //   keeps at least 10 blocks from all of them. Each call's record has `at`, its start in page time
 //   (performance.now), to cut a TRACE_AT trace at it.
+//   U4_DELAY_MS=<ms> (default 500): the wait between the end of sampling and u4, so a short
+//   UX_SAMPLE_MS can keep u4 at the same time after completion with the page left alone.
+//   Before (a) and after it, `dbgBefore`/`dbgAfterFirst` hold a dev build's counters, if any: it
+//   writes them as JSON to <html data-butter-dbg> on a `butter-dbg-req` event (null otherwise).
 //   U4_FINDBAR=1: the browser's find bar instead, on (a)'s block and string, typed as X input on
 //   the lab's display (stream-findbar-probe.mjs); no window.find, scrollIntoView or select-all.
 // veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
@@ -192,6 +198,15 @@ function installUx(cfg) {
   Object.assign(U, { flags, geom, inView });
   U.u4 = async () => {
     const out = {};
+    // A dev build's pre-layout counters, written on <html> only when asked (none on a release build).
+    const dbg = () => {
+      document.dispatchEvent(new Event('butter-dbg-req'));
+      const v = document.documentElement.getAttribute('data-butter-dbg');
+      document.documentElement.removeAttribute('data-butter-dbg');
+      return v ? JSON.parse(v) : null;
+    };
+    out.dbgBefore = dbg();
+    out.enter = U.enter; // Enter on the page clock, to place `at` on the Enter clock
     document.activeElement?.blur?.();
     const sel = getSelection();
     sel.removeAllRanges();
@@ -208,6 +223,7 @@ function installUx(cfg) {
       sel.removeAllRanges();
     } else out.find = { none: true };
     const used = a ? [a.i] : [];
+    out.dbgAfterFirst = dbg();
     out.finds = [];
     for (let k = 1; a && k < (cfg.u4Finds || 1); k++) {
       await raf();
@@ -300,7 +316,7 @@ async function drive(page, mode, env, ctx) {
   }
   if (!(await waitFor(page, () => window.__ux.sampled, limit))) return { ...out, error: 'sampling did not end' };
   if (mode.includes('u4')) {
-    await pause(500);
+    await pause(Number(env.U4_DELAY_MS || 500)); // UX_SAMPLE_MS + U4_DELAY_MS: u4's start after completion
     out.u4 = env.U4_FINDBAR === '1' ? { findbar: await findbarDrive(page, env, ctx.display) } : await page.evaluate(() => window.__ux.u4());
   }
   return out;
@@ -376,7 +392,7 @@ const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags 
 export async function uxProbe(page, env, summary, schedEnd, ctx = {}) {
   const mode = (env.UX || '').split(',').filter(Boolean);
   if (!mode.length) return { finish: async () => [] };
-  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u2DelayMs: u2DelayMs(env), u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
+  await page.evaluate(installUx, { mode, schedEnd, sampleMs: Number(env.UX_SAMPLE_MS || 16000), u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u2DelayMs: u2DelayMs(env), u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
   const task = drive(page, mode, env, ctx).catch(e => ({ error: String(e.message).slice(0, 200) }));
   return {
     async finish() {

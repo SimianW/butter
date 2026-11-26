@@ -8,7 +8,9 @@
 // runs until `frame()` (a hidden tab).
 // For pre-layout: idle callbacks run only when `idle()` is called, on a fake clock that each layout
 // read inside a block (a Range over its contents) advances by `readMs`; `laidOut` lists the blocks
-// read, in order; `hide()`/`show()` set the document's visibility, `fontsLoaded()` reports web fonts
+// read, in order; `idleTimeouts` the timeout each idle callback was requested with, and
+// `idle({ timedOut: true })` runs them as on a page that is never idle: on their timeout, with no idle
+// time left; `hide()`/`show()` set the document's visibility, `fontsLoaded()` reports web fonts
 // done loading, and `complete({ from })` names the state the turn left (an opened chat's turn was
 // never in_progress).
 const vm = require('node:vm');
@@ -23,6 +25,7 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
     observed = new Set(),
     calls = [],
     idles = [],
+    idleTimeouts = [],
     laidOut = [],
     fontListeners = [];
   let resized,
@@ -103,7 +106,7 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
       }),
     },
     performance: { now: () => clock },
-    requestIdleCallback: (fn) => idles.push(fn),
+    requestIdleCallback: (fn, opts) => (idleTimeouts.push(opts?.timeout), idles.push(fn)),
     cancelIdleCallback: (id) => (idles[id - 1] = null),
     ResizeObserver: class {
       constructor(fn) {
@@ -180,16 +183,21 @@ function offscreenFixture({ blocks: count = 1, frames = true, readMs = 1 } = {})
     },
     frame: () => rafs.splice(0).forEach((fn) => fn()),
     laidOut,
+    idleTimeouts,
     // Runs idle callbacks, including the ones they request, until none is left (or `max` ran), each
-    // with up to 50 ms of idle time; returns how long each one took on the fake clock.
-    idle: ({ max = Infinity } = {}) => {
+    // with up to 50 ms of idle time, or with `timedOut` on its timeout with none; returns how long
+    // each one took on the fake clock.
+    idle: ({ max = Infinity, timedOut = false } = {}) => {
       const took = [];
       while (took.length < max && idles.some(Boolean)) {
         const i = idles.findIndex(Boolean);
         const fn = idles[i];
         idles[i] = null;
         const start = clock;
-        fn({ didTimeout: false, timeRemaining: () => Math.max(0, start + 50 - clock) });
+        fn({
+          didTimeout: timedOut,
+          timeRemaining: () => (timedOut ? 0 : Math.max(0, start + 50 - clock)),
+        });
         took.push(clock - start);
       }
       return took;
