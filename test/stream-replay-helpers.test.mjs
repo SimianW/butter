@@ -9,7 +9,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { tailWindow } from '../lab/harness/stream-laf-report.mjs';
 import { traceWindow, TRACE_CATS } from '../lab/harness/stream-run-opts.mjs';
-import { isStreamDrop } from '../lab/harness/stream-ux-probe.mjs';
+import { fontRows, isStreamDrop, u2DelayMs } from '../lab/harness/stream-ux-probe.mjs';
 import { veilProbe } from '../lab/harness/stream-veil-probe.mjs';
 
 // A clock that only moves when the code under test pauses (and 5 ms per tick, as a page call would).
@@ -62,6 +62,35 @@ test('isStreamDrop: a fall of more than a viewport counts until the UX probe wri
   assert.equal(isStreamDrop(null, s, 0), false);
   assert.equal(isStreamDrop(9000, null, 0), false);
   assert.equal(isStreamDrop(9000, s, 1), false);
+});
+
+test('u2DelayMs: 2000 by default, U2_DELAY when it is a whole number of ms within the sampling window', () => {
+  assert.equal(u2DelayMs({}), 2000);
+  assert.equal(u2DelayMs({ U2_DELAY: '' }), 2000);
+  assert.equal(u2DelayMs({ U2_DELAY: '6000' }), 6000);
+  assert.equal(u2DelayMs({ U2_DELAY: '0' }), 0);
+  for (const bad of ['abc', '-1', '1.5', '15000'])
+    assert.throws(() => u2DelayMs({ U2_DELAY: bad }), /U2_DELAY/);
+});
+
+test('fontRows: font loads on the clock from completion, file names only, files in start order', () => {
+  const r = fontRows(
+    [[1500.04, ['KaTeX_Main']]],
+    [
+      {
+        name: 'https://cdn.example/a/KaTeX_Size1.woff2?v=2',
+        startTime: 1400,
+        responseEnd: 1450.06,
+      },
+      { name: 'https://cdn.example/b/KaTeX_Main.woff2', startTime: 1200, responseEnd: 1300 },
+    ],
+    1000,
+  );
+  assert.deepEqual(r.done, [{ rt: 500, families: ['KaTeX_Main'] }]);
+  assert.deepEqual(r.files, [
+    { start: 200, end: 300, file: 'KaTeX_Main.woff2' },
+    { start: 400, end: 450.1, file: 'KaTeX_Size1.woff2' },
+  ]);
 });
 
 test('traceWindow: the closing tick creates the trace file in a directory that does not exist yet', async () => {

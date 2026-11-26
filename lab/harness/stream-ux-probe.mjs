@@ -9,8 +9,9 @@
 // -unrendered / -measure, computed opacity 0, content skipped). "Completion" (gone) is the first
 // frame without [data-talvt-turn-state="in_progress"] after one with it; sampling ends 16 s later.
 // - u1: in the first task after that frame, scrollTop = scrollHeight (the harness's toEnd).
-// - u2: 2 s after it, a scrollTop write puts a block that still has data-butter-unrendered nearest
-//   the answer's middle (or block U2_BLOCK) 40 px above the view's centre.
+// - u2: 2 s after it (U2_DELAY=<ms> to wait longer or shorter), a scrollTop write puts a block that
+//   still has data-butter-unrendered nearest the answer's middle (or block U2_BLOCK) 40 px above the
+//   view's centre.
 // - u3: in the first task after it, the answer's start goes to 60 px below the view's top; then one
 //   wheel notch (100 px) down every 100 ms for 12 s (Playwright mouse.wheel). Per notch, at the
 //   next notch: scrollTop's change, and the centre block's move (doc: rect move + scrollTop
@@ -29,6 +30,8 @@
 // veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
 // 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
 // and after its rendering update (leaks: { sampled, start, drawn }).
+// Fonts: every document.fonts loadingdone (time, families) and every font file's resource timing
+// (fetch start, response end, file name only), on the probe's clock (ms after completion).
 // Settle rule (u1, u2): the first frame at least 100 ms after the write; its centre block is the
 // anchor whose rect top is then followed every frame (a new anchor when it disconnects).
 
@@ -47,7 +50,11 @@ function installUx(cfg) {
   const now = () => performance.now(), q1 = v => Math.round(v * 10) / 10;
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
   const lastTurn = () => { const t = sc()?.querySelectorAll('[data-turn-key]'); return t?.[t.length - 1] ?? null; };
-  const U = (window.__ux = { cfg, leaks: { sampled: 0, start: 0, drawn: 0 }, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [] });
+  const U = (window.__ux = { cfg, leaks: { sampled: 0, start: 0, drawn: 0 }, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [], fontsDone: [] });
+  document.fonts.addEventListener('loadingdone', e => U.fontsDone.push([q1(now()), [...new Set(e.fontfaces.map(f => f.family))]]));
+  // An observer, not getEntriesByType: the page may have filled the resource buffer long before.
+  U.fontRes = [];
+  try { new PerformanceObserver(l => { for (const e of l.getEntries()) if (/\.(woff2?|ttf|otf)([?#]|$)/i.test(e.name)) U.fontRes.push({ name: e.name, startTime: e.startTime, responseEnd: e.responseEnd }); }).observe({ type: 'resource' }); } catch (e) { U.err.push(`font observer: ${String(e.message).slice(0, 80)}`); }
   let list = [], idx = new Map();
   const other = new WeakSet(), evSkip = new WeakSet();
   const reindex = () => { const t = lastTurn(); list = t ? [...t.querySelectorAll(BLOCKS)] : []; idx = new Map(list.map((b, i) => [b, i])); };
@@ -127,7 +134,7 @@ function installUx(cfg) {
     const m = cfg.mode;
     if (m.includes('u1')) setTimeout(() => act('end', toEnd), 0);
     if (m.includes('u3')) setTimeout(() => { act('start', toStart); U.u3Ready = true; }, 0);
-    if (m.includes('u2')) setTimeout(() => act('mid', toMid), 2000);
+    if (m.includes('u2')) setTimeout(() => act('mid', toMid), cfg.u2DelayMs);
   };
   // u3: one step per wheel event, closed by the next (or by closeStep).
   let pend = null;
@@ -250,6 +257,23 @@ function installUx(cfg) {
 // The harness's stream-no-jump rule for one sample: scrollTop fell by more than a viewport since the
 // last sample. uxActs (window.__ux.acts.length; 0 without UX) > 0: the probe has written scrollTop
 // itself (u1, u2, u3), so the harness stops counting.
+// U2_DELAY: ms from completion to the u2 write; 2000 when unset or empty.
+export function u2DelayMs(env) {
+  const v = env.U2_DELAY;
+  if (v == null || v === '') return 2000;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0 || n > 14000) throw new Error(`U2_DELAY must be an integer from 0 to 14000 ms, got ${JSON.stringify(v)}`);
+  return n;
+}
+
+// Font loads on the probe's clock: [t, families] rows and resource entries, as ms after completion (z).
+export function fontRows(done, res, z) {
+  return {
+    done: done.map(([t, fam]) => ({ rt: r1(t - z), families: fam })),
+    files: res.map(e => ({ start: r1(e.startTime - z), end: r1(e.responseEnd - z), file: e.name.split(/[?#]/)[0].split('/').pop() })).sort((a, b) => a.start - b.start),
+  };
+}
+
 export const isStreamDrop = (lastY, s, uxActs = 0) => !uxActs && lastY != null && !!s && lastY - s.y > s.vh;
 
 async function waitFor(page, fn, ms) {
@@ -352,21 +376,23 @@ const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags 
 export async function uxProbe(page, env, summary, schedEnd, ctx = {}) {
   const mode = (env.UX || '').split(',').filter(Boolean);
   if (!mode.length) return { finish: async () => [] };
-  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
+  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u2DelayMs: u2DelayMs(env), u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
   const task = drive(page, mode, env, ctx).catch(e => ({ error: String(e.message).slice(0, 200) }));
   return {
     async finish() {
       const drv = await task;
-      const raw = await page.evaluate(() => { const U = window.__ux; return { leaks: U.leaks, frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
+      const raw = await page.evaluate(() => { const U = window.__ux; return { fontsDone: U.fontsDone, fontRes: U.fontRes, leaks: U.leaks, frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
       const lines = [];
       if (raw.gone == null) { summary.ux = { mode, leaks: raw.leaks, raw: { err: raw.err, frames: raw.frames.length }, drv }; return [`ux: completion not seen (${raw.frames.length} frames, errors ${JSON.stringify(raw.err)}, drive ${JSON.stringify(drv?.error ?? null)})`]; }
       const a = analyse(raw, drv, mode);
+      a.fonts = fontRows(raw.fontsDone, raw.fontRes, raw.gone);
       summary.ux = { mode, ...a, leaks: raw.leaks, u4: drv?.u4 ?? null, driveError: drv?.error ?? null };
       const P = `ux ${mode.join('+')}`;
       lines.push(`${P}: completion (first frame without in_progress) ${a.goneAfterEnter} ms after Enter, last in_progress frame ${a.lastIpBeforeGone} ms before; ${a.frames} frames sampled from 1 s before to 16 s after, frame interval median ${a.frameMs.median} ms, max ${a.frameMs.max} ms; acts ${a.acts.map(x => `${x.kind} at +${x.rt} ms (scrollTop ${x.y0} → ${x.y1}, scrollHeight ${x.H}${x.info ? `, ${JSON.stringify(x.info)}` : ''})`).join('; ') || 'none'}${a.errors.length ? `; errors ${JSON.stringify(a.errors)}` : ''}${drv?.error ? `; drive ${drv.error}` : ''}`);
       lines.push(`${P} (ii) frames with a tested point on a veiled / skipped block, whole window: ${fmtBlank(a.blank.all)}; from the act on: ${fmtBlank(a.blank.afterAct)}; frames with no point on an answer block ${a.blank.noBlockFrames}; first such frames (ms: per point 0-7 flag bits, - none) ${a.firstBlank.map(f => `${f.rt}:${f.pts}`).join(' ') || 'none'}`);
       if (a.shift) lines.push(`${P} (i) view shift after settling (settled at +${a.settle.rt} ms, first frame >= 100 ms after the write; anchor block ${a.end.centreAtSettle}): ${a.shift.frames} frames, largest move of the anchor ${a.shift.maxMove} px, net ${a.shift.net} px, jumps > 4 px ${a.shift.jumps} (sum ${a.shift.jumpSum} px; first ${a.shift.firstJumps.map(j => `${j.d}@${j.rt}`).join(' ') || '-'}), new anchors ${a.shift.reanchors}`);
       if (a.shiftPost) lines.push(`${P} (i) the same after each frame's rendering update (a task posted from the frame's rAF, median ${a.shiftPost.lagMedian} ms later): ${a.shiftPost.frames} frames, largest move ${a.shiftPost.maxMove} px, jumps > 4 px ${a.shiftPost.jumps} (first ${a.shiftPost.firstJumps.map(j => `${j.d}@${j.rt}`).join(' ') || '-'})`);
+      lines.push(`${P} fonts (ms after completion): loadingdone ${a.fonts.done.map(d => `${d.rt}:${d.families.join('+')}`).join(' ') || 'none'}; font files ${a.fonts.files.map(f => `${f.file} ${f.start}→${f.end}`).join(', ') || 'none'}`);
       if (a.end) lines.push(`${P} (iii) view at the end (+16 s): centre block ${a.end.centreAtEnd} against ${a.end.centreAtSettle} after settling (same ${a.end.same}); answer's last block (${a.endState?.lastBlock}) in view ${a.end.lastBlockInViewAtEnd}; fromEnd ${a.end.fromEndAtEnd}`);
       lines.push(`${P} (iv) once a second (ms after completion: scrollTop/scrollHeight, pending/hydrated, centre block): ${a.series.map(s => `${s.rt}:${s.y}/${s.H},${s.pend ?? '-'}/${s.hyd ?? '-'},${s.c ?? '-'}`).join(' ')}; scrollTop range ${JSON.stringify(a.yRange)}`);
       if (a.wheel) {
