@@ -38,6 +38,13 @@ export const marker = {
     ),
 };
 
+// Not covers: pre-layout (offscreen.js's prelayout()), whole or without its pass after web fonts
+// load, for the tests that compare a find or a jump with and without it.
+marker.prelayout = (js) =>
+  cut(js, /\n\s*if \(r\.oldValue === 'in_progress'\)\n\s*setTimeout\([^\n]*\n/, '\n', 'pre-layout');
+marker.prelayoutFonts = (js) =>
+  cut(js, /\n\s*document\.fonts\?\.addEventListener\('loadingdone'[^\n]*/, '', 'the font pass');
+
 // Not a cover: the first prototype's "rendered once" test, a mark (shown or seen) instead of the
 // `drawn` set that the state-change event fills. A block no mark records, such as an <hr>, is then
 // veiled again when it is skipped after it rendered.
