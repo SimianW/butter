@@ -1,0 +1,4 @@
+restore lab 2: restarting browser (now {"pid":1193815,"extensions":["~/snap/chromium/common/veil-accept/veil3/butter"],"flags":[]}, cdp up, want {"extensions":[],"flags":[]})
+chromium: stopped
+chromium: started (pid 1201865)
+restored {"lab":2,"restarted":true,"url":"<private>","composer":"","pages":["<private>"],"browser":{"pid":1201865,"extensions":[],"flags":[]},"at":"2026-11-26T20:02:25.748Z","ok":true}
