@@ -58,6 +58,36 @@ test('a block that stops being skipped is unveiled before anything else its hand
   assert.ok(calls.includes('observe'), 'then it is measured');
 });
 
+test('a held block whose height leaves its placeholder is unveiled in that size report', () => {
+  // A find, a selection or a focus renders a skipped block on the spot; the state-change event is a
+  // task, and a frame can run first. The height the frame lays it out at is reported in the frame,
+  // before paint.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120); // the placeholder: the watch's first report
+  f.timers(); // held
+  f.complete();
+  f.size(f.block, 120); // laid out by pre-layout, or the width changed: still skipped
+  assert.ok(f.veiled(f.block), 'veiled while its height is the placeholder');
+  f.size(f.block, 33);
+  assert.ok(!f.veiled(f.block), 'unveiled before the state-change event');
+  assert.ok(!f.heightWatched(f.block), 'let go once unveiled');
+  f.cv(f.block, false);
+  f.size(f.block, 33);
+  f.timers();
+  assert.ok(f.seen(f.block), 'then measured and marked as before');
+});
+
+test('a veiled block that leaves the page is let go by the height watch', () => {
+  // Another chat opens: its old blocks report 0 px and must not be kept alive.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120);
+  assert.ok(f.heightWatched(f.block));
+  f.detach(f.block);
+  assert.ok(!f.heightWatched(f.block));
+});
+
 test('the flush that marks a block seen unveils it', () => {
   // A block that renders while it carries the veil without a state-change event, such as an
   // element ChatGPT reuses with its old marks: the flush measures it at its real size.

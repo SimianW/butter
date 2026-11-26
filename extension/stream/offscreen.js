@@ -14,9 +14,10 @@
 // letting a long answer's never-rendered blocks render then cost a 0.5 s freeze.
 // An answer block that starts being skipped before it ever rendered is veiled (data-butter-veil,
 // containment.css) until it renders: the veil comes off first thing when it stops being skipped,
-// at the flush that marks it seen, when its answer leaves in_progress (unless it is held), when
-// cv goes off or comes back on, when its turn starts streaming again, and when it comes back into
-// the page outside the veil's rules (see watch()).
+// in the frame where its height leaves the placeholder (after a find, see `sized`), at the flush
+// that marks it seen, when its answer leaves in_progress (unless it is held), when cv goes off or
+// comes back on, when its turn starts streaming again, and when it comes back into the page
+// outside the veil's rules (see watch()).
 // Pre-layout: a held block's first style and layout, and the relayout its math fonts bring, would
 // otherwise wait for whatever first needs them (a find, a jump into the answer); see prelayout().
 (() => {
@@ -55,8 +56,28 @@
     unveiled.clear();
     requestAnimationFrame(() => batch.forEach((el) => el.removeAttribute(UNVEILED)));
   };
+  // A find, a selection, a focus or a scrollIntoView in a skipped block renders it on the spot, and
+  // the state-change event that unveils it is a task posted then: a frame that runs first (on a
+  // busy page, the browser's find bar) lays the block out and draws it veiled, blank. So a veiled
+  // block is also watched for its height: skipped, it has its placeholder height; it renders at its
+  // own (very rarely the same), and a ResizeObserver reports that in the frame, after layout and
+  // before paint, where the block is unveiled. The first report is the placeholder; a block that
+  // leaves the page (0 px) or is unveiled is let go.
+  const placeholder = new WeakMap(),
+    sized = new ResizeObserver((entries) => {
+      for (const { target: el, contentRect: r } of entries)
+        if (!el.hasAttribute(VEIL) || !r.height) sized.unobserve(el);
+        else if (!placeholder.has(el)) placeholder.set(el, r.height);
+        else if (r.height !== placeholder.get(el)) unveil(el);
+    });
+  const veil = (el) => {
+    el.setAttribute(VEIL, '');
+    placeholder.delete(el);
+    sized.observe(el);
+  };
   const unveil = (el) => {
     if (!el.hasAttribute(VEIL)) return;
+    sized.unobserve(el);
     el.removeAttribute(VEIL);
     el.setAttribute(UNVEILED, '');
     unveiled.add(el);
@@ -166,7 +187,7 @@
       }
       skipped.add(el);
       if (!off() && !drawn.has(el) && !el.hasAttribute('data-butter-seen') && el.matches(BLOCKS))
-        el.setAttribute(VEIL, '');
+        veil(el);
     },
     true,
   );
