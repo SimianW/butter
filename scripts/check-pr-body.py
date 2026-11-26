@@ -368,7 +368,8 @@ def check_after_review(sha, diff, base, root):
             f"review saw. If the hash was right when the review recorded it, this PR's merge base "
             f"has moved since: {base} took in part of this PR's history (the parent PR of a stack "
             "merged, say), or the PR now targets another base branch than the one the review "
-            f"used. The review read another diff: run a new review-loop round against {base}"
+            f"used. The review read another diff: merge {base} in, then run a new review-loop "
+            f"round against {base}"
         ], []
     hash_pass = f"diff hash {diff} is the diff of the reviewed commit {sha}"
     reviewed, conflicted = replayed_tree(full, base, root)

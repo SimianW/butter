@@ -547,13 +547,14 @@ class ReviewedCommitTest(unittest.TestCase):
             "If the hash was right when the review recorded it, this PR's merge base has moved "
             "since: main took in part of this PR's history (the parent PR of a stack merged, "
             "say), or the PR now targets another base branch than the one the review used. The "
-            "review read another diff: run a new review-loop round against main",
+            "review read another diff: merge main in, then run a new review-loop round against "
+            "main",
             result.stdout,
         )
 
     def test_stacked_pr_reviewed_against_its_parent_needs_a_new_round_when_the_parent_is_squashed(self):
         # A squash gives main a new commit in place of the parent's, so the child's merge base
-        # with main is where the parent left main, not the parent's tip the review used.
+        # with main is the commit the parent branched from, not the parent's tip the review used.
         child = self.stack_a_child_on_the_pr()
         body = self.body(child, diff=self.diff_hash(child, base="pr"))
         result = self.run_check(body, base="pr")

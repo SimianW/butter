@@ -55,12 +55,15 @@ Open the stacked PR against the first PR's branch, and give that branch as the b
 `origin/main`): the review then reads only the stacked change. Whether its Verdict holds once the
 first PR merges and GitHub moves the stacked PR to `main` depends on how the first PR merges:
 
-- **Merge commit:** the stacked PR's merge base with `main` stays on the first PR's tip, so the
-  Verdict's diff hash still holds.
+- **Merge commit:** the stacked PR's merge base with `main` stays on the commit of the first PR
+  it was built on, so the Verdict's diff hash still holds. The exception is a stacked branch that
+  merged `main` in before its review: its merge base can move, and `pr-body` then reports a diff
+  hash mismatch.
 - **Squash or rebase:** `main` gets new commits in place of the first PR's, so the merge base
-  falls back to where the first PR left `main`, and a Verdict recorded before the merge fails
-  `pr-body`. Keep the stacked PR a draft until the first PR merges, then merge `origin/main` in
-  and run `review-loop` against `origin/main`.
+  falls back to the commit the first PR branched from, and a Verdict recorded before the merge
+  fails `pr-body`. Keep the stacked PR a draft until the first PR merges.
+
+After such a mismatch, merge `origin/main` in and run `review-loop` against `origin/main`.
 
 Do not review a stacked PR against `main` while the first PR is open: the review reads the first
 PR's change too, and after a merge-commit merge it needs a new round.
