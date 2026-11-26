@@ -29,7 +29,9 @@ because review-loop's After approval updates a PR only by merging the base branc
 first 12 hex digits of the SHA-256 of `<base tree>..<sha tree>` and a newline, the two full tree
 ids of <sha> and of its merge base with base. `diff-hash [base] [rev]` prints it for rev (HEAD by
 default); it reads commits only, so commit the change first. It is review-loop's own formula, and
-no git config setting can change it.
+no git config setting can change it. The merge base moves only when base takes in part of the
+PR's own history, as when a PR stacked on another is reviewed against base and the other then
+merges; a PR reviewed against the branch it is stacked on keeps its hash through that merge.
 Nothing after the sha may reach tier 1 or 2: <sha> is replayed onto the current base with
 `git merge-tree` (so a base-branch merge after the review does not count, even in files the PR
 also changed), and the paths that differ between that tree and the working tree are classified
@@ -363,7 +365,9 @@ def check_after_review(sha, diff, base, root):
             f"Verdict diff hash {diff} is not the diff of the reviewed commit {sha} against the "
             f"base ({actual}): the Verdict names the commit review-loop approved and the hash "
             f"`{DIFF_HASH_COMMAND} {base} {sha}` prints for it; never point it at a commit no "
-            "review saw"
+            f"review saw. If the hash was right when the review recorded it, {base} has since "
+            "taken in part of this PR's history (the parent PR of a stack merged, say), and the "
+            "review read another diff: run a new review-loop round"
         ], []
     hash_pass = f"diff hash {diff} is the diff of the reviewed commit {sha}"
     reviewed, conflicted = replayed_tree(full, base, root)

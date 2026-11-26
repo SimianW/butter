@@ -506,6 +506,44 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn(f"PASS: diff hash {reviewed_diff} is the diff of the reviewed commit {self.reviewed}", result.stdout)
 
+    def stack_a_child_on_the_pr(self):
+        """Branch `child` off the `pr` branch with one more commit; return its short sha."""
+        self.git("checkout", "-q", "-b", "child")
+        self.write("extension/shared/util.js", "export const u = 2;\n")
+        self.commit("child change")
+        return self.rev("HEAD")[:7]
+
+    def merge_the_pr_into_main(self):
+        self.git("checkout", "-q", "main")
+        self.git("merge", "-q", "--no-ff", "-m", "Merge pr", "pr")
+        self.git("checkout", "-q", "child")
+
+    def test_stacked_pr_reviewed_against_its_parent_keeps_its_verdict_when_the_parent_merges(self):
+        child = self.stack_a_child_on_the_pr()
+        body = self.body(child, diff=self.diff_hash(child, base="pr"))
+        result = self.run_check(body, base="pr")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.merge_the_pr_into_main()
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: nothing changed after the reviewed commit {child}", result.stdout)
+
+    def test_stacked_pr_reviewed_against_main_needs_a_new_round_when_the_parent_merges(self):
+        child = self.stack_a_child_on_the_pr()
+        body = self.body(child, diff=self.diff_hash(child))
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.merge_the_pr_into_main()
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(f"is not the diff of the reviewed commit {child} against the base", result.stdout)
+        self.assertIn(
+            "If the hash was right when the review recorded it, main has since taken in part of "
+            "this PR's history (the parent PR of a stack merged, say), and the review read "
+            "another diff: run a new review-loop round",
+            result.stdout,
+        )
+
     def test_diff_hash_of_a_clean_tree_is_the_hash_of_head(self):
         diff = self.diff_hash()
         self.assertRegex(diff, r"\A[0-9a-f]{12}\Z")

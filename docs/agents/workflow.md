@@ -19,13 +19,14 @@ Every change reaches `main` through a PR.
    change is committed before the review. **Tier 0** skips this step.
 3. Run the local body check: `PR_BODY="$(cat body.md)" python3 scripts/check-pr-body.py`. It is
    CI's `pr-body` check, which enforces the Tier and Verdict items and the Cap raised items (see
-   File length ratchet).
+   File length ratchet). CI runs `main`'s copy of the gate scripts, so a PR that changes them is
+   judged by the rules on `main`: see [docs/development.md](../development.md), PR body.
 4. Mark the draft **ready** only after `review-loop` approves (tiers 1 and 2) and the local body
    check passes. Merge only after CI is green; tier 0 merges on green CI alone.
 
-The files agents take their instructions from are tier 1, not tier 0: `AGENTS.md` and `CLAUDE.md`
-in any folder, `CODING_STANDARDS.md`, `docs/bugfix.md` and everything in `docs/agents/`. A change
-to one of them after an approval needs a new review round.
+The files agents take their instructions from are at least tier 1, never tier 0: `AGENTS.md` and
+`CLAUDE.md` in any folder, `CODING_STANDARDS.md`, `docs/bugfix.md` and everything in
+`docs/agents/`. A change to one of them after an approval needs a new review round.
 
 **After approval.** When `main` moves after the approval and GitHub reports a conflict, follow
 review-loop's After approval: merge `origin/main` in, never rebase, and never edit the Verdict
@@ -47,7 +48,11 @@ not count. `python3 scripts/pr-size.py` prints the label locally. The label is C
 
 When a task mixes a **structural refactor** (such as splitting a capped file along a seam) with
 **behaviour changes**, or is likely to pass `size/L`, ship the refactor that keeps behaviour as its
-own small PR first, then stack the bug fix or feature PR on top of it.
+own small PR first, then stack the bug fix or feature PR on top of it. Open the stacked PR
+against the first PR's branch, and give that branch as the base to the tier, `diff-hash` and
+body-check commands (`origin/<branch>` in place of `origin/main`): the review then reads only the
+stacked change, and its Verdict still holds when the first PR merges and the stacked PR moves to
+`main`. Reviewed against `main` instead, it needs a new round after that merge.
 
 ## File length ratchet
 
