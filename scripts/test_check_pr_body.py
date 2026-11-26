@@ -518,6 +518,12 @@ class ReviewedCommitTest(unittest.TestCase):
         self.git("merge", "-q", "--no-ff", "-m", "Merge pr", "pr")
         self.git("checkout", "-q", "child")
 
+    def squash_the_pr_into_main(self):
+        self.git("checkout", "-q", "main")
+        self.git("merge", "-q", "--squash", "pr")
+        self.commit("Squash pr")
+        self.git("checkout", "-q", "child")
+
     def test_stacked_pr_reviewed_against_its_parent_keeps_its_verdict_when_the_parent_merges(self):
         child = self.stack_a_child_on_the_pr()
         body = self.body(child, diff=self.diff_hash(child, base="pr"))
@@ -538,11 +544,33 @@ class ReviewedCommitTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn(f"is not the diff of the reviewed commit {child} against the base", result.stdout)
         self.assertIn(
-            "If the hash was right when the review recorded it, main has since taken in part of "
-            "this PR's history (the parent PR of a stack merged, say), and the review read "
-            "another diff: run a new review-loop round",
+            "If the hash was right when the review recorded it, this PR's merge base has moved "
+            "since: main took in part of this PR's history (the parent PR of a stack merged, "
+            "say), or the PR now targets another base branch than the one the review used. The "
+            "review read another diff: merge main in, then run a new review-loop round against "
+            "main",
             result.stdout,
         )
+
+    def test_stacked_pr_reviewed_against_its_parent_needs_a_new_round_when_the_parent_is_squashed(self):
+        # A squash gives main a new commit in place of the parent's, so the child's merge base
+        # with main is the commit the parent branched from, not the parent's tip the review used.
+        child = self.stack_a_child_on_the_pr()
+        body = self.body(child, diff=self.diff_hash(child, base="pr"))
+        result = self.run_check(body, base="pr")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.squash_the_pr_into_main()
+        result = self.run_check(body)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn(f"is not the diff of the reviewed commit {child} against the base", result.stdout)
+        self.assertIn("or the PR now targets another base branch than the one the review used", result.stdout)
+        # The way out the workflow doc gives: merge main in, then review that commit against main.
+        self.git("merge", "-q", "--no-edit", "main")
+        merged = self.rev("HEAD")[:7]
+        self.assertEqual(self.diff_hash(merged), self.diff_hash(child, base="pr"))
+        result = self.run_check(self.body(merged))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"PASS: nothing changed after the reviewed commit {merged}", result.stdout)
 
     def test_diff_hash_of_a_clean_tree_is_the_hash_of_head(self):
         diff = self.diff_hash()
