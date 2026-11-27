@@ -62,11 +62,14 @@
   // block is also watched for its height: skipped, it has its placeholder height; it renders at its
   // own (very rarely the same), and a ResizeObserver reports that in the frame, after layout and
   // before paint, where the block is unveiled. The first report is the placeholder; a block that
-  // leaves the page (0 px) or is unveiled is let go.
+  // leaves the page or is unveiled is let go. One hidden in the page (0 px, display: none) stays
+  // watched, as no event or insertion comes when it is shown again; if it then leaves the page with
+  // no further report, Chromium still collects it (measured: observed and a WeakMap key).
   const placeholder = new WeakMap(),
     sized = new ResizeObserver((entries) => {
       for (const { target: el, contentRect: r } of entries)
-        if (!el.hasAttribute(VEIL) || !r.height) sized.unobserve(el);
+        if (!el.hasAttribute(VEIL) || !el.isConnected) sized.unobserve(el);
+        else if (!r.height) continue;
         else if (!placeholder.has(el)) placeholder.set(el, r.height);
         else if (r.height !== placeholder.get(el)) unveil(el);
     });
@@ -105,8 +108,7 @@
     WAIT_MS = 50,
     pending = new Set(), // held blocks queued for pre-layout
     prelaid = new WeakSet(); // blocks pre-layout has laid out (weak: a block that leaves is let go)
-  let idle = 0,
-    range;
+  let idle = 0;
   // A block pre-layout may lay out: in the page, held and not rendered since, its turn not streaming.
   const stillHeld = (el) =>
     el.isConnected &&
@@ -129,6 +131,7 @@
     const end =
       performance.now() +
       (deadline.didTimeout ? CHUNK_MS : Math.min(CHUNK_MS, deadline.timeRemaining()));
+    let range; // local: a Range kept across calls would keep the last block reachable
     for (const el of pending) {
       pending.delete(el);
       if (!stillHeld(el)) continue;
@@ -211,6 +214,11 @@
     // a frame before the state-change event that would unveil it.
     if (el.hasAttribute(VEIL) && !el.hasAttribute('data-butter-unrendered') && !el.closest(BUSY))
       unveil(el);
+    // A held, veiled block that comes back (a Dil remount, its turn back in the page) still skipped
+    // posts no state-change event, and the height watch let it go when it left: watch it again. It
+    // keeps the placeholder it had (a skipped block's comes back the same), so one that comes back
+    // rendered, in view, is unveiled at its first report, before the event.
+    else if (el.hasAttribute(VEIL) && el.hasAttribute('data-butter-unrendered')) sized.observe(el);
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {
