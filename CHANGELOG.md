@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.1.0-alpha.23] - 2026-11-27
+
 ### Added
 
 - Added a keyboard shortcut for Ask in branch: Alt+Shift+Q (Option+Shift+Q on a Mac) opens the
