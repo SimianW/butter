@@ -214,11 +214,12 @@
     // a frame before the state-change event that would unveil it.
     if (el.hasAttribute(VEIL) && !el.hasAttribute('data-butter-unrendered') && !el.closest(BUSY))
       unveil(el);
-    // A held, veiled block that comes back (a Dil remount, its turn back in the page) still skipped
-    // posts no state-change event, and the height watch let it go when it left: watch it again. It
-    // keeps the placeholder it had (a skipped block's comes back the same), so one that comes back
-    // rendered, in view, is unveiled at its first report, before the event.
-    else if (el.hasAttribute(VEIL) && el.hasAttribute('data-butter-unrendered')) sized.observe(el);
+    // Any other block that comes back still veiled (a Dil remount, its turn back in the page), held
+    // or not held yet, posts no state-change event if it stays skipped, and the height watch let it
+    // go when it left: watch it again. It keeps the placeholder it had (a skipped block's comes back
+    // the same), so one that comes back rendered, in view, is unveiled at its first report, before
+    // the event.
+    else if (el.hasAttribute(VEIL)) sized.observe(el);
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {
