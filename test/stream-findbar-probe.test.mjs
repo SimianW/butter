@@ -267,7 +267,7 @@ test("findbarDrive: the X input helper's error is returned, with the probe stopp
     },
   };
   const run = () => {
-    throw new Error('xtest-type.py: cannot open display :99');
+    throw new Error('xtest-type.py:\n  cannot open display :99'); // a helper's stderr has line breaks
   };
   const r = await findbarDrive(page, {}, ':99', run);
   assert.equal(r.keyError, 'xtest-type.py: cannot open display :99');
@@ -276,4 +276,5 @@ test("findbarDrive: the X input helper's error is returned, with the probe stopp
   const [line, ...rest] = fmtFindbar('ux u4', r);
   assert.match(line, /^ux u4 u4 find bar: .*xtest-type\.py: cannot open display :99/);
   assert.deepEqual(rest, [], 'one report line');
+  assert.ok(!line.includes('\n'), 'on one line');
 });
