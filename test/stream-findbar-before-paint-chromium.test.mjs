@@ -7,13 +7,15 @@
 // notes/runs/2026-11-24-veil-acceptance/final/find-frame/report.md), on a busy page or in a frame's
 // requestAnimationFrame. The probe must read the frame as drawn: flags 8 (held only) before paint
 // with the current marker, whose `sized` observer unveils the block in that frame, and 11 (veil,
-// opacity 0, held) with the marker from before the fix (9cdba5f), where the frame wins the race
-// with the state-change event. A witness ResizeObserver made after the probe's shows the event had
-// not run at the sample, so the 8 comes from `sized` running before the probe's observer.
+// opacity 0, held) with the marker as it was before the fix, where the frame wins the race with the
+// state-change event: the current marker with its height watch observing nothing (not read from
+// git history, which a shallow checkout such as CI's does not have). A witness ResizeObserver made
+// after the probe's shows the event had not run at the sample, so the 8 comes from `sized` running
+// before the probe's observer.
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { openChat, scrollTo, stream, frames } from './helpers/veil-page.mjs';
@@ -21,13 +23,12 @@ import { installUx } from '../lab/harness/stream-ux-probe.mjs';
 import { installFindbar, findbarAnalyse } from '../lab/harness/stream-findbar-probe.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
+const marker = readFileSync(`${root}extension/stream/offscreen.js`, 'utf8');
+const WATCH = 'sized.observe(el)';
+assert.equal(marker.split(WATCH).length - 1, 2, 'the marker starts its height watch in 2 places');
 const BUILDS = {
   'the current marker': undefined,
-  'the marker before the fix (9cdba5f)': execFileSync(
-    'git',
-    ['show', '9cdba5f:extension/stream/offscreen.js'],
-    { cwd: root },
-  ).toString(),
+  'the marker without the height watch': marker.replaceAll(WATCH, 'void el'),
 };
 
 let browser;
