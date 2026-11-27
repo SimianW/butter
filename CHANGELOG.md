@@ -34,6 +34,14 @@
 - Removed the card on the ChatGPT page that asked to remember long-chat layouts. Switching the
   layouts row on in the Experimental page is now how you agree.
 
+### Performance
+
+- Reduced the freeze when a long answer finishes streaming with Smoother streaming on: in our
+  tests the page stopped responding for about 0.65 s where it was about 1.9 s, and it was blocked
+  about two thirds less while the answer streamed. Butter now keeps ChatGPT's paint-readiness
+  telemetry from measuring answer blocks that are off-screen and not drawn yet. For a few seconds
+  after an answer finishes, jumping into its middle shows the text about 0.1 s later than before.
+
 ### Known issues
 
 - With Smoother scrolling and "Remember long-chat layouts" both on, letting go of the scrollbar in

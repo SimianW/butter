@@ -77,6 +77,9 @@ function pageProbe({ ms, sample }) {
   const COLUMN = '[data-markdown-text-style="assistant-message"]';
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
   const count = sel => document.querySelectorAll(sel).length;
+  // Answer blocks that compute opacity 0 (the veil's rule; read from computed style, any build).
+  const op0 = () => [...document.querySelectorAll(`${COLUMN} > *, [class*="DilResponseRoot"] > *`)].filter(b => getComputedStyle(b).opacity === '0').length;
+  P.op0 = op0;
   // The answer block containing el (a child of an answer root or of a Dil response root), else its turn.
   const isRoot = e => e.matches(COLUMN) || /DilResponseRoot/.test(typeof e.className === 'string' ? e.className : '');
   const blockOf = (el, y) => {
@@ -110,6 +113,8 @@ function pageProbe({ ms, sample }) {
     const row = { t: r1(now - t0), hyd: h.getAttribute('data-butter-hydrated'), pend: h.getAttribute('data-butter-hydrate-pending'),
       unr: count('[data-butter-unrendered]'), seen: count('[data-butter-seen]'), veil: count('[data-butter-veil]'), meas: count('[data-butter-measure]'),
       turns: s.querySelectorAll('[data-turn-key]').length, st: Math.round(s.scrollTop), sh: Math.round(s.scrollHeight), ch: s.clientHeight };
+    // Every 4th sample (2 s at the default SAMPLE) and the last, to keep the style reads few.
+    if (P.samples.length % 4 === 0 || now - t0 >= ms) row.op0 = op0();
     if (!ref || !ref.el.isConnected) {
       const b = centre(s);
       row.repick = !!ref; ref = b; if (b) row.ref = describe(b);
@@ -213,7 +218,7 @@ try {
   await open(page);
   await page.waitForFunction(() => window.__lp.done, null, { timeout: MS + 60000, polling: 500 });
   const d = await page.evaluate(() => ({ samples: window.__lp.samples, loaf: window.__lp.loaf, firstTurn: window.__lp.firstTurn, noLoaf: window.__lp.noLoaf, nav: !!document.querySelector('chatgpt-butter-nav'),
-    blocks: document.querySelectorAll('[data-markdown-text-style="assistant-message"] > *, [class*="DilResponseRoot"] > *').length }));
+    blocks: document.querySelectorAll('[data-markdown-text-style="assistant-message"] > *, [class*="DilResponseRoot"] > *').length, op0After: window.__lp.op0() }));
   const idle = idleReport(d);
   Object.assign(summary, { idle, butterNav: d.nav, answerBlocks: d.blocks, idleSamples: d.samples });
   save();
@@ -221,6 +226,10 @@ try {
   report(`${LABEL} ${FIXTURE}: first turn ${d.firstTurn} ms after navigation; Butter rail ${d.nav}; ${d.blocks} answer blocks in the DOM at the end; mounted turns ${idle.turns.first} → ${idle.turns.last}; ${idle.samples} samples over ${idle.spanMs} ms`);
   report(`counters: ${c ? `data-butter-hydrated ${c.hydratedFirst} → ${c.hydratedLast} (first >0 at ${c.firstHydratedAt ?? '-'} ms, last change at ${c.lastChangeAt ?? '-'} ms), hydrate-pending first ${c.pendingFirst}, max ${c.pendingMax}, last ${c.pendingLast}` : 'none on <html> (not a pvh build)'}`);
   report(`marks (first/max/last): unrendered ${m.unr.first}/${m.unr.max}/${m.unr.last}, seen ${m.seen.first}/${m.seen.max}/${m.seen.last}, veil ${m.veil.first}/${m.veil.max}/${m.veil.last}, measure ${m.meas.first}/${m.meas.max}/${m.meas.last}`);
+  const o = d.samples.filter(s => typeof s.op0 === 'number');
+  idle.op0 = { samples: o.length, first: o[0]?.op0 ?? null, max: Math.max(0, ...o.map(s => s.op0)), last: o.at(-1)?.op0 ?? null, after: d.op0After };
+  save();
+  report(`answer blocks at opacity 0 (computed; ${o.length} samples, every 4th and the last): first ${idle.op0.first}, max ${idle.op0.max}, last ${idle.op0.last}; after the window ${d.op0After}`);
   report(`scroll with no input: scrollHeight ${sc.shFirst} → ${sc.shLast} (min ${sc.shMin}, max ${sc.shMax}, ${sc.shChanges} changes, largest step ${sc.shMaxStep}); scrollTop ${sc.stFirst} → ${sc.stLast} (min ${sc.stMin}, max ${sc.stMax}, ${sc.stChanges} changes, largest step ${sc.stMaxStep}); distance from the end ${sc.atEndFirst} → ${sc.atEndLast}`);
   report(`block under the centre: ${JSON.stringify(ce.ref)}; moved net ${ce.netPx} px, sum |step| ${ce.sumAbsPx} px, largest step ${ce.maxStepPx} px, steps over 4 px ${ce.stepsOver4}, re-picked ${ce.repicks}, samples where it was no longer under the centre ${ce.notUnderCentre}`);
   report(`laf load (navigation to first turn): ${fmtLaf(idle.loafLoad)}`);

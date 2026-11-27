@@ -7,10 +7,13 @@
 // 7 points down the view's centre column (the last answer's column centre), the answer block under
 // the point (elementFromPoint; its index in the last turn, its rect top, data-butter-veil /
 // -unrendered / -measure, computed opacity 0, content skipped). "Completion" (gone) is the first
-// frame without [data-talvt-turn-state="in_progress"] after one with it; sampling ends 16 s later.
+// frame without [data-talvt-turn-state="in_progress"] after one with it; sampling ends 16 s later
+// (UX_SAMPLE_MS). The sampler forces style and layout every frame, which on the lab's software-
+// rendered frames leaves the page no idle period while it runs (round2/prelayout-live).
 // - u1: in the first task after that frame, scrollTop = scrollHeight (the harness's toEnd).
-// - u2: 2 s after it, a scrollTop write puts a block that still has data-butter-unrendered nearest
-//   the answer's middle (or block U2_BLOCK) 40 px above the view's centre.
+// - u2: 2 s after it (U2_DELAY=<ms> to wait longer or shorter), a scrollTop write puts a block that
+//   still has data-butter-unrendered nearest the answer's middle (or block U2_BLOCK) 40 px above the
+//   view's centre.
 // - u3: in the first task after it, the answer's start goes to 60 px below the view's top; then one
 //   wheel notch (100 px) down every 100 ms for 12 s (Playwright mouse.wheel). Per notch, at the
 //   next notch: scrollTop's change, and the centre block's move (doc: rect move + scrollTop
@@ -20,14 +23,31 @@
 //   (c) scrollIntoView({block: 'center'}) on another such block; for both, up to 90 frames: in
 //   view, veil, opacity, content rendered; (b) selectAllChildren(last turn): toString().length
 //   against the turn's innerText.length. The string never leaves the page; only its length does.
+//   U4_FINDS=<n> (default 1): after (a), n-1 later window.find calls, each on another held block at
+//   least 10 blocks from the ones used, picked again before each call, watched for 30 frames; (c)
+//   keeps at least 10 blocks from all of them. Each call's record has `at`, its start in page time
+//   (performance.now), to cut a TRACE_AT trace at it.
+//   U4_DELAY_MS=<ms> (default 500): the wait between the end of sampling and u4, so a short
+//   UX_SAMPLE_MS can keep u4 at the same time after completion with the page left alone.
+//   Before (a) and after it, `dbgBefore`/`dbgAfterFirst` hold a dev build's counters, if any: it
+//   writes them as JSON to <html data-butter-dbg> on a `butter-dbg-req` event (null otherwise).
+//   U4_FINDBAR=1: the browser's find bar instead, on (a)'s block and string, typed as X input on
+//   the lab's display (stream-findbar-probe.mjs); no window.find, scrollIntoView or select-all.
+// veil-none-rendered (stream-veil-verdicts.mjs): every sampled frame also counts whether one of the
+// 7 points is on a block that window.__veilCheck finds rendered at opacity 0, at the frame's start
+// and after its rendering update (leaks: { sampled, start, drawn }).
+// Fonts: every document.fonts loadingdone (time, families) and every font file's resource timing
+// (fetch start, response end, file name only), on the probe's clock (ms after completion).
 // Settle rule (u1, u2): the first frame at least 100 ms after the write; its centre block is the
 // anchor whose rect top is then followed every frame (a new anchor when it disconnects).
+
+import { beforePaint, findbarDrive, fmtFindbar } from './stream-findbar-probe.mjs';
 
 const r1 = v => Math.round(v * 10) / 10;
 const pause = ms => new Promise(r => setTimeout(r, ms));
 
-// In the page. Self-contained.
-function installUx(cfg) {
+// In the page. Self-contained. Exported for test/stream-findbar-before-paint-chromium.test.mjs.
+export function installUx(cfg) {
   if (window.__ux) return;
   const COLUMN = '[data-markdown-text-style="assistant-message"]';
   const KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
@@ -36,7 +56,11 @@ function installUx(cfg) {
   const now = () => performance.now(), q1 = v => Math.round(v * 10) / 10;
   const sc = () => [...document.querySelectorAll('.thread-scroll-container')].find(s => s.clientHeight > 0);
   const lastTurn = () => { const t = sc()?.querySelectorAll('[data-turn-key]'); return t?.[t.length - 1] ?? null; };
-  const U = (window.__ux = { cfg, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [] });
+  const U = (window.__ux = { cfg, leaks: { sampled: 0, start: 0, drawn: 0 }, frames: [], post: [], acts: [], steps: [], anchors: [], gone: null, lastIp: null, on: false, sampled: false, u3Ready: false, startAt: null, enter: null, err: [], fontsDone: [] });
+  document.fonts.addEventListener('loadingdone', e => U.fontsDone.push([q1(now()), [...new Set(e.fontfaces.map(f => f.family))]]));
+  // An observer, not getEntriesByType: the page may have filled the resource buffer long before.
+  U.fontRes = [];
+  try { new PerformanceObserver(l => { for (const e of l.getEntries()) if (/\.(woff2?|ttf|otf)([?#]|$)/i.test(e.name)) U.fontRes.push({ name: e.name, startTime: e.startTime, responseEnd: e.responseEnd }); }).observe({ type: 'resource' }); } catch (e) { U.err.push(`font observer: ${String(e.message).slice(0, 80)}`); }
   let list = [], idx = new Map();
   const other = new WeakSet(), evSkip = new WeakSet();
   const reindex = () => { const t = lastTurn(); list = t ? [...t.querySelectorAll(BLOCKS)] : []; idx = new Map(list.map((b, i) => [b, i])); };
@@ -58,6 +82,7 @@ function installUx(cfg) {
   const centre = g => { for (const k of [3, 2, 4, 1, 5, 0, 6]) { const p = point(g, k); if (p) return { ...p, k }; } return null; };
   const inView = (b, g) => { const br = b.getBoundingClientRect(); return br.bottom > g.r.top && br.top < g.r.bottom; };
   const num = n => { const h = document.documentElement; return h.hasAttribute(n) ? Number(h.getAttribute(n)) : null; };
+  const leakAny = () => { const g = geom(), c = window.__veilCheck; if (!g || !c) return false; for (let k = 0; k < 7; k++) { const p = point(g, k); if (p && c.leaking(p.b)) return true; } return false; };
   let anchor = null;
   const pickAnchor = (g, why) => { const c = centre(g); anchor = c?.b ?? null; U.anchors.push({ t: q1(now()), why, i: c?.i ?? null, k: c?.k ?? null, top: c ? q1(c.top) : null }); };
   const frame = () => {
@@ -73,9 +98,10 @@ function installUx(cfg) {
         const pts = [];
         for (let k = 0; k < 7; k++) { const p = point(g, k); pts.push(p ? [p.i, q1(p.top), flags(p.b)] : null); }
         U.frames.push([q1(t), q1(g.s.scrollTop), g.s.scrollHeight, num('data-butter-hydrate-pending'), num('data-butter-hydrated'), ip ? 1 : 0, anchor ? q1(anchor.getBoundingClientRect().top) : null, pts]);
+        if (window.__veilCheck) { U.leaks.sampled++; if (leakAny()) U.leaks.start++; }
         // After this frame's rendering update (what was painted): scrollTop and the anchor's top.
         const mc = new MessageChannel(), a0 = anchor;
-        mc.port1.onmessage = () => U.post.push([q1(t), q1(now()), q1(g.s.scrollTop), a0?.isConnected ? q1(a0.getBoundingClientRect().top) : null]);
+        mc.port1.onmessage = () => { U.post.push([q1(t), q1(now()), q1(g.s.scrollTop), a0?.isConnected ? q1(a0.getBoundingClientRect().top) : null]); if (leakAny()) U.leaks.drawn++; };
         mc.port2.postMessage(0);
       }
     } catch (e) { if (U.err.length < 5) U.err.push(String(e.message).slice(0, 120)); }
@@ -114,7 +140,7 @@ function installUx(cfg) {
     const m = cfg.mode;
     if (m.includes('u1')) setTimeout(() => act('end', toEnd), 0);
     if (m.includes('u3')) setTimeout(() => { act('start', toStart); U.u3Ready = true; }, 0);
-    if (m.includes('u2')) setTimeout(() => act('mid', toMid), 2000);
+    if (m.includes('u2')) setTimeout(() => act('mid', toMid), cfg.u2DelayMs);
   };
   // u3: one step per wheel event, closed by the next (or by closeStep).
   let pend = null;
@@ -135,16 +161,21 @@ function installUx(cfg) {
   U.wheelStart = () => { U.wheelOn = true; const g = geom(); return { x: Math.round(g.x), y: Math.round(g.r.top + g.s.clientHeight / 2) }; };
   // u4
   const raf = () => new Promise(r => requestAnimationFrame(() => r()));
-  const watch = async (b, t0) => {
-    const rows = [];
-    for (let n = 1; n <= 90; n++) {
+  // Each row: the frame's start (rAF); `paint`: [in view, flags] before paint (beforePaint), when
+  // b's size changed in that frame. `paint0`: a report before row 1, in the frame whose rAF ran the
+  // act (u4's later calls and (c) run after `await raf()`); its frame start is not sampled.
+  const watch = async (b, t0, frames = 90) => {
+    let paint0 = null;
+    const rows = [], o = beforePaint(b, (v, f) => { const r = rows.at(-1); if (r) r.paint = [v, f]; else paint0 = [v, f]; });
+    for (let n = 1; n <= frames; n++) {
       await raf();
       const g = geom(), f = flags(b);
-      rows.push({ n, t: q1(now() - t0), y: q1(g.s.scrollTop), top: q1(b.getBoundingClientRect().top - g.r.top), inView: inView(b, g), f, ok: !(f & 7) });
+      rows.push({ n, t: q1(now() - t0), y: q1(g.s.scrollTop), top: q1(b.getBoundingClientRect().top - g.r.top), inView: inView(b, g), f, ok: !(f & 7), paint: null });
     }
+    o.disconnect();
     const firstOk = rows.find(r => r.ok && r.inView), firstIn = rows.find(r => r.inView), firstUnveiled = rows.find(r => r.ok);
     const fr = r => (r ? { n: r.n, t: r.t } : null);
-    return { firstInView: fr(firstIn), firstOk: fr(firstOk), firstUnveiled: fr(firstUnveiled), topFirstInView: firstIn?.top ?? null, end: rows.at(-1), rows };
+    return { firstInView: fr(firstIn), firstOk: fr(firstOk), firstUnveiled: fr(firstUnveiled), topFirstInView: firstIn?.top ?? null, end: rows.at(-1), rows, paint0 };
   };
   const held = () => {
     reindex();
@@ -163,8 +194,38 @@ function installUx(cfg) {
     }
     return null;
   };
+  // u4's first block and string; also the find-bar mode's (stream-findbar-probe.mjs).
+  U.pickHeld = () => {
+    const h = held(), info = { blocks: h.n, candidates: h.list.length, veiledAny: h.veiledAny };
+    for (const [b, i] of h.list) { const str = unique(b); if (str) return { b, i, str, held: info }; }
+    return { held: info };
+  };
+  // The before-paint sample: a ResizeObserver on block `b` calls onSample(in view, flags) after the
+  // frame's layout and before its paint. Made after the marker's `sized` observer (offscreen.js, from
+  // document_start), it runs after `sized` in the same frame (observers run in creation order, one
+  // list per document for every script world; test/stream-findbar-before-paint-chromium.test.mjs),
+  // so it reads what is drawn after `sized` unveils a block that just rendered. A frame-start
+  // (rAF) read comes before that, and a task posted from the rAF after the state-change event's.
+  // It reports only frames where b's size changes: the frame b renders (placeholder to real
+  // height) and the first frame after observe(); not a block whose rendered height equals its
+  // placeholder, nor an opacity change at an unchanged size.
+  const beforePaint = (b, onSample) => {
+    const o = new ResizeObserver(() => { const g = geom(); onSample(g ? inView(b, g) : false, flags(b)); });
+    o.observe(b);
+    return o;
+  };
+  Object.assign(U, { flags, geom, inView, beforePaint });
   U.u4 = async () => {
     const out = {};
+    // A dev build's pre-layout counters, written on <html> only when asked (none on a release build).
+    const dbg = () => {
+      document.dispatchEvent(new Event('butter-dbg-req'));
+      const v = document.documentElement.getAttribute('data-butter-dbg');
+      document.documentElement.removeAttribute('data-butter-dbg');
+      return v ? JSON.parse(v) : null;
+    };
+    out.dbgBefore = dbg();
+    out.enter = U.enter; // Enter on the page clock, to place `at` on the Enter clock
     document.activeElement?.blur?.();
     const sel = getSelection();
     sel.removeAllRanges();
@@ -177,11 +238,30 @@ function installUx(cfg) {
       const found = window.find(str, false, false, true, false, false, false);
       const ms = q1(now() - t0), y1 = g.s.scrollTop;
       const selIn = sel.rangeCount ? a.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
-      out.find = { block: a.i, len: str.length, found, callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), ...(await watch(a.b, t0)) };
+      out.find = { block: a.i, len: str.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), ...(await watch(a.b, t0)) };
       sel.removeAllRanges();
     } else out.find = { none: true };
+    const used = a ? [a.i] : [];
+    out.dbgAfterFirst = dbg();
+    out.finds = [];
+    for (let k = 1; a && k < (cfg.u4Finds || 1); k++) {
+      await raf();
+      let b2 = null, s2 = null;
+      for (const [b, i] of held().list) { if (used.some(u => Math.abs(u - i) < 10)) continue; s2 = unique(b); if (s2) { b2 = { b, i }; break; } }
+      if (!b2) { out.finds.push({ k, none: true }); break; }
+      used.push(b2.i);
+      document.activeElement?.blur?.();
+      sel.removeAllRanges();
+      const g = geom(), y0 = g.s.scrollTop, f0 = flags(b2.b), t0 = now();
+      const found = window.find(s2, false, false, true, false, false, false);
+      const ms = q1(now() - t0), y1 = g.s.scrollTop;
+      const selIn = sel.rangeCount ? b2.b.contains(sel.getRangeAt(0).commonAncestorContainer) : false;
+      const w = await watch(b2.b, t0, 30);
+      out.finds.push({ k, block: b2.i, len: s2.length, found, at: q1(t0), callMs: ms, selectionInBlock: selIn, flagsBefore: f0, y0: q1(y0), yAfterCall: q1(y1), firstInView: w.firstInView, firstUnveiled: w.firstUnveiled, firstOk: w.firstOk, end: w.end, rows: w.rows, paint0: w.paint0 });
+      sel.removeAllRanges();
+    }
     await raf();
-    const c = h.list.find(([b, i]) => (!a || Math.abs(i - a.i) >= 10) && b.hasAttribute('data-butter-unrendered'));
+    const c = h.list.find(([b, i]) => used.every(u => Math.abs(i - u) >= 10) && b.hasAttribute('data-butter-unrendered'));
     if (c) {
       const g = geom(), y0 = g.s.scrollTop, f0 = flags(c[0]), t0 = now();
       c[0].scrollIntoView({ block: 'center' });
@@ -212,6 +292,23 @@ function installUx(cfg) {
 // The harness's stream-no-jump rule for one sample: scrollTop fell by more than a viewport since the
 // last sample. uxActs (window.__ux.acts.length; 0 without UX) > 0: the probe has written scrollTop
 // itself (u1, u2, u3), so the harness stops counting.
+// U2_DELAY: ms from completion to the u2 write; 2000 when unset or empty.
+export function u2DelayMs(env) {
+  const v = env.U2_DELAY;
+  if (v == null || v === '') return 2000;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0 || n > 14000) throw new Error(`U2_DELAY must be an integer from 0 to 14000 ms, got ${JSON.stringify(v)}`);
+  return n;
+}
+
+// Font loads on the probe's clock: [t, families] rows and resource entries, as ms after completion (z).
+export function fontRows(done, res, z) {
+  return {
+    done: done.map(([t, fam]) => ({ rt: r1(t - z), families: fam })),
+    files: res.map(e => ({ start: r1(e.startTime - z), end: r1(e.responseEnd - z), file: e.name.split(/[?#]/)[0].split('/').pop() })).sort((a, b) => a.start - b.start),
+  };
+}
+
 export const isStreamDrop = (lastY, s, uxActs = 0) => !uxActs && lastY != null && !!s && lastY - s.y > s.vh;
 
 async function waitFor(page, fn, ms) {
@@ -220,7 +317,7 @@ async function waitFor(page, fn, ms) {
 }
 
 // The node side: u3's wheel notches and u4, concurrently with the harness's loop.
-async function drive(page, mode, env) {
+async function drive(page, mode, env, ctx) {
   const out = {};
   const limit = Number(env.UX_WAIT || 200000);
   if (mode.includes('u3')) {
@@ -237,7 +334,10 @@ async function drive(page, mode, env) {
     out.sent = sent;
   }
   if (!(await waitFor(page, () => window.__ux.sampled, limit))) return { ...out, error: 'sampling did not end' };
-  if (mode.includes('u4')) { await pause(500); out.u4 = await page.evaluate(() => window.__ux.u4()); }
+  if (mode.includes('u4')) {
+    await pause(Number(env.U4_DELAY_MS || 500)); // UX_SAMPLE_MS + U4_DELAY_MS: u4's start after completion
+    out.u4 = env.U4_FINDBAR === '1' ? { findbar: await findbarDrive(page, env, ctx.display) } : await page.evaluate(() => window.__ux.u4());
+  }
   return out;
 }
 
@@ -304,27 +404,40 @@ function analyse(raw, drv, mode) {
 }
 
 const fmtBlank = b => `veil/opacity 0 ${b.veil.frames} (longest ${b.veil.longest.frames} frames, ${b.veil.longest.ms} ms), skipped ${b.skipped.frames} (longest ${b.skipped.longest.frames}, ${b.skipped.longest.ms} ms), either ${b.any.frames} (longest ${b.any.longest.frames}, ${b.any.longest.ms} ms${b.any.longest.from != null ? ` from ${b.any.longest.from}` : ''})`;
-const fr = r => (r ? `${r.n} (${r.t} ms)` : 'never in 90');
+const fr = (r, n = 90) => (r ? `${r.n} (${r.t} ms)` : `never in ${n}`);
+// A watch's before-paint sample (U.beforePaint): the first frame with the block in view and not
+// skipped, its flags at the frame's start and before paint, and the frames drawn with it rendered
+// at opacity 0.
+// Frame 0: the act's own frame, when the act ran in its rAF (only its before-paint sample).
+export const fmtPaint = (w, n = 90) => {
+  if (w.none || !w.rows) return 'no candidate block';
+  const rows = [...(w.paint0 ? [{ n: 0, t: 0, inView: false, f: null, paint: w.paint0 }] : []), ...w.rows];
+  const bp = beforePaint(rows.map(r => ({ inView: r.inView, flags: r.f, paint: r.paint ?? null }))), r = rows[bp.first];
+  return `first frame rendered in view (not skipped) ${r ? `${r.n}${r.n ? ` (${r.t} ms)` : " (the act's own frame)"}, flags at its start ${r.f ?? '-'}, before paint ${r.paint?.[1] ?? 'no report'}` : `never in ${n}`}; frames drawn with the block rendered at opacity 0 ${bp.opacity0} (of ${bp.samples} before-paint samples in ${n} frames${w.paint0 ? ' and the act\'s own' : ''})`;
+};
 const fmtWatch = w => (w.none ? 'no candidate block' : `block ${w.block}, flags before ${w.flagsBefore}, scrollTop ${w.y0} → ${w.yAfterCall} in the call; first frame in view ${fr(w.firstInView)} (top ${w.topFirstInView ?? '-'} px below the view's top), unveiled at opacity 1 and rendered ${fr(w.firstUnveiled)}, both ${fr(w.firstOk)}; after 90 frames scrollTop ${w.end.y}, top ${w.end.top} px, in view ${w.end.inView}, flags ${w.end.f}`);
 
-export async function uxProbe(page, env, summary, schedEnd) {
+// ctx.display: the lab's X display, for U4_FINDBAR=1.
+export async function uxProbe(page, env, summary, schedEnd, ctx = {}) {
   const mode = (env.UX || '').split(',').filter(Boolean);
   if (!mode.length) return { finish: async () => [] };
-  await page.evaluate(installUx, { mode, schedEnd, sampleMs: 16000, u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null });
-  const task = drive(page, mode, env).catch(e => ({ error: String(e.message).slice(0, 200) }));
+  await page.evaluate(installUx, { mode, schedEnd, sampleMs: Number(env.UX_SAMPLE_MS || 16000), u2Block: env.U2_BLOCK ? Number(env.U2_BLOCK) : null, u2DelayMs: u2DelayMs(env), u4Finds: env.U4_FINDS ? Number(env.U4_FINDS) : 1 });
+  const task = drive(page, mode, env, ctx).catch(e => ({ error: String(e.message).slice(0, 200) }));
   return {
     async finish() {
       const drv = await task;
-      const raw = await page.evaluate(() => { const U = window.__ux; return { frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
+      const raw = await page.evaluate(() => { const U = window.__ux; return { fontsDone: U.fontsDone, fontRes: U.fontRes, leaks: U.leaks, frames: U.frames, post: U.post, acts: U.acts, steps: U.steps, anchors: U.anchors, gone: U.gone, lastIp: U.lastIp, enter: U.enter, settle: U.settle, endState: U.endState, err: U.err }; });
       const lines = [];
-      if (raw.gone == null) { summary.ux = { mode, raw: { err: raw.err, frames: raw.frames.length }, drv }; return [`ux: completion not seen (${raw.frames.length} frames, errors ${JSON.stringify(raw.err)}, drive ${JSON.stringify(drv?.error ?? null)})`]; }
+      if (raw.gone == null) { summary.ux = { mode, leaks: raw.leaks, raw: { err: raw.err, frames: raw.frames.length }, drv }; return [`ux: completion not seen (${raw.frames.length} frames, errors ${JSON.stringify(raw.err)}, drive ${JSON.stringify(drv?.error ?? null)})`]; }
       const a = analyse(raw, drv, mode);
-      summary.ux = { mode, ...a, u4: drv?.u4 ?? null, driveError: drv?.error ?? null };
+      a.fonts = fontRows(raw.fontsDone, raw.fontRes, raw.gone);
+      summary.ux = { mode, ...a, leaks: raw.leaks, u4: drv?.u4 ?? null, driveError: drv?.error ?? null };
       const P = `ux ${mode.join('+')}`;
       lines.push(`${P}: completion (first frame without in_progress) ${a.goneAfterEnter} ms after Enter, last in_progress frame ${a.lastIpBeforeGone} ms before; ${a.frames} frames sampled from 1 s before to 16 s after, frame interval median ${a.frameMs.median} ms, max ${a.frameMs.max} ms; acts ${a.acts.map(x => `${x.kind} at +${x.rt} ms (scrollTop ${x.y0} → ${x.y1}, scrollHeight ${x.H}${x.info ? `, ${JSON.stringify(x.info)}` : ''})`).join('; ') || 'none'}${a.errors.length ? `; errors ${JSON.stringify(a.errors)}` : ''}${drv?.error ? `; drive ${drv.error}` : ''}`);
       lines.push(`${P} (ii) frames with a tested point on a veiled / skipped block, whole window: ${fmtBlank(a.blank.all)}; from the act on: ${fmtBlank(a.blank.afterAct)}; frames with no point on an answer block ${a.blank.noBlockFrames}; first such frames (ms: per point 0-7 flag bits, - none) ${a.firstBlank.map(f => `${f.rt}:${f.pts}`).join(' ') || 'none'}`);
       if (a.shift) lines.push(`${P} (i) view shift after settling (settled at +${a.settle.rt} ms, first frame >= 100 ms after the write; anchor block ${a.end.centreAtSettle}): ${a.shift.frames} frames, largest move of the anchor ${a.shift.maxMove} px, net ${a.shift.net} px, jumps > 4 px ${a.shift.jumps} (sum ${a.shift.jumpSum} px; first ${a.shift.firstJumps.map(j => `${j.d}@${j.rt}`).join(' ') || '-'}), new anchors ${a.shift.reanchors}`);
       if (a.shiftPost) lines.push(`${P} (i) the same after each frame's rendering update (a task posted from the frame's rAF, median ${a.shiftPost.lagMedian} ms later): ${a.shiftPost.frames} frames, largest move ${a.shiftPost.maxMove} px, jumps > 4 px ${a.shiftPost.jumps} (first ${a.shiftPost.firstJumps.map(j => `${j.d}@${j.rt}`).join(' ') || '-'})`);
+      lines.push(`${P} fonts (ms after completion): loadingdone ${a.fonts.done.map(d => `${d.rt}:${d.families.join('+')}`).join(' ') || 'none'}; font files ${a.fonts.files.map(f => `${f.file} ${f.start}→${f.end}`).join(', ') || 'none'}`);
       if (a.end) lines.push(`${P} (iii) view at the end (+16 s): centre block ${a.end.centreAtEnd} against ${a.end.centreAtSettle} after settling (same ${a.end.same}); answer's last block (${a.endState?.lastBlock}) in view ${a.end.lastBlockInViewAtEnd}; fromEnd ${a.end.fromEndAtEnd}`);
       lines.push(`${P} (iv) once a second (ms after completion: scrollTop/scrollHeight, pending/hydrated, centre block): ${a.series.map(s => `${s.rt}:${s.y}/${s.H},${s.pend ?? '-'}/${s.hyd ?? '-'},${s.c ?? '-'}`).join(' ')}; scrollTop range ${JSON.stringify(a.yRange)}`);
       if (a.wheel) {
@@ -332,10 +445,15 @@ export async function uxProbe(page, env, summary, schedEnd) {
         lines.push(`${P} u3 wheel: ${w.steps} notches from +${w.firstAt} to +${w.lastAt} ms (sent every ${w.sendGapMedian} ms median, max gap ${w.sendGapMax}, longest dispatch ${w.sendAckMax} ms), tracked ${w.tracked} of the first ${w.steps - 1} (lost ${w.lost}, none ${w.none}; the last, closed 150 ms after the last notch: dY ${w.lastStep?.dY}, doc ${w.lastStep?.doc}); scrollTop moved other than 100 px in ${w.offDelta} steps (sum of moves ${w.dYsum} px; first ${w.offDeltaList.map(x => `#${x.k}:${x.dY}`).join(' ') || '-'}); centre block moved > 4 px beyond the notch (visual) in ${w.visualOver4} (max ${w.maxVisual}; ${w.visualSizes.slice(0, 20).join(', ') || '-'}), in the document (doc) in ${w.docOver4} (max ${w.maxDoc}; ${w.docSizes.slice(0, 20).join(', ') || '-'})`);
       }
       const u = drv?.u4;
-      if (u) {
+      if (u?.findbar) lines.push(...fmtFindbar(P, u.findbar));
+      else if (u) {
         lines.push(`${P} u4 held blocks in the last 30%: ${u.held.candidates} of ${u.held.blocks} blocks (veiled ones ${u.held.veiledAny})`);
         lines.push(`${P} u4 (a) window.find: ${u.find.none ? 'no unique string found' : `string of ${u.find.len} chars in ${fmtWatch(u.find)}; returned ${u.find.found} in ${u.find.callMs} ms, selection in the block ${u.find.selectionInBlock}`}`);
+        lines.push(`${P} u4 (a) window.find before paint (a ResizeObserver on the block after the marker's; frames where its size changed): ${fmtPaint(u.find)}`);
+        for (const x of u.finds ?? []) lines.push(`${P} u4 (a) window.find, later call ${x.k}: ${x.none ? 'no unique string in another held block' : `string of ${x.len} chars in block ${x.block}, flags before ${x.flagsBefore}, scrollTop ${x.y0} → ${x.yAfterCall} in the call; returned ${x.found} in ${x.callMs} ms, selection in the block ${x.selectionInBlock}; first frame in view ${fr(x.firstInView, 30)}, unveiled at opacity 1 and rendered ${fr(x.firstUnveiled, 30)}; after 30 frames scrollTop ${x.end.y}, in view ${x.end.inView}, flags ${x.end.f}`}`);
+        for (const x of u.finds ?? []) if (!x.none) lines.push(`${P} u4 (a) window.find, later call ${x.k}, before paint: ${fmtPaint(x, 30)}`);
         lines.push(`${P} u4 (c) scrollIntoView: ${fmtWatch(u.intoView)}`);
+        lines.push(`${P} u4 (c) scrollIntoView before paint: ${fmtPaint(u.intoView)}`);
         lines.push(`${P} u4 (b) selectAllChildren(last turn).toString().length ${u.select.selLen} (${u.select.selMs} ms), innerText.length ${u.select.innerLen} (${u.select.innerMs} ms; ${u.select.innerLen2} two frames later), equal ${u.select.equal}, textContent.length ${u.select.textLen}; veiled blocks before ${u.select.veiledBefore}, after ${u.select.veiledAfter}`);
       }
       return lines;

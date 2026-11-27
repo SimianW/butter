@@ -51,23 +51,24 @@ export async function putBack(context, extId, saved, summary) {
 
 // A devtools.timeline trace (no CPU profiler) on the page's CDP session.
 export const TRACE_CATS = ['devtools.timeline', 'disabled-by-default-devtools.timeline', 'disabled-by-default-devtools.timeline.stack', 'v8.execute', 'blink.user_timing'];
-export async function startTrace(cdp) {
+// `extra` adds categories, e.g. TRACE_CATS=disabled-by-default-devtools.timeline.invalidationTracking.
+export async function startTrace(cdp, extra = []) {
   const chunks = [];
   const on = ({ value }) => { for (const e of value) chunks.push(e); };
   cdp.on('Tracing.dataCollected', on);
-  await cdp.send('Tracing.start', { traceConfig: { includedCategories: TRACE_CATS, excludedCategories: ['*'] }, transferMode: 'ReportEvents' });
+  await cdp.send('Tracing.start', { traceConfig: { includedCategories: [...TRACE_CATS, ...extra], excludedCategories: ['*'] }, transferMode: 'ReportEvents' });
   return { chunks, on };
 }
 // From `at - span/2` to `at + span/2` ms after Enter (el = the caller's elapsed ms); a user-timing
 // mark `lab-trace-start` and `performance.now()` at that moment let a reader align the trace.
-export function traceWindow(cdp, at, span, file) {
+export function traceWindow(cdp, at, span, file, extra = []) {
   let t = null, done = false, events = 0, pageStart = null;
   const stop = async () => { events = await stopTrace(cdp, t, file); done = true; };
   return {
     async tick(el) {
       if (done || at == null) return;
       if (!t && el >= at - span / 2) {
-        t = await startTrace(cdp);
+        t = await startTrace(cdp, extra);
         pageStart = (await cdp.send('Runtime.evaluate', { expression: 'performance.mark("lab-trace-start"), performance.now()', returnByValue: true })).result.value;
       } else if (t && el >= at + span / 2) await stop();
     },

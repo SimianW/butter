@@ -4,9 +4,9 @@
 //
 // LAB_ID=2 LAB_OWNER=<owner> EXT=<unpacked dir or empty> LABEL=<name> [FIXTURE=math9]
 //   [REC=~/Dev/butter/lab/harness/recordings/en-t09.json] [OUT=<json>] [NOSEND=1] [PROBE=1]
-//   [PHASES=stream] [OPTS=<settings json>] [TRACE_AT=<ms>] [APIPROBE=1] [TAIL_MS=5000] [VEILPROBE=1] node lab/harness/stream-replay-live.mjs
+//   [PHASES=stream] [OPTS=<settings json>] [TRACE_AT=<ms>] [TRACE_SPAN=<ms>] [TRACE_CATS=<a,b>] [APIPROBE=1] [TAIL_MS=5000] [VEILPROBE=1] node lab/harness/stream-replay-live.mjs
 // PHASES=stream skips the wheel phase; OPTS sets Butter's options, put back as found at the end; TRACE_AT
-// traces 10 s around it; APIPROBE=1 times layout-dependent DOM calls from 100 s on (stream-api-probe.mjs);
+// traces TRACE_SPAN ms (10 s) around it, with the extra categories in TRACE_CATS; APIPROBE=1 times layout-dependent DOM calls from 100 s on (stream-api-probe.mjs);
 // TAIL_MS (5000 or more) keeps observing after completion, VEILPROBE=1 hit-tests veiled blocks while wheeling (stream-veil-probe.mjs); UX=u1,u2,u3,u4 probes the view around completion (stream-ux-probe.mjs).
 //
 // Safety, in three layers: the lab's send guard (aborts every non-GET request to chatgpt.com) on
@@ -21,7 +21,8 @@
 //
 // Checks (verdict lines): replay-hook, replay-streams, in-progress, cv-blocks (Butter),
 // seen-marks (Butter), throttle-matched (Butter), stream-no-jump, wheel-no-jump, rail-new-tick,
-// rail-new-tick-lit (Butter), no-escape, server-unchanged. REPORT lines: buttons, pre-jump
+// rail-new-tick-lit (Butter), veil-none-rendered, veil-effective (judged only when blocks were veiled
+// before completion; stream-veil-verdicts.mjs), no-escape, server-unchanged. REPORT lines: buttons, pre-jump
 // condition, publish intervals, smoother callback sources, view shifts, follow-the-end samples,
 // long animation frames to 5 s past stream complete, per frame (stream-laf-probe/-report.mjs).
 // No chat text leaves the page; button labels are ChatGPT's UI strings.
@@ -38,6 +39,8 @@ import { prepareOpts, putBack } from './stream-run-opts.mjs';
 import { streamWindows } from './stream-api-probe.mjs';
 import { veilProbe } from './stream-veil-probe.mjs';
 import { uxProbe, isStreamDrop } from './stream-ux-probe.mjs';
+import { veilVerdicts } from './stream-veil-verdicts.mjs';
+import { median, q, intervals, shiftStats, fmtShift } from './stream-shift.mjs';
 
 const env = process.env;
 const label = env.LABEL || 'replay';
@@ -252,16 +255,6 @@ function helpers() {
   };
 }
 
-const median = a => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; };
-const q = (a, p) => { const b = [...a].sort((x, y) => x - y); return b.length ? b[Math.min(b.length - 1, Math.floor(p * b.length))] : null; };
-const intervals = ts => ts.slice(1).map((t, i) => Math.round((t - ts[i]) * 10) / 10);
-const shiftStats = rows => {
-  const ok = rows.filter(r => r && !r.none && !r.lost && !r.clamped), v = ok.map(r => Math.abs(r.visual));
-  return { steps: rows.length, tracked: ok.length, lost: rows.filter(r => r?.lost).length, none: rows.filter(r => !r || r.none).length, clamped: rows.filter(r => r?.clamped).length,
-    over4: v.filter(x => x > 4).length, over4Sizes: ok.filter(r => Math.abs(r.visual) > 4).map(r => r.visual), median: median(v), max: v.length ? Math.max(...v) : null };
-};
-const fmtShift = st => `${st.over4}/${st.tracked} over 4px${st.over4 ? ` (${st.over4Sizes.join(', ')} px)` : ''}, median ${st.median ?? '-'}, max ${st.max ?? '-'} (lost ${st.lost}, none ${st.none}, clamped ${st.clamped})`;
-
 let browser, context, page, optSaved = null, extId = null;
 let exit = 0;
 try {
@@ -350,7 +343,7 @@ try {
     if (!hookOk) throw Object.assign(Error('replay hook not in the fetch chain; nothing pressed'), { setup: true });
     await page.evaluate(() => window.__rp.watch());
     await startLaf(page);
-    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0]);
+    const ux = await uxProbe(page, env, summary, schedule.at(-1)[0], { display: lab.display });
     await page.keyboard.press('Enter');
     const samples = []; let stopSeen = null, t0 = Date.now(), lastY = null, drops = [];
     const total = schedule.at(-1)[0];
@@ -470,6 +463,7 @@ try {
     report(`view shift down (${down.length} steps, ended fromEnd ${gEnd.fromEnd}): ${fmtShift(sd)}; in the streamed answer: ${fmtShift(inLast(down))}`);
     verdict(wheelDrops.length === 0, 'wheel-no-jump', `scrollTop fell by more than a viewport while wheeling down: ${wheelDrops.slice(0, 3).map(d => `${d[0]} → ${d[1]} at step ${d[2]}`).join(', ')}`);
     }
+    for (const v of veilVerdicts(summary)) v.check ? verdict(v.ok, v.check, v.why) : report(v.line); // stream-veil-verdicts.mjs
     await ed.click().catch(() => {}); await page.keyboard.press('Control+A'); await page.keyboard.press('Backspace');
   }
 

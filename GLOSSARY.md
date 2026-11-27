@@ -120,6 +120,20 @@ view.
 _Avoid_: unseen
 _Where_: `stream/offscreen.js`
 
+**Veil**:
+The `opacity: 0` that a streamed answer block computes while it is skipped and has never rendered,
+so that ChatGPT's paint-readiness telemetry does not read into it. It is off before the block
+renders. A block is **veiled** or not; the attribute is `data-butter-veil`.
+_Where_: `stream/offscreen.js`, `stream/containment.css`
+
+**Pre-layout**:
+Laying out a completed answer's held never-rendered blocks in idle time, a few per idle callback
+(on a page that is never idle, a few every 50 ms), without rendering them: they stay skipped, held and veiled, and the page neither grows nor moves.
+A later find in page or jump into the answer then finds them laid out. Runs again after web fonts
+finish loading, since a late math font invalidates what it laid out.
+_Avoid_: late hydration (which renders the blocks and moved the page)
+_Where_: `stream/offscreen.js`
+
 ## History rail
 
 **Rail**:

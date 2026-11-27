@@ -1,0 +1,22 @@
+acquire started 2026-11-26T20:40:34Z
+acquire finished 2026-11-26T20:42:47Z exit=143 lab=
+acquire started 2026-11-26T20:42:55Z
+acquire finished 2026-11-26T21:22:48Z exit=0 lab=2
+start veil3-math12-scroll-1 2026-11-26T21:22:50Z
+finish veil3-math12-scroll-1 2026-11-26T21:23:01Z exit=2 took=11s
+start veil3-math12-scroll-2 2026-11-26T21:23:01Z
+finish veil3-math12-scroll-2 2026-11-26T21:23:10Z exit=2 took=9s
+start veil3-math12-scroll-3 2026-11-26T21:23:10Z
+finish veil3-math12-scroll-3 2026-11-26T21:23:20Z exit=2 took=10s
+start veil3-math12-scroll-1 2026-11-26T21:23:44Z
+finish veil3-math12-scroll-1 2026-11-26T21:26:03Z exit=0 took=139s
+start veil3-math12-scroll-2 2026-11-26T21:26:03Z
+finish veil3-math12-scroll-2 2026-11-26T21:28:21Z exit=0 took=138s
+start veil3-math12-scroll-3 2026-11-26T21:28:21Z
+finish veil3-math12-scroll-3 2026-11-26T21:30:40Z exit=0 took=139s
+restore finished 2026-11-26T21:30:54Z exit=0
+release finished 2026-11-26T21:31:01Z exit=0
+{"lab": 2, "lab_released": true, "perf_released": true}
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}

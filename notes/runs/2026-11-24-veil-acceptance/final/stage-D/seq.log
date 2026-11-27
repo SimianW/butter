@@ -1,0 +1,40 @@
+acquire start 2026-11-26T18:13:57Z
+lab=2 exit=0 at 2026-11-26T19:00:21Z
+run 1 main3-ats12-u4-1 start 2026-11-26T19:00:21Z
+exit=0 elapsed=204s since-lock=204s
+12
+REPORT completion frame: start 105051.3 ms, duration 1960.8, blocking 1910.1, script part 628.1, rAF part 1321.7, render part 11; scripts 1295.6/1240.7 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 627.3/184.3 forced other user-callback "TimerHandler:setTimeout"; 14.4/0 forced other user-callback "FrameRequestCallback"
+REPORT veil-effective: not judged, no block was veiled just before the completion frame
+run 2 veil3-ats12-u4-1 start 2026-11-26T19:03:45Z
+exit=0 elapsed=211s since-lock=415s
+13
+REPORT completion frame: start 105020.8 ms, duration 642.1, blocking 590.8, script part 594.5, rAF part 36.9, render part 10.7; scripts 593/177.4 forced other user-callback "TimerHandler:setTimeout"; 15.6/6.5 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 12.5/0 forced other user-callback "FrameRequestCallback"
+REPORT veil-effective: 565 blocks veiled before completion; ChatGPT's rAF callback in the completion frame forced 6.5 ms of style and layout (frame 642.1 ms at 105020.8 ms)
+run 3 main3-ats12-u4-2 start 2026-11-26T19:07:16Z
+exit=0 elapsed=203s since-lock=618s
+12
+REPORT completion frame: start 105131 ms, duration 2058.3, blocking 2007.3, script part 628.6, rAF part 1415.4, render part 14.3; scripts 1383.5/1324.5 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 627.4/184.2 forced other user-callback "TimerHandler:setTimeout"; 20.5/0 forced other user-callback "FrameRequestCallback"
+REPORT veil-effective: not judged, no block was veiled just before the completion frame
+run 4 veil3-ats12-u4-2 start 2026-11-26T19:10:39Z
+exit=0 elapsed=212s since-lock=830s
+13
+REPORT completion frame: start 105024.5 ms, duration 625.1, blocking 574.3, script part 576.7, rAF part 38.1, render part 10.3; scripts 576/176.5 forced other user-callback "TimerHandler:setTimeout"; 16.3/6.7 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 12.6/0 forced other user-callback "FrameRequestCallback"
+REPORT veil-effective: 567 blocks veiled before completion; ChatGPT's rAF callback in the completion frame forced 6.7 ms of style and layout (frame 625.1 ms at 105024.5 ms)
+run 5 main3-ats12-u4-3 start 2026-11-26T19:14:11Z
+exit=0 elapsed=210s since-lock=1040s
+12
+REPORT completion frame: start 105071.9 ms, duration 1964.2, blocking 1881.6, script part 669.8, rAF part 1284.2, render part 10.2; scripts 1258.7/1205.5 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 637.1/185.1 forced other user-callback "TimerHandler:setTimeout"; 14/0 forced other user-callback "FrameRequestCallback"; 7.5/0 forced other event-listener "MessagePort.onmessage"
+REPORT veil-effective: not judged, no block was veiled just before the completion frame
+run 6 veil3-ats12-u4-3 start 2026-11-26T19:17:41Z
+exit=0 elapsed=208s since-lock=1248s
+13
+REPORT completion frame: start 105072.4 ms, duration 664.1, blocking 613.5, script part 613.3, rAF part 39.6, render part 11.2; scripts 612.4/176.6 forced other user-callback "TimerHandler:setTimeout"; 16.9/7 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 13.2/0 forced other user-callback "FrameRequestCallback"
+REPORT veil-effective: 567 blocks veiled before completion; ChatGPT's rAF callback in the completion frame forced 7 ms of style and layout (frame 664.1 ms at 105072.4 ms)
+restore start 2026-11-26T19:21:09Z
+restore exit=0
+{"lab": 2, "lab_released": true, "perf_released": true}
+release exit=0
+{"lab": 1, "held": false, "owner": null}
+{"lab": 2, "held": false, "owner": null}
+{"lab": "perf", "held": false, "owner": null}
+done 2026-11-26T19:21:20Z since-lock=1259s

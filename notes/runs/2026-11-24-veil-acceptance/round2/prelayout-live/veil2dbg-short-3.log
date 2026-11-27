@@ -1,0 +1,27 @@
+PASS replay-hook
+PASS replay-streams
+PASS in-progress
+PASS cv-blocks
+PASS seen-marks
+PASS throttle-matched
+PASS stream-no-jump
+PASS rail-new-tick
+PASS rail-new-tick-lit
+PASS veil-none-rendered
+PASS veil-effective
+PASS no-escape
+PASS server-unchanged
+REPORT laf marks (ms after Enter): replay POST 51.5, first chunk 517, last chunk 107434.1, in_progress on 2542.6, in_progress gone 105614.7, observed until 112809.3; in_progress transitions 2; butter mark batches 78 (seen +26, unrendered +574)
+REPORT completion frame: start 105059.5 ms, duration 666.3, blocking 615.7, script part 616.1, rAF part 38.7, render part 11.5; scripts 615.3/180.5 forced other user-callback "TimerHandler:setTimeout"; 15.1/6.3 forced chatgpt:681678.6351943e5d.js user-callback "FrameRequestCallback"; 12.7/0 forced other user-callback "FrameRequestCallback"
+REPORT ux u4: completion (first frame without in_progress) 105686.4 ms after Enter, last in_progress frame -641.1 ms before; 93 frames sampled from 1 s before to 16 s after, frame interval median 18.1 ms, max 641.1 ms; acts none
+REPORT ux u4 (ii) frames with a tested point on a veiled / skipped block, whole window: veil/opacity 0 0 (longest 0 frames, 0 ms), skipped 0 (longest 0, 0 ms), either 0 (longest 0, 0 ms); from the act on: veil/opacity 0 0 (longest 0 frames, 0 ms), skipped 0 (longest 0, 0 ms), either 0 (longest 0, 0 ms); frames with no point on an answer block 0; first such frames (ms: per point 0-7 flag bits, - none) none
+REPORT ux u4 (iv) once a second (ms after completion: scrollTop/scrollHeight, pending/hydrated, centre block): -999.5:9754/95686,-/-,- 0:9754/95686,-/-,- 1004.8:9754/95638,-/-,-; scrollTop range [9754,9754]
+REPORT ux u4 u4 held blocks in the last 30%: 178 of 612 blocks (veiled ones true)
+REPORT ux u4 u4 (a) window.find: string of 19 chars in block 429, flags before 15, scrollTop 9754 → 9754 in the call; first frame in view never in 90 (top - px below the view's top), unveiled at opacity 1 and rendered 2 (184 ms), both never in 90; after 90 frames scrollTop 9754, top 59133.8 px, in view false, flags 0; returned true in 155.2 ms, selection in the block true
+REPORT ux u4 u4 (a) window.find, later call 1: string of 24 chars in block 440, flags before 15, scrollTop 9754 → 9754 in the call; returned true in 86.4 ms, selection in the block true; first frame in view never in 30, unveiled at opacity 1 and rendered 1 (110 ms); after 30 frames scrollTop 9754, in view false, flags 8
+REPORT ux u4 u4 (a) window.find, later call 2: string of 23 chars in block 450, flags before 15, scrollTop 9754 → 9754 in the call; returned true in 86 ms, selection in the block true; first frame in view never in 30, unveiled at opacity 1 and rendered 1 (113.3 ms); after 30 frames scrollTop 9754, in view false, flags 0
+REPORT ux u4 u4 (c) scrollIntoView: block 460, flags before 15, scrollTop 9754 → 72532 in the call; first frame in view 1 (57.9 ms) (top 396.8 px below the view's top), unveiled at opacity 1 and rendered 1 (57.9 ms), both 1 (57.9 ms); after 90 frames scrollTop 72532, top -679.3 px, in view false, flags 0
+REPORT ux u4 u4 (b) selectAllChildren(last turn).toString().length 35863 (113.5 ms), innerText.length 6319 (29.3 ms; 6319 two frames later), equal false, textContent.length 35734; veiled blocks before 504, after 504
+REPORT veil-none-rendered: blocks at opacity 0 that are not content-visibility auto or whose content is rendered: 0 of 146 samples (most 0); 0 after the window; ux: 0 at the frame's start, 0 after drawing (of 235 frames)
+REPORT veil-effective: 584 blocks veiled before completion; ChatGPT's rAF callback in the completion frame forced 6.3 ms of style and layout (frame 666.3 ms at 105059.5 ms)
+veil2dbg-short-3 exit=0 223 s at 2026-11-26T01:14:37Z

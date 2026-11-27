@@ -1,0 +1,6 @@
+REPORT build 0.1.0-alpha.22+veilaccept.veil3, fixture math12; stored as found: layout store rows 0, butter present, opts null, layoutConsent -, butterLayoutCleared absent
+REPORT settings read back before first load: {"opts":{"bookmark":true,"layout":true,"older":true,"rail":true,"seek":true},"layoutConsent":"granted"}
+ERROR Error: stored settings do not match the requested settings
+REPORT put back: layout store rows 0 after layouts off, 0 at the end (found 0); butter and butterLayoutCleared values same as found true; butter present, butterLayoutCleared absent, opts null
+PASS stored-layout-opts-put-back
+SUMMARY PASS (0 FAIL)

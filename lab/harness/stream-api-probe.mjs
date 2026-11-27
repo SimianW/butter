@@ -15,9 +15,12 @@
 // Stage 3 (2026-11-24 stream settle): block counts and settle marks after the window, the last
 // turn's height at three moments, prototype S's settle marks and Z's fast-path counters.
 // Stage 4 (2026-11-24 stream veil): veiled blocks in every sample, the tail after the standard
-// window (TAIL_MS) and its hydration (stream-veil-probe.mjs).
+// window (TAIL_MS) and its hydration (stream-veil-probe.mjs). #173: rendered veiled blocks in every
+// sample and after the window, for the veil-none-rendered verdict (stream-veil-verdicts.mjs).
 import { traceWindow } from './stream-run-opts.mjs';
 import { splitTail, tailReport, veilReport } from './stream-veil-probe.mjs';
+import { veilCheckScript } from './stream-veil-verdicts.mjs';
+import { installUnmarkedProbe, unmarkedFinish } from './stream-unmarked-probe.mjs';
 
 // In the page (MAIN world, init script). Self-contained.
 export function installApiProbe() {
@@ -116,13 +119,18 @@ export function installApiProbe() {
 
 // In the page: counts (attribute selectors and the prototype's counters on <html>), the last turn's
 // height (one rect read; the harness's stream sampler already reads it every 200 ms) and prototype
-// Z's read counters (stream/read-fast-main.js).
+// Z's read counters (stream/read-fast-main.js). Veiled blocks are the last turn's answer blocks
+// that compute opacity "0", not the veil's attribute (spec #170: checks count computed opacity);
+// veil-effective is judged on that count (stream-veil-verdicts.mjs).
 function hydrationSample() {
   const h = document.documentElement, t = document.querySelectorAll('[data-turn-key]'), last = t[t.length - 1];
   const num = n => (h.hasAttribute(n) ? Number(h.getAttribute(n)) : null);
   const z = window[Symbol.for('chatgpt-butter.read-fast')];
-  const veil = last ? [...last.querySelectorAll('[data-butter-veil]')] : [];
-  return { t: performance.now(), veiled: veil.length, veiledNotAuto: veil.filter(b => getComputedStyle(b).contentVisibility !== 'auto').length, inProgress: !!document.querySelector('[data-talvt-turn-state="in_progress"]'), hydrated: num('data-butter-hydrated'), pending: num('data-butter-hydrate-pending'),
+  const COLUMN = '[data-markdown-text-style="assistant-message"]', KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
+  const veil = last ? [...last.querySelectorAll(`${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`)].filter(b => getComputedStyle(b).opacity === '0') : [];
+  // Rendered veiled blocks in the last turn (veil-none-rendered; stream-veil-verdicts.mjs).
+  const leaks = window.__veilCheck && last ? window.__veilCheck.count(last) : null;
+  return { t: performance.now(), leaks, veiled: veil.length, veiledNotAuto: veil.filter(b => getComputedStyle(b).contentVisibility !== 'auto').length, inProgress: !!document.querySelector('[data-talvt-turn-state="in_progress"]'), hydrated: num('data-butter-hydrated'), pending: num('data-butter-hydrate-pending'),
     measuring: document.querySelectorAll('[data-butter-measure]').length, unrendered: last ? last.querySelectorAll('[data-butter-unrendered]').length : 0, seen: last ? last.querySelectorAll('[data-butter-seen]').length : 0,
     turnH: last ? Math.round(last.getBoundingClientRect().height) : null, settle: document.querySelectorAll('[data-butter-settle]').length, z: z ? { fast: z.fast, native: z.native } : null };
 }
@@ -135,7 +143,7 @@ function answerGeo() {
   const COLUMN = '[data-markdown-text-style="assistant-message"]', KEEP = ':not([data-wide-block]):not([class*="TableFrame-"])';
   const blocks = t ? [...t.querySelectorAll(`${COLUMN} > :not([data-dil-source-message-id])${KEEP}, ${COLUMN} [class*="DilResponseRoot"] > ${KEEP}`)] : [];
   const z = window[Symbol.for('chatgpt-butter.read-fast')];
-  return { turn: h(t), answer: h(md), scrollHeight: sc?.scrollHeight ?? null,
+  return { turn: h(t), answer: h(md), scrollHeight: sc?.scrollHeight ?? null, leaks: window.__veilCheck?.count(document) ?? null,
     blocks: { n: blocks.length, cvAuto: blocks.filter(b => getComputedStyle(b).contentVisibility === 'auto').length, seen: blocks.filter(b => b.hasAttribute('data-butter-seen')).length,
       unrendered: blocks.filter(b => b.hasAttribute('data-butter-unrendered')).length, settleLeft: document.querySelectorAll('[data-butter-settle]').length,
       veiled: blocks.filter(b => b.hasAttribute('data-butter-veil')).length, veiledNotAuto: blocks.filter(b => b.hasAttribute('data-butter-veil') && getComputedStyle(b).contentVisibility !== 'auto').length, measuring: blocks.filter(b => b.hasAttribute('data-butter-measure')).length },
@@ -149,13 +157,19 @@ const HARNESS = /eval at evaluate|UtilityScript\.evaluate/;
 export async function streamWindows(page, cdp, env, out) {
   const api = env.APIPROBE === '1', armAt = Number(env.APIPROBE_AT || 100000);
   if (api) await page.addInitScript(installApiProbe);
-  const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, 10000, out.replace(/\.json$/, '') + '.trace.json');
+  await page.addInitScript(veilCheckScript());
+  const unm = env.UNMARKED === '1'; // #172: blocks never marked (stream-unmarked-probe.mjs)
+  if (unm) await page.addInitScript(installUnmarkedProbe);
+  // TRACE_SPAN: the window's length in ms (10000); TRACE_CATS: extra trace categories, comma-separated.
+  const traceCats = (env.TRACE_CATS || '').split(',').filter(Boolean);
+  const tw = traceWindow(cdp, env.TRACE_AT ? Number(env.TRACE_AT) : null, Number(env.TRACE_SPAN || 10000), out.replace(/\.json$/, '') + '.trace.json', traceCats);
   const hyd = [];
-  let lastHyd = -Infinity, armed = false, goneAt = null, seenIp = false, stdMarked = false, tail = null;
+  let unmArmed = false, lastHyd = -Infinity, armed = false, goneAt = null, seenIp = false, stdMarked = false, tail = null;
   return {
     // sinceDone: ms since the harness saw the stream complete; at 5 s the standard window ends.
     async tick(el, sinceDone = null) {
       await tw.tick(el);
+      if (unm && !unmArmed) { unmArmed = true; await page.evaluate(() => window.__unm?.arm()); }
       if (sinceDone != null && sinceDone >= 5000 && !stdMarked) { stdMarked = true; await page.evaluate(() => { if (window.__lafProbe) window.__lafProbe.stdEnd = performance.now(); }); }
       if (api && !armed && el >= armAt) { armed = true; await page.evaluate(() => window.__apiProbe?.arm() ?? null); }
       // Once a second; every tick (about 250 ms) for 6 s after in_progress goes.
@@ -163,6 +177,7 @@ export async function streamWindows(page, cdp, env, out) {
         lastHyd = el;
         const s = await page.evaluate(hydrationSample).catch(() => null);
         hyd.push(s);
+        if (unm) await page.evaluate(() => window.__unm?.sample()).catch(() => null);
         if (s?.inProgress) seenIp = true; else if (s && seenIp && goneAt == null) goneAt = el;
       }
     },
@@ -186,6 +201,7 @@ export async function streamWindows(page, cdp, env, out) {
       summary.veil = veilReport(rows, summary.lafDetail, summary.completion, g, lines);
       summary.tail = tailReport(tail, rows, g, lines, summary.lafDetail);
       if (api) summary.api = apiReport(apiRaw, z, lines, summary.completion);
+      if (unm) { const u = unmarkedFinish(await page.evaluate(() => window.__unm?.finish() ?? null).catch(() => null), z, summary.lafDetail?.marks?.inProgressGone); summary.unmarked = u.data; lines.push(...u.lines); }
       return lines;
     },
   };
