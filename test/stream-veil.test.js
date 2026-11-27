@@ -135,6 +135,20 @@ test('a held, veiled block that comes back keeps its placeholder: back rendered,
   assert.ok(!f.veiled(f.block));
 });
 
+test('a veiled block not held yet that leaves the page and comes back is unveiled by a later height report', () => {
+  // Its answer is streaming and its size waits for the flush: no hold mark yet when it comes back.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120); // queued for the flush
+  f.detach(f.block);
+  f.attach(f.block);
+  assert.ok(f.veiled(f.block) && !f.unrendered(f.block), 'veiled, not held');
+  f.size(f.block, 120); // still skipped where it came back
+  assert.ok(f.veiled(f.block), 'stays veiled');
+  f.size(f.block, 24); // it renders
+  assert.ok(!f.veiled(f.block), 'unveiled in the size report');
+});
+
 test('the flush that marks a block seen unveils it', () => {
   // A block that renders while it carries the veil without a state-change event, such as an
   // element ChatGPT reuses with its old marks: the flush measures it at its real size.

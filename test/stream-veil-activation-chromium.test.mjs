@@ -12,6 +12,9 @@
 // (a Dil remount, a turn that leaves and comes back), and after its answer was hidden with
 // `display: none` and shown again (a hidden chat): no state-change event comes for it then. A held
 // block re-attached in view renders in the frame it comes back, before its state-change event.
+// A veiled block not held yet (its answer streaming, its size waiting for the flush) that leaves
+// and comes back must be watched too: re-attached in view, or back below the fold, held by the
+// flush and found after the answer completes.
 // What the frame looks like (blank text without the fix) was checked with screenshots of single
 // frames: notes/runs/2026-11-24-veil-acceptance/final/find-frame/report.md.
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
@@ -59,6 +62,7 @@ async function heldChat({ back } = {}) {
     );
     b.insertAdjacentHTML('beforeend', ' <a href="#x">link</a>');
     window.target = b;
+    window.word = 'zq200zq';
     return {
       held: b.hasAttribute('data-butter-unrendered'),
       veiled: getComputedStyle(b).opacity === '0',
@@ -127,7 +131,7 @@ function witness() {
 // that event in Chromium's scheduler; in the lab the find bar's frames took about 90 ms on ChatGPT.
 function act({ name, busy }) {
   const b = window.target;
-  const find = () => window.find('zq200zq', false, false, true, false, false, false);
+  const find = () => window.find(window.word, false, false, true, false, false, false);
   const select = () => {
     const r = document.createRange();
     r.selectNodeContents(b.firstChild);
@@ -217,6 +221,90 @@ for (const busy of [false, true])
       await page.evaluate(frames, 3);
       await page.evaluate(() => (window.seen = []));
       await page.evaluate(reattachInView, { busy });
+      await page.evaluate(frames, 6);
+      await drawnUnveiled(page);
+    } finally {
+      await page.close();
+    }
+  });
+
+// A Dil answer still streaming: the blocks of a first batch below the fold are held by the flush,
+// and the last block but one of a second batch, veiled and not held yet (queued for the next
+// flush), is window.target (its word window.word). It leaves the page and frames pass.
+async function streamingChat() {
+  const page = await openChat(browser, `${root}extension/`, {
+    turns: 2,
+    blocks: 40,
+    renderer: 'dil',
+    sampler: false,
+  });
+  await page.addStyleTag({ content: '#answer p { height: auto }' });
+  await page.evaluate(scrollTo, { selector: '#answer', index: 0 });
+  await page.evaluate(stream, { n: 240, perFrame: 6, math: 1 });
+  await page.waitForTimeout(1300); // the flush holds the first batch
+  await page.evaluate(stream, { n: 60, perFrame: 6, math: 1 });
+  const target = await page.evaluate(() => {
+    const b = [...document.querySelectorAll('#answer p')].at(-2);
+    window.target = b;
+    window.word = b.textContent.match(/zq\d+zq/)[0];
+    window.next = b.nextSibling;
+    return {
+      streaming: !!b.closest('[data-talvt-turn-state="in_progress"]'),
+      held: b.hasAttribute('data-butter-unrendered'),
+      veiled: getComputedStyle(b).opacity === '0',
+      skipped: !b.firstElementChild.checkVisibility({ contentVisibilityAuto: true }),
+    };
+  });
+  assert.deepEqual(
+    target,
+    { streaming: true, held: false, veiled: true, skipped: true },
+    'a veiled block, not held yet',
+  );
+  await page.evaluate(witness);
+  await page.evaluate(() => window.target.remove());
+  await page.evaluate(frames, 3);
+  return page;
+}
+
+for (const busy of [false, true])
+  test(`a veiled block not held yet, re-attached in view while streaming ${busy ? 'on a busy page' : 'in a frame'}: the frame that renders it draws it unveiled`, async () => {
+    const page = await streamingChat();
+    try {
+      await page.evaluate(() => (window.seen = []));
+      await page.evaluate(reattachInView, { busy });
+      await page.evaluate(frames, 6);
+      assert.ok(
+        await page.evaluate(() => !window.target.hasAttribute('data-butter-unrendered')),
+        'before the flush',
+      );
+      await drawnUnveiled(page);
+    } finally {
+      await page.close();
+    }
+  });
+
+for (const busy of [false, true])
+  test(`a veiled block not held yet, back below the fold, then held, completed and found ${busy ? 'on a busy page' : 'in a frame'}: the frame that renders it draws it unveiled`, async () => {
+    const page = await streamingChat();
+    try {
+      await page.evaluate(() => window.next.before(window.target));
+      await page.waitForTimeout(1300); // the flush holds it
+      await page.evaluate(() =>
+        document
+          .querySelector('#answer [data-talvt-turn-state]')
+          .setAttribute('data-talvt-turn-state', 'complete'),
+      );
+      await page.waitForTimeout(2500); // pre-layout
+      const held = await page.evaluate(() => ({
+        held: window.target.hasAttribute('data-butter-unrendered'),
+        veiled: getComputedStyle(window.target).opacity === '0',
+        skipped: !window.target.firstElementChild.checkVisibility({ contentVisibilityAuto: true }),
+      }));
+      assert.deepEqual(held, { held: true, veiled: true, skipped: true }, 'held and veiled');
+      const g = await page.evaluate(gain);
+      assert.equal(g.notVeiled, 0, 'every held block that is still skipped is veiled');
+      await page.evaluate(() => (window.seen = []));
+      await page.evaluate(act, { name: 'find', busy });
       await page.evaluate(frames, 6);
       await drawnUnveiled(page);
     } finally {

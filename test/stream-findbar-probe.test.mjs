@@ -273,4 +273,7 @@ test("findbarDrive: the X input helper's error is returned, with the probe stopp
   assert.equal(r.keyError, 'xtest-type.py: cannot open display :99');
   assert.ok(stopped, 'the probe stopped');
   assert.equal(r.str, undefined, 'the search string is not reported');
+  const [line, ...rest] = fmtFindbar('ux u4', r);
+  assert.match(line, /^ux u4 u4 find bar: .*xtest-type\.py: cannot open display :99/);
+  assert.deepEqual(rest, [], 'one report line');
 });
