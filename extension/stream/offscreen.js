@@ -62,11 +62,14 @@
   // block is also watched for its height: skipped, it has its placeholder height; it renders at its
   // own (very rarely the same), and a ResizeObserver reports that in the frame, after layout and
   // before paint, where the block is unveiled. The first report is the placeholder; a block that
-  // leaves the page (0 px) or is unveiled is let go.
+  // leaves the page or is unveiled is let go. One hidden in the page (0 px, display: none) stays
+  // watched, as no event or insertion comes when it is shown again; if it then leaves the page with
+  // no further report, Chromium still collects it (measured: observed and a WeakMap key).
   const placeholder = new WeakMap(),
     sized = new ResizeObserver((entries) => {
       for (const { target: el, contentRect: r } of entries)
-        if (!el.hasAttribute(VEIL) || !r.height) sized.unobserve(el);
+        if (!el.hasAttribute(VEIL) || !el.isConnected) sized.unobserve(el);
+        else if (!r.height) continue;
         else if (!placeholder.has(el)) placeholder.set(el, r.height);
         else if (r.height !== placeholder.get(el)) unveil(el);
     });
@@ -212,10 +215,10 @@
     if (el.hasAttribute(VEIL) && !el.hasAttribute('data-butter-unrendered') && !el.closest(BUSY))
       unveil(el);
     // A held, veiled block that comes back (a Dil remount, its turn back in the page) still skipped
-    // posts no state-change event, and the height watch let it go at 0 px when it left: watch it
-    // again, from its placeholder.
-    else if (el.hasAttribute(VEIL) && el.hasAttribute('data-butter-unrendered'))
-      (placeholder.delete(el), sized.observe(el));
+    // posts no state-change event, and the height watch let it go when it left: watch it again. It
+    // keeps the placeholder it had (a skipped block's comes back the same), so one that comes back
+    // rendered, in view, is unveiled at its first report, before the event.
+    else if (el.hasAttribute(VEIL) && el.hasAttribute('data-butter-unrendered')) sized.observe(el);
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {

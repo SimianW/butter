@@ -9,7 +9,9 @@
 // renders, after layout and the marker's observers and before paint: it must not be veiled then.
 // Blocks take their content's height here (not the fixture's fixed 40px), as on chatgpt.com.
 // Each act runs again after the held block left the page and came back where it was, still skipped
-// (a Dil remount, a turn that leaves and comes back): no state-change event comes for it then.
+// (a Dil remount, a turn that leaves and comes back), and after its answer was hidden with
+// `display: none` and shown again (a hidden chat): no state-change event comes for it then. A held
+// block re-attached in view renders in the frame it comes back, before its state-change event.
 // What the frame looks like (blank text without the fix) was checked with screenshots of single
 // frames: notes/runs/2026-11-24-veil-acceptance/final/find-frame/report.md.
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
@@ -32,8 +34,9 @@ after(() => browser?.close());
 
 // A completed answer whose blocks below the fold are held and veiled, laid out by pre-layout; the
 // block with the word `zq200zq` (and a link appended to it) is returned as window.target. With
-// `remount`, that block then leaves the page and comes back where it was, some frames apart.
-async function heldChat({ remount = false } = {}) {
+// `back` 'remount', that block then leaves the page and comes back where it was, some frames apart;
+// with 'hide', the answer's turn is at display: none for some frames.
+async function heldChat({ back } = {}) {
   const page = await openChat(browser, `${root}extension/`, {
     turns: 2,
     blocks: 40,
@@ -63,20 +66,28 @@ async function heldChat({ remount = false } = {}) {
     };
   });
   assert.deepEqual(target, { held: true, veiled: true, skipped: true }, 'a held, veiled block');
-  if (remount) {
-    await page.evaluate(() => {
+  if (back) {
+    await page.evaluate((how) => {
       window.next = window.target.nextSibling;
-      window.target.remove();
-    });
+      if (how === 'hide') document.getElementById('answer').style.display = 'none';
+      else window.target.remove();
+    }, back);
     await page.evaluate(frames, 3);
-    await page.evaluate(() => window.next.before(window.target));
+    await page.evaluate((how) => {
+      if (how === 'hide') document.getElementById('answer').style.display = '';
+      else window.next.before(window.target);
+    }, back);
     await page.evaluate(frames, 3);
-    const back = await page.evaluate(() => ({
+    const returned = await page.evaluate(() => ({
       held: window.target.hasAttribute('data-butter-unrendered'),
       veiled: getComputedStyle(window.target).opacity === '0',
       skipped: !window.target.firstElementChild.checkVisibility({ contentVisibilityAuto: true }),
     }));
-    assert.deepEqual(back, { held: true, veiled: true, skipped: true }, 'back: held and veiled');
+    assert.deepEqual(
+      returned,
+      { held: true, veiled: true, skipped: true },
+      'back: held and veiled',
+    );
   }
   const g = await page.evaluate(gain);
   assert.ok(g.skipped > 100, `few held, skipped blocks (${g.skipped})`);
@@ -141,32 +152,74 @@ const ACTS = [
   'focus on a link',
 ];
 
-const CASES = [false, true].flatMap((remount) => [false, true].map((busy) => ({ remount, busy })));
+const BACK = {
+  remount: ', the block back in the page',
+  hide: ', the answer shown again after display: none',
+};
+const CASES = [undefined, 'remount', 'hide'].flatMap((back) =>
+  [false, true].map((busy) => ({ back, busy })),
+);
 
-for (const { remount, busy } of CASES)
+// The witness and the gain check after an act on window.target.
+async function drawnUnveiled(page) {
+  const seen = await page.evaluate(() => window.seen);
+  assert.ok(
+    seen.some((s) => s.rendered),
+    `the act rendered the block: ${JSON.stringify(seen)}`,
+  );
+  assert.deepEqual(
+    seen.filter((s) => s.rendered && s.opacity === '0'),
+    [],
+    'rendered at opacity 0 in a frame',
+  );
+  const g = await page.evaluate(gain);
+  assert.ok(g.skipped > 100, `few held, skipped blocks after the act (${g.skipped})`);
+  assert.equal(g.notVeiled, 0, 'held blocks that are still skipped stay veiled');
+}
+
+for (const { back, busy } of CASES)
   for (const name of ACTS)
-    test(`${name} ${busy ? 'on a busy page' : 'in a frame'}${remount ? ', the block back in the page' : ''}: the frame that renders the held block draws it unveiled`, async () => {
-      const page = await heldChat({ remount });
+    test(`${name} ${busy ? 'on a busy page' : 'in a frame'}${BACK[back] ?? ''}: the frame that renders the held block draws it unveiled`, async () => {
+      const page = await heldChat({ back });
       try {
         await page.evaluate(witness);
         await page.evaluate(frames, 2);
         await page.evaluate(() => (window.seen = []));
         await page.evaluate(act, { name, busy });
         await page.evaluate(frames, 6);
-        const seen = await page.evaluate(() => window.seen);
-        assert.ok(
-          seen.some((s) => s.rendered),
-          `the act rendered the block: ${JSON.stringify(seen)}`,
-        );
-        assert.deepEqual(
-          seen.filter((s) => s.rendered && s.opacity === '0'),
-          [],
-          'rendered at opacity 0 in a frame',
-        );
-        const g = await page.evaluate(gain);
-        assert.ok(g.skipped > 100, `few held, skipped blocks after the act (${g.skipped})`);
-        assert.equal(g.notVeiled, 0, 'held blocks that are still skipped stay veiled');
+        await drawnUnveiled(page);
       } finally {
         await page.close();
       }
     });
+
+// In the page: puts window.target back before the first block in the view (a Dil remount), in the
+// next frame's requestAnimationFrame, or in this task, which then stays busy for 150 ms (see act).
+function reattachInView({ busy }) {
+  const run = () => {
+    const sc = document.querySelector('.thread-scroll-container').getBoundingClientRect();
+    [...document.querySelectorAll('#answer p')]
+      .find((p) => p.getBoundingClientRect().top > sc.top + 100)
+      .before(window.target);
+  };
+  if (!busy) return new Promise((resolve) => requestAnimationFrame(() => resolve(run())));
+  run();
+  const end = performance.now() + 150;
+  while (performance.now() < end);
+}
+
+for (const busy of [false, true])
+  test(`a held block re-attached in view ${busy ? 'on a busy page' : 'in a frame'}: the frame that renders it draws it unveiled`, async () => {
+    const page = await heldChat();
+    try {
+      await page.evaluate(witness);
+      await page.evaluate(() => window.target.remove());
+      await page.evaluate(frames, 3);
+      await page.evaluate(() => (window.seen = []));
+      await page.evaluate(reattachInView, { busy });
+      await page.evaluate(frames, 6);
+      await drawnUnveiled(page);
+    } finally {
+      await page.close();
+    }
+  });
