@@ -105,8 +105,7 @@
     WAIT_MS = 50,
     pending = new Set(), // held blocks queued for pre-layout
     prelaid = new WeakSet(); // blocks pre-layout has laid out (weak: a block that leaves is let go)
-  let idle = 0,
-    range;
+  let idle = 0;
   // A block pre-layout may lay out: in the page, held and not rendered since, its turn not streaming.
   const stillHeld = (el) =>
     el.isConnected &&
@@ -129,6 +128,7 @@
     const end =
       performance.now() +
       (deadline.didTimeout ? CHUNK_MS : Math.min(CHUNK_MS, deadline.timeRemaining()));
+    let range; // local: a Range kept across calls would keep the last block reachable
     for (const el of pending) {
       pending.delete(el);
       if (!stillHeld(el)) continue;
@@ -211,6 +211,11 @@
     // a frame before the state-change event that would unveil it.
     if (el.hasAttribute(VEIL) && !el.hasAttribute('data-butter-unrendered') && !el.closest(BUSY))
       unveil(el);
+    // A held, veiled block that comes back (a Dil remount, its turn back in the page) still skipped
+    // posts no state-change event, and the height watch let it go at 0 px when it left: watch it
+    // again, from its placeholder.
+    else if (el.hasAttribute(VEIL) && el.hasAttribute('data-butter-unrendered'))
+      (placeholder.delete(el), sized.observe(el));
     if (!off() && !el.hasAttribute('data-butter-seen')) ro.observe(el);
   };
   const scan = (root) => {

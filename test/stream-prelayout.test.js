@@ -195,8 +195,8 @@ test('a block pre-layout laid out is not kept once it has left the page', async 
   const f = completed(held(5));
   f.idle();
   assert.equal(f.laidOut.length, 5);
-  // The first block stays referenced by the fixture and the last by the marker's Range.
-  const gone = f.blocks.slice(1, 4).map((b) => new WeakRef(b));
+  // The first block stays referenced by the fixture; the last one laid out must go too.
+  const gone = f.blocks.slice(1).map((b) => new WeakRef(b));
   f.replace(0);
   f.complete({ from: 'complete' });
   f.calls.length = 0;
@@ -205,7 +205,7 @@ test('a block pre-layout laid out is not kept once it has left the page', async 
   gc();
   assert.deepEqual(
     gone.map((r) => r.deref() === undefined),
-    [true, true, true],
+    [true, true, true, true],
     'collected',
   );
 });

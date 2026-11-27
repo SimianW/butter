@@ -88,6 +88,23 @@ test('a veiled block that leaves the page is let go by the height watch', () => 
   assert.ok(!f.heightWatched(f.block));
 });
 
+test('a held, veiled block that left the page and came back is unveiled by a later height report', () => {
+  // A Dil remount, or a turn that leaves and comes back: the watch let it go at 0 px, and a block
+  // that comes back still skipped posts no state-change event that would veil (and watch) it again.
+  const f = fixture();
+  f.cv(f.block, true);
+  f.size(f.block, 120);
+  f.timers(); // held
+  f.complete();
+  f.detach(f.block);
+  f.attach(f.block);
+  assert.ok(f.veiled(f.block) && f.unrendered(f.block), 'still held and veiled');
+  f.size(f.block, 120); // its placeholder, where it came back
+  assert.ok(f.veiled(f.block), 'still skipped: stays veiled');
+  f.size(f.block, 33); // a find renders it
+  assert.ok(!f.veiled(f.block), 'unveiled in the size report');
+});
+
 test('the flush that marks a block seen unveils it', () => {
   // A block that renders while it carries the veil without a state-change event, such as an
   // element ChatGPT reuses with its old marks: the flush measures it at its real size.

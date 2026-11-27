@@ -8,6 +8,8 @@
 // it. A witness ResizeObserver, created after the marker's, records the block in the frame it
 // renders, after layout and the marker's observers and before paint: it must not be veiled then.
 // Blocks take their content's height here (not the fixture's fixed 40px), as on chatgpt.com.
+// Each act runs again after the held block left the page and came back where it was, still skipped
+// (a Dil remount, a turn that leaves and comes back): no state-change event comes for it then.
 // What the frame looks like (blank text without the fix) was checked with screenshots of single
 // frames: notes/runs/2026-11-24-veil-acceptance/final/find-frame/report.md.
 // Needs Playwright's Chromium: `npx playwright install chromium` (see docs/development.md).
@@ -29,8 +31,9 @@ after(() => browser?.close());
    ResizeObserver -- runs in the page */
 
 // A completed answer whose blocks below the fold are held and veiled, laid out by pre-layout; the
-// block with the word `zq200zq` (and a link appended to it) is returned as window.target.
-async function heldChat() {
+// block with the word `zq200zq` (and a link appended to it) is returned as window.target. With
+// `remount`, that block then leaves the page and comes back where it was, some frames apart.
+async function heldChat({ remount = false } = {}) {
   const page = await openChat(browser, `${root}extension/`, {
     turns: 2,
     blocks: 40,
@@ -60,6 +63,21 @@ async function heldChat() {
     };
   });
   assert.deepEqual(target, { held: true, veiled: true, skipped: true }, 'a held, veiled block');
+  if (remount) {
+    await page.evaluate(() => {
+      window.next = window.target.nextSibling;
+      window.target.remove();
+    });
+    await page.evaluate(frames, 3);
+    await page.evaluate(() => window.next.before(window.target));
+    await page.evaluate(frames, 3);
+    const back = await page.evaluate(() => ({
+      held: window.target.hasAttribute('data-butter-unrendered'),
+      veiled: getComputedStyle(window.target).opacity === '0',
+      skipped: !window.target.firstElementChild.checkVisibility({ contentVisibilityAuto: true }),
+    }));
+    assert.deepEqual(back, { held: true, veiled: true, skipped: true }, 'back: held and veiled');
+  }
   const g = await page.evaluate(gain);
   assert.ok(g.skipped > 100, `few held, skipped blocks (${g.skipped})`);
   assert.equal(g.notVeiled, 0, 'every held block that is still skipped is veiled');
@@ -123,10 +141,12 @@ const ACTS = [
   'focus on a link',
 ];
 
-for (const busy of [false, true])
+const CASES = [false, true].flatMap((remount) => [false, true].map((busy) => ({ remount, busy })));
+
+for (const { remount, busy } of CASES)
   for (const name of ACTS)
-    test(`${name} ${busy ? 'on a busy page' : 'in a frame'}: the frame that renders the held block draws it unveiled`, async () => {
-      const page = await heldChat();
+    test(`${name} ${busy ? 'on a busy page' : 'in a frame'}${remount ? ', the block back in the page' : ''}: the frame that renders the held block draws it unveiled`, async () => {
+      const page = await heldChat({ remount });
       try {
         await page.evaluate(witness);
         await page.evaluate(frames, 2);
