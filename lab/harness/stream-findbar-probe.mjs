@@ -86,7 +86,8 @@ export async function findbarDrive(page, env, display, run = runKeys) {
   try { keys = run(steps, display); } catch (e) { keys = { error: String(e.message).slice(0, 200), stamps: [] }; }
   await pause(1500);
   const raw = await page.evaluate(() => window.__fb.stop());
-  if (!keys.stamps?.length) return { ...prep, gapMs, waitMs, keyError: keys.error ?? 'no key stamps' }; // nothing to time from
+  const keyError = keys.error ?? 'no key stamps';
+  if (!keys.stamps?.length) return { ...prep, gapMs, waitMs, error: `key helper: ${keyError}`, keyError }; // nothing to time from
   return { ...prep, gapMs, waitMs, keyError: keys.error ?? null, selLen: raw.selLen, selInBlock: raw.selInBlock, flagsEnd: raw.flagsEnd, longtask: sumIn(raw.lt, ...windowOf(raw, keys.stamps)), ...findbarAnalyse({ ...raw, stamps: keys.stamps }) };
 }
 
