@@ -9,7 +9,10 @@ answer on live ChatGPT without ever drawing a rendered block invisible, and what
   (`math9`). Blocking over the stream falls by 78% and 65% in those two stages, and by 72–74% in
   the three other `ats12` stages of the round.
 - The first final build (veil3) drew a block blank for one frame after a find in page. The fix is
-  in the build that ships (veil4), and the real find bar on live ChatGPT shows it works.
+  in the acceptance build (veil4), and the real find bar on live ChatGPT shows it works.
+- The code that ships (veil5) is veil4 plus the review's fixes, which run only when a veiled block
+  comes back into the page or is hidden in it. Stage A was run again on it: 676 ms
+  against 1935 ms, blocking 75% lower, 567 blocks veiled in each run.
 - A jump into the answer's middle in the first seconds after completion still shows the text about
   125 ms later than on `main` (3 blank frames on both builds). Once pre-layout has run, the
   difference is 4.5 ms.
@@ -24,7 +27,8 @@ logs and a `summary.md`. Raw captures stay in `~/.local/share/chatgpt-lab/captur
 |---|---|---|
 | main3 | `3b9c3d5` | The control: `main` at the point it was merged into the branch |
 | veil3 | `aed9523` | The branch after the code-review fixes |
-| veil4 | `004851d` | veil3 plus the find-frame fix; differs from veil3 only in `stream/offscreen.js`. **This is what ships** |
+| veil4 | `004851d` | veil3 plus the find-frame fix; differs from veil3 only in `stream/offscreen.js`. The acceptance build: every gating stage ran on it |
+| veil5 | `ece7cb4` | veil4 plus the review loop's fixes; differs from veil4 only in `stream/offscreen.js` (13 lines added, 4 removed). **This is what ships**; only stage A ran on it ([below](#after-the-round-the-reviews-fixes-and-the-confirmation-run)) |
 
 main3 and veil4 differ only in `stream/offscreen.js`, `stream/containment.css`, `dev/allowlist.js`
 and the manifest's `version_name`.
@@ -130,6 +134,43 @@ Blocking is higher in three stages and lower in two, with no one direction. Only
 do not overlap (1709–1768 against 1777–2065 ms). A veil3 run inside veil4's stage A and stage E
 sequences gave 1464.1 and 1808.8 ms, on either side of veil4's medians there (1651.5 and 1616.7).
 
+## After the round: the review's fixes and the confirmation run
+
+The review loop on the PR found three more paths on which a veiled block lost its height watch, one
+after the other on the same code: a held block that leaves the page and comes back (also one
+hidden with `display: none`, or re-attached in view), a veiled block that is not held yet and does
+the same, and a block that does it before the watch's first report. The first two are fixed, each
+with a test that fails without the fix (`test/stream-veil-activation-chromium.test.mjs`). The third
+is limit 7 below. The fixes also made pre-layout's `Range` local, so its last block can be
+collected.
+
+No acceptance replay reaches this code: no block of a replayed answer leaves the page or is hidden.
+So the user chose to confirm the shipping code with stage A alone and to keep veil4's results for
+the other stages.
+
+[Stage A on veil5](final-veil5/stage-A/summary.md): 3 main3 and 3 veil5 runs interleaved, then one
+veil4 run, in one lock sequence. Every rule is met.
+
+| | main3 | veil5 | Rule | |
+|---|---:|---:|---|---|
+| `ats12` completion frame, median | 1934.8 ms | 675.6 ms | under 800 ms, none of 1 s or more (longest 678.7) | PASS |
+| `ats12` blocking over the stream, median | 6860.1 ms | 1683.2 ms | at least 50% below (75.5%) | PASS |
+| Verdicts | | 13 PASS, 0 FAIL in each run | every verdict, `veil-effective` judged | PASS |
+| Blocks veiled just before completion | 0 | 567, 567, 567 | | |
+| Forced style and layout in ChatGPT's completion callback | 1213.4 ms | 6.8 ms | | |
+
+veil5 against veil4's own stage A: completion frame 675.6 against 670.1 ms, blocking 1683.2 against
+1651.5 ms. Both differences are smaller than either build's spread over 3 runs (completion frame 17
+and 58 ms, blocking 110 and 780 ms).
+
+**The veil4 run in this sequence was slow:** completion frame 867.9 ms, blocking 2156.8 ms. The
+56 other veil-build runs of the final rounds range from 601.4 to 766.1 ms. It was the last of the 7
+runs, and every part of its frame was longer by about the same share (the timer callback 805
+against 626–641 ms, ChatGPT's callback 21.3 against 15.4–15.9 ms), with the same 567 blocks veiled
+and all 13 verdicts passed. One run cannot say whether the lab was slower at that moment or
+whether a veil build sometimes takes this long; the three veil5 runs before it do not show it. No
+rule is about a single run under 1 s.
+
 ## Named limits
 
 1. **A jump or a find in the first seconds after completion pays the deferred layout.** Stage C2:
@@ -149,6 +190,14 @@ sequences gave 1464.1 and 1808.8 ms, on either side of veil4's medians there (16
    the completion frame is back near 1.9 s; nothing breaks.
 6. **Placeholder heights are unchanged** (#131): 12 of 60 wheel-up steps shift the view by more
    than 4 px on veil4, 15 and 12 of 60 on main3 ([final D2](final/stage-D2/summary.md), part 2).
+7. **A block that comes back rendered in its first frame as a veiled block** is drawn blank for one
+   frame. The height watch takes the first height reported for a block as its placeholder. When a
+   block leaves the page (or gets `display: none`) in the frame after it is veiled, before that
+   first report, and comes back rendered and in view, its rendered height is taken for the
+   placeholder, and the veil stays until the state-change event. Traced in synthetic pages only; no
+   live run reached a remount of a veiled block, so how often ChatGPT does this is not known. The
+   review's one open finding, shipped by the user's decision; cause and candidate fixes in
+   [#188](https://github.com/SimianW/butter/issues/188).
 
 ## Open, not established
 
@@ -176,6 +225,7 @@ sequences gave 1464.1 and 1808.8 ms, on either side of veil4's medians there (16
 | 2 | `552b8db`, with pre-layout | D passes by its median, the first find still slow | [round2/stage-A](round2/stage-A/summary.md) [C2](round2/stage-C2/summary.md) [D](round2/stage-D/summary.md); the probe's frame sampler left pre-layout no idle time: [prelayout-live](round2/prelayout-live/report.md) |
 | Final | veil3 `aed9523`, after the code review | every rule met; D2's data leads to the leak | [final/stage-A](final/stage-A/summary.md) [A2](final/stage-A2/summary.md) [B](final/stage-B/summary.md) [C2](final/stage-C2/summary.md) [C2b](final/stage-C2b/summary.md) [C3](final/stage-C3/summary.md) [D](final/stage-D/summary.md) [D2](final/stage-D2/summary.md) [E](final/stage-E/summary.md) [L](final/stage-L/summary.md) |
 | Final, second build | veil4 `004851d` | the table at the top | [final-veil4/stage-A](final-veil4/stage-A/summary.md) [B](final-veil4/stage-B/summary.md) [C2](final-veil4/stage-C2/summary.md) [C3](final-veil4/stage-C3/summary.md) [D](final-veil4/stage-D/summary.md) [D2](final-veil4/stage-D2/summary.md) [E](final-veil4/stage-E/summary.md) |
+| Confirmation | veil5 `ece7cb4`, after the review loop | stage A only: every rule met | [final-veil5/stage-A](final-veil5/stage-A/summary.md) |
 
 The blocks the marker never queued (the first prototype's 19 blocks left at opacity 0) are
 ChatGPT's height-0 `<hr>` elements: [2026-11-24-veil-unmarked](../2026-11-24-veil-unmarked/report.md) (#172).
@@ -192,3 +242,5 @@ The state paths the lab cannot run (Stop, Regenerate, Edit, version switch) are 
 - `veil-none-rendered` goes by the state-change event and by computed opacity alone: it cannot see
   a frame drawn before the event, and it cannot tell whose opacity it found (#187).
 - The lab never sends a message: the answer is a recording replayed into a real chat.
+- Stages B, C2, C3, D, D2 and E were not run on veil5. Their results are veil4's; the two builds
+  differ in code those replays do not reach.
