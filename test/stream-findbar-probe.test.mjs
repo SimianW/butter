@@ -3,7 +3,7 @@
 // before-paint sample's REPORT lines (also u4's window.find watch in stream-ux-probe.mjs). No browser.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { findbarAnalyse, fmtFindbar } from '../lab/harness/stream-findbar-probe.mjs';
+import { findbarAnalyse, findbarDrive, fmtFindbar } from '../lab/harness/stream-findbar-probe.mjs';
 import { fmtPaint } from '../lab/harness/stream-ux-probe.mjs';
 
 // The page's clock starts at epoch 1,000,000 ms; Ctrl+F is pressed at page time 10,000.
@@ -253,4 +253,24 @@ test("fmtPaint: a report before the watch's first frame is the act's own frame, 
     fmtPaint({ rows, paint0: [true, 8] }),
     "first frame rendered in view (not skipped) 0 (the act's own frame), flags at its start -, before paint 8; frames drawn with the block rendered at opacity 0 0 (of 1 before-paint samples in 90 frames and the act's own)",
   );
+});
+
+test("findbarDrive: the X input helper's error is returned, with the probe stopped, when it throws", async () => {
+  // A fake page: the first evaluate installs the probe, the next one stops it and returns its samples.
+  let stopped = false;
+  const raw = { timeOrigin: ORIGIN, frames, loaf: [], lt: [], keys: [], selLen: 0 };
+  const page = {
+    evaluate: async () => {
+      if (page.installed) return ((stopped = true), raw);
+      page.installed = true;
+      return { at: { x: 1, y: 2 }, str: 'zq200zq' };
+    },
+  };
+  const run = () => {
+    throw new Error('xtest-type.py: cannot open display :99');
+  };
+  const r = await findbarDrive(page, {}, ':99', run);
+  assert.equal(r.keyError, 'xtest-type.py: cannot open display :99');
+  assert.ok(stopped, 'the probe stopped');
+  assert.equal(r.str, undefined, 'the search string is not reported');
 });
