@@ -17,7 +17,7 @@ Long ChatGPT chats, smooth as butter.
 Supports Chrome, Edge, Brave and Arc (Chromium 111+). Safari and Firefox are not supported.
 [Install and settings →](docs/install.md)
 
-Current version: **0.1.0-alpha.22** ([changelog](CHANGELOG.md)).
+Current version: **0.1.0-alpha.23** ([changelog](CHANGELOG.md)).
 
 ## Demo
 
@@ -40,7 +40,7 @@ Medians from 5–6 runs per arm in a long math chat on Linux Chromium without GP
 
 The trade-off: after releasing a drag at an unread spot, real text took about 4.3 s to appear with Butter versus 0.2 s without it, where the drag itself stuttered for seconds.
 
-These are lab results, not a promise for every computer. Drag figures use classic scrollbars; the builds use different release-readiness checks. “Frozen” sums blocking time, rather than one continuous freeze. Typing showed no meaningful improvement. Butter was measured at alpha.11; later builds change only the popup, locale metadata and toolbar icon.
+These are lab results, not a promise for every computer. Drag figures use classic scrollbars; the builds use different release-readiness checks. “Frozen” sums blocking time, rather than one continuous freeze. Typing showed no meaningful improvement. The table above was measured at alpha.11; newer builds add features and further reduce the freeze when a long answer finishes streaming (see the [changelog](CHANGELOG.md)).
 [Full results, method and caveats →](docs/benchmarks.md)
 
 ## Features
@@ -64,7 +64,15 @@ A slim rail on the right has one tick per question. Hover to preview a question,
 
 ### Bookmarks
 
-Select text in an answer and click Bookmark, or press the shortcut, to mark the spot; a dot on the rail takes you back. Butter keeps the first three lines of each bookmark on this computer. The popup shows how many bookmarks it holds and their size, switches bookmarks off (keeping the saved ones) and clears them all.
+Select text in an answer and click Bookmark, or press `Alt+Shift+M` (`Option+Shift+M` on a Mac), to mark the spot; a dot on the rail takes you back. Butter keeps the first three lines of each bookmark on this computer. The popup shows how many bookmarks it holds and their size, switches bookmarks off (keeping the saved ones) and clears them all.
+
+### Ask in branch
+
+Select text in an answer and click **Ask in branch**, or press `Alt+Shift+Q` (`Option+Shift+Q` on a Mac), to open the question box and branch off with your quote in a new chat.
+
+### New chat in the current project
+
+Press `Alt+Shift+O` (`Option+Shift+O` on a Mac) to start a new chat where you are: a new chat in the current project, a new Temporary Chat when you are in one, or a normal new chat anywhere else. You can customize Butter's shortcuts in `chrome://extensions/shortcuts`.
 
 ### Remember long-chat layouts
 
